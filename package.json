@@ -3,12 +3,19 @@
   "version": "0.0.1",
   "description": "babel plugin to transform javascript into A Normal Form",
   "main": "index.js",
-  "devDependencies" : {
+  "dependencies": {
     "babel-cli": "^6.18.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^6.1.2",
+    "eslint": "^3.12.2",
+    "eslint-config-airbnb-base": "^11.0.1",
+    "eslint-plugin-import": "^2.2.0"
   },
   "scripts": {
     "build": "babel src -d lib",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "./node_modules/.bin/eslint --color anf.js"
   },
   "author": "Rachit Nigam",
   "license": "ISC"

@@ -1,0 +1,15 @@
+{
+  "name": "babel-anf-transform",
+  "version": "0.0.1",
+  "description": "babel plugin to transform javascript into A Normal Form",
+  "main": "index.js",
+  "devDependencies" : {
+    "babel-cli": "^6.18.0"
+  },
+  "scripts": {
+    "build": "babel src -d lib",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rachit Nigam",
+  "license": "ISC"
+}

@@ -42,12 +42,29 @@ function isValidLetRhs(node) {
   }
 }
 
+function letExpression(name, value) {
+  return t.variableDeclaration('const',
+          [t.variableDeclarator(name, value)])
+}
+
 module.exports = function transform(babel) {
   return {
     visitor: {
-      ExpressionStatement(path) {
-        if (isAtomic(path.node.expression)) {
-          console.log('literal');
+      BinaryExpression(path) {
+        const l = path.node.left;
+        const r = path.node.right;
+
+        // Replace for `r` needs to be inside because of the way
+        // side effects can occur when evaluating the binary expression.
+        if (isAtomic(r) === false) {
+          const nr = path.scope.generateUidIdentifier('r');
+          path.insertBefore(letExpression(nr, r));
+          path.node.right = nr;
+        }
+        if (isAtomic(l) === false) {
+          const nl = path.scope.generateUidIdentifier('l');
+          path.insertBefore(letExpression(nl, l));
+          path.node.left = nl;
         }
       },
     },

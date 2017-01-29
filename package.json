@@ -22,8 +22,10 @@
   "scripts": {
     "build": "babel src -d lib",
     "test": "./node_modules/.bin/jest || true",
-    "lint": "./node_modules/.bin/eslint --color src/* test/* || true",
-    "fix": "./node_modules/.bin/eslint --fix src/* test/* || true "
+    "lint": "./node_modules/.bin/eslint --color src/* || true",
+    "lintall": "./node_modules/.bin/eslint --color src/* test/* || true",
+    "fix": "./node_modules/.bin/eslint --fix src/* || true ",
+    "fixall": "./node_modules/.bin/eslint --fix src/* test/* || true "
   },
   "author": "Rachit Nigam",
   "license": "ISC"

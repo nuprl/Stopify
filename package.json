@@ -3,19 +3,27 @@
   "version": "0.0.1",
   "description": "babel plugin to transform javascript into A Normal Form",
   "main": "index.js",
+  "jest": {
+    "testPathDirs": ["test/"],
+    "testEnvironment": "node"
+  },
   "dependencies": {
-    "babel-cli": "^6.18.0"
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.22.1",
+    "babel-types": "^6.22.0"
   },
   "devDependencies": {
     "babel-eslint": "^6.1.2",
     "eslint": "^3.12.2",
     "eslint-config-airbnb-base": "^11.0.1",
-    "eslint-plugin-import": "^2.2.0"
+    "eslint-plugin-import": "^2.2.0",
+    "jest": "^18.1.0"
   },
   "scripts": {
     "build": "babel src -d lib",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "./node_modules/.bin/eslint --color anf.js"
+    "test": "./node_modules/.bin/jest || true",
+    "lint": "./node_modules/.bin/eslint --color src/* test/* || true",
+    "fix": "./node_modules/.bin/eslint --fix src/* test/* || true "
   },
   "author": "Rachit Nigam",
   "license": "ISC"

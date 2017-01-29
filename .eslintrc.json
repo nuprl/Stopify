@@ -12,6 +12,7 @@
       "no-console": 0,
       "no-unused-vars": ["error", { "args": "none" }],
       "func-names": 0,
-      "consistent-return": 0
+      "consistent-return": 0,
+      "no-else-return": 0
     }
 }

@@ -11,6 +11,7 @@
  *     | function x() { e; }
  *     | e; e
  *     | e(e*)
+ *     | return e;
  *
  * Resulting A Normal BNF:
  *
@@ -23,6 +24,7 @@
  *       | s2; s2
  *       | function () { s2; }
  *       | function x() { s2; }
+ *       | return a;
  */
 
 const t = require('babel-types');
@@ -30,16 +32,6 @@ const t = require('babel-types');
 /* Checks if the node is an atom */
 function isAtomic(node) {
   return t.isLiteral(node) || t.isIdentifier(node);
-}
-
-function isValidLetRhs(node) {
-  if (t.isBinaryExpression(node)) {
-    return isAtomic(node.left) && isAtomic(node.right);
-  } else if (t.isCallExpression(node)) {
-    return node.arguments.map(x => isAtomic(x)).reduce((x, y) => x && y);
-  } else {
-    return isAtomic(node);
-  }
 }
 
 function letExpression(name, value) {
@@ -51,7 +43,8 @@ function letExpression(name, value) {
 const visitor = {};
 
  /**
-  * Visitor function for binary expressions.
+  * Visitor function for binary expressions. Binary expressions can
+  * only have atomic expressions as arguments.
   * The insertion makes use of getStatementPath() to get to the statement
   * in order to insert the let binding. Simply inserting the let binding
   * will break complex examples such as:
@@ -74,6 +67,10 @@ visitor.BinaryExpression = function BinaryExpression(path) {
   }
 };
 
+
+ /**
+  * Call expressions can only have atomic expressions as arguments.
+  */
 visitor.CallExpression = function CallExpression(path) {
   const args = path.node.arguments.map((arg) => {
     if (isAtomic(arg) === false) {
@@ -88,8 +85,18 @@ visitor.CallExpression = function CallExpression(path) {
   path.node.arguments = args;
 };
 
-visitor.VariableDeclarator = function VariableDeclarator(path) {
+/**
+ * Return statements can only have atomic expressions as arguments.
+ */
+visitor.ReturnStatement = function ReturnStatement(path) {
+  const arg = path.node.argument;
+  if (isAtomic(arg) === false) {
+    const na = path.scope.generateUidIdentifier('a');
+    path.getStatementParent().insertBefore(letExpression(na, arg));
+    path.node.argument = na;
+  }
 };
+
 module.exports = function transform(babel) {
   return { visitor };
 };

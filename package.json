@@ -4,7 +4,9 @@
   "description": "babel plugin to transform javascript into A Normal Form",
   "main": "index.js",
   "jest": {
-    "testPathDirs": ["test/"],
+    "testPathDirs": [
+      "test/"
+    ],
     "testEnvironment": "node"
   },
   "dependencies": {
@@ -17,6 +19,7 @@
     "eslint": "^3.12.2",
     "eslint-config-airbnb-base": "^11.0.1",
     "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jest": "^1.0.2",
     "jest": "^18.1.0"
   },
   "scripts": {

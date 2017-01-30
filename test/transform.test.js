@@ -56,7 +56,7 @@ function transformedTestFixture(tests, before = '') {
 
       it('was transformed', () => {
         expect(test).not.toBe(transform(test));
-      })
+      });
 
       it('retains value', () => {
         expect(test).hasSameValue(transform(test), before);
@@ -98,8 +98,8 @@ describe('let expressions', () => {
     'let x = 1 + 2 + 3; x;',
     'let x = f(1 + 2); x;',
     'let x = 1 + f(3 + 4); x;',
-    'let x = 1 + 2 + f(f(1 + 2), f(4 + 5)); x;'
-  ]
+    'let x = 1 + 2 + f(f(1 + 2), f(4 + 5)); x;',
+  ];
 
   const before = 'function f(i, ...arr) { arr.push(i); return arr.reduce((x, y) => x * y) };';
 

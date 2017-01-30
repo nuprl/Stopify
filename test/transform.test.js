@@ -10,50 +10,82 @@ function transform(src) {
 }
 
 /**
- * Use to test that the transformed program and the original evaluated
- * to the same value. Returns the transformed program in the message
- * on failure
+ * To check that the program can be successfully transformed.
  */
 expect.extend({
-  toHaveSameResult(original) {
-    const transformed = transform(original);
-    const oeval = eval(original);
-    let teval;
-    let error = "";
+  transformsSuccessfully(original) {
+    let error = '';
+    let transformed = '';
+
     try {
-      teval = eval(transformed);
+      transformed = transform(original);
     } catch (e) {
       error = e.message;
     }
 
-    const pass = teval === oeval;
+    const pass = error.length === 0;
+    const message = pass ?
+      `${original}\ncould not be transformed`
+    : `${original}\ntransformed to\n${transformed}`;
 
-    const message = error.length > 0 ?
-      () => `${transformed}\ncould be evaluated.\nError: ${error}`
-    : () => `${teval} did ${pass ? '' : 'not'} equal ${oeval}.\nTransformation: ${transformed}`;
-
-    return {message, pass};
-  }
+    return { message, pass };
+  },
 });
+
+expect.extend({
+  hasSameValue(org, tr, before = '') {
+    const te = eval(before + tr);
+    const oe = eval(before + org);
+    console.log(te);
+    const pass = te === oe;
+
+    const message = pass ?
+      `original evals to ${oe} while transformed evals to ${te}`
+    : 'transformed function retains the value';
+
+    return { message, pass };
+  },
+});
+
+
+function transformedTestFixture(tests, before = '') {
+  tests.forEach((test) => {
+    describe(`${test}`, () => {
+      it('can be transformed', () => {
+        expect(test).transformsSuccessfully();
+      });
+
+      it('retains value', () => {
+        expect(test).hasSameValue(transform(test), before);
+      });
+    });
+  });
+}
 
 describe('complex binary expression', () => {
   const tests = [
-    "1 + 2 + 3;",
-    "true && false && true",
-    "(1 + 2) - (3 + 4);",
-    "1 - (2 + 3);"
+    '1 - 2 - 3;',
+    '1 - 2 - 3 - 4;',
+    '1 - 2 - 3 - 4 - 5;',
+    'true && false && true',
+    '(1 + 2) - (3 + 4);',
+    '1 - (2 + 3);',
   ];
 
-  tests.forEach((test) => {
-    describe(`${test}`, () => {
-      it('is transformed', () => {
-        expect(test).not.toBe(transform(test));
-      })
+  transformedTestFixture(tests);
+});
 
-      it('retains evald value', () => {
-        expect(test).toHaveSameResult();
-      })
-    })
-  });
+describe('function call expressions with non atomic arguments', () => {
+  const tests = [
+    'f(1 + 2);',
+    'f(1 + 2 + 3);',
+    'f(1 + 2, 3 + 4);',
+    'f(f(1, 2), f(3, 4));',
+    'f(f(1 + 2, 3 + 4), f(1 ,2));',
+    'f(1 + 2, 3 + 4 + 5, 6 + 7 + 8);',
+  ];
 
+  const before = 'function f(i, ...arr) { arr.push(i); return arr.reduce((x, y) => x * y) };';
+
+  transformedTestFixture(tests, before);
 });

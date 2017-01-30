@@ -44,29 +44,52 @@ function isValidLetRhs(node) {
 
 function letExpression(name, value) {
   return t.variableDeclaration('const',
-          [t.variableDeclarator(name, value)])
+          [t.variableDeclarator(name, value)]);
 }
 
-module.exports = function transform(babel) {
-  return {
-    visitor: {
-      BinaryExpression(path) {
-        const l = path.node.left;
-        const r = path.node.right;
+// Object to contain the visitor functions
+const visitor = {};
 
-        // Replace for `r` needs to be inside because of the way
-        // side effects can occur when evaluating the binary expression.
-        if (isAtomic(r) === false) {
-          const nr = path.scope.generateUidIdentifier('r');
-          path.insertBefore(letExpression(nr, r));
-          path.node.right = nr;
-        }
-        if (isAtomic(l) === false) {
-          const nl = path.scope.generateUidIdentifier('l');
-          path.insertBefore(letExpression(nl, l));
-          path.node.left = nl;
-        }
-      },
-    },
-  };
+ /**
+  * Visitor function for binary expressions.
+  * The insertion makes use of getStatementPath() to get to the statement
+  * in order to insert the let binding. Simply inserting the let binding
+  * will break complex examples such as:
+  */
+visitor.BinaryExpression = function BinaryExpression(path) {
+  const l = path.node.left;
+  const r = path.node.right;
+
+  // Replace for `r` needs to be inside because of the way
+  // side effects can occur when evaluating the binary expression.
+  if (isAtomic(r) === false) {
+    const nr = path.scope.generateUidIdentifier('r');
+    path.getStatementParent().insertBefore(letExpression(nr, r));
+    path.node.right = nr;
+  }
+  if (isAtomic(l) === false) {
+    const nl = path.scope.generateUidIdentifier('l');
+    path.getStatementParent().insertBefore(letExpression(nl, l));
+    path.node.left = nl;
+  }
+};
+
+visitor.CallExpression = function CallExpression(path) {
+  const args = path.node.arguments.map((arg) => {
+    if (isAtomic(arg) === false) {
+      const na = path.scope.generateUidIdentifier('a');
+      path.getStatementParent().insertBefore(letExpression(na, arg));
+      return na;
+    } else {
+      return arg;
+    }
+  });
+
+  path.node.arguments = args;
+};
+
+visitor.VariableDeclarator = function VariableDeclarator(path) {
+};
+module.exports = function transform(babel) {
+  return { visitor };
 };

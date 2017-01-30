@@ -9,7 +9,7 @@ function transform(src) {
   return out.code;
 }
 
-describe('literals', () => {
+describe('Literal', () => {
   const tests = [
   { name: 'strings', prog: '"string";' },
   { name: 'numbers', prog: '1;' },
@@ -19,6 +19,21 @@ describe('literals', () => {
   tests.forEach((test) => {
     it(`${test.name} are not transformed`, () => {
       expect(test.prog).toBe(transform(test.prog));
+    });
+  });
+});
+
+describe('Simple function call', () => {
+  const tests = [
+    'f();',
+    'f(x);',
+    'f(x, y, z);',
+    'f(1, 2, 3);',
+  ];
+
+  tests.forEach((test) => {
+    it(`${test} is not transformed`, () => {
+      expect(test).toBe(transform(test));
     });
   });
 });

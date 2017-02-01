@@ -55,15 +55,15 @@ visitor.BinaryExpression = function BinaryExpression(path) {
 
   // Replace for `r` needs to be inside because of the way
   // side effects can occur when evaluating the binary expression.
-  if (isAtomic(r) === false) {
-    const nr = path.scope.generateUidIdentifier('r');
-    path.getStatementParent().insertBefore(letExpression(nr, r));
-    path.node.right = nr;
-  }
   if (isAtomic(l) === false) {
     const nl = path.scope.generateUidIdentifier('l');
     path.getStatementParent().insertBefore(letExpression(nl, l));
     path.node.left = nl;
+  }
+  if (isAtomic(r) === false) {
+    const nr = path.scope.generateUidIdentifier('r');
+    path.getStatementParent().insertBefore(letExpression(nr, r));
+    path.node.right = nr;
   }
 };
 

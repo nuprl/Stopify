@@ -43,13 +43,13 @@ function letExpression(name, value) {
 const visitor = {};
 
  /**
-  * Visitor function for binary expressions. Binary expressions can
-  * only have atomic expressions as arguments.
+  * Visitor function for binary expressions and logical expressions.
+  * Binary expressions can only have atomic expressions as arguments.
   * The insertion makes use of getStatementPath() to get to the statement
   * in order to insert the let binding. Simply inserting the let binding
-  * will break complex examples such as:
+  * will break complex examples.
   */
-visitor.BinaryExpression = function BinaryExpression(path) {
+visitor['BinaryExpression|LogicalExpression'] = function BinaryExpression(path) {
   const l = path.node.left;
   const r = path.node.right;
 

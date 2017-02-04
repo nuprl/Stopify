@@ -70,7 +70,7 @@ describe('complex binary expression', () => {
     '1 - 2 - 3;',
     '1 - 2 - 3 - 4;',
     '1 - 2 - 3 - 4 - 5;',
-    'true && false && true',
+    'true && false && true;',
     '(1 + 2) - (3 + 4);',
     '1 - (2 + 3);',
   ];
@@ -102,6 +102,18 @@ describe('let expressions', () => {
   ];
 
   const before = 'function f(i, ...arr) { arr.push(i); return arr.reduce((x, y) => x * y) };';
+
+  transformedTestFixture(tests, before);
+});
+
+describe('side effects', () => {
+  const before = ' var glob = 0; function f(x) { glob += 10; return x; }; function g(x) { glob *= 2; return x; }; ';
+
+  const tests = [
+    'f(1) + g(2); glob === 220;',
+    'f(1) + f(2) + g(2); glob === 40;',
+    'f(1 + g(2)); glob === 10;',
+  ];
 
   transformedTestFixture(tests, before);
 });

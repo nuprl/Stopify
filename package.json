@@ -1,6 +1,13 @@
 {
   "name": "babel-anf-transform",
   "version": "0.0.1",
+  "babel" : {
+    "plugins": [
+      "./src/desugarLabel.js",
+      "./src/desugarLoop.js",
+      "./src/anf.js"
+    ]
+  },
   "description": "babel plugin to transform javascript into A Normal Form",
   "main": "index.js",
   "jest": {

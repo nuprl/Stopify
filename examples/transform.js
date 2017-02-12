@@ -29,20 +29,23 @@ function f(a, b) {
     return r0(v1, v2);
   }
 
-  let v1;
-  try {
-    v1 = a(0);
-  } catch (e) {
-    if (e instanceof CaptureException) {
-      const [v, k] = e.getParams();
-      throw new CaptureException(v, x => r1(k(x)));
+  function r2() {
+    let v1;
+    try {
+      v1 = a(0);
+    } catch (e) {
+      if (e instanceof CaptureException) {
+        const [v, k] = e.getParams();
+        throw new CaptureException(v, x => r1(k(x)));
+      }
+      else {
+        throw e;
+      }
     }
-    else {
-      throw e;
-    }
+    return r1(v1);
   }
 
-  return r1(v1);
+  return r2();
 }
 
 function callCC(fun) {
@@ -104,6 +107,6 @@ function test3() {
   return main(() => callCC(kt => f(x => callCC(k => 100 + kt(x)), x => x)));
 }
 
-// console.log(test1());
+console.log(test1());
 console.log(test2());
 console.log(test3());

@@ -1,30 +1,10 @@
 /**
- * BNF transform:
- * JS working BNF:
+ * Plugin to transform JS programs into ANF form.
  *
- * e ::= n
- *     | str
- *     | x
- *     | let x = e
- *     | e `op` e
- *     | function () { e; }
- *     | function x() { e; }
- *     | e; e
- *     | e(e*)
- *     | return e;
- *
- * Resulting A Normal BNF:
- *
- *  a ::= n | str | x
- *
- *  l ::= a | a `op` a | e(a*)
- *
- *  s2 ::= l
- *       | let x = l
- *       | s2; s2
- *       | function () { s2; }
- *       | function x() { s2; }
- *       | return a;
+ * WARNING:
+ * The plugin assumes that the assumptions stated in ./src/desugarLoop.js
+ * hold. The resulting output is not guarenteed to be in ANF form if the
+ * assumptions do not hold.
  */
 
 const t = require('babel-types');
@@ -42,6 +22,54 @@ function letExpression(name, value) {
 // Object to contain the visitor functions
 const visitor = {};
 
+visitor.ArrayExpression = function ArrayExpression(path) {
+  const elems = path.node.elements.map((elem) => {
+    if (isAtomic(elem) === false) {
+      const na = path.scope.generateUidIdentifier('a');
+      path.getStatementParent().insertBefore(letExpression(na, elem));
+      return na;
+    } else {
+      return elem;
+    }
+  });
+
+  path.node.elements = elems;
+};
+
+visitor.MemberExpression = function MemberExpression(path) {
+  const p = path.node.property;
+
+  if (isAtomic(p) === false) {
+    const np = path.scope.generateUidIdentifier('p');
+    path.getStatementParent().insertBefore(letExpression(np, p));
+    path.node.property = np;
+  }
+};
+
+/**
+ * Even though MemberExpression can handle the LHS being a complex
+ * object access, we handle it separately since the LHS can be nonAtomic, i.e.,
+ * of the form a[1] whereas in every other context a member access
+ * is not consider atomic.
+ */
+visitor.AssignmentExpression = function AssignmentExpression(path) {
+  const r = path.node.right;
+  const l = path.node.left;
+
+  if (t.isMemberExpression(l) && (isAtomic(l.property) === false)) {
+    const prop = l.property;
+    const np = path.scope.generateUidIdentifier('p');
+    path.getStatementParent().insertBefore(letExpression(np, prop));
+    path.node.left.property = np;
+  }
+
+  if (isAtomic(r) === false) {
+    const nr = path.scope.generateUidIdentifier('r');
+    path.getStatementParent().insertBefore(letExpression(nr, r));
+    path.node.right = nr;
+  }
+};
+
  /**
   * Visitor function for binary expressions and logical expressions.
   * Binary expressions can only have atomic expressions as arguments.
@@ -49,7 +77,8 @@ const visitor = {};
   * in order to insert the let binding. Simply inserting the let binding
   * will break complex examples.
   */
-visitor['BinaryExpression|LogicalExpression'] = function BinaryExpression(path) {
+visitor['BinaryExpression|LogicalExpression'] =
+function BinaryExpression(path) {
   const l = path.node.left;
   const r = path.node.right;
 

@@ -22,6 +22,15 @@ function letExpression(name, value) {
 // Object to contain the visitor functions
 const visitor = {};
 
+visitor.Loop = function Loop(path) {
+  // All loops must be while loops
+  if (t.isWhileStatement(path.node)) {
+    throw new Error(`Error: Found ${path.node.type} during anf phase`);
+  }
+
+  // TODO Transform loops in recursive function calls.
+};
+
 visitor.ArrayExpression = function ArrayExpression(path) {
   const elems = path.node.elements.map((elem) => {
     if (isAtomic(elem) === false) {

@@ -1,5 +1,7 @@
+let i = 0;
 loop:
-for(let i = 0; i < 10; i++) {
+while(i < 10) {
+  console.log(i);
+  i++;
   if (i === 5) break loop;
-  console.log(i)
 }

@@ -22,13 +22,49 @@ function letExpression(name, value) {
 // Object to contain the visitor functions
 const visitor = {};
 
+
+/** Document all the invariants that must hold for the anf phase.
+ */
+//-----------------------------------------------------------------------------
+
+// No break statements
+visitor.BreakStatement = function BreakStatement(path) {
+  throw new Error('Break statement encountered in the anf phase');
+};
+
+// No continue statments
+visitor.ContinueStatement = function ContinueStatement(path) {
+  throw new Error('Continue statement encountered in the anf phase');
+};
+
+// Only while loops must be present
 visitor.Loop = function Loop(path) {
-  // All loops must be while loops
   if (t.isWhileStatement(path.node)) {
     throw new Error(`Error: Found ${path.node.type} during anf phase`);
   }
+};
 
-  // TODO Transform loops in recursive function calls.
+//-----------------------------------------------------------------------------
+
+/** Transform while loops into tail recursive function calls.
+ */
+visitor.WhileStatement = function WhileStatement(path) {
+  const node = path.node;
+  const test = node.test;
+  const body = node.body;
+
+  // Name the function representing the while loop.
+  const fName = path.scope.generateUidIdentifier('while');
+
+  // Create the body for the function.
+  const fBody = t.blockStatement([
+    t.ifStatement(test, t.blockStatement([body,
+      t.expressionStatement(t.callExpression(fName, []))]))]);
+  // Create the function representing the while loop.
+  const fExpr = t.functionExpression(fName, [], fBody);
+  const fDecl = letExpression(fName, fExpr);
+  path.replaceWith(t.blockStatement([fDecl, t.expressionStatement(
+          t.callExpression(fName, []))]));
 };
 
 visitor.ArrayExpression = function ArrayExpression(path) {

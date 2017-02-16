@@ -8,23 +8,12 @@
  */
 
 const t = require('babel-types');
-
-/* Checks if the node is an atom */
-function isAtomic(node) {
-  return t.isLiteral(node) || t.isIdentifier(node);
-}
-
-function letExpression(name, value) {
-  return t.variableDeclaration('const',
-          [t.variableDeclarator(name, value)]);
-}
+const h = require('./helpers.js');
 
 // Object to contain the visitor functions
 const visitor = {};
 
-
-/** Document all the invariants that must hold for the anf phase.
- */
+/** Document all the invariants that must hold for the anf phase.  */
 //-----------------------------------------------------------------------------
 
 // No break statements
@@ -57,21 +46,21 @@ visitor.WhileStatement = function WhileStatement(path) {
   const fName = path.scope.generateUidIdentifier('while');
 
   // Create the body for the function.
-  const fBody = t.blockStatement([
-    t.ifStatement(test, t.blockStatement([body,
+  const fBody = h.flatBodyStatement([
+    t.ifStatement(test, h.flatBodyStatement([body,
       t.expressionStatement(t.callExpression(fName, []))]))]);
   // Create the function representing the while loop.
   const fExpr = t.functionExpression(fName, [], fBody);
-  const fDecl = letExpression(fName, fExpr);
-  path.replaceWith(t.blockStatement([fDecl, t.expressionStatement(
+  const fDecl = h.letExpression(fName, fExpr);
+  path.replaceWith(h.flatBodyStatement([fDecl, t.expressionStatement(
           t.callExpression(fName, []))]));
 };
 
 visitor.ArrayExpression = function ArrayExpression(path) {
   const elems = path.node.elements.map((elem) => {
-    if (isAtomic(elem) === false) {
+    if (h.isAtomic(elem) === false) {
       const na = path.scope.generateUidIdentifier('a');
-      path.getStatementParent().insertBefore(letExpression(na, elem));
+      path.getStatementParent().insertBefore(h.letExpression(na, elem));
       return na;
     } else {
       return elem;
@@ -84,9 +73,9 @@ visitor.ArrayExpression = function ArrayExpression(path) {
 visitor.MemberExpression = function MemberExpression(path) {
   const p = path.node.property;
 
-  if (isAtomic(p) === false) {
+  if (h.isAtomic(p) === false) {
     const np = path.scope.generateUidIdentifier('p');
-    path.getStatementParent().insertBefore(letExpression(np, p));
+    path.getStatementParent().insertBefore(h.letExpression(np, p));
     path.node.property = np;
   }
 };
@@ -101,16 +90,16 @@ visitor.AssignmentExpression = function AssignmentExpression(path) {
   const r = path.node.right;
   const l = path.node.left;
 
-  if (t.isMemberExpression(l) && (isAtomic(l.property) === false)) {
+  if (t.isMemberExpression(l) && (h.isAtomic(l.property) === false)) {
     const prop = l.property;
     const np = path.scope.generateUidIdentifier('p');
-    path.getStatementParent().insertBefore(letExpression(np, prop));
+    path.getStatementParent().insertBefore(h.letExpression(np, prop));
     path.node.left.property = np;
   }
 
-  if (isAtomic(r) === false) {
+  if (h.isAtomic(r) === false) {
     const nr = path.scope.generateUidIdentifier('r');
-    path.getStatementParent().insertBefore(letExpression(nr, r));
+    path.getStatementParent().insertBefore(h.letExpression(nr, r));
     path.node.right = nr;
   }
 };
@@ -129,14 +118,14 @@ function BinaryExpression(path) {
 
   // Replace for `r` needs to be inside because of the way
   // side effects can occur when evaluating the binary expression.
-  if (isAtomic(l) === false) {
+  if (h.isAtomic(l) === false) {
     const nl = path.scope.generateUidIdentifier('l');
-    path.getStatementParent().insertBefore(letExpression(nl, l));
+    path.getStatementParent().insertBefore(h.letExpression(nl, l));
     path.node.left = nl;
   }
-  if (isAtomic(r) === false) {
+  if (h.isAtomic(r) === false) {
     const nr = path.scope.generateUidIdentifier('r');
-    path.getStatementParent().insertBefore(letExpression(nr, r));
+    path.getStatementParent().insertBefore(h.letExpression(nr, r));
     path.node.right = nr;
   }
 };
@@ -147,9 +136,9 @@ function BinaryExpression(path) {
   */
 visitor.CallExpression = function CallExpression(path) {
   const args = path.node.arguments.map((arg) => {
-    if (isAtomic(arg) === false) {
+    if (h.isAtomic(arg) === false) {
       const na = path.scope.generateUidIdentifier('a');
-      path.getStatementParent().insertBefore(letExpression(na, arg));
+      path.getStatementParent().insertBefore(h.letExpression(na, arg));
       return na;
     } else {
       return arg;
@@ -164,9 +153,9 @@ visitor.CallExpression = function CallExpression(path) {
  */
 visitor.ReturnStatement = function ReturnStatement(path) {
   const arg = path.node.argument;
-  if (isAtomic(arg) === false) {
+  if (h.isAtomic(arg) === false) {
     const na = path.scope.generateUidIdentifier('a');
-    path.getStatementParent().insertBefore(letExpression(na, arg));
+    path.getStatementParent().insertBefore(h.letExpression(na, arg));
     path.node.argument = na;
   }
 };

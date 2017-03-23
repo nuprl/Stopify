@@ -1,0 +1,3 @@
+for(init(); ; update()) {
+    body();
+}

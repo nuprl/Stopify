@@ -1,0 +1,3 @@
+for(init(); test();) {
+    body();
+}

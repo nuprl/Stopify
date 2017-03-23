@@ -13,6 +13,7 @@
  */
 
 const t = require('babel-types');
+const h = require('./helpers.js');
 
 function letExpression(name, value) {
   return t.variableDeclaration('const',
@@ -26,31 +27,21 @@ const visitor = {};
 // Convert For Statements into While Statements
 visitor.ForStatement = function ForStatement(path) {
   const node = path.node;
-  const init = node.init;
-  const test = node.test;
-  const update = node.update;
-  const wBody = node.body;
+  const { init, test, update, body:wBody } = node
 
   // New body is a the old body with the update appended to the end.
   let nBody;
   if (update === null) {
     nBody = wBody;
-  } else if (t.isBlockStatement(wBody)) {
-    wBody.body.push(update);
-    nBody = wBody;
   } else {
-    nBody = t.BlockStatement([wBody, update]);
+    nBody = h.flatBodyStatement([wBody, t.ExpressionStatement(update)]);
   }
   const wl = t.whileStatement(test, nBody);
 
   // The init can either be a variable declaration or an expression
-  let nInit;
-  if (init === null) {
-    nInit = undefined;
-  } else if (t.isExpression(init)) {
-    nInit = t.expressionStatement(init);
-  } else {
-    nInit = init;
+  let nInit = t.emptyStatement();
+  if (init !== null) {
+    nInit = t.isExpression(init) ? t.expressionStatement(init) : init
   }
 
   // for loops can leave out init

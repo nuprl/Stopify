@@ -1,5 +1,3 @@
-
-
 // Helper functions for the anf transformation
 /* Checks if the node is an atom */
 

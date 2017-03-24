@@ -22,6 +22,7 @@ function flatBodyStatement(body) {
     if (t.isBlockStatement(elem)) {
       elem.body.forEach((e) => {
         if (t.isStatement(e)) newBody.push(e);
+        else if (t.isEmptyStatement(e)) { }
         else {
           throw new Error(
           'Could not flatten body, element was not a statement');

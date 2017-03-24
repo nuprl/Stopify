@@ -4,9 +4,10 @@ const babel = require('babel-core');
 function transform(src) {
   const desugarLoop = require('../src/desugarLoop.js');
   const desugarLabel = require('../src/desugarLabel.js');
+  const verifier = require('../src/verifier.js');
 
   const out = babel.transform(src, {
-    plugins: [desugarLabel, desugarLoop],
+    plugins: [desugarLabel, desugarLoop, verifier],
   });
 
   return out.code;

@@ -15,7 +15,7 @@
 const t = require('babel-types');
 const h = require('./helpers.js');
 
-function letExpression(name, value) {
+function letExpression(name, value, kind) {
   return t.variableDeclaration('const',
           [t.variableDeclarator(name, value)]);
 }
@@ -27,16 +27,22 @@ const visitor = {};
 // Convert For Statements into While Statements
 visitor.ForStatement = function ForStatement(path) {
   const node = path.node;
-  const { init, test, update, body:wBody } = node
+  let { init, test, update, body:wBody } = node
 
   // New body is a the old body with the update appended to the end.
-  let nBody;
   if (update === null) {
-    nBody = wBody;
-  } else {
-    nBody = h.flatBodyStatement([wBody, t.ExpressionStatement(update)]);
+    update = t.emptyStatement();
   }
-  const wl = t.whileStatement(test, nBody);
+  else {
+    update = t.expressionStatement(update);
+  }
+  wBody = h.flatBodyStatement([wBody, update]);
+
+  // Test can be null
+  if (test === null) {
+    test = t.booleanLiteral(true)
+  }
+  const wl = t.whileStatement(test, wBody);
 
   // The init can either be a variable declaration or an expression
   let nInit = t.emptyStatement();
@@ -44,73 +50,28 @@ visitor.ForStatement = function ForStatement(path) {
     nInit = t.isExpression(init) ? t.expressionStatement(init) : init
   }
 
-  // for loops can leave out init
-  if (nInit !== undefined) path.replaceWith(t.blockStatement([nInit, wl]));
-  else path.replaceWith(t.blockStatement([wl]));
+  path.replaceWith(h.flatBodyStatement([nInit, wl]));
 };
 
 // Convert do-while statements into while statements.
 visitor.DoWhileStatement = function DoWhileStatement(path) {
   const node = path.node;
-  const doWhileBody = node.body;
-  const test = node.test;
+  let { test, body } = node;
 
-  // TODO Write the travesal for transformation body's breaks and continues.
-  /**
-   * Since the body can contain a break or a continue statement, we need
-   * to do the following:
-   *
-   * 1. Create a function containing the body. The function returns a boolean
-   *    signalling whether a break was called.
-   * 2. Inside the function, replace all instances of break with return true
-   *    and continue with return false.
-   * 3. Make sure that the replacer doesn't affect nested loops.
-   * 4. Run the while loop if break was not called inside the function body.
-   * 5. Inside the while loop, if the function returns true, exit out of
-   *    the loop.
-   */
-  let nBody;
-  if (t.isBlockStatement(doWhileBody)) {
-    nBody = doWhileBody;
-  } else {
-    nBody = t.BlockStatements([doWhileBody]);
-  }
+  // Add flag to run the while loop at least once
+  const runOnce = path.scope.generateUidIdentifier("runOnce");
+  const runOnceInit = t.variableDeclaration('let',
+    [t.variableDeclarator(runOnce, t.booleanLiteral(true))]);
+  const runOnceSetFalse =
+    t.expressionStatement(
+      t.assignmentExpression("=", runOnce, t.booleanLiteral(false)))
+  body = h.flatBodyStatement([runOnceSetFalse, body]);
 
-  const funName = path.scope.generateUidIdentifier('doWhileBody');
-  // Modify the function body
-  const funExpr = t.functionExpression(null, [], nBody);
-  const funDecl = letExpression(funName, funExpr);
+  test = t.logicalExpression("||", runOnce, test);
 
-  const callExpr = t.callExpression(funName, []);
-  const callResName = path.scope.generateUidIdentifier('didBreak');
-  // Capture the result of calling the body function.
-  const callResult = letExpression(callResName, callExpr);
+  path.replaceWith(
+    h.flatBodyStatement([runOnceInit, t.whileStatement(test, body)]));
 
-  // For the body of the while loop, if the result of calling body is
-  // true, then break.
-  const whileBody = t.blockStatement([
-    callResult,
-    t.ifStatement(callResName, t.breakStatement()),
-  ]);
-  const whileLoop = t.whileStatement(test, whileBody);
-
-  // If the result of call the first iteration is not true, run the while loop.
-  const conditionalRun = t.ifStatement(
-      t.unaryExpression('!', callResName),
-      t.blockStatement([whileLoop]), null);
-
-  path.replaceWith(t.BlockStatement([funDecl, callResult, conditionalRun]));
-};
-
-visitor.WhileStatement = function WhileStatement(path) {
-  const body = path.node.body;
-
-  // If the body of a loop is an expression, convert it
-  // into a block statement.
-  if (t.isExpressionStatement(body)) {
-    const nbody = t.BlockStatement([body]);
-    path.node.body = nbody;
-  }
 };
 
 module.exports = function transform(babel) {

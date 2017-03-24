@@ -1,7 +1,4 @@
-# Stopify
-## Building and Testing 
-[![Build Status](https://travis-ci.com/plasma-umass/Stopify.svg?token=deQs2QJESqvhzMgbFBFz&branch=master)](https://travis-ci.com/plasma-umass/Stopify)
-----------------
+# Stopify [![Build Status](https://travis-ci.com/plasma-umass/Stopify.svg?token=deQs2QJESqvhzMgbFBFz&branch=master)](https://travis-ci.com/plasma-umass/Stopify)
 ## Dependencies
 1. Install the latest version of node.
 2. To install the dependecies, run `npm install` in the root of the project.

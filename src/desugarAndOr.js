@@ -24,7 +24,7 @@ visitor.LogicalExpression = function (path) {
         t.expressionStatement(trueBranch),
         t.expressionStatement(falseBranch)));
 
-  path.replaceWith(t.blockStatement(desugared));
+  path.replaceWithMultiple(desugared);
 };
 
 module.exports = function transform(babel) {

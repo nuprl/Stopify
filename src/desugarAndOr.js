@@ -11,7 +11,6 @@ visitor.LogicalExpression = function (path) {
   const node = path.node;
   const { left, operator, right } = node;
 
-  const desugared = [];
   const tmp = path.scope.generateUidIdentifier('t');
   const test = t.sequenceExpression([
     t.assignmentExpression('=', tmp, left),
@@ -19,12 +18,10 @@ visitor.LogicalExpression = function (path) {
   const trueBranch = t.assignmentExpression('=', tmp, operator === '&&' ? right : left);
   const falseBranch = t.assignmentExpression('=', tmp, operator === '&&' ? left : right);
 
-  desugared.push(t.variableDeclaration('let', [t.variableDeclarator(tmp)]));
-  desugared.push(t.ifStatement(test,
+  path.getStatementParent().insertBefore(t.variableDeclaration('let', [t.variableDeclarator(tmp)]));
+  path.replaceWith(t.ifStatement(test,
         t.expressionStatement(trueBranch),
         t.expressionStatement(falseBranch)));
-
-  path.replaceWithMultiple(desugared);
 };
 
 module.exports = function transform(babel) {

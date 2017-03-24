@@ -5,6 +5,7 @@
     "plugins": [
       "./src/desugarLabel.js",
       "./src/desugarLoop.js",
+      "./src/desugarAndOr.js",
       "./src/anf.js"
     ]
   },

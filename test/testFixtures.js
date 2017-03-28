@@ -5,10 +5,11 @@ function transform(src) {
   const desugarLoop = require('../src/desugarLoop.js');
   const desugarLabel = require('../src/desugarLabel.js');
   const desugarAndOr = require('../src/desugarAndOr.js');
+  const stratify = require('../src/stratify.js');
   const verifier = require('../src/verifier.js');
 
   const out = babel.transform(src, {
-    plugins: [desugarLabel, desugarLoop, desugarAndOr, verifier],
+    plugins: [desugarLabel, desugarLoop, desugarAndOr, stratify, verifier],
   });
 
   return out.code;
@@ -28,7 +29,7 @@ expect.extend({
     const pass = errorMessage.length === 0;
     const message = pass ?
       `${original}\ncould not be transformed`
-    : errorMessage
+    : errorMessage;
 
     return { message, pass };
   },

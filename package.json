@@ -6,7 +6,7 @@
       "./src/desugarLabel.js",
       "./src/desugarLoop.js",
       "./src/desugarAndOr.js",
-      "./src/anf.js"
+      "./src/stratify.js"
     ]
   },
   "description": "babel plugin to transform javascript into A Normal Form",

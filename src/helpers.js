@@ -12,6 +12,10 @@ function letExpression(name, value) {
           [t.variableDeclarator(name, value)]);
 }
 
+function flatten(seq) {
+  return seq.reduce((prog, statements) => prog.concat(statements), []);
+}
+
 /**
  * Use this when the contents of the body need to be flattened.
  * @param body An array of statements
@@ -34,4 +38,4 @@ function flatBodyStatement(body) {
   return t.blockStatement(newBody);
 }
 
-module.exports = { isAtomic, letExpression, flatBodyStatement };
+module.exports = { isAtomic, letExpression, flatten, flatBodyStatement };

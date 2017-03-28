@@ -74,12 +74,14 @@ function stratifyStatement(statement, k, path) {
     return pres.concat([t.returnStatement(exp)]);
   } else if (t.isVariableDeclaration(statement)) {
     let pres = [];
-    return pres.concat([t.variableDeclaration(statement.kind,
+    let x = [t.variableDeclaration(statement.kind,
         statement.declarations.map((decl) => {
           const [exp, pre] = stratifyExpression(decl.init, k, path);
           pres = pres.concat(pre);
+          console.log(pres);
           return t.variableDeclarator(decl.id, exp);
-        }))]);
+        }))];
+    return pres.concat(x);
   }
 
   return [statement];

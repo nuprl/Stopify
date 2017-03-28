@@ -78,7 +78,6 @@ function stratifyStatement(statement, k, path) {
         statement.declarations.map((decl) => {
           const [exp, pre] = stratifyExpression(decl.init, k, path);
           pres = pres.concat(pre);
-          console.log(pres);
           return t.variableDeclarator(decl.id, exp);
         }))];
     return pres.concat(x);

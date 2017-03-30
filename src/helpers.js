@@ -3,8 +3,8 @@
 
 const t = require('babel-types');
 
-function isAtomic(node) {
-  return t.isLiteral(node) || t.isIdentifier(node);
+function isTerminating(node) {
+  return !t.isCallExpression(node);
 }
 
 function letExpression(name, value) {
@@ -38,4 +38,4 @@ function flatBodyStatement(body) {
   return t.blockStatement(newBody);
 }
 
-module.exports = { isAtomic, letExpression, flatten, flatBodyStatement };
+module.exports = { isTerminating, letExpression, flatten, flatBodyStatement };

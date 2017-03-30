@@ -58,7 +58,7 @@ visitor.WhileStatement = function WhileStatement(path) {
 
 visitor.ArrayExpression = function ArrayExpression(path) {
   const elems = path.node.elements.map((elem) => {
-    if (h.isAtomic(elem) === false) {
+    if (h.isTerminating(elem) === false) {
       const na = path.scope.generateUidIdentifier('a');
       path.getStatementParent().insertBefore(h.letExpression(na, elem));
       return na;
@@ -73,7 +73,7 @@ visitor.ArrayExpression = function ArrayExpression(path) {
 visitor.MemberExpression = function MemberExpression(path) {
   const p = path.node.property;
 
-  if (h.isAtomic(p) === false) {
+  if (h.isTerminating(p) === false) {
     const np = path.scope.generateUidIdentifier('p');
     path.getStatementParent().insertBefore(h.letExpression(np, p));
     path.node.property = np;
@@ -90,14 +90,14 @@ visitor.AssignmentExpression = function AssignmentExpression(path) {
   const r = path.node.right;
   const l = path.node.left;
 
-  if (t.isMemberExpression(l) && (h.isAtomic(l.property) === false)) {
+  if (t.isMemberExpression(l) && (h.isTerminating(l.property) === false)) {
     const prop = l.property;
     const np = path.scope.generateUidIdentifier('p');
     path.getStatementParent().insertBefore(h.letExpression(np, prop));
     path.node.left.property = np;
   }
 
-  if (h.isAtomic(r) === false) {
+  if (h.isTerminating(r) === false) {
     const nr = path.scope.generateUidIdentifier('r');
     path.getStatementParent().insertBefore(h.letExpression(nr, r));
     path.node.right = nr;
@@ -111,19 +111,18 @@ visitor.AssignmentExpression = function AssignmentExpression(path) {
   * in order to insert the let binding. Simply inserting the let binding
   * will break complex examples.
   */
-visitor['BinaryExpression|LogicalExpression'] =
-function BinaryExpression(path) {
+visitor['BinaryExpression'] = function(path) {
   const l = path.node.left;
   const r = path.node.right;
 
   // Replace for `r` needs to be inside because of the way
   // side effects can occur when evaluating the binary expression.
-  if (h.isAtomic(l) === false) {
+  if (h.isTerminating(l) === false) {
     const nl = path.scope.generateUidIdentifier('l');
     path.getStatementParent().insertBefore(h.letExpression(nl, l));
     path.node.left = nl;
   }
-  if (h.isAtomic(r) === false) {
+  if (h.isTerminating(r) === false) {
     const nr = path.scope.generateUidIdentifier('r');
     path.getStatementParent().insertBefore(h.letExpression(nr, r));
     path.node.right = nr;
@@ -136,7 +135,7 @@ function BinaryExpression(path) {
   */
 visitor.CallExpression = function CallExpression(path) {
   const args = path.node.arguments.map((arg) => {
-    if (h.isAtomic(arg) === false) {
+    if (h.isTerminating(arg) === false) {
       const na = path.scope.generateUidIdentifier('a');
       path.getStatementParent().insertBefore(h.letExpression(na, arg));
       return na;
@@ -153,7 +152,7 @@ visitor.CallExpression = function CallExpression(path) {
  */
 visitor.ReturnStatement = function ReturnStatement(path) {
   const arg = path.node.argument;
-  if (h.isAtomic(arg) === false) {
+  if (h.isTerminating(arg) === false) {
     const na = path.scope.generateUidIdentifier('a');
     path.getStatementParent().insertBefore(h.letExpression(na, arg));
     path.node.argument = na;

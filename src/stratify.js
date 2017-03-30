@@ -37,53 +37,53 @@ function stratifyExpression(e, k, path) {
   } else if (t.isBinaryExpression(e)) {
     let pres = [];
     const [exp, presLeft] = stratifyExpression(e.left,
-        (leftResult) => {
-          const [expRight, presRight] = stratifyExpression(e.right,
-                rightResult => k(t.binaryExpression(e.operator,
-                    leftResult,
-                    rightResult)), path);
-          pres = pres.concat(presRight);
-          return expRight;
-        }, path);
+      (leftResult) => {
+        const [expRight, presRight] = stratifyExpression(e.right,
+          rightResult => k(t.binaryExpression(e.operator,
+            leftResult,
+            rightResult)), path);
+        pres = pres.concat(presRight);
+        return expRight;
+      }, path);
     return [exp, pres.concat(presLeft)];
   } else if (t.isLogicalExpression(e)) {
     let pres = [];
     const [exp, presLeft] = stratifyExpression(e.left,
-        (leftResult) => {
-          const [expRight, presRight] = stratifyExpression(e.right,
-                rightResult => k(t.logicalExpression(e.operator,
-                    leftResult,
-                    rightResult)), path);
-          pres = pres.concat(presRight);
-          return expRight;
-        }, path);
+      (leftResult) => {
+        const [expRight, presRight] = stratifyExpression(e.right,
+          rightResult => k(t.logicalExpression(e.operator,
+            leftResult,
+            rightResult)), path);
+        pres = pres.concat(presRight);
+        return expRight;
+      }, path);
     return [exp, pres.concat(presLeft)];
   } else if (t.isFunctionExpression(e)) {
     const body = stratifyStatement(e.body, x => x, path);
     return [k(t.functionExpression(e.id, e.params,
-        t.blockStatement(body))), []];
+      t.blockStatement(body))), []];
   } else if (t.isCallExpression(e)) {
     // callExpressions need to bind their result to a variableDeclaration.
     let pres = [];
     const [exp, presCallee] = stratifyExpression(e.callee,
-        (func) => {
-          // generate an identifier to which to bind the result of the
-          // application
-          const tmp = path.scope.generateUidIdentifier('r');
-          const presArgs = [];
-          const args = e.arguments.map((arg) => {
-            const [expArg, pre] = stratifyExpression(arg, x => x, path);
-            pres = presArgs.concat(pre);
-            return expArg;
-          });
-          const c = t.callExpression(func, args);
-          const v = h.letExpression(tmp, c);
-          // concat the new variableDeclaration to our accumulating list of
-          // decls to return to the top-level.
-          pres = pres.concat(presArgs);
-          pres = pres.concat(v);
-          return k(tmp);
-        }, path);
+      (func) => {
+        // generate an identifier to which to bind the result of the
+        // application
+        const tmp = path.scope.generateUidIdentifier('r');
+        const presArgs = [];
+        const args = e.arguments.map((arg) => {
+          const [expArg, pre] = stratifyExpression(arg, x => x, path);
+          pres = presArgs.concat(pre);
+          return expArg;
+        });
+        const c = t.callExpression(func, args);
+        const v = h.letExpression(tmp, c);
+        // concat the new variableDeclaration to our accumulating list of
+        // decls to return to the top-level.
+        pres = pres.concat(presArgs);
+        pres = pres.concat(v);
+        return k(tmp);
+      }, path);
     return [exp, pres.concat(presCallee)];
   }
 
@@ -106,11 +106,11 @@ function stratifyStatement(statement, k, path) {
   } else if (t.isVariableDeclaration(statement)) {
     let pres = [];
     const x = [t.variableDeclaration(statement.kind,
-        statement.declarations.map((decl) => {
-          const [exp, pre] = stratifyExpression(decl.init, k, path);
-          pres = pres.concat(pre);
-          return t.variableDeclarator(decl.id, exp);
-        }))];
+      statement.declarations.map((decl) => {
+        const [exp, pre] = stratifyExpression(decl.init, k, path);
+        pres = pres.concat(pre);
+        return t.variableDeclarator(decl.id, exp);
+      }))];
     return pres.concat(x);
   }
 

@@ -3,6 +3,10 @@
 
 const t = require('babel-types');
 
+function isAtomic(node) {
+  return t.isLiteral(node) || t.isIdentifier(node)
+}
+
 function isTerminating(node) {
   return !t.isCallExpression(node);
 }
@@ -38,4 +42,7 @@ function flatBodyStatement(body) {
   return t.blockStatement(newBody);
 }
 
-module.exports = { isTerminating, letExpression, flatten, flatBodyStatement };
+module.exports = {
+  isAtomic, isTerminating, letExpression, flatten, flatBodyStatement
+};
+

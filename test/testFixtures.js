@@ -6,10 +6,11 @@ function transform(src) {
   const desugarLabel = require('../src/desugarLabel.js');
   const desugarAndOr = require('../src/desugarAndOr.js');
   const stratify = require('../src/stratify.js');
+  const cps = require('../src/recursiveCPS.js');
   const verifier = require('../src/verifier.js');
 
   const out = babel.transform(src, {
-    plugins: [desugarLabel, desugarLoop, desugarAndOr, stratify, verifier],
+    plugins: [desugarLabel, desugarLoop, desugarAndOr, stratify, cps, verifier],
   });
 
   return out.code;

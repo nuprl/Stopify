@@ -28,6 +28,7 @@
  */
 
 const t = require('babel-types');
+const h = require('./helpers.js');
 
 // Object to contain the visitor functions
 const visitor = {};
@@ -51,23 +52,29 @@ visitor.VariableDeclarator = function VariableDeclarator(path) {
   // Walk up the VariableDeclaration before getting the siblings.
   const afterSibs = sibs.slice(thisPath + 1);
 
-  // Name the continuation as a function.
-  const nk = path.scope.generateUidIdentifier('kl');
+  if (afterSibs.length !== 0) {
+    // Name the continuation as a function.
+    const nk = path.scope.generateUidIdentifier('kl');
 
-  // The occrances of {@code name} don't need to be replaced since the same
-  // name is being used as the param.
-  const kont = namedFunction(nk, name, afterSibs);
+    // The occrances of {@code name} don't need to be replaced since the same
+    // name is being used as the param.
+    const kont = namedFunction(nk, name, afterSibs);
 
-  // Insert the named kont before the let expression.
-  stmtParent.insertBefore(kont);
+    // Insert the named kont before the let expression.
+    stmtParent.insertBefore(kont);
 
-  // Remove the siblings that were added above.
-  for (let i = thisPath + 1; i < sibs.length; i += 1) {
-    stmtParent.container.pop();
+    // Remove the siblings that were added above.
+    for (let i = thisPath + 1; i < sibs.length; i += 1) {
+      stmtParent.container.pop();
+    }
+
+    if (path.findParent(path => path.isFunction()) !== null) {
+      // Add call to the named kont
+      stmtParent.insertAfter(t.returnStatement(t.callExpression(nk, [name])));
+    } else {
+      stmtParent.insertAfter(t.expressionStatement(t.callExpression(nk, [name])));
+    }
   }
-
-  // Add call to the named kont
-  stmtParent.insertAfter(t.expressionStatement(t.callExpression(nk, [name])));
 };
 
 module.exports = function transform(babel) {

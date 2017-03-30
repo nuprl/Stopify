@@ -3,11 +3,8 @@
   "version": "0.0.1",
   "babel" : {
     "plugins": [
-      "./src/desugarLabel.js",
-      "./src/desugarLoop.js",
-      "./src/desugarAndOr.js",
-      "./src/stratify.js",
-      "./src/recursiveCPS.js"
+      "./src/anf.js",
+      "./src/callccPass1.js"
     ]
   },
   "description": "babel plugin to transform javascript into A Normal Form",

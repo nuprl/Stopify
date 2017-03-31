@@ -1,12 +1,12 @@
 {
   "name": "babel-anf-transform",
   "version": "0.0.1",
-  "babel" : {
+  "babel": {
     "plugins": [
+      "transform-es2015-arrow-functions",
       "./src/desugarLabel.js",
       "./src/desugarLoop.js",
       "./src/desugarAndOr.js",
-      "./src/desugarArrowFunctions.js",
       "./src/anf.js",
       "./src/callccPass1.js"
     ]
@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^6.1.2",
+    "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
     "eslint": "^3.12.2",
     "eslint-config-airbnb-base": "^11.0.1",
     "eslint-plugin-import": "^2.2.0",

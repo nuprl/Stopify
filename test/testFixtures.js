@@ -1,16 +1,20 @@
+const assert = require('assert')
 const babel = require('babel-core');
 
-// Make sure all transformers are included here.
-function transform(prog) {
-  const noArrows = require('babel-plugin-transform-es2015-arrow-functions')
-  const desugarLoop = require('../src/desugarLoop.js');
-  const desugarLabel = require('../src/desugarLabel.js');
-  const desugarAndOr = require('../src/desugarAndOr.js');
-  const anf = require('../src/anf.js');
-  const cps = require('../src/callccPass1.js');
-  const verifier = require('../src/verifier.js');
+// All the plugins
+const noArrows = require("babel-plugin-transform-es2015-arrow-functions")
+const desugarLoop = require('../src/desugarLoop.js');
+const desugarLabel = require('../src/desugarLabel.js');
+const desugarAndOr = require('../src/desugarAndOr.js');
+const anf = require('../src/anf.js');
+const cps = require('../src/callccPass1.js');
+const verifier = require('../src/verifier.js');
 
-  const out = babel.transform(prog, {
+module.exports = { transformTest }
+
+// Make sure all transformers are included here.
+function transform(src) {
+  const out = babel.transform(src, {
     plugins: [
       noArrows, desugarLoop, desugarLabel, desugarAndOr, anf, cps, verifier],
     babelrc: false,
@@ -19,36 +23,26 @@ function transform(prog) {
   return out.code;
 }
 
-expect.extend({
-  transformsSuccessfully(original) {
-    let errorMessage = '';
-    let transformed = '';
+function transformTest(original) {
+  let errorMessage = '';
+  let transformed = '';
 
-    try {
-      transformed = transform(original);
-    } catch (e) {
-      errorMessage = e.message;
-    }
+  try {
+    transformed = transform(original);
+  } catch (e) {
+    errorMessage = e.message;
+  }
 
-    const pass = errorMessage.length === 0;
-    const message = pass ?
-      `Transformed successfully`
-    : errorMessage;
+  const pass = errorMessage.length === 0;
+  assert(pass, `Failed to transform: ${errorMessage}`);
 
-    return { message, pass };
-  },
-});
+  return transformed
+}
 
-expect.extend({
-  hasSameValue(org) {
-    const te = eval(tr);
-    const oe = eval(org);
-    const pass = te === oe;
+function hasSameValue(org) {
+  const te = eval(transformTest(org))
+  const oe = eval(org);
+  const pass = te === oe;
 
-    const message = pass ?
-      'transformed function retains the value'
-      : `original evals to ${oe} while transformed evals to ${te}`
-
-    return { message, pass };
-  },
-});
+  assert(pass, `original evals to ${oe} while transformed evals to ${te}`);
+}

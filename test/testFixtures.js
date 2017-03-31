@@ -1,17 +1,19 @@
 const babel = require('babel-core');
 
 // Make sure all transformers are included here.
-function transform(src) {
+function transform(prog) {
+  const noArrows = require('babel-plugin-transform-es2015-arrow-functions')
   const desugarLoop = require('../src/desugarLoop.js');
   const desugarLabel = require('../src/desugarLabel.js');
   const desugarAndOr = require('../src/desugarAndOr.js');
-  const desugarArrows = require('../src/desugarArrowFunctions.js');
   const anf = require('../src/anf.js');
   const cps = require('../src/callccPass1.js');
   const verifier = require('../src/verifier.js');
 
-  const out = babel.transform(src, {
-    plugins: [desugarLabel, desugarLoop, desugarAndOr, desugarArrows, anf, cps, verifier],
+  const out = babel.transform(prog, {
+    plugins: [
+      noArrows, desugarLoop, desugarLabel, desugarAndOr, anf, cps, verifier],
+    babelrc: false,
   });
 
   return out.code;
@@ -30,7 +32,7 @@ expect.extend({
 
     const pass = errorMessage.length === 0;
     const message = pass ?
-      `${original}\ncould not be transformed`
+      `Transformed successfully`
     : errorMessage;
 
     return { message, pass };
@@ -44,8 +46,8 @@ expect.extend({
     const pass = te === oe;
 
     const message = pass ?
-      `original evals to ${oe} while transformed evals to ${te}`
-    : 'transformed function retains the value';
+      'transformed function retains the value'
+      : `original evals to ${oe} while transformed evals to ${te}`
 
     return { message, pass };
   },

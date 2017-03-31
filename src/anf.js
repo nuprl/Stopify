@@ -59,7 +59,7 @@ visitor.WhileStatement = function WhileStatement(path) {
 visitor.ArrayExpression = function ArrayExpression(path) {
   const elems = path.node.elements.map((elem) => {
     if (h.isTerminating(elem) === false) {
-      const na = path.scope.generateUidIdentifier('array');
+      const na = path.scope.generateUidIdentifier('array_element');
       path.getStatementParent().insertBefore(h.letExpression(na, elem));
       return na;
     } else {

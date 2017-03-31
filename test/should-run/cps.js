@@ -3,4 +3,5 @@ function f(a, b) {
 	let r = a(x) + b(a(x));
 	return r;
 }
-console.log(f(x => x + 1, y => y * 10));
+
+f(x => x + 1, y => y * 10);

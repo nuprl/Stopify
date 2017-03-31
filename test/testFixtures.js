@@ -10,7 +10,7 @@ const anf = require('../src/anf.js');
 const cps = require('../src/callccPass1.js');
 const verifier = require('../src/verifier.js');
 
-module.exports = { transformTest }
+module.exports = { transformTest, retainValueTest }
 
 // Make sure all transformers are included here.
 function transform(src) {
@@ -39,7 +39,7 @@ function transformTest(original) {
   return transformed
 }
 
-function hasSameValue(org) {
+function retainValueTest(org) {
   const te = eval(transformTest(org))
   const oe = eval(org);
   const pass = te === oe;

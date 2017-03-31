@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "babel" : {
     "plugins": [
+      "./src/desugarLabel.js",
+      "./src/desugarLoop.js",
+      "./src/desugarAndOr.js",
+      "./src/desugarArrowFunctions.js",
       "./src/anf.js",
       "./src/callccPass1.js"
     ]

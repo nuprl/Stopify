@@ -115,7 +115,7 @@ visitor.BinaryExpression = function (path) {
   const l = path.node.left;
   const r = path.node.right;
 
-  let bindings = [];
+  const bindings = [];
 
   // Replace for `r` needs to be inside because of the way
   // side effects can occur when evaluating the binary expression.

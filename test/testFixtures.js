@@ -5,12 +5,13 @@ function transform(src) {
   const desugarLoop = require('../src/desugarLoop.js');
   const desugarLabel = require('../src/desugarLabel.js');
   const desugarAndOr = require('../src/desugarAndOr.js');
-  const stratify = require('../src/stratify.js');
-  const cps = require('../src/recursiveCPS.js');
+  const desugarArrows = require('../src/desugarArrowFunctions.js');
+  const anf = require('../src/anf.js');
+  const cps = require('../src/callccPass1.js');
   const verifier = require('../src/verifier.js');
 
   const out = babel.transform(src, {
-    plugins: [desugarLabel, desugarLoop, desugarAndOr, stratify, cps, verifier],
+    plugins: [desugarLabel, desugarLoop, desugarAndOr, desugarArrows, anf, cps, verifier],
   });
 
   return out.code;

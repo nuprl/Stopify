@@ -59,7 +59,7 @@ visitor.WhileStatement = function WhileStatement(path) {
 visitor.ArrayExpression = function ArrayExpression(path) {
   const elems = path.node.elements.map((elem) => {
     if (h.isTerminating(elem) === false) {
-      const na = path.scope.generateUidIdentifier('a');
+      const na = path.scope.generateUidIdentifier('array_element');
       path.getStatementParent().insertBefore(h.letExpression(na, elem));
       return na;
     } else {
@@ -111,22 +111,27 @@ visitor.AssignmentExpression = function AssignmentExpression(path) {
   * in order to insert the let binding. Simply inserting the let binding
   * will break complex examples.
   */
-visitor['BinaryExpression'] = function(path) {
+visitor.BinaryExpression = function (path) {
   const l = path.node.left;
   const r = path.node.right;
+
+  const bindings = [];
 
   // Replace for `r` needs to be inside because of the way
   // side effects can occur when evaluating the binary expression.
   if (h.isTerminating(l) === false) {
     const nl = path.scope.generateUidIdentifier('l');
-    path.getStatementParent().insertBefore(h.letExpression(nl, l));
+    bindings.push(h.letExpression(nl, l));
     path.node.left = nl;
   }
   if (h.isTerminating(r) === false) {
     const nr = path.scope.generateUidIdentifier('r');
-    path.getStatementParent().insertBefore(h.letExpression(nr, r));
+    bindings.push(h.letExpression(nr, r));
     path.node.right = nr;
   }
+
+  const blockBinaryExpression = t.blockStatement([...bindings, t.expressionStatement(path.node)]);
+  path.replaceWith(blockBinaryExpression);
 };
 
 
@@ -136,7 +141,7 @@ visitor['BinaryExpression'] = function(path) {
 visitor.CallExpression = function CallExpression(path) {
   const args = path.node.arguments.map((arg) => {
     if (h.isTerminating(arg) === false) {
-      const na = path.scope.generateUidIdentifier('a');
+      const na = path.scope.generateUidIdentifier('app');
       path.getStatementParent().insertBefore(h.letExpression(na, arg));
       return na;
     } else {
@@ -150,6 +155,7 @@ visitor.CallExpression = function CallExpression(path) {
 /**
  * Return statements can only have atomic expressions as arguments.
  */
+/*
 visitor.ReturnStatement = function ReturnStatement(path) {
   const arg = path.node.argument;
   if (h.isTerminating(arg) === false) {
@@ -158,6 +164,7 @@ visitor.ReturnStatement = function ReturnStatement(path) {
     path.node.argument = na;
   }
 };
+*/
 
 module.exports = function transform(babel) {
   return { visitor };

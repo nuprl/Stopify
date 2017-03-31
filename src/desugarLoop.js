@@ -27,27 +27,26 @@ const visitor = {};
 // Convert For Statements into While Statements
 visitor.ForStatement = function ForStatement(path) {
   const node = path.node;
-  let { init, test, update, body:wBody } = node
+  let { init, test, update, body: wBody } = node;
 
   // New body is a the old body with the update appended to the end.
   if (update === null) {
     update = t.emptyStatement();
-  }
-  else {
+  } else {
     update = t.expressionStatement(update);
   }
   wBody = h.flatBodyStatement([wBody, update]);
 
   // Test can be null
   if (test === null) {
-    test = t.booleanLiteral(true)
+    test = t.booleanLiteral(true);
   }
   const wl = t.whileStatement(test, wBody);
 
   // The init can either be a variable declaration or an expression
   let nInit = t.emptyStatement();
   if (init !== null) {
-    nInit = t.isExpression(init) ? t.expressionStatement(init) : init
+    nInit = t.isExpression(init) ? t.expressionStatement(init) : init;
   }
 
   path.replaceWith(h.flatBodyStatement([nInit, wl]));
@@ -59,19 +58,18 @@ visitor.DoWhileStatement = function DoWhileStatement(path) {
   let { test, body } = node;
 
   // Add flag to run the while loop at least once
-  const runOnce = path.scope.generateUidIdentifier("runOnce");
+  const runOnce = path.scope.generateUidIdentifier('runOnce');
   const runOnceInit = t.variableDeclaration('let',
     [t.variableDeclarator(runOnce, t.booleanLiteral(true))]);
   const runOnceSetFalse =
     t.expressionStatement(
-      t.assignmentExpression("=", runOnce, t.booleanLiteral(false)))
+      t.assignmentExpression('=', runOnce, t.booleanLiteral(false)));
   body = h.flatBodyStatement([runOnceSetFalse, body]);
 
-  test = t.logicalExpression("||", runOnce, test);
+  test = t.logicalExpression('||', runOnce, test);
 
   path.replaceWith(
     h.flatBodyStatement([runOnceInit, t.whileStatement(test, body)]));
-
 };
 
 module.exports = function transform(babel) {

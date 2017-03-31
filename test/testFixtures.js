@@ -1,10 +1,13 @@
 const assert = require('assert')
 const babel = require('babel-core');
+
+// All the plugins
+const noArrows = require("babel-plugin-transform-es2015-arrow-functions")
 const desugarLoop = require('../src/desugarLoop.js');
 const desugarLabel = require('../src/desugarLabel.js');
 const desugarAndOr = require('../src/desugarAndOr.js');
-const stratify = require('../src/stratify.js');
-const cps = require('../src/recursiveCPS.js');
+const anf = require('../src/anf.js');
+const cps = require('../src/callccPass1.js');
 const verifier = require('../src/verifier.js');
 
 module.exports = { transformTest }
@@ -12,7 +15,8 @@ module.exports = { transformTest }
 // Make sure all transformers are included here.
 function transform(src) {
   const out = babel.transform(src, {
-    plugins: [desugarLabel, desugarLoop, desugarAndOr, stratify, cps, verifier],
+    plugins: [
+      noArrows, desugarLoop, desugarLabel, desugarAndOr, anf, cps, verifier],
     babelrc: false,
   });
 

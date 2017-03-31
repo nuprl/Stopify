@@ -1,1 +1,6 @@
-console.log((function (a) { return a + 1; })(3) + 2);
+function f(a, b) {
+	let x = a(b(6));
+	let r = a(x) + b(a(x));
+	return r;
+}
+console.log(f(x => x + 1, y => y * 10));

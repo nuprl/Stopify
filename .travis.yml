@@ -4,7 +4,7 @@ node_js:
 install:
   npm install
 script:
-- ./node_modules/.bin/jest
+- ./node_modules/.bin/mocha
 cache:
   directories:
   - node_modules

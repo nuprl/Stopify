@@ -1,51 +1,44 @@
+const assert = require('assert')
 const babel = require('babel-core');
+const desugarLoop = require('../src/desugarLoop.js');
+const desugarLabel = require('../src/desugarLabel.js');
+const desugarAndOr = require('../src/desugarAndOr.js');
+const stratify = require('../src/stratify.js');
+const cps = require('../src/recursiveCPS.js');
+const verifier = require('../src/verifier.js');
+
+module.exports = { transformTest }
 
 // Make sure all transformers are included here.
 function transform(src) {
-  const desugarLoop = require('../src/desugarLoop.js');
-  const desugarLabel = require('../src/desugarLabel.js');
-  const desugarAndOr = require('../src/desugarAndOr.js');
-  const stratify = require('../src/stratify.js');
-  const cps = require('../src/recursiveCPS.js');
-  const verifier = require('../src/verifier.js');
-
   const out = babel.transform(src, {
     plugins: [desugarLabel, desugarLoop, desugarAndOr, stratify, cps, verifier],
+    babelrc: false,
   });
 
   return out.code;
 }
 
-expect.extend({
-  transformsSuccessfully(original) {
-    let errorMessage = '';
-    let transformed = '';
+function transformTest(original) {
+  let errorMessage = '';
+  let transformed = '';
 
-    try {
-      transformed = transform(original);
-    } catch (e) {
-      errorMessage = e.message;
-    }
+  try {
+    transformed = transform(original);
+  } catch (e) {
+    errorMessage = e.message;
+  }
 
-    const pass = errorMessage.length === 0;
-    const message = pass ?
-      `${original}\ncould not be transformed`
-    : errorMessage;
+  const pass = errorMessage.length === 0;
+  assert(pass, `Failed to transform: ${errorMessage}`);
 
-    return { message, pass };
-  },
-});
+  return transformed
+}
 
-expect.extend({
-  hasSameValue(org) {
-    const te = eval(tr);
-    const oe = eval(org);
-    const pass = te === oe;
+function hasSameValue(org) {
+  const te = eval(transformTest(org))
+  const oe = eval(org);
+  const pass = te === oe;
 
-    const message = pass ?
-      `original evals to ${oe} while transformed evals to ${te}`
-    : 'transformed function retains the value';
-
-    return { message, pass };
-  },
-});
+  assert(pass, `original evals to ${oe} while transformed evals to ${te}`);
+}

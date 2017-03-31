@@ -15,13 +15,10 @@ visitor.LogicalExpression = function (path) {
   const { left, operator, right } = node;
 
   const tmp = path.scope.generateUidIdentifier('t');
-  const test = t.sequenceExpression([
-    t.assignmentExpression('=', tmp, left),
-    tmp]);
-  const trueBranch = t.assignmentExpression('=', tmp,
-      operator === '&&' ? right : left);
-  const falseBranch = t.assignmentExpression('=', tmp,
-      operator === '&&' ? left : right);
+  // NOTE(arjun): The result of an assignment is value of the right-hand size.
+  const test = t.assignmentExpression('=', tmp, left);
+  const trueBranch = operator === '&&' ? right : tmp;
+  const falseBranch = operator === '&&' ? tmp : right;
 
   path.getStatementParent().insertBefore(t.variableDeclaration('let',
       [t.variableDeclarator(tmp)]));

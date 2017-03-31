@@ -3,6 +3,6 @@ function f() {
   count++;
   return false;
 }
-f() && true;
-
+var tmp = f() && true;
+count
 

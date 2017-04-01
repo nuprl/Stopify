@@ -13,10 +13,12 @@ const verifier = require('../src/verifier.js');
 module.exports = { transformTest, retainValueTest }
 
 // Make sure all transformers are included here.
-function transform(src) {
+const defaults = [ noArrows, desugarLoop,
+  desugarLabel, desugarAndOr, anf, cps, verifier ];
+
+function transform(src, plugs = defaults) {
   const out = babel.transform(src, {
-    plugins: [
-      noArrows, desugarLoop, desugarLabel, desugarAndOr, anf, cps, verifier],
+    plugins: [...plugs],
     babelrc: false,
   });
 
@@ -39,8 +41,8 @@ function transformTest(original) {
   return transformed
 }
 
-function retainValueTest(org) {
-  const te = eval(transformTest(org))
+function retainValueTest(org, plugs = defaults) {
+  const te = eval(transformTest(org, plugs))
   const oe = eval(org);
   const pass = te === oe;
 

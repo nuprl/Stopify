@@ -13,11 +13,16 @@ const t = require('babel-types');
 const visitor = {};
 
 visitor.BreakStatement = function BreakStatement(path) {
-  const name = path.node.label.name;
-  path.replaceWith(t.throwStatement(t.stringLiteral(`${name}-label`)));
+  const label = path.node.label;
+  if (label === null) {
+    const whilePath = path.findParent(path => path.isWhileStatement())
+    const whileLabelParent = whilePath.findParent(
+      path => path.isLabeledStatement())
+    path.node.label = whileLabelParent.node.label
+  }
 };
 
-visitor.LabeledStatement = function LabeledStatement(path) {
+/*visitor.LabeledStatement = function LabeledStatement(path) {
   const node = path.node;
   const labelName = t.stringLiteral(`${node.label.name}-label`);
   const body = node.body;
@@ -31,7 +36,7 @@ visitor.LabeledStatement = function LabeledStatement(path) {
 
   const tryCatchClause = t.tryStatement(body, catchHandler);
   path.replaceWith(tryCatchClause);
-};
+};*/
 
 
 module.exports = function transform(babel) {

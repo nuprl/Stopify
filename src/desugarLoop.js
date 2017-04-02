@@ -41,13 +41,17 @@ visitor.ForStatement = function ForStatement(path) {
   if (test === null) {
     test = t.booleanLiteral(true);
   }
-  const wl = t.whileStatement(test, wBody);
+  let loopTarget = path.scope.generateUidIdentifier('loop_break');
+
+  const wl = t.labeledStatement(
+    loopTarget, t.blockStatement([t.whileStatement(test, wBody)]));
 
   // The init can either be a variable declaration or an expression
   let nInit = t.emptyStatement();
   if (init !== null) {
     nInit = t.isExpression(init) ? t.expressionStatement(init) : init;
   }
+
 
   path.replaceWith(h.flatBodyStatement([nInit, wl]));
 };

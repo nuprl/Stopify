@@ -20,6 +20,12 @@ visitor.LogicalExpression = function (path) {
   throw new Error(`Resulting code has ${path.node.type}`);
 };
 
+visitor.BreakStatement = function (path) {
+  if (path.node.label === null) {
+    throw new Error('Break statement does not have a target')
+  }
+}
+
 module.exports = function transform(babel) {
   return { visitor };
 };

@@ -31,7 +31,7 @@ function transform(src, plugs) {
 // the variable names in this file.
 // Returns an array of variable names.
 function parsePlugins(code) {
-  const reg = /\/\*.*\*\//;
+  const reg = /\/\* plugins:.*\*\//;
   const line = reg.exec(code);
   // No match
   if (line === null) {

@@ -13,28 +13,6 @@ const h = require('./helpers.js');
 // Object to contain the visitor functions
 const visitor = {};
 
-/** Document all the invariants that must hold for the anf phase.  */
-//-----------------------------------------------------------------------------
-
-// No break statements
-visitor.BreakStatement = function BreakStatement(path) {
-  throw new Error('Break statement encountered in the anf phase');
-};
-
-// No continue statments
-visitor.ContinueStatement = function ContinueStatement(path) {
-  throw new Error('Continue statement encountered in the anf phase');
-};
-
-// Only while loops must be present
-visitor.Loop = function Loop(path) {
-  if (t.isWhileStatement(path.node)) {
-    throw new Error(`Error: Found ${path.node.type} during anf phase`);
-  }
-};
-
-//-----------------------------------------------------------------------------
-
 /** Transform while loops into tail recursive function calls.
  */
 visitor.WhileStatement = function WhileStatement(path) {

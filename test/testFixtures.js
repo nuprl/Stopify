@@ -19,8 +19,9 @@ const defaults = [noArrows, desugarLoop,
 function transform(src, plugs) {
   let code = src;
   plugs.forEach(tr => {
+    console.log(code);
     code = babel.transform(code, {
-      plugins: [...plugs],
+      plugins: [tr],
       babelrc: false,
     }).code
   })
@@ -38,7 +39,7 @@ function parsePlugins(code) {
   const line = reg.exec(code);
   // No match
   if (line === null) {
-    return { str: '', arr: [] };
+    return { str: '', arr: defaults };
   } else {
     const str = line[0];
     const plugs = str.substring(str.indexOf('['), str.indexOf(']') + 1);
@@ -55,10 +56,9 @@ function transformTest(original) {
   let errorMessage = '';
   let transformed = '';
   const plugsObj = parsePlugins(original);
-  const plugs = plugsObj.arr === [] ? defaults : plugsObj.arr;
 
   try {
-    transformed = transform(original, plugs);
+    transformed = transform(original, plugsObj.arr);
   } catch (e) {
     errorMessage = e.message;
   }

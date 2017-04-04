@@ -1,16 +1,6 @@
 {
   "name": "babel-anf-transform",
   "version": "0.0.1",
-  "babel": {
-    "plugins": [
-      "transform-es2015-arrow-functions",
-      "./src/desugarLabel.js",
-      "./src/desugarLoop.js",
-      "./src/desugarAndOr.js",
-      "./src/anf.js",
-      "./src/callccPass1.js"
-    ]
-  },
   "description": "babel plugin to transform javascript into A Normal Form",
   "main": "index.js",
   "devDependencies": {

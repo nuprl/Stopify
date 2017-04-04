@@ -17,12 +17,15 @@ const defaults = [noArrows, desugarLoop,
   desugarLabel, desugarAndOr, anf, cps, verifier];
 
 function transform(src, plugs) {
-  const out = babel.transform(src, {
-    plugins: [...plugs],
-    babelrc: false,
-  });
+  let code = src;
+  plugs.forEach(tr => {
+    code = babel.transform(code, {
+      plugins: [...plugs],
+      babelrc: false,
+    }).code
+  })
 
-  return out.code;
+  return code;
 }
 
 // Returns a list of plugins specified on the top of the test file.

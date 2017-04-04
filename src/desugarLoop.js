@@ -41,7 +41,7 @@ visitor.ForStatement = function ForStatement(path) {
   if (test === null) {
     test = t.booleanLiteral(true);
   }
-  let loopTarget = path.scope.generateUidIdentifier('loop_break');
+  const loopTarget = path.scope.generateUidIdentifier('loop_break');
 
   const wl = t.labeledStatement(
     loopTarget, t.blockStatement([t.whileStatement(test, wBody)]));

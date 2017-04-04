@@ -12,13 +12,13 @@ const t = require('babel-types');
 // Object containing the visitor functions
 const visitor = {};
 
-visitor.BreakStatement = function BreakStatement(path) {
+visitor.BreakStatement = function (path) {
   const label = path.node.label;
   if (label === null) {
-    const whilePath = path.findParent(path => path.isWhileStatement())
+    const whilePath = path.findParent(path => path.isWhileStatement());
     const whileLabelParent = whilePath.findParent(
-      path => path.isLabeledStatement())
-    path.node.label = whileLabelParent.node.label
+      path => path.isLabeledStatement());
+    path.node.label = whileLabelParent.node.label;
   }
 };
 

@@ -7,10 +7,14 @@ const h = require('./helpers.js');
 
 const visitor = {};
 
+// Hack to avoid applying visitors to newly constructed nodes.
 function isCPS(node) {
   return node.cps;
 }
 
+// Wrap whole programs in a function expected a top-level continuation
+// argument. To evaluate a program, apply this function to the identity
+// continuation.
 visitor.Program = function (path) {
   const { body } = path.node;
 
@@ -60,12 +64,21 @@ visitor.ReturnStatement = function (path) {
 
   const functionParent = path.findParent(path => path.isFunction());
   if (functionParent !== null) {
+    // We'd normally construct the continuation for this statement, but return
+    // statements apply the continuation of the enclosing function; they would
+    // otherwise resume execution on dead code after a return statement.
     const dummyK = path.scope.generateUidIdentifier('dummy');
+
+    // Continuation argument has been prepended to function parameters.
     const continuationArg = functionParent.node.params[0];
     const returnCont = t.returnStatement(t.callExpression(continuationArg, [path.node.argument]));
     returnCont.cps = true;
     const returnFunction = t.functionExpression(null, [dummyK], t.blockStatement([returnCont]));
     returnFunction.cps = true;
+
+    // Return statements turn into function expressions. The visitor for
+    // function bodies will replace this new node with a return statement
+    // of this function's application to the enclosing continuation.
     path.replaceWith(t.expressionStatement(returnFunction));
   }
 };

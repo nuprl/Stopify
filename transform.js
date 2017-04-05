@@ -7,6 +7,8 @@ const desugarLoop = require('./src/desugarLoop.js');
 const desugarLabel = require('./src/desugarLabel.js');
 const desugarAndOr = require('./src/desugarAndOr.js');
 const anf = require('./src/anf.js');
+const addKArg = require('./src/addContinuationArg.js');
+const cpsVisitor = require('./src/cpsVisitor.js');
 const cps = require('./src/callccPass1.js');
 const verifier = require('./src/verifier.js');
 

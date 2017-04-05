@@ -99,17 +99,14 @@ visitor.BinaryExpression = function (path) {
   // side effects can occur when evaluating the binary expression.
   if (h.isTerminating(l) === false) {
     const nl = path.scope.generateUidIdentifier('l');
-    bindings.push(h.letExpression(nl, l));
+    path.getStatementParent().insertBefore(h.letExpression(nl, l));
     path.node.left = nl;
   }
   if (h.isTerminating(r) === false) {
     const nr = path.scope.generateUidIdentifier('r');
-    bindings.push(h.letExpression(nr, r));
+    path.getStatementParent().insertBefore(h.letExpression(nr, r));
     path.node.right = nr;
   }
-
-  const blockBinaryExpression = t.blockStatement([...bindings, t.expressionStatement(path.node)]);
-  path.replaceWith(blockBinaryExpression);
 };
 
 

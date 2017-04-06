@@ -15,12 +15,14 @@ const verifier = require('./src/verifier.js');
 const defaults = [anf, addKArg, cpsVisitor];
 
 function transform(src, plugs) {
-  let code = src;
+  let { code, ast } = babel.transform(src, { babelrc: false });
   plugs.forEach(tr => {
-    code = babel.transform(code, {
+    const res = babel.transformFromAst(ast, code, {
       plugins: [tr],
       babelrc: false,
-    }).code;
+    });
+    code = res.code;
+    ast = res.ast;
   });
 
   return code;

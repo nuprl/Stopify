@@ -14,8 +14,7 @@ visitor['FunctionDeclaration|FunctionExpression'] = function (path) {
 
 visitor.ReturnStatement = function (path) {
   const functionParent = path.findParent(x => x.isFunction());
-  const contBinding = path.scope.generateUidIdentifier('cont');
-  path.insertBefore(h.letExpression(contBinding, functionParent.node.params[0]));
+  path.node.kArg = functionParent.node.params[0];
 };
 
 module.exports = function transform(babel) {

@@ -19,12 +19,14 @@ const defaults = [noArrows, desugarLoop,
   desugarLabel, desugarAndOr, anf, cps, verifier];
 
 function transform(src, plugs) {
-  let code = src;
+  let { code, ast } = babel.transform(src, { babelrc: false });
   plugs.forEach(tr => {
-    code = babel.transform(code, {
-      plugins: [tr],
-      babelrc: false,
-    }).code;
+      const res = babel.transformFromAst(ast, code, {
+        plugins: [tr],
+        babelrc: false,
+      });
+      code = res.code;
+      ast = res.ast;
   });
 
   return code;

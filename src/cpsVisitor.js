@@ -110,8 +110,7 @@ visitor.ReturnStatement = function (path) {
     const thisPath = stmtParent.key;
     const sibs = stmtParent.container;
 
-    const continuationArg = sibs[thisPath - 1].declarations[0].init;
-    sibs.splice(thisPath - 1, 1);
+    const continuationArg = path.node.kArg;
     // Return statements turn into function expressions. The visitor for
     // function bodies will replace this new node with a return statement
     // of this function's application to the enclosing continuation.

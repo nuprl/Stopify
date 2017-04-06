@@ -14,8 +14,9 @@ const h = require('./helpers.js');
 const visitor = {};
 
 visitor.CallExpression = function (path) {
+  const p = path.parent;
   // Name the function application if it is not already named.
-  if (path.node.anfed === undefined) {
+  if (t.isVariableDeclarator(p) === false) {
     path.node.anfed = true;
     const name = path.scope.generateUidIdentifier('app');
     const bind = h.letExpression(name, path.node);

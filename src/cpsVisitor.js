@@ -106,18 +106,6 @@ visitor.ReturnStatement = function (path) {
 
   const functionParent = path.findParent(path => path.isFunction());
   if (functionParent !== null) {
-    // We'd normally construct the continuation for this statement, but return
-    // statements apply the continuation of the enclosing function; they would
-    // otherwise resume execution on dead code after a return statement.
-    const dummyK = path.scope.generateUidIdentifier('dummy');
-
-    // Continuation argument has been prepended to function parameters.
-    const returnCont = t.returnStatement(t.callExpression(dummyK, [path.node.argument]));
-    returnCont.cps = true;
-    returnCont.argument.cps = true;
-    const returnFunction = t.functionExpression(null, [dummyK], t.blockStatement([returnCont]));
-    returnFunction.cps = true;
-
     const stmtParent = path.getStatementParent();
     const thisPath = stmtParent.key;
     const sibs = stmtParent.container;
@@ -127,7 +115,7 @@ visitor.ReturnStatement = function (path) {
     // Return statements turn into function expressions. The visitor for
     // function bodies will replace this new node with a return statement
     // of this function's application to the enclosing continuation.
-    const returnCall = t.callExpression(returnFunction, [continuationArg]);
+    const returnCall = t.callExpression(continuationArg, [path.node.argument]);
     returnCall.cps = true;
     const ret = t.returnStatement(returnCall);
     ret.cps = true;

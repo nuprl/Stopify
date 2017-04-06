@@ -49,18 +49,18 @@ visitor.VariableDeclarator = function (path) {
     // The continuation of an application is everything after it.
     const afterSibs = sibs.slice(thisPath + 1);
 
-    if (afterSibs.length !== 0) {
-      const kont = t.functionExpression(null, [id], t.blockStatement(afterSibs));
+    const kont = t.functionExpression(null, [id], t.blockStatement(afterSibs));
 
-      // Remove the siblings that were wrapped into continuation.
-      for (let i = 0; i < afterSibs.length; i += 1) {
-          stmtParent.container.pop();
-      }
-
-      const callExp = t.callExpression(init.callee, [kont, ...init.arguments]);
-      callExp.cps = true;
-      stmtParent.replaceWith(t.expressionStatement(callExp));
+    // Remove the siblings that were wrapped into continuation.
+    for (let i = 0; i < afterSibs.length; i += 1) {
+      stmtParent.container.pop();
     }
+
+    const callExp = t.callExpression(init.callee, [kont, ...init.arguments]);
+    callExp.cps = true;
+    const callReturn = t.returnStatement(callExp);
+    callReturn.cps = true;
+    stmtParent.replaceWith(callReturn);
   }
 };
 
@@ -69,36 +69,6 @@ visitor.FunctionExpression = function (path) {
 
   const { params, body } = path.node;
   const bodyFunc = body.body[0];
-};
-
-visitor.CallExpression = function (path) {
-  if (isCPS(path.node)) return;
-  if (isConsoleLog(path.node.callee)) return;
-
-  const stmtParent = path.getStatementParent();
-  const thisPath = stmtParent.key;
-  const sibs = stmtParent.container;
-
-  // The continuation of an application is everything after it.
-  const afterSibs = sibs.slice(thisPath + 1);
-
-  if (afterSibs.length !== 0) {
-    // Name the continuation as a function.
-    const nk = path.scope.generateUidIdentifier('k');
-
-    // The occrances of {@code name} don't need to be replaced since the same
-    // name is being used as the param.
-    const kont = t.functionExpression(null, [nk], t.blockStatement(afterSibs));
-
-    // Remove the siblings that were wrapped into continuation.
-    for (let i = 0; i < afterSibs.length; i += 1) {
-      stmtParent.container.pop();
-    }
-
-    const callExp = t.callExpression(path.node.callee, [kont, ...path.node.arguments]);
-    callExp.cps = true;
-    stmtParent.replaceWith(t.expressionStatement(callExp));
-  }
 };
 
 visitor.ReturnStatement = function (path) {

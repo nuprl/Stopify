@@ -14,6 +14,8 @@ const h = require('./helpers.js');
 const visitor = {};
 
 visitor.CallExpression = function (path) {
+  if (h.isConsoleLog(path.node.callee)) return;
+  
   const p = path.parent;
   // Name the function application if it is not already named.
   if (t.isVariableDeclarator(p) === false) {
@@ -23,7 +25,7 @@ visitor.CallExpression = function (path) {
     path.getStatementParent().insertBefore(bind);
     path.replaceWith(name);
   }
-}
+};
 
 module.exports = function transform(babel) {
   return { visitor };

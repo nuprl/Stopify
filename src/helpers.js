@@ -41,7 +41,14 @@ function flatBodyStatement(body) {
   return t.blockStatement(newBody);
 }
 
+function isConsoleLog(node) {
+  return t.isMemberExpression(node) &&
+      t.isIdentifier(node.object) && node.object.name === 'console' &&
+      t.isIdentifier(node.property) && node.property.name === 'log';
+}
+
 module.exports = {
   isAtomic, isTerminating, letExpression, flatten, flatBodyStatement,
+  isConsoleLog,
 };
 

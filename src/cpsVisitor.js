@@ -13,12 +13,6 @@ function isCPS(node) {
   return node.cps;
 }
 
-function isConsoleLog(node) {
-  return t.isMemberExpression(node) &&
-      t.isIdentifier(node.object) && node.object.name === 'console' &&
-      t.isIdentifier(node.property) && node.property.name === 'log';
-}
-
 // Wrap whole programs in a function expected a top-level continuation
 // argument. To evaluate a program, apply this function to the identity
 // continuation.

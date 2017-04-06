@@ -129,7 +129,7 @@ visitor.ReturnStatement = function (path) {
     // of this function's application to the enclosing continuation.
     const returnCall = t.callExpression(returnFunction, [continuationArg]);
     returnCall.cps = true;
-    const ret = t.expressionStatement(returnCall);
+    const ret = t.returnStatement(returnCall);
     ret.cps = true;
     path.replaceWith(ret);
   }

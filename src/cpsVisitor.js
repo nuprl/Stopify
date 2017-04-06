@@ -31,7 +31,9 @@ visitor.Program = function (path) {
   const nbody = t.functionDeclaration(prog, [kArg], t.blockStatement(body));
 
   const idCont = t.functionExpression(null, [], t.blockStatement([]));
-  const napp = t.expressionStatement(t.callExpression(prog,[idCont]));
+  const progEval = t.callExpression(prog,[idCont]);
+  progEval.cps = true;
+  const napp = t.expressionStatement(progEval);
 
   path.node.body = [nbody, napp];
 };
@@ -56,6 +58,7 @@ visitor.VariableDeclarator = function (path) {
       }
 
       const callExp = t.callExpression(init.callee, [kont, ...init.arguments]);
+      callExp.cps = true;
       stmtParent.replaceWith(t.expressionStatement(callExp));
     }
   }
@@ -88,7 +91,7 @@ visitor.CallExpression = function (path) {
     const kont = t.functionExpression(null, [nk], t.blockStatement(afterSibs));
 
     // Remove the siblings that were wrapped into continuation.
-    for (let i = thisPath + 1; i < sibs.length; i += 1) {
+    for (let i = 0; i < afterSibs.length; i += 1) {
       stmtParent.container.pop();
     }
 
@@ -111,6 +114,7 @@ visitor.ReturnStatement = function (path) {
     // Continuation argument has been prepended to function parameters.
     const returnCont = t.returnStatement(t.callExpression(dummyK, [path.node.argument]));
     returnCont.cps = true;
+    returnCont.argument.cps = true;
     const returnFunction = t.functionExpression(null, [dummyK], t.blockStatement([returnCont]));
     returnFunction.cps = true;
 
@@ -147,9 +151,11 @@ visitor.IfStatement = {
 
         path.node.consequent = t.returnStatement(t.callExpression(consequent.expression, [k]));
         path.node.consequent.cps = true;
+        path.node.consequent.argument.cps = true;
         if (alternate !== null) {
             path.node.alternate = t.returnStatement(t.callExpression(alternate.expression, [k]));
             path.node.alternate.cps = true;
+            path.node.alternate.argument.cps = true;
         }
 
         path.node.cps = true;

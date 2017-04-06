@@ -12,8 +12,7 @@ const cpsVisitor = require('./src/cpsVisitor.js');
 const cps = require('./src/callccPass1.js');
 const verifier = require('./src/verifier.js');
 
-const defaults = [noArrows, desugarLoop,
-  desugarLabel, desugarAndOr, anf, cps, verifier];
+const defaults = [anf, addKArg, cpsVisitor];
 
 function transform(src, plugs) {
   let code = src;

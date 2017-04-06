@@ -130,7 +130,6 @@ visitor.CallExpression = function CallExpression(path) {
 /**
  * Return statements can only have atomic expressions as arguments.
  */
-/*
 visitor.ReturnStatement = function ReturnStatement(path) {
   const arg = path.node.argument;
   if (h.isTerminating(arg) === false) {
@@ -139,7 +138,6 @@ visitor.ReturnStatement = function ReturnStatement(path) {
     path.node.argument = na;
   }
 };
-*/
 
 module.exports = function transform(babel) {
   return { visitor };

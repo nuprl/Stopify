@@ -1,4 +1,3 @@
-/* plugins: [anf,addKArg,cpsVisitor] */
 let x = 0;
 
 if (x > 2) {

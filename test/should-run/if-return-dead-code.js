@@ -1,4 +1,3 @@
-/* plugins: [anf,addKArg,cpsVisitor] */
 function f(a) {
   if (a == 0) {
     return 1;

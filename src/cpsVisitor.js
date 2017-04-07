@@ -61,32 +61,34 @@ visitor.VariableDeclarator = function (path) {
   }
 };
 
-visitor.FunctionExpression = function (path) {
-  if (isCPS(path.node)) return;
-
-  const { params, body } = path.node;
-  const bodyFunc = body.body[0];
-};
-
 visitor.ReturnStatement = function (path) {
   if (isCPS(path.node)) return;
 
-  const functionParent = path.findParent(path => path.isFunction());
-  if (functionParent !== null) {
-    const stmtParent = path.getStatementParent();
-    const thisPath = stmtParent.key;
-    const sibs = stmtParent.container;
+  const stmtParent = path.getStatementParent();
+  const thisPath = stmtParent.key;
+  const sibs = stmtParent.container;
 
-    const continuationArg = path.node.kArg;
-    // Return statements turn into function expressions. The visitor for
-    // function bodies will replace this new node with a return statement
-    // of this function's application to the enclosing continuation.
-    const returnCall = t.callExpression(continuationArg, [path.node.argument]);
-    returnCall.cps = true;
-    const ret = t.returnStatement(returnCall);
-    ret.cps = true;
-    path.replaceWith(ret);
+  const afterSibs = sibs.slice(thisPath + 1);
+
+  for (let i = 0; i < afterSibs.length; i += 1) {
+    stmtParent.container.pop();
   }
+
+  const continuationArg = path.node.kArg;
+  // Return statements turn into function expressions. The visitor for
+  // function bodies will replace this new node with a return statement
+  // of this function's application to the enclosing continuation.
+  const returnCall = t.callExpression(continuationArg, [path.node.argument]);
+  returnCall.cps = true;
+  const ret = t.returnStatement(returnCall);
+  ret.cps = true;
+
+  const returnK = path.scope.generateUidIdentifier('rk');
+  const returnFunction = t.functionExpression(null,
+          [returnK],
+          t.blockStatement([ret, ...afterSibs]));
+  returnFunction.cps = true;
+  path.replaceWith(returnFunction);
 };
 
 visitor.IfStatement = {

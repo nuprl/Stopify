@@ -28,6 +28,13 @@ function transform(src, plugs) {
   return code;
 }
 
+/*
+ * Returns a list of plugins specified on the top of the test file.
+ * To specify a plugin, add a comment of the form:
+ * `/* plugins: [p1, p2] /*` where p1, p2 etc. correspond directly to
+ * the variable names in this file.
+ * Returns an array of variable names.
+ */
 function parsePlugins(code) {
   const reg = /\/\* plugins:.*\*\//;
   const line = reg.exec(code);

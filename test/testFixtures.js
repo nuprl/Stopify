@@ -32,42 +32,18 @@ function transform(src, plugs) {
   return code;
 }
 
-// Returns a list of plugins specified on the top of the test file.
-// To specify a plugin, add a comment of the form:
-// `/* plugins: [p1, p2] /*` where p1, p2 etc. correspond directly to
-// the variable names in this file.
-// Returns an array of variable names.
-function parsePlugins(code) {
-  const reg = /\/\* plugins:.*\*\//;
-  const line = reg.exec(code);
-  // No match
-  if (line === null) {
-    return { str: '', arr: defaults };
-  } else {
-    const str = line[0];
-    const plugs = str.substring(str.indexOf('['), str.indexOf(']') + 1);
-    if (plugs.charAt(0) !== '[') {
-      throw new Error(`Malformed plugin string: ${str}`);
-    }
-    // This relies on all the plugin variables to be defined by now. Make
-    // sure that they are global are defined at the very top of this file.
-    return { str: plugs, arr: eval(plugs) };
-  }
-}
-
 function transformTest(original) {
   let errorMessage = '';
   let transformed = '';
-  const plugsObj = parsePlugins(original);
 
   try {
-    transformed = transform(original, plugsObj.arr);
+    transformed = transform(original, defaults);
   } catch (e) {
     errorMessage = e.message;
   }
 
   const pass = errorMessage.length === 0;
-  assert(pass, `Failed to transform with ${plugsObj.str} : ${errorMessage}`);
+  assert(pass, `Failed to transform: ${errorMessage}`);
 
   return transformed;
 }
@@ -76,8 +52,7 @@ function retainValueTest(org) {
   const te = eval(transformTest(org));
   const oe = eval(org);
   const pass = te === oe;
-  const plugsObj = parsePlugins(org);
 
   assert(pass,
-    `Failed with ${plugsObj.str} original evals to '${oe}' while transformed evals to '${te}'`);
+    `Failed: original evals to '${oe}' while transformed evals to '${te}'`);
 }

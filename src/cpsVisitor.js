@@ -16,7 +16,6 @@ function isCPS(node) {
 // Wrap whole programs in a function expected a top-level continuation
 // argument. To evaluate a program, apply this function to the identity
 // continuation.
-
 visitor.Program = function (path) {
   const { body } = path.node;
 
@@ -24,8 +23,12 @@ visitor.Program = function (path) {
   const kArg = path.scope.generateUidIdentifier('k');
   const nbody = t.functionDeclaration(prog, [kArg], t.blockStatement(body));
 
-  const idCont = t.functionExpression(null, [], t.blockStatement([]));
-  const progEval = t.callExpression(prog,[idCont]);
+  const x = path.scope.generateUidIdentifier('x');
+  const idRet = t.returnStatement(x);
+  idRet.cps = true;
+  const idCont = t.functionExpression(null, [x], t.blockStatement([idRet]));
+  idCont.cps = true;
+  const progEval = t.callExpression(prog, [idCont]);
   progEval.cps = true;
   const napp = t.expressionStatement(progEval);
 

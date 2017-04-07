@@ -42,6 +42,9 @@ function namedFunction(fname, arg, body) {
 }
 
 visitor.VariableDeclarator = function VariableDeclarator(path) {
+  if (t.isCallExpression(path.node.init) === false) {
+    return;
+  }
   const stmtParent = path.getStatementParent();
   const thisPath = stmtParent.key;
   const sibs = stmtParent.container;

@@ -35,6 +35,28 @@ visitor.Program = function (path) {
   path.node.body = [nbody, napp];
 };
 
+visitor.Function = {
+  exit(path) {
+    if (isCPS(path.node)) return;
+
+    const { params, body } = path.node;
+    const kArg = params[0];
+
+    if (body.body.find(t.isReturnStatement) !== undefined) return;
+
+    let returnIdx = body.body.findIndex(x => t.isExpressionStatement(x) && t.isFunctionExpression(x.expression));
+    if (returnIdx === -1) {
+      returnIdx = body.body.length - 1;
+    }
+
+    const returnCall = t.callExpression(body.body[returnIdx].expression, [kArg]);
+    returnCall.cps = true;
+    const nreturn = t.returnStatement(returnCall);
+    nreturn.cps = true;
+    body.body[returnIdx] = nreturn;
+  },
+};
+
 visitor.VariableDeclarator = function (path) {
   const { id, init } = path.node;
 
@@ -47,6 +69,7 @@ visitor.VariableDeclarator = function (path) {
     const afterSibs = sibs.slice(thisPath + 1);
 
     const kont = t.functionExpression(null, [id], t.blockStatement(afterSibs));
+    kont.cps = true;
 
     // Remove the siblings that were wrapped into continuation.
     for (let i = 0; i < afterSibs.length; i += 1) {

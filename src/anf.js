@@ -39,6 +39,12 @@ visitor.IfStatement = function (path) {
   if (alternate !== null && t.isBlockStatement(alternate) === false) {
     path.node.alternate = t.blockStatement([alternate]);
   }
+
+  // Make sure if has an else branch.
+  if (alternate === null) {
+    path.node.alternate = t.blockStatement([t.emptyStatement()]);
+  }
+
 }
 
 module.exports = function transform(babel) {

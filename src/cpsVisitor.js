@@ -49,11 +49,13 @@ visitor.Function = {
       returnIdx = body.body.length - 1;
     }
 
-    const returnCall = t.callExpression(body.body[returnIdx].expression, [kArg]);
-    returnCall.cps = true;
-    const nreturn = t.returnStatement(returnCall);
-    nreturn.cps = true;
-    body.body[returnIdx] = nreturn;
+    if (body.body[returnIdx].expression.callK === true) {
+      const returnCall = t.callExpression(body.body[returnIdx].expression, [kArg]);
+      returnCall.cps = true;
+      const nreturn = t.returnStatement(returnCall);
+      nreturn.cps = true;
+      body.body[returnIdx] = nreturn;
+    }
   },
 };
 
@@ -69,7 +71,6 @@ visitor.VariableDeclarator = function (path) {
     const afterSibs = sibs.slice(thisPath + 1);
 
     const kont = t.functionExpression(null, [id], t.blockStatement(afterSibs));
-    kont.cps = true;
 
     // Remove the siblings that were wrapped into continuation.
     for (let i = 0; i < afterSibs.length; i += 1) {
@@ -110,8 +111,8 @@ visitor.ReturnStatement = function (path) {
   const returnFunction = t.functionExpression(null,
           [returnK],
           t.blockStatement([ret, ...afterSibs]));
-  returnFunction.cps = true;
-  path.replaceWith(returnFunction);
+  returnFunction.callK = true;
+  path.replaceWith(t.expressionStatement(returnFunction));
 };
 
 visitor.IfStatement = {
@@ -143,6 +144,7 @@ visitor.IfStatement = {
     const continuationBody = t.blockStatement([path.node]);
     const ifFunction = t.functionExpression(null, [k], continuationBody);
     ifFunction.cps = true;
+    ifFunction.callK = true;
     const functionCont = path.findParent(x => x.isFunction()).node.params[0];
     const ifContinuation = t.expressionStatement(ifFunction);
 

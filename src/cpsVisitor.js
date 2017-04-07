@@ -92,38 +92,39 @@ visitor.ReturnStatement = function (path) {
 };
 
 visitor.IfStatement = {
-    exit(path) {
-        if (isCPS(path.node)) return;
+  exit(path) {
+    if (isCPS(path.node)) return;
 
-        let { test, consequent, alternate } = path.node;
-        if (t.isBlockStatement(consequent) && consequent.body.length === 1) {
-            consequent = consequent.body[0];
-        }
-        if (t.isBlockStatement(alternate) && alternate.body.length === 1) {
-            alternate = alternate.body[0];
-        }
-
-        const k = path.scope.generateUidIdentifier('k');
-
-        path.node.consequent = t.returnStatement(t.callExpression(consequent.expression, [k]));
-        path.node.consequent.cps = true;
-        path.node.consequent.argument.cps = true;
-        if (alternate !== null) {
-            path.node.alternate = t.returnStatement(t.callExpression(alternate.expression, [k]));
-            path.node.alternate.cps = true;
-            path.node.alternate.argument.cps = true;
-        }
-
-        path.node.cps = true;
-        const continuationBody = t.blockStatement([path.node]);
-        const ifFunction = t.functionExpression(null, [k], continuationBody);
-        const functionCont = path.findParent(x => x.isFunction()).node.params[0];
-        const ifCall = t.callExpression(ifFunction, [functionCont]);
-        ifCall.cps = true;
-        const ifContinuation = t.expressionStatement(ifCall);
-
-        path.replaceWith(ifContinuation);
+    let { test, consequent, alternate } = path.node;
+    if (t.isBlockStatement(consequent) && consequent.body.length === 1) {
+      consequent = consequent.body[0];
     }
+    if (t.isBlockStatement(alternate) && alternate.body.length === 1) {
+      alternate = alternate.body[0];
+    }
+
+    const k = path.scope.generateUidIdentifier('k');
+
+    if (t.isFunctionExpression(consequent.expression)) {
+      path.node.consequent = t.returnStatement(t.callExpression(consequent.expression, [k]));
+      path.node.consequent.cps = true;
+      path.node.consequent.argument.cps = true;
+    }
+    if (alternate !== null && t.isFunctionExpression(alternate.expression)) {
+      path.node.alternate = t.returnStatement(t.callExpression(alternate.expression, [k]));
+      path.node.alternate.cps = true;
+      path.node.alternate.argument.cps = true;
+    }
+
+    path.node.cps = true;
+    const continuationBody = t.blockStatement([path.node]);
+    const ifFunction = t.functionExpression(null, [k], continuationBody);
+    ifFunction.cps = true;
+    const functionCont = path.findParent(x => x.isFunction()).node.params[0];
+    const ifContinuation = t.expressionStatement(ifFunction);
+
+    path.replaceWith(ifContinuation);
+  },
 };
 
 module.exports = function transform(babel) {

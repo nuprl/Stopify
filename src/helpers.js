@@ -48,7 +48,11 @@ function isConsoleLog(node) {
 }
 
 module.exports = {
-  isAtomic, isTerminating, letExpression, flatten, flatBodyStatement,
+  isAtomic,
+  isTerminating,
+  letExpression,
+  flatten,
+  flatBodyStatement,
   isConsoleLog,
 };
 

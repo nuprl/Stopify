@@ -22,7 +22,7 @@ visitor.BreakStatement = function (path) {
   }
 };
 
-/*visitor.LabeledStatement = function LabeledStatement(path) {
+/* visitor.LabeledStatement = function LabeledStatement(path) {
   const node = path.node;
   const labelName = t.stringLiteral(`${node.label.name}-label`);
   const body = node.body;

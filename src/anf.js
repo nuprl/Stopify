@@ -18,8 +18,7 @@ visitor.CallExpression = function (path) {
 
   const p = path.parent;
   // Name the function application if it is not already named.
-  if (t.isVariableDeclarator(p) === false) {
-    path.node.anfed = true;
+  if (!t.isVariableDeclarator(p)) {
     const name = path.scope.generateUidIdentifier('app');
     const bind = h.letExpression(name, path.node);
     path.getStatementParent().insertBefore(bind);
@@ -43,29 +42,6 @@ visitor.IfStatement = function (path) {
   // Make sure if has an else branch.
   if (alternate === null) {
     path.node.alternate = t.blockStatement([t.emptyStatement()]);
-  }
-
-  const stmtParent = path.getStatementParent();
-  const thisPath = stmtParent.key;
-  const sibs = stmtParent.container
-  const afterSibs = sibs.slice(thisPath + 1);
-
-  if (afterSibs.length !== 0) {
-    // Adding another lexical block is necessary to ensure that `let`s
-    // are scoped properly.
-    path.node.consequent = t.blockStatement([path.node.consequent]);
-    path.node.alternate = t.blockStatement([path.node.alternate]);
-
-    // TODO(rachit): This duplicates codes. Make sure that it is actually
-    // cheaper than function calls.
-    afterSibs.forEach(sib => {
-      path.node.consequent.body.push(sib)
-      path.node.alternate.body.push(sib)
-    })
-  }
-
-  for (let i = thisPath + 1; i < sibs.length; i += 1) {
-    stmtParent.container.pop();
   }
 }
 

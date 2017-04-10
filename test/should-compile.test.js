@@ -1,14 +1,23 @@
 const f = require('./testFixtures.js');
 const path = require('path');
 const fs = require('fs');
+const file = require('file');
 
-const testDir = path.join(__dirname, './should-compile');
+const testFilesR = f.walkSync(path.join(__dirname, './should-run'))
+                    .filter((f) => f.endsWith('.js'))
 
-describe('Programs get compiled correctly', () => {
-  fs.readdirSync(testDir).forEach((file) => {
-    const prog = fs.readFileSync(path.join(testDir, file), 'utf-8').toString();
-    it(file.toString(), () => {
+const testFilesC = f.walkSync(path.join(__dirname, './should-compile'))
+                    .filter((f) => f.endsWith('.js'))
+
+const testFiles = testFilesC.concat(testFilesR)
+
+describe('Programs retain value after transformation', function () {
+  testFiles.forEach(filename => {
+    const prog = fs.readFileSync(filename, 'utf-8').toString();
+    it(filename, function () {
+      this.timeout(1000)
       f.transformTest(prog)
     })
   })
 })
+

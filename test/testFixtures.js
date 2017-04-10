@@ -55,16 +55,21 @@ function transformTest(original) {
   }
 
   const pass = errorMessage.length === 0;
-  assert(pass, `Failed to transform: ${errorMessage}`);
+  assert(pass, `Failed to transform: ${errorMessage.substr(0, 200)}`);
 
   return transformed;
 }
 
 function retainValueTest(org) {
-  const te = eval(transformTest(org));
-  const oe = eval(org);
-  const pass = te === oe;
+  let te, oe, pass;
+  try {
+    te = eval(transformTest(org));
+  } catch(e) {
+    assert(false, `Failed to eval transformed code: ${e.message}`)
+  }
 
+  oe = eval(org);
+  pass = te === oe;
   assert(pass,
     `Failed: original evals to '${oe}' while transformed evals to '${te}'`);
 }

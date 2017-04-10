@@ -8,6 +8,7 @@
  */
 
 const t = require('babel-types');
+const g = require('babel-generator');
 
 // Object containing the visitor functions
 const visitor = {};
@@ -15,13 +16,15 @@ const visitor = {};
 visitor.BreakStatement = function (path) {
   const label = path.node.label;
   if (label === null) {
-    const whilePath = path.findParent(path => path.isWhileStatement());
-    const whileLabelParent = whilePath.findParent(
-      path => path.isLabeledStatement());
-    if (whileLabelParent === null) {
-      throw new Error(`Parent of whileStatement wasn't a labeledStatement`);
+    const labeledParent =
+      path.findParent(p => p.isWhileStatement() || p.isSwitchStatement());
+    const labelParent = labeledParent.findParent(p => p.isLabeledStatement());
+
+    if (labelParent === null) {
+      throw new Error(
+        `Parent of ${labelParent.type} wasn't a labeledStatement`);
     }
-    path.node.label = whileLabelParent.node.label;
+    path.node.label = labelParent.node.label;
   }
 };
 
@@ -29,6 +32,14 @@ visitor.WhileStatement = function (path) {
   if (t.isLabeledStatement(path.parent)) return;
 
   const loopName = path.scope.generateUidIdentifier('loop');
+  const labeledStatement = t.labeledStatement(loopName, path.node);
+  path.replaceWith(labeledStatement)
+}
+
+visitor.SwitchStatement = function (path) {
+  if (t.isLabeledStatement(path.parent)) return;
+
+  const loopName = path.scope.generateUidIdentifier('switch');
   const labeledStatement = t.labeledStatement(loopName, path.node);
   path.replaceWith(labeledStatement)
 }

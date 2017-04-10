@@ -52,7 +52,6 @@ visitor.ForStatement = function ForStatement(path) {
     nInit = t.isExpression(init) ? t.expressionStatement(init) : init;
   }
 
-
   path.replaceWith(h.flatBodyStatement([nInit, wl]));
 };
 

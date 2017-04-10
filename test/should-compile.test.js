@@ -11,7 +11,7 @@ const testFilesC = f.walkSync(path.join(__dirname, './should-compile'))
 
 const testFiles = testFilesC.concat(testFilesR)
 
-describe('Programs retain value after transformation', function () {
+describe('Program can successfully be transformed', function () {
   testFiles.forEach(filename => {
     const prog = fs.readFileSync(filename, 'utf-8').toString();
     it(filename, function () {

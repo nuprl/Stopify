@@ -18,9 +18,20 @@ visitor.BreakStatement = function (path) {
     const whilePath = path.findParent(path => path.isWhileStatement());
     const whileLabelParent = whilePath.findParent(
       path => path.isLabeledStatement());
+    if (whileLabelParent === null) {
+      throw new Error(`Parent of whileStatement wasn't a labeledStatement`);
+    }
     path.node.label = whileLabelParent.node.label;
   }
 };
+
+visitor.WhileStatement = function (path) {
+  if (t.isLabeledStatement(path.parent)) return;
+
+  const loopName = path.scope.generateUidIdentifier('loop');
+  const labeledStatement = t.labeledStatement(loopName, path.node);
+  path.replaceWith(labeledStatement)
+}
 
 /* visitor.LabeledStatement = function LabeledStatement(path) {
   const node = path.node;

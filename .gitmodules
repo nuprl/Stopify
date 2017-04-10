@@ -1,3 +1,4 @@
 [submodule "test/should-run/JS-Benchmarks"]
 	path = test/should-run/JS-Benchmarks
 	url = git@github.com:plasma-umass/stopify-third-party.git
+  branch = benchmarks

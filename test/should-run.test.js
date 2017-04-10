@@ -11,7 +11,7 @@ describe('Programs retain value after transformation', function () {
     const prog = fs.readFileSync(filename, 'utf-8').toString();
     it(filename, function () {
       this.timeout(1000)
-      f.transformTest(prog)
+      f.retainValueTest(prog)
     })
   })
 })

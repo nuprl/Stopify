@@ -1,5 +1,7 @@
 const assert = require('assert');
 const babel = require('babel-core');
+const fs = require('fs');
+const path = require('path');
 
 // All the plugins
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
@@ -7,16 +9,15 @@ const desugarLoop = require('../src/desugarLoop.js');
 const desugarLabel = require('../src/desugarLabel.js');
 const desugarAndOr = require('../src/desugarAndOr.js');
 const anf = require('../src/anf.js');
-const cps = require('../src/callccPass1.js');
 const addKArg = require('../src/addContinuationArg.js');
 const cpsVisitor = require('../src/cpsVisitor.js');
 const verifier = require('../src/verifier.js');
 
-module.exports = { transformTest, retainValueTest };
+module.exports = { transformTest, retainValueTest, walkSync };
 
 // Make sure all transformers are included here.
 const defaults = [noArrows, desugarLoop,
-  desugarLabel, desugarAndOr, anf, cps, verifier];
+  desugarLabel, desugarAndOr, anf, addKArg, cpsVisitor, verifier];
 
 function transform(src, plugs) {
   let { code, ast } = babel.transform(src, { babelrc: false });
@@ -30,6 +31,17 @@ function transform(src, plugs) {
   });
 
   return code;
+}
+
+function walkSync(dir, filelist = []) {
+  fs.readdirSync(dir).forEach(file => {
+
+    filelist = fs.statSync(path.join(dir, file)).isDirectory()
+      ? walkSync(path.join(dir, file), filelist)
+      : filelist.concat(path.join(dir, file));
+
+  });
+  return filelist;
 }
 
 function transformTest(original) {

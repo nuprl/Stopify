@@ -16,14 +16,17 @@ const verifier = require('../src/verifier.js');
 module.exports = { transformTest, retainValueTest, walkSync };
 
 // Make sure all transformers are included here.
-const defaults = [noArrows, desugarLoop,
-  desugarLabel, desugarAndOr, anf, addKArg, cpsVisitor, verifier];
+const defaults = [
+  [noArrows, desugarLoop, desugarLabel, desugarAndOr],
+  [anf],
+  [addKArg, cpsVisitor, verifier]
+];
 
 function transform(src, plugs) {
   let { code, ast } = babel.transform(src, { babelrc: false });
-  plugs.forEach(tr => {
+  plugs.forEach(trs => {
       const res = babel.transformFromAst(ast, code, {
-        plugins: [tr],
+        plugins: [...trs],
         babelrc: false,
       });
       code = res.code;

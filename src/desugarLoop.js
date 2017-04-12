@@ -14,6 +14,7 @@
 
 const t = require('babel-types');
 const h = require('./helpers.js');
+const g = require('babel-generator');
 
 function letExpression(name, value, kind) {
   return t.variableDeclaration('const',
@@ -35,16 +36,19 @@ visitor.ForStatement = function ForStatement(path) {
   } else {
     update = t.expressionStatement(update);
   }
-  wBody = h.flatBodyStatement([wBody, update]);
+  const loopContinue = path.scope.generateUidIdentifier('loop_continue');
+  wBody = t.blockStatement([
+    t.labeledStatement(loopContinue, wBody),
+    update
+  ])
 
   // Test can be null
   if (test === null) {
     test = t.booleanLiteral(true);
   }
-  const loopTarget = path.scope.generateUidIdentifier('loop_break');
 
-  const wl = t.labeledStatement(
-    loopTarget, t.blockStatement([t.whileStatement(test, wBody)]));
+  const wl = t.whileStatement(test, wBody);
+  wl.continue_label = loopContinue;
 
   // The init can either be a variable declaration or an expression
   let nInit = t.emptyStatement();
@@ -73,6 +77,20 @@ visitor.DoWhileStatement = function DoWhileStatement(path) {
 
   path.replaceWith(
     h.flatBodyStatement([runOnceInit, t.whileStatement(test, body)]));
+};
+
+visitor.WhileStatement = function (path) {
+  // Wrap the body in a continue block statement.
+  if (path.node.continue_label === undefined) {
+    const loopContinue = path.scope.generateUidIdentifier('loop_continue');
+    path.node.continue_label = loopContinue;
+    path.node.body = t.labeledStatement(loopContinue, path.node.body);
+  }
+  if (t.isLabeledStatement(path.parent)) return;
+
+  const loopName = path.scope.generateUidIdentifier('loop_break');
+  const labeledStatement = t.labeledStatement(loopName, path.node);
+  path.replaceWith(labeledStatement);
 };
 
 module.exports = function transform(babel) {

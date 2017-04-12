@@ -13,6 +13,14 @@ const g = require('babel-generator');
 // Object containing the visitor functions
 const visitor = {};
 
+visitor.ContinueStatement = function (path) {
+  const loopParent = path.findParent(p => p.isWhileStatement());
+  const continueLabel = loopParent.node.continue_label
+
+  const breakStatement = t.breakStatement(continueLabel);
+  path.replaceWith(breakStatement);
+}
+
 visitor.BreakStatement = function (path) {
   const label = path.node.label;
   if (label === null) {
@@ -28,14 +36,7 @@ visitor.BreakStatement = function (path) {
   }
 };
 
-visitor.WhileStatement = function (path) {
-  if (t.isLabeledStatement(path.parent)) return;
-
-  const loopName = path.scope.generateUidIdentifier('loop');
-  const labeledStatement = t.labeledStatement(loopName, path.node);
-  path.replaceWith(labeledStatement);
-};
-
+// TODO(rachit): Move this into a separate pass for desugaring switch statements
 visitor.SwitchStatement = function (path) {
   if (t.isLabeledStatement(path.parent)) return;
 

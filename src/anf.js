@@ -43,7 +43,7 @@ visitor.IfStatement = function (path) {
   if (alternate === null) {
     path.node.alternate = t.blockStatement([t.emptyStatement()]);
   }
-}
+};
 
 module.exports = function transform(babel) {
   return { visitor };

@@ -33,16 +33,16 @@ visitor.WhileStatement = function (path) {
 
   const loopName = path.scope.generateUidIdentifier('loop');
   const labeledStatement = t.labeledStatement(loopName, path.node);
-  path.replaceWith(labeledStatement)
-}
+  path.replaceWith(labeledStatement);
+};
 
 visitor.SwitchStatement = function (path) {
   if (t.isLabeledStatement(path.parent)) return;
 
   const loopName = path.scope.generateUidIdentifier('switch');
   const labeledStatement = t.labeledStatement(loopName, path.node);
-  path.replaceWith(labeledStatement)
-}
+  path.replaceWith(labeledStatement);
+};
 
 /* visitor.LabeledStatement = function LabeledStatement(path) {
   const node = path.node;

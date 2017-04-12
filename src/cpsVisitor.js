@@ -3,8 +3,6 @@
  */
 
 const t = require('babel-types');
-const g = require('babel-generator');
-const h = require('./helpers.js');
 
 const visitor = {};
 

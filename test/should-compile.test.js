@@ -12,10 +12,10 @@ const testFilesC = f.walkSync(path.join(__dirname, './should-compile'))
 const testFiles = testFilesC.concat(testFilesR)
 
 describe('Program can successfully be transformed', function () {
+  this.timeout(10000);
   testFiles.forEach(filename => {
     const prog = fs.readFileSync(filename, 'utf-8').toString();
     it(filename, function () {
-      this.timeout(1000)
       f.transformTest(prog)
     })
   })

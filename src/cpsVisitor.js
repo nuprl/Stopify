@@ -82,17 +82,32 @@ function foldSequence(path, statements) {
           return headFunction;
         }
         break;
+      } case 'FunctionDeclaration': {
+        const k = path.scope.generateUidIdentifier('k');
+        const kCall = t.callExpression(k, [head.id]);
+        kCall.cps = true;
+        const kReturn = t.returnStatement(kCall);
+        kReturn.cps = true;
+        const kBody = t.blockStatement([head, kReturn]);
+        kBody.cps = true;
+        const expFunction = t.functionExpression(null, [k], kBody);
+        expFunction.cps = true;
+
+        const tailFunction = createTailFunction(tailPath, tail, headK, head.id);
+        const headFunction = createHeadFunction(expFunction, headK, tailFunction);
+        return headFunction;
       } default: {
         tailPath = tailPath.scope === null ? path : tailPath;
         const tailFunction = createTailFunction(tailPath, tail, headK, tailK);
 
-        const kCall = t.callExpression(headK, [t.nullLiteral()]);
+        const k = path.scope.generateUidIdentifier('k');
+        const kCall = t.callExpression(k, [t.nullLiteral()]);
         kCall.cps = true;
         const kReturn = t.returnStatement(kCall);
         kReturn.cps = true;
         const kBody = t.blockStatement([path.node, kReturn]);
         kBody.cps = true;
-        const expFunction = t.functionExpression(null, [headK], kBody);
+        const expFunction = t.functionExpression(null, [k], kBody);
         expFunction.cps = true;
 
         return expFunction;
@@ -100,6 +115,15 @@ function foldSequence(path, statements) {
     }
   }
 }
+
+visitor.Program = {
+  exit(path) {
+    const { body } = path.node;
+    const bodyPath = path.get('body.0');
+    const newBody = foldSequence(bodyPath, body);
+    path.node.body = [newBody];
+  }
+};
 
 // Block Statements are visited on exit so that their body is CPS'd.
 //

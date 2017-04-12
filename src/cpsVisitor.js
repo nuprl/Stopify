@@ -164,7 +164,6 @@ visitor.ReturnStatement = function (path) {
   if (isCPS(path.node)) return;
 
   const k = path.scope.generateUidIdentifier('k');
-  path.traverse(visitor, path.node.argument);
   const returnCall = t.callExpression(path.node.kArg, [path.node.argument]);
   returnCall.cps = true;
   const newReturn = t.returnStatement(returnCall);
@@ -271,6 +270,7 @@ visitor.Function = {
     if (isCPS(path.node)) return;
     const { params, body } = path.node;
 
+    if (t.isReturnStatement(body.body[0])) return;
     const bodyFunc = body.body[0].expression;
     const bodyCall = t.callExpression(bodyFunc, [params[0]]);
     bodyCall.cps = true;

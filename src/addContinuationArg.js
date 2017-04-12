@@ -15,6 +15,10 @@ visitor['FunctionDeclaration|FunctionExpression'] = function (path) {
 visitor.ReturnStatement = function (path) {
   const functionParent = path.findParent(x => x.isFunction());
   path.node.kArg = functionParent.node.params[0];
+
+  if (path.node.argument === null) {
+    path.node.argument = t.nullLiteral();
+  }
 };
 
 module.exports = function transform(babel) {

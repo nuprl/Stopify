@@ -12,14 +12,16 @@ const anf = require('../src/anf.js');
 const addKArg = require('../src/addContinuationArg.js');
 const cpsVisitor = require('../src/cpsVisitor.js');
 const verifier = require('../src/verifier.js');
+const kApply = require('../src/applyContinuation.js');
 
 module.exports = { transformTest, retainValueTest, walkSync };
 
 // Make sure all transformers are included here.
 const defaults = [
   [noArrows, desugarLoop, desugarLabel, desugarAndOr],
-  [anf],
-  [addKArg, cpsVisitor, verifier]
+  [anf, addKArg],
+  [cpsVisitor, verifier],
+  [kApply]
 ];
 
 function transform(src, plugs) {

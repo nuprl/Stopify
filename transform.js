@@ -11,6 +11,7 @@ const addKArg = require('./src/addContinuationArg.js');
 const cpsVisitor = require('./src/cpsVisitor.js');
 const cps = require('./src/callccPass1.js');
 const verifier = require('./src/verifier.js');
+const kApply = require('./src/applyContinuation.js');
 
 const defaults = [anf, addKArg, cpsVisitor];
 

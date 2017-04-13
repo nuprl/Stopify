@@ -17,7 +17,7 @@ visitor.ReturnStatement = function (path) {
   path.node.kArg = functionParent.node.params[0];
 
   if (path.node.argument === null) {
-    path.node.argument = t.nullLiteral();
+    path.node.argument = t.unaryExpression('void', t.numericLiteral(0));
   }
 };
 

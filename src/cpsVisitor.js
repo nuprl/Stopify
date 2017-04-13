@@ -43,7 +43,7 @@ function foldSequence(path, statements) {
   const tailK = path.scope.generateUidIdentifier('k');
   if (head === undefined) {
     const k = path.scope.generateUidIdentifier('k');
-    const kCall = t.callExpression(k, [t.nullLiteral()]);
+    const kCall = t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]);
     kCall.cps = true;
     const kReturn = t.returnStatement(kCall);
     kReturn.cps = true;
@@ -101,7 +101,7 @@ function foldSequence(path, statements) {
         const tailFunction = createTailFunction(tailPath, tail, headK, tailK);
 
         const k = path.scope.generateUidIdentifier('k');
-        const kCall = t.callExpression(k, [t.nullLiteral()]);
+        const kCall = t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]);
         kCall.cps = true;
         const kReturn = t.returnStatement(kCall);
         kReturn.cps = true;
@@ -198,7 +198,7 @@ visitor.ExpressionStatement = function (path) {
 
   path.node.cps = true;
   const k = path.scope.generateUidIdentifier('k');
-  const kCall = t.callExpression(k, [t.nullLiteral()]);
+  const kCall = t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]);
   kCall.cps = true;
   const kReturn = t.returnStatement(kCall);
   kReturn.cps = true;

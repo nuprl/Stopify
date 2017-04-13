@@ -4,7 +4,6 @@
  * A label statement turns into a try catch block that catches a
  * corresponding named block on a break.
  *
- * TODO Figure out what should happen on a continue.
  */
 
 const t = require('babel-types');
@@ -26,13 +25,13 @@ visitor.BreakStatement = function (path) {
   if (label === null) {
     const labeledParent =
       path.findParent(p => p.isWhileStatement() || p.isSwitchStatement());
-    const labelParent = labeledParent.findParent(p => p.isLabeledStatement());
 
-    if (labelParent === null) {
+    if (labeledParent === null) {
       throw new Error(
         `Parent of ${labelParent.type} wasn't a labeledStatement`);
     }
-    path.node.label = labelParent.node.label;
+
+    path.node.label = labeledParent.node.break_label;
   }
 };
 
@@ -40,8 +39,9 @@ visitor.BreakStatement = function (path) {
 visitor.SwitchStatement = function (path) {
   if (t.isLabeledStatement(path.parent)) return;
 
-  const loopName = path.scope.generateUidIdentifier('switch');
-  const labeledStatement = t.labeledStatement(loopName, path.node);
+  const breakLabel = path.scope.generateUidIdentifier('switch');
+  path.node.break_label = breakLabel;
+  const labeledStatement = t.labeledStatement(breakLabel, path.node);
   path.replaceWith(labeledStatement);
 };
 

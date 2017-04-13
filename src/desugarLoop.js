@@ -80,17 +80,20 @@ visitor.DoWhileStatement = function DoWhileStatement(path) {
 };
 
 visitor.WhileStatement = function (path) {
-  // Wrap the body in a continue block statement.
+  // Wrap the body in a labeled continue block.
   if (path.node.continue_label === undefined) {
     const loopContinue = path.scope.generateUidIdentifier('loop_continue');
     path.node.continue_label = loopContinue;
     path.node.body = t.labeledStatement(loopContinue, path.node.body);
   }
-  if (t.isLabeledStatement(path.parent)) return;
 
-  const loopName = path.scope.generateUidIdentifier('loop_break');
-  const labeledStatement = t.labeledStatement(loopName, path.node);
-  path.replaceWith(labeledStatement);
+  // Wrap the loop in labeled break block.
+  if (path.node.break_label === undefined) {
+    const loopBreak = path.scope.generateUidIdentifier('loop_break');
+    path.node.break_label = loopBreak;
+    const labeledStatement = t.labeledStatement(loopBreak, path.node);
+    path.replaceWith(labeledStatement);
+  }
 };
 
 module.exports = function transform(babel) {

@@ -11,6 +11,7 @@
     "babel-generator": "^6.24.0",
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
     "babel-types": "^6.22.0",
+    "babylon": "^6.16.1",
     "eslint": "^3.12.2",
     "eslint-config-airbnb-base": "^11.0.1",
     "eslint-plugin-import": "^2.2.0",

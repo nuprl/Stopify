@@ -2,16 +2,26 @@
 const fs = require('fs');
 const babel = require('babel-core');
 
+// Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 const desugarLoop = require('./src/desugarLoop.js');
 const desugarLabel = require('./src/desugarLabel.js');
 const desugarAndOr = require('./src/desugarAndOr.js');
+
+// Call Expression naming transform.
 const anf = require('./src/anf.js');
+
+// CPS transforms.
 const addKArg = require('./src/addContinuationArg.js');
 const cpsVisitor = require('./src/cpsVisitor.js');
 const cps = require('./src/callccPass1.js');
-const verifier = require('./src/verifier.js');
 const kApply = require('./src/applyContinuation.js');
+
+// Yield transform.
+const yieldPass = require('./src/yeild.js');
+
+// Verification transform.
+const verifier = require('./src/verifier.js');
 
 const defaults = [anf, addKArg, cpsVisitor];
 

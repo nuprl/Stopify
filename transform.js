@@ -18,7 +18,7 @@ const cps = require('./src/callccPass1.js');
 const kApply = require('./src/applyContinuation.js');
 
 // Yield transform.
-const yieldPass = require('./src/yeild.js');
+const yieldPass = require('./src/yield.js');
 
 // Verification transform.
 const verifier = require('./src/verifier.js');

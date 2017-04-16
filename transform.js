@@ -20,6 +20,9 @@ const kApply = require('./src/applyContinuation.js');
 // Yield transform.
 const yieldPass = require('./src/yield.js');
 
+// Tail yield transform
+const tailYieldPass = require('./src/tail_yield.js')
+
 // Verification transform.
 const verifier = require('./src/verifier.js');
 

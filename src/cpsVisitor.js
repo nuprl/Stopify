@@ -145,7 +145,7 @@ visitor.BlockStatement = {
 
     const newBlock = t.blockStatement([t.expressionStatement(newBody)]);
     newBlock.cps = true;
-    path.replaceWith(newBlock);
+    path.node.body = [t.expressionStatement(newBody)];
   },
 };
 

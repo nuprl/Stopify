@@ -16,12 +16,13 @@ const addKArg = require('./src/addContinuationArg.js');
 const cpsVisitor = require('./src/cpsVisitor.js');
 const cps = require('./src/callccPass1.js');
 const kApply = require('./src/applyContinuation.js');
+const applyStop = require('./src/stoppableApply.js');
 
 // Yield transform.
 const yieldPass = require('./src/yield.js');
 
 // Tail yield transform
-const tailYieldPass = require('./src/tail_yield.js')
+const tailYieldPass = require('./src/tail_yield.js');
 
 // Verification transform.
 const verifier = require('./src/verifier.js');

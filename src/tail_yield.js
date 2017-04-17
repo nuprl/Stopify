@@ -5,7 +5,7 @@ const h = require('./helpers');
 const visitor = {};
 
 function toFuncDecl(str) {
-  let func = b.parseExpression(str);
+  const func = b.parseExpression(str);
   const { id, params, body, generator } = func;
   return t.functionDeclaration(id, params, body, generator);
 }
@@ -22,7 +22,7 @@ visitor.Program = {
       res = res.value;
       return res;
     }
-    `)
+    `);
 
     const yielder = toFuncDecl(`
     function* yielder() {
@@ -32,17 +32,17 @@ visitor.Program = {
 
     path.node.body.unshift(yielder);
     path.node.body.unshift(runFunc);
-  }
-}
+  },
+};
 
 const yieldCall = b.parseExpression(`
   run(yielder())
-`)
+`);
 
 visitor['FunctionDeclaration|FunctionExpression'] = function (path) {
   // Add a yield call at the top of the function to force it to pause.
   path.node.body.body.unshift(yieldCall);
-}
+};
 
 module.exports = function transform(babel) {
   return { visitor };

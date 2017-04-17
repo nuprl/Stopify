@@ -39,8 +39,8 @@ visitor.ForStatement = function ForStatement(path) {
   const loopContinue = path.scope.generateUidIdentifier('loop_continue');
   wBody = t.blockStatement([
     t.labeledStatement(loopContinue, wBody),
-    update
-  ])
+    update,
+  ]);
 
   // Test can be null
   if (test === null) {

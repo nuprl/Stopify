@@ -123,7 +123,7 @@ visitor.Program = {
     const newBody = t.expressionStatement(foldSequence(bodyPath, body));
     newBody.cps = true;
     path.node.body = [newBody];
-  }
+  },
 };
 
 // Block Statements are visited on exit so that their body is CPS'd.

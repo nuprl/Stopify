@@ -14,11 +14,11 @@ const visitor = {};
 
 visitor.ContinueStatement = function (path) {
   const loopParent = path.findParent(p => p.isWhileStatement());
-  const continueLabel = loopParent.node.continue_label
+  const continueLabel = loopParent.node.continue_label;
 
   const breakStatement = t.breakStatement(continueLabel);
   path.replaceWith(breakStatement);
-}
+};
 
 visitor.BreakStatement = function (path) {
   const label = path.node.label;

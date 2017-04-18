@@ -30,6 +30,6 @@ const verifyVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { verifyVisitor };
+module.exports = function (babel) {
+    return { visitor: verifyVisitor };
 };

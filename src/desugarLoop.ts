@@ -89,6 +89,6 @@ const loopVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { loopVisitor };
+module.exports = function (babel) {
+    return { visitor: loopVisitor };
 };

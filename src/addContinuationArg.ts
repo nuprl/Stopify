@@ -20,6 +20,6 @@ const addKArgVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { addKArgVisitor };
+module.exports = function (babel) {
+    return { visitor: addKArgVisitor };
 };

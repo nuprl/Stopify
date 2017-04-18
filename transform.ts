@@ -4,28 +4,28 @@ import * as babel from 'babel-core';
 
 // Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
-import * as desugarLoop from './src/desugarLoop.js';
-import * as desugarLabel from './src/desugarLabel.js';
-import * as desugarAndOr from './src/desugarAndOr.js';
+import * as desugarLoop from './src/desugarLoop';
+import * as desugarLabel from './src/desugarLabel';
+import * as desugarAndOr from './src/desugarAndOr';
 
 // Call Expression naming transform.
-import * as anf from './src/anf.js';
+import * as anf from './src/anf';
 
 // CPS transforms.
-import * as addKArg from './src/addContinuationArg.js';
+import * as addKArg from './src/addContinuationArg';
 import * as cps from './src/cpsVisitor';
-import * as kApply from './src/applyContinuation.js';
-import * as applyStop from './src/stoppableApply.js';
+import * as kApply from './src/applyContinuation';
+import * as applyStop from './src/stoppableApply';
 
 // Yield transform.
-import * as yieldPass from './src/yield.js';
-//const yieldPass = require('./src/yield.js');
+import * as yieldPass from './src/yield';
+//const yieldPass = require('./src/yield');
 
 // Tail yield transform
-import * as tailYieldPass from './src/tail_yield.js';
+import * as tailYieldPass from './src/tail_yield';
 
 // Verification transform.
-import * as verifier from './src/verifier.js';
+import * as verifier from './src/verifier';
 
 const defaults = [anf, addKArg, cps];
 

@@ -53,6 +53,6 @@ const yieldVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { yieldVisitor };
+module.exports = function (babel) {
+    return { visitor: yieldVisitor };
 };

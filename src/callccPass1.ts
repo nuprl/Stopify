@@ -80,6 +80,6 @@ const callccVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { callccVisitor };
+module.exports = function (babel) {
+    return { visitor: callccVisitor };
 };

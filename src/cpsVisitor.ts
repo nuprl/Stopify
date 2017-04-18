@@ -2,7 +2,7 @@
  * Plugin to transform JS programs into CPS form.
  */
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 
 // Hack to avoid applying visitors to newly constructed nodes.
 function isCPS(node) {
@@ -282,6 +282,6 @@ const cpsVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { cpsVisitor };
+module.exports = function (babel) {
+    return { visitor: cpsVisitor };
 };

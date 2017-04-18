@@ -27,6 +27,6 @@ const andOrVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { andOrVisitor };
+module.exports = function (babel) {
+    return { visitor: andOrVisitor };
 };

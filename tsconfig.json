@@ -3,10 +3,10 @@
         "module": "commonjs",
         "outDir": "./built",
         "allowJs": true,
+        "allowUnreachableCode": true,
         "target": "es6"
     },
     "exclude": [
-        "test/*/*",
         "examples",
         "node_modules",
         "built"

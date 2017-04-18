@@ -60,6 +60,6 @@ const labelVisitor = {
 };*/
 
 
-export function transform(babel) {
-    return { labelVisitor };
+module.exports = function (babel) {
+    return { visitor: labelVisitor };
 };

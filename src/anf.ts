@@ -46,6 +46,6 @@ const anfVisitor = {
     },
 }
 
-export function transform(babel) {
-    return { anfVisitor };
+module.exports = function (babel) {
+    return { visitor: anfVisitor };
 };

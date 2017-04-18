@@ -44,6 +44,6 @@ const tailYieldVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { tailYieldVisitor };
+module.exports = function (babel) {
+    return { visitor: tailYieldVisitor };
 };

@@ -16,6 +16,6 @@ const kApplyVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { kApplyVisitor };
+module.exports = function (babel) {
+    return { visitor: kApplyVisitor };
 };

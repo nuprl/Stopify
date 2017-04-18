@@ -41,6 +41,6 @@ const stopApplyVisitor = {
     }
 }
 
-export function transform(babel) {
-    return { stopApplyVisitor };
+module.exports = function (babel) {
+    return { visitor: stopApplyVisitor };
 };

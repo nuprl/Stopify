@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "outDir": "./built",
+        "allowJs": true,
+        "target": "es6"
+    },
+    "exclude": [
+        "test",
+        "examples",
+        "node_modules",
+        "built"
+    ]
+}

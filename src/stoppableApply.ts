@@ -6,8 +6,6 @@
 const t = require('babel-types');
 const b = require('babylon');
 
-const visitor = {};
-
 const applyFunction = b.parse(`
 let iterations = 0;
 let counter = iterations;
@@ -27,20 +25,22 @@ function apply(f, k, ...args) {
 }
 `);
 
-visitor.Program = {
-  exit(path) {
-    path.node.body.unshift(applyFunction);
-  },
-};
+const stopApplyVisitor = {
+    Program: {
+        exit(path) {
+            path.node.body.unshift(applyFunction);
+        },
+    },
 
-visitor.CallExpression = function (path) {
-  const applyId = t.identifier('apply');
-  const applyArgs = [path.node.callee, ...path.node.arguments];
-  const applyCall = t.callExpression(applyId, applyArgs);
-  path.node.callee = applyId;
-  path.node.arguments = applyArgs;
-};
+    CallExpression: function (path) {
+        const applyId = t.identifier('apply');
+        const applyArgs = [path.node.callee, ...path.node.arguments];
+        const applyCall = t.callExpression(applyId, applyArgs);
+        path.node.callee = applyId;
+        path.node.arguments = applyArgs;
+    }
+}
 
-module.exports = function transform(babel) {
-  return { visitor };
+export function transform(babel) {
+    return { stopApplyVisitor };
 };

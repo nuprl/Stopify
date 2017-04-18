@@ -47,7 +47,7 @@ function isConsoleLog(node) {
       t.isIdentifier(node.property) && node.property.name === 'log';
 }
 
-module.exports = {
+export {
   isAtomic,
   isTerminating,
   letExpression,

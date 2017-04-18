@@ -25,7 +25,7 @@
     "typescript": "^2.2.2"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "./node_modules/.bin/tsc || true",
     "test": "./node_modules/.bin/mocha built/test/ || true",
     "lint": "./node_modules/.bin/eslint --color src/* || true",
     "lintall": "./node_modules/.bin/eslint --color src/* test/* || true",

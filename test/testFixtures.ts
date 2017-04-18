@@ -38,7 +38,7 @@ function transform(src, plugs) {
   return code;
 }
 
-function walkSync(dir, filelist = []) {
+export function walkSync(dir, filelist = []) {
   fs.readdirSync(dir).forEach(file => {
 
     filelist = fs.statSync(path.join(dir, file)).isDirectory()
@@ -49,7 +49,7 @@ function walkSync(dir, filelist = []) {
   return filelist;
 }
 
-function transformTest(original) {
+export function transformTest(original) {
   let errorMessage = '';
   let transformed = '';
 
@@ -65,7 +65,7 @@ function transformTest(original) {
   return transformed;
 }
 
-function retainValueTest(org) {
+export function retainValueTest(org) {
   let te, oe, pass;
   try {
     te = eval(transformTest(org));

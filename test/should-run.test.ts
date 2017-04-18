@@ -1,4 +1,4 @@
-const f = require('./testFixtures.js');
+import * as f from './testFixtures.js';
 const path = require('path');
 const fs = require('fs');
 const file = require('file');

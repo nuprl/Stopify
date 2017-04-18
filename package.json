@@ -7,6 +7,7 @@
     "@types/babel-core": "^6.7.14",
     "@types/babel-types": "^6.7.14",
     "@types/babylon": "^6.16.0",
+    "@types/mocha": "^2.2.41",
     "@types/node": "^6.0.69",
     "assert": "^1.4.1",
     "babel-cli": "^6.18.0",

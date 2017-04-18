@@ -5,7 +5,7 @@
         "target": "es6"
     },
     "exclude": [
-        "test",
+        "test/*/*",
         "examples",
         "node_modules",
         "built"

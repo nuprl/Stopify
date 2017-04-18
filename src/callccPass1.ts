@@ -27,7 +27,7 @@
  *       | return a;
  */
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 const h = require('./helpers.js');
 
 /** The body must be an array of statements and name must be unique in the

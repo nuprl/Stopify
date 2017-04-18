@@ -1,9 +1,9 @@
-const t = require('babel-types');
-const b = require('babylon');
+import * as t from 'babel-types';
+import * as b from 'babylon';
 const h = require('./helpers');
 
 // Function to run top level callExpressions.
-let runFunc = b.parseExpression(`
+let runFunc = <t.FunctionDeclaration>b.parse(`
 function run(gen) {
   let it = gen;
   let res = { done: false };

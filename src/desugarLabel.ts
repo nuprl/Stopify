@@ -6,7 +6,7 @@
  *
  */
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 
 // Object containing the visitor functions
 const labelVisitor = { 

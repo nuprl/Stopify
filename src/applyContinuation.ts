@@ -1,6 +1,6 @@
 // Post-CPS transformation to apply top-level continuation and eval program.
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 
 const kApplyVisitor = {
     Program: function (path) {

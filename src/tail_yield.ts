@@ -1,14 +1,14 @@
-const t = require('babel-types');
-const b = require('babylon');
+import * as t from 'babel-types';
+import * as b from 'babylon';
 const h = require('./helpers');
 
 function toFuncDecl(str) {
-    const func = b.parseExpression(str);
+    const func = <t.FunctionExpression>b.parse(str);
     const { id, params, body, generator } = func;
     return t.functionDeclaration(id, params, body, generator);
 }
 
-const yieldCall = b.parseExpression(`
+const yieldCall = <t.CallExpression>b.parse(`
   run(yielder())
 `);
 

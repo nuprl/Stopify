@@ -118,9 +118,8 @@ const cpsVisitor = {
         exit(path) {
             const { body } = path.node;
             const bodyPath = path.get('body.0');
-            const newBody = (foldSequence(bodyPath, body));
+            const newBody = t.expressionStatement(foldSequence(bodyPath, body));
             newBody.cps = true;
-            body.body = [newBody];
             path.node.body = [newBody];
         },
     },

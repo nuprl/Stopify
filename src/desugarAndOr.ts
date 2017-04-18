@@ -4,7 +4,7 @@
  * Early-escaping logical expressions are transformed into ternary expressions.
  */
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 
 // Object containing the visitor functions
 const andOrVisitor = { 

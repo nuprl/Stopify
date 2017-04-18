@@ -1,5 +1,5 @@
 // Use this file to document all the constraints on JS--.
-const t = require('babel-types');
+import * as t from 'babel-types';
 
 const verifyVisitor = { 
     // Only while loops.

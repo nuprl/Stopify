@@ -3,8 +3,8 @@
  * `apply` at the top-level as stoppable.
  */
 
-const t = require('babel-types');
-const b = require('babylon');
+import * as t from 'babel-types';
+import * as b from 'babylon';
 
 const applyFunction = b.parse(`
 let iterations = 0;

@@ -2,7 +2,7 @@
  * Plugin to prepend continuation argument to function params
  */
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 
 const addKArgVisitor = { 
     ['FunctionDeclaration|FunctionExpression']: function (path) {

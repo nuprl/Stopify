@@ -12,9 +12,8 @@
  * the function body. To fix this, the body of all loops should a statement.
  */
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 const h = require('./helpers.js');
-const g = require('babel-generator');
 
 // Object containing the visitor functions
 const loopVisitor = { 

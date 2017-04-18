@@ -1,7 +1,7 @@
 // Helper functions for the anf transformation
 /* Checks if the node is an atom */
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 
 function isAtomic(node) {
   return t.isLiteral(node) || t.isIdentifier(node);

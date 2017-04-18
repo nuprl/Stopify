@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const fs = require('fs');
-const babel = require('babel-core');
+import * as babel from 'babel-core';
 
 // Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');

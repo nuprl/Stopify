@@ -7,7 +7,7 @@
  * assumptions do not hold.
  */
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 const h = require('./helpers.js');
 
 // Object to contain the visitor functions

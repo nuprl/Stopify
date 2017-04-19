@@ -1,26 +1,39 @@
 const assert = require('assert');
-const babel = require('babel-core');
+import * as babel from 'babel-core';
 const fs = require('fs');
 const path = require('path');
 
 // All the plugins
-const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
-const desugarLoop = require('../src/desugarLoop.js');
-const desugarLabel = require('../src/desugarLabel.js');
-const desugarAndOr = require('../src/desugarAndOr.js');
-const anf = require('../src/anf.js');
-const addKArg = require('../src/addContinuationArg.js');
-const cpsVisitor = require('../src/cpsVisitor.js');
-const verifier = require('../src/verifier.js');
-const kApply = require('../src/applyContinuation.js');
+import * as desugarLoop from '../src/desugarLoop';
+import * as desugarLabel from '../src/desugarLabel';
+import * as desugarAndOr from '../src/desugarAndOr';
 
+// Call Expression naming transform.
+import * as anf from '../src/anf';
+
+// CPS transforms.
+import * as addKArg from '../src/addContinuationArg';
+import * as cps from '../src/cpsVisitor';
+import * as kApply from '../src/applyContinuation';
+import * as applyStop from '../src/stoppableApply';
+
+// Yield transform.
+import * as yieldPass from '../src/yield';
+//const yieldPass = require('./src/yield');
+
+// Tail yield transform
+import * as tailYieldPass from '../src/tail_yield';
+
+// Verification transform.
+import * as verifier from '../src/verifier';
+const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 module.exports = { transformTest, retainValueTest, walkSync };
 
 // Make sure all transformers are included here.
 const defaults = [
   [noArrows, desugarLoop, desugarLabel, desugarAndOr],
   [anf, addKArg],
-  [cpsVisitor, verifier],
+  [cps, verifier],
   [kApply]
 ];
 
@@ -38,7 +51,7 @@ function transform(src, plugs) {
   return code;
 }
 
-function walkSync(dir, filelist = []) {
+export function walkSync(dir, filelist = []) {
   fs.readdirSync(dir).forEach(file => {
 
     filelist = fs.statSync(path.join(dir, file)).isDirectory()
@@ -49,7 +62,7 @@ function walkSync(dir, filelist = []) {
   return filelist;
 }
 
-function transformTest(original) {
+export function transformTest(original) {
   let errorMessage = '';
   let transformed = '';
 
@@ -65,7 +78,7 @@ function transformTest(original) {
   return transformed;
 }
 
-function retainValueTest(org) {
+export function retainValueTest(org) {
   let te, oe, pass;
   try {
     te = eval(transformTest(org));

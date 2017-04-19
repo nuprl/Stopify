@@ -1,4 +1,4 @@
-/* plugins: [noArrows,anf,addKArg,cpsVisitor] */
+/* plugins: [noArrows,anf,addKArg,cps] */
 function f(a, b) {
 	let x = a(b(6));
 	let r = a(x) + b(a(x));

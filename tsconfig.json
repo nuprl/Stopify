@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "outDir": "./built",
+        "allowJs": true,
+        "allowUnreachableCode": true,
+        "target": "es6"
+    },
+    "exclude": [
+        "examples",
+        "node_modules",
+        "built"
+    ]
+}

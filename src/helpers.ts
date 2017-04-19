@@ -1,22 +1,22 @@
 // Helper functions for the anf transformation
 /* Checks if the node is an atom */
 
-const t = require('babel-types');
+import * as t from 'babel-types';
 
-function isAtomic(node) {
+function isAtomic(node: t.Node): boolean {
   return t.isLiteral(node) || t.isIdentifier(node);
 }
 
-function isTerminating(node) {
+function isTerminating(node: t.Node): boolean {
   return !t.isCallExpression(node);
 }
 
-function letExpression(name, value) {
+function letExpression(name: t.Identifier, value: t.Expression): t.VariableDeclaration {
   return t.variableDeclaration('const',
           [t.variableDeclarator(name, value)]);
 }
 
-function flatten(seq) {
+function flatten(seq: t.Statement[]): t.Statement[] {
   return seq.reduce((prog, statements) => prog.concat(statements), []);
 }
 
@@ -24,7 +24,7 @@ function flatten(seq) {
  * Use this when the contents of the body need to be flattened.
  * @param body An array of statements
  */
-function flatBodyStatement(body) {
+function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   const newBody = [];
   body.forEach((elem) => {
     if (t.isBlockStatement(elem)) {
@@ -41,13 +41,13 @@ function flatBodyStatement(body) {
   return t.blockStatement(newBody);
 }
 
-function isConsoleLog(node) {
+function isConsoleLog(node: t.Node): boolean {
   return t.isMemberExpression(node) &&
       t.isIdentifier(node.object) && node.object.name === 'console' &&
       t.isIdentifier(node.property) && node.property.name === 'log';
 }
 
-module.exports = {
+export {
   isAtomic,
   isTerminating,
   letExpression,

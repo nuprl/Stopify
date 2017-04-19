@@ -1,4 +1,4 @@
-/* plugins: [anf,addKArg,cpsVisitor] */
+/* plugins: [anf,addKArg,cps] */
 function g() {
     let x = 1;
     return x;

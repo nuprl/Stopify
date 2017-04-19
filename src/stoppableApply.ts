@@ -3,10 +3,11 @@
  * `apply` at the top-level as stoppable.
  */
 
+import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
 
-const applyFunction = b.parse(`
+const applyFunction = <t.Statement>b.parse(`
 let iterations = 0;
 let counter = iterations;
 function apply(f, k, ...args) {
@@ -25,14 +26,14 @@ function apply(f, k, ...args) {
 }
 `);
 
-const stopApplyVisitor = {
+const stopApplyVisitor : Visitor = {
     Program: {
-        exit(path) {
+        exit(path: NodePath<t.Program>): void {
             path.node.body.unshift(applyFunction);
         },
     },
 
-    CallExpression: function (path) {
+    CallExpression: function (path: NodePath<t.CallExpression>): void {
         const applyId = t.identifier('apply');
         const applyArgs = [path.node.callee, ...path.node.arguments];
         const applyCall = t.callExpression(applyId, applyArgs);

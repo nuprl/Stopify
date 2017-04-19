@@ -1,20 +1,21 @@
+import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
 const h = require('./helpers');
 
-function toFuncDecl(str) {
+function toFuncDecl(str: string): t.FunctionDeclaration {
     const func = <t.FunctionExpression>b.parse(str);
     const { id, params, body, generator } = func;
     return t.functionDeclaration(id, params, body, generator);
 }
 
-const yieldCall = <t.CallExpression>b.parse(`
+const yieldCall = t.expressionStatement(<t.CallExpression>b.parse(`
   run(yielder())
-`);
+`));
 
 const tailYieldVisitor = { 
     Program: {
-        exit(path) {
+        exit(path: NodePath<t.Program>): void {
             // Function to run top level callExpressions.
             const runFunc = toFuncDecl(`
     function run(gen) {
@@ -38,7 +39,7 @@ const tailYieldVisitor = {
         },
     },
 
-    ['FunctionDeclaration|FunctionExpression']: function (path) {
+    ['FunctionDeclaration|FunctionExpression']: function (path: NodePath<t.FunctionDeclaration|t.FunctionExpression>): void {
         // Add a yield call at the top of the function to force it to pause.
         path.node.body.body.unshift(yieldCall);
     }

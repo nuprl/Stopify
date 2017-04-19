@@ -12,26 +12,34 @@
  * the function body. To fix this, the body of all loops should a statement.
  */
 
+import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 const h = require('./helpers.js');
+type While<T> = T & {
+    continue_label?: t.Identifier;
+};
+type Break<T> = T & {
+    break_label?: t.Identifier;
+};
 
 // Object containing the visitor functions
 const loopVisitor = { 
     // Convert For Statements into While Statements
-    ForStatement: function ForStatement(path) {
+    ForStatement: function ForStatement(path: NodePath<t.ForStatement>): void {
         const node = path.node;
         let { init, test, update, body: wBody } = node;
+        let nupdate : t.Statement|t.Expression = update;
 
         // New body is a the old body with the update appended to the end.
-        if (update === null) {
-            update = t.emptyStatement();
+        if (nupdate === null) {
+            nupdate = t.emptyStatement();
         } else {
-            update = t.expressionStatement(update);
+            nupdate = t.expressionStatement(update);
         }
         const loopContinue = path.scope.generateUidIdentifier('loop_continue');
         wBody = t.blockStatement([
             t.labeledStatement(loopContinue, wBody),
-            update,
+            nupdate,
         ]);
 
         // Test can be null
@@ -39,11 +47,11 @@ const loopVisitor = {
             test = t.booleanLiteral(true);
         }
 
-        const wl = t.whileStatement(test, wBody);
+        const wl : While<t.WhileStatement> = t.whileStatement(test, wBody);
         wl.continue_label = loopContinue;
 
         // The init can either be a variable declaration or an expression
-        let nInit = t.emptyStatement();
+        let nInit : t.Statement = t.emptyStatement();
         if (init !== null) {
             nInit = t.isExpression(init) ? t.expressionStatement(init) : init;
         }
@@ -52,7 +60,7 @@ const loopVisitor = {
     },
 
     // Convert do-while statements into while statements.
-    DoWhileStatement: function DoWhileStatement(path) {
+    DoWhileStatement: function DoWhileStatement(path: NodePath<t.DoWhileStatement>): void {
         const node = path.node;
         let { test, body } = node;
 
@@ -71,7 +79,7 @@ const loopVisitor = {
             h.flatBodyStatement([runOnceInit, t.whileStatement(test, body)]));
     },
 
-    WhileStatement: function (path) {
+    WhileStatement: function (path: NodePath<While<Break<t.WhileStatement>>>): void {
         // Wrap the body in a labeled continue block.
         if (path.node.continue_label === undefined) {
             const loopContinue = path.scope.generateUidIdentifier('loop_continue');

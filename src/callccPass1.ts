@@ -27,6 +27,7 @@
  *       | return a;
  */
 
+import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 const h = require('./helpers.js');
 
@@ -34,21 +35,23 @@ const h = require('./helpers.js');
  * scope.
  * arg must be a single argument.
  */
-function namedFunction(fname, arg, body) {
-    return t.functionDeclaration(fname, [arg], t.blockStatement(body));
-}
+// TODO: fix arg type annotation once DefinitelyTyped PR #100 is merged.
+function namedFunction(fname: t.Identifier,
+    arg: any,
+    body: Array<t.Statement>): t.FunctionDeclaration {
+        return t.functionDeclaration(fname, [arg], t.blockStatement(body));
+    }
 
-// Object to contain the visitor functions
-const callccVisitor = {
-    VariableDeclarator: function VariableDeclarator(path) {
+const variableDecl : VisitNode<t.VariableDeclarator> =
+    function VariableDeclarator(path: NodePath<t.VariableDeclarator>): void {
         if (t.isCallExpression(path.node.init) === false) {
             return;
         }
         const stmtParent = path.getStatementParent();
-        const thisPath = stmtParent.key;
-        const sibs = stmtParent.container;
+        const thisPath : any = stmtParent.key;
+        const sibs : any = stmtParent.container;
 
-        const name = path.node.id;
+        const name = <t.Expression>path.node.id;
 
         // The continuation of a let expression is everything after it.
         // Walk up the VariableDeclaration before getting the siblings.
@@ -67,7 +70,7 @@ const callccVisitor = {
 
             // Remove the siblings that were added above.
             for (let i = thisPath + 1; i < sibs.length; i += 1) {
-                stmtParent.container.pop();
+                sibs.pop();
             }
 
             if (path.findParent(path => path.isFunction()) !== null) {
@@ -77,7 +80,11 @@ const callccVisitor = {
                 stmtParent.insertAfter(t.expressionStatement(t.callExpression(nk, [name])));
             }
         }
-    }
+    };
+
+// Object to contain the visitor functions
+const callccVisitor : Visitor = {
+    VariableDeclarator: variableDecl
 }
 
 module.exports = function (babel) {

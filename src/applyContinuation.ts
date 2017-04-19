@@ -9,7 +9,7 @@ const program : VisitNode<t.Program> = function (path: NodePath<t.Program>): voi
     const k = path.scope.generateUidIdentifier('k');
     const cpsFunction = (<t.ExpressionStatement>body[0]).expression;
     const kReturn = t.returnStatement(k);
-    const kArgs = <t.Pattern[]>[k];
+    const kArgs = <any>[k];
     const kont = t.functionExpression(null, kArgs, t.blockStatement([kReturn]));
     const cpsApply = t.callExpression(cpsFunction, [kont]);
 

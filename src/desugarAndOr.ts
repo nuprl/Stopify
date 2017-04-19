@@ -4,12 +4,13 @@
  * Early-escaping logical expressions are transformed into ternary expressions.
  */
 
+import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 
 // Object containing the visitor functions
-const andOrVisitor = { 
+const andOrVisitor : Visitor = { 
     // No Logical Binary Expressions
-    LogicalExpression: function (path) {
+    LogicalExpression: function (path: NodePath<t.LogicalExpression>): void {
         const node = path.node;
         const { left, operator, right } = node;
 

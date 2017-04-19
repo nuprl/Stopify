@@ -1,0 +1,65 @@
+<html>
+
+  <head>
+    <title>Code Editor</title>
+  </head>
+
+  <script>
+    let counter = 0;
+    let limiter = 1;
+
+    function run(gen, res = { done: false }) {
+      res = gen.next();
+      if (res.done) {
+        console.log(res.value)
+      }
+      else {
+        window.setTimeout(_ => {
+          if(window.stopped) {
+            throw 'Execution terminated'
+          } else {
+            return run(gen, res)
+          }
+        })
+      }
+    }
+
+    function *fac(n) {
+      // Serves to pause the function on each call.
+      if (counter === 1) {
+        console.log(n)
+        yield 'dummy';
+        counter = 0;
+      } else {
+        counter++;
+      }
+
+      if (n == 1) {
+        return 1;
+      }
+      else {
+        const r = yield* fac(n - 1);
+        return r * n;
+      }
+    }
+
+    function runProg() {
+      run(fac(4000));
+    }
+
+    function stop() {
+      window.stopped = true;
+    }
+
+    function reset() {
+      window.stopped = false;
+    }
+</script>
+
+  <body>
+    <button id="run" type="button" onclick="runProg()">Run</button>
+    <button id="stop" type="button" onclick="stop()">Stop</button>
+    <button id="reset" type="button" onclick="reset()">Reset</button>
+  </body>
+
+</html>

@@ -5,14 +5,18 @@
 3. (optional) Run `npm install -g babel-cli` for a global installation of
    babel. If you skip this step, use `./node_modules/.bin/babel` instead of
    `babel` in all the following commands.
+4. (optional) Run `npm install -g typescript` for a global installation of the
+   typescript compiler.
 
 ## Testing
 ### Test Suite
+* Build the test suite using `npm run build` or `tsc`.
 * Run the test suite using `npm test`.
 
 ### Compiling a single file
 * To compile a file, run `babel <filename>`.
-* Use `transform.js`.
+* Use `./built/transform.js`. You may need to `chmod +x` this file to execute
+  it.
 
 ### Adding tests
 * Tests are defined inside the `tests/should-compile` and `tests/should-run`

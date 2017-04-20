@@ -1,6 +1,7 @@
 // Helper functions for the anf transformation
 /* Checks if the node is an atom */
 
+import * as babel from 'babel-core';
 import * as t from 'babel-types';
 
 function isAtomic(node: t.Node): boolean {
@@ -47,12 +48,27 @@ function isConsoleLog(node: t.Node): boolean {
       t.isIdentifier(node.property) && node.property.name === 'log';
 }
 
+function transform(src: string, plugs: any[][]): string {
+    let { code, ast } = babel.transform(src, { babelrc: false });
+    plugs.forEach(trs => {
+        const res = babel.transformFromAst(ast, code, {
+            plugins: [...trs],
+            babelrc: false,
+        });
+        code = res.code;
+        ast = res.ast;
+    });
+
+    return code;
+}
+
 export {
-  isAtomic,
-  isTerminating,
-  letExpression,
-  flatten,
-  flatBodyStatement,
-  isConsoleLog,
+    isAtomic,
+    isTerminating,
+    letExpression,
+    flatten,
+    flatBodyStatement,
+    isConsoleLog,
+    transform
 };
 

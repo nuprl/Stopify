@@ -1,7 +1,7 @@
-const assert = require('assert');
+import * as assert from 'assert';
 import * as babel from 'babel-core';
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 
 // All the plugins
 import * as desugarLoop from '../src/desugarLoop';
@@ -23,8 +23,10 @@ import * as yieldPass from '../src/yield';
 
 // Verification transform.
 import * as verifier from '../src/verifier';
-const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
-module.exports = { transformTest, retainValueTest, walkSync };
+import * as noArrows from 'babel-plugin-transform-es2015-arrow-functions';
+
+// Helpers
+import {transform} from '../src/helpers';
 
 // Make sure all transformers are included here.
 const defaults = [
@@ -33,20 +35,6 @@ const defaults = [
   [cps, verifier],
   [kApply]
 ];
-
-function transform(src, plugs) {
-  let { code, ast } = babel.transform(src, { babelrc: false });
-  plugs.forEach(trs => {
-      const res = babel.transformFromAst(ast, code, {
-        plugins: [...trs],
-        babelrc: false,
-      });
-      code = res.code;
-      ast = res.ast;
-  });
-
-  return code;
-}
 
 export function walkSync(dir, filelist = []) {
   fs.readdirSync(dir).forEach(file => {
@@ -88,3 +76,9 @@ export function retainValueTest(org) {
   assert(pass,
     `Failed: original evals to '${oe}' while transformed evals to '${te}'`);
 }
+
+module.exports = {
+    transformTest,
+    retainValueTest,
+    walkSync
+};

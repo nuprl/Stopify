@@ -13,7 +13,7 @@ import * as anf from './src/anf';
 
 // CPS transforms.
 import * as addKArg from './src/addContinuationArg';
-import * as cps from './src/cpsVisitor';
+import * as cpsVisitor from './src/cpsVisitor';
 import * as kApply from './src/applyContinuation';
 import * as applyStop from './src/stoppableApply';
 
@@ -25,20 +25,12 @@ import * as verifier from './src/verifier';
 
 const desugarPasses = [noArrows, desugarLoop, desugarLabel, desugarAndOr];
 const yp = [yieldPass];
-const defaults = [anf, addKArg, cps];
+const preCPS = [anf, addKArg];
+const cps = [cpsVisitor];
+const defaults = [desugarPasses, preCPS, cps, [verifier]];
 
 function transform(src, plugs) {
-  let { code, ast } = babel.transform(src, { babelrc: false });
-  plugs.forEach(tr => {
-    const res = babel.transformFromAst(ast, code, {
-      plugins: [tr],
-      babelrc: false,
-    });
-    code = res.code;
-    ast = res.ast;
-  });
-
-  return code;
+    return h.transform(src, plugs);
 }
 
 /*

@@ -23,6 +23,9 @@ import * as yieldPass from './src/yield';
 // Verification transform.
 import * as verifier from './src/verifier';
 
+// Helpers
+import * as h from './src/helpers';
+
 const desugarPasses = [noArrows, desugarLoop, desugarLabel, desugarAndOr];
 const yp = [yieldPass];
 const preCPS = [anf, addKArg];

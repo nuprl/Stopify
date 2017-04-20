@@ -1,7 +1,7 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
-const h = require('./helpers');
+import * as h from './helpers';
 
 interface CallExpression extends t.CallExpression {
     dontTransform: boolean;

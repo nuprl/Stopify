@@ -29,7 +29,7 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-const h = require('./helpers.js');
+import * as h from './helpers';
 
 /** The body must be an array of statements and name must be unique in the
  * scope.

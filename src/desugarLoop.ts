@@ -14,7 +14,8 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-const h = require('./helpers.js');
+import * as h from './helpers';
+
 type While<T> = T & {
     continue_label?: t.Identifier;
 };
@@ -23,7 +24,7 @@ type Break<T> = T & {
 };
 
 // Object containing the visitor functions
-const loopVisitor = { 
+const loopVisitor = {
     // Convert For Statements into While Statements
     ForStatement: function ForStatement(path: NodePath<t.ForStatement>): void {
         const node = path.node;

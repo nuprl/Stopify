@@ -9,7 +9,7 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-const h = require('./helpers.js');
+import * as h from './helpers';
 
 // Object to contain the visitor functions
 const callExpression : VisitNode<t.CallExpression> = function (path: NodePath<t.CallExpression>): void {

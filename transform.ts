@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-const fs = require('fs');
+import * as fs from 'fs';
 import * as babel from 'babel-core';
 
 // Desugaring transforms.
-const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
+import * as noArrows from 'babel-plugin-transform-es2015-arrow-functions';
 import * as desugarLoop from './src/desugarLoop';
 import * as desugarLabel from './src/desugarLabel';
 import * as desugarAndOr from './src/desugarAndOr';
@@ -19,10 +19,6 @@ import * as applyStop from './src/stoppableApply';
 
 // Yield transform.
 import * as yieldPass from './src/yield';
-//const yieldPass = require('./src/yield');
-
-// Tail yield transform
-import * as tailYieldPass from './src/tail_yield';
 
 // Verification transform.
 import * as verifier from './src/verifier';

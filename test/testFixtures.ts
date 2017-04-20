@@ -21,9 +21,6 @@ import * as applyStop from '../src/stoppableApply';
 import * as yieldPass from '../src/yield';
 //const yieldPass = require('./src/yield');
 
-// Tail yield transform
-import * as tailYieldPass from '../src/tail_yield';
-
 // Verification transform.
 import * as verifier from '../src/verifier';
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');

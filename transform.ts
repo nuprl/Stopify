@@ -23,6 +23,8 @@ import * as yieldPass from './src/yield';
 // Verification transform.
 import * as verifier from './src/verifier';
 
+const desugarPasses = [noArrows, desugarLoop, desugarLabel, desugarAndOr];
+const yp = [yieldPass];
 const defaults = [anf, addKArg, cps];
 
 function transform(src, plugs) {

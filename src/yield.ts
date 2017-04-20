@@ -21,7 +21,6 @@ function run(gen) {
 }
 `);
 const { id, params, body } = runFunc;
-runFunc = t.functionDeclaration(id, params, body);
 const runFuncName = runFunc.id;
 
 const program : VisitNode<t.Program> = {

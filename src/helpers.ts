@@ -14,7 +14,7 @@ function isTerminating(node: t.Node): boolean {
 
 function letExpression(name: t.Identifier, value: t.Expression): t.VariableDeclaration {
   return t.variableDeclaration('const',
-          [t.variableDeclarator(name, value)]);
+    [t.variableDeclarator(name, value)]);
 }
 
 function flatten(seq: t.Statement[]): t.Statement[] {
@@ -33,7 +33,7 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
         if (t.isStatement(e)) newBody.push(e);
         else if (t.isEmptyStatement(e)) { } else {
           throw new Error(
-          'Could not flatten body, element was not a statement');
+            'Could not flatten body, element was not a statement');
         }
       });
     } else newBody.push(elem);
@@ -44,31 +44,31 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
 
 function isConsoleLog(node: t.Node): boolean {
   return t.isMemberExpression(node) &&
-      t.isIdentifier(node.object) && node.object.name === 'console' &&
-      t.isIdentifier(node.property) && node.property.name === 'log';
+    t.isIdentifier(node.object) && node.object.name === 'console' &&
+    t.isIdentifier(node.property) && node.property.name === 'log';
 }
 
 function transform(src: string, plugs: any[][]): string {
-    let { code, ast } = babel.transform(src, { babelrc: false });
-    plugs.forEach(trs => {
-        const res = babel.transformFromAst(ast, code, {
-            plugins: [...trs],
-            babelrc: false,
-        });
-        code = res.code;
-        ast = res.ast;
+  let { code, ast } = babel.transform(src, { babelrc: false });
+  plugs.forEach(trs => {
+    const res = babel.transformFromAst(ast, code, {
+      plugins: [...trs],
+      babelrc: false,
     });
+    code = res.code;
+    ast = res.ast;
+  });
 
-    return code;
+  return code;
 }
 
 export {
-    isAtomic,
-    isTerminating,
-    letExpression,
-    flatten,
-    flatBodyStatement,
-    isConsoleLog,
-    transform
+  isAtomic,
+  isTerminating,
+  letExpression,
+  flatten,
+  flatBodyStatement,
+  isConsoleLog,
+  transform
 };
 

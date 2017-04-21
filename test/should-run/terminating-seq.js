@@ -1,4 +1,3 @@
-/* plugins: [anf,addKArg,cps] */
 function g() {
     let x = 1;
     return x;
@@ -12,4 +11,6 @@ function f() {
     return a + b;
 }
 let x = f();
-console.log(x+1);
+
+assert.equal(x, 3)
+

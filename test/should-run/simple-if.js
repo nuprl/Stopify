@@ -7,4 +7,4 @@ else {
   x = 20;
 }
 
-x
+assert.equal(x, 10)

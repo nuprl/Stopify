@@ -1,3 +1,0 @@
-for(init(); ; update()) {
-    body();
-}

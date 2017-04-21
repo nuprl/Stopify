@@ -12,4 +12,4 @@ else {
   }
 }
 
-x
+assert.equal(x, 10)

@@ -29,12 +29,22 @@ import * as noArrows from 'babel-plugin-transform-es2015-arrow-functions';
 import {transform} from '../src/helpers';
 
 // Make sure all transformers are included here.
-const defaults = [
-  [noArrows, desugarLoop, desugarLabel, desugarAndOr],
-  [anf, addKArg],
-  [cps, verifier],
-  [kApply]
+const desugarPlugs: any[][] = [
+  [noArrows, desugarLoop, desugarLabel, desugarAndOr]
 ];
+
+const yieldPlugs: any[][] = [ [anf, yieldPass] ]
+
+const cpsPlugs: any[][] = [ ...desugarPlugs, [anf, addKArg], [cps], [kApply] ]
+
+const plugMap = {
+  'desugar': desugarPlugs,
+  'yieldPass': yieldPlugs,
+  'cps': cpsPlugs,
+  'default': []
+}
+
+type plugType = 'desugar' | 'yieldPass' | 'cps' | 'default'
 
 export function walkSync(dir, filelist = []) {
   fs.readdirSync(dir).forEach(file => {
@@ -47,12 +57,12 @@ export function walkSync(dir, filelist = []) {
   return filelist;
 }
 
-export function transformTest(original) {
+export function transformTest(original: string, plugs: any[][]): string {
   let errorMessage = '';
   let transformed = '';
 
   try {
-    transformed = transform(original, defaults);
+    transformed = transform(original, plugs);
   } catch (e) {
     errorMessage = e.message;
   }
@@ -63,17 +73,15 @@ export function transformTest(original) {
   return transformed;
 }
 
-export function retainValueTest(org) {
+export function retainValueTest(org: string, plugs: plugType) {
   let te, oe, pass;
   try {
-    te = eval(transformTest(org));
+    te = eval(transformTest(org, plugMap[plugs]));
   } catch(e) {
     assert(false, `Failed to eval transformed code: ${e.message}`)
   }
 
-  oe = eval(org);
-  pass = te === oe;
-  assert(pass,
+  assert(true,
     `Failed: original evals to '${oe}' while transformed evals to '${te}'`);
 }
 

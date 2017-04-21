@@ -4,5 +4,5 @@ function f() {
   return false;
 }
 var tmp = f() && true;
-count
 
+assert.equal(count, 1)

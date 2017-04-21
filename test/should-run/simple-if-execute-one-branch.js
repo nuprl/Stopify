@@ -7,4 +7,4 @@ else {
   x = 10
 }
 
-x
+assert(x, 10)

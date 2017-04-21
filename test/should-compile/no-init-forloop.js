@@ -1,3 +1,0 @@
-for(; test(); update()) {
-  body();
-}

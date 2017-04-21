@@ -1,6 +1,6 @@
-/* plugins: [desugarAndOr, desugarLoop, desugarLabel] */
 let sum = 0;
-for(let i = 0; i < 10; i++) {
+for(let i = 0; i < 5; i++) {
   sum += i;
 }
-sum
+
+assert.equal(sum, 10)

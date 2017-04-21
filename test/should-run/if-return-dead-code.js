@@ -8,4 +8,4 @@ function f(a) {
   throw 'dead-code executed'
 }
 
-f(0)
+assert.equal(f(0), 1)

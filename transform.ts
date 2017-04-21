@@ -51,7 +51,7 @@ function parsePlugins(code) {
     return { str: '', arr: defaults };
   } else {
     const str = line[0];
-    const plugs = str.substring(str.indexOf('['), str.indexOf(']') + 1);
+    let plugs = str.substring(str.indexOf('['), str.lastIndexOf(']') + 1);
     if (plugs.charAt(0) !== '[') {
       throw new Error(`Malformed plugin string: ${str}`);
     }

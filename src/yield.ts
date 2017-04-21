@@ -9,7 +9,7 @@ interface CallExpression extends t.CallExpression {
 type Function = t.FunctionDeclaration|t.FunctionExpression;
 
 // Function to run top level callExpressions.
-let runFunc : t.FunctionDeclaration = <t.FunctionDeclaration>b.parse(`
+let runFunc = b.parseExpression(`
 function run(gen) {
   let it = gen;
   let res = { done: false };

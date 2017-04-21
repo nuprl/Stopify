@@ -6,7 +6,7 @@ import * as file from 'file';
 const testFiles = f.walkSync(path.join(__dirname, './should-run'))
   .filter((f) => f.endsWith('.js'))
 
-describe('Sanity check -- All tests pass without plugins', function () {
+describe('Desugaring tests', function () {
   testFiles.forEach(filename => {
     const prog = fs.readFileSync(filename, 'utf-8').toString();
     it(filename, function () {

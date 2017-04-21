@@ -5,4 +5,4 @@ function f(a, b) {
 	return r;
 }
 
-f(x => x + 1, y => y * 10);
+assert.equal(f(x => x + 1, y => y * 10), 682);

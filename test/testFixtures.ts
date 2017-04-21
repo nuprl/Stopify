@@ -33,7 +33,7 @@ const desugarPlugs: any[][] = [
   [noArrows, desugarLoop, desugarLabel, desugarAndOr]
 ];
 
-const yieldPlugs: any[][] = [ ...desugarPlugs, [anf, yieldPass] ]
+const yieldPlugs: any[][] = [ [noArrows, desugarAndOr], [anf], [yieldPass] ]
 
 const cpsPlugs: any[][] = [ ...desugarPlugs, [anf, addKArg], [cps], [kApply], [verifier] ]
 

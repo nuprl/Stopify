@@ -7,6 +7,7 @@ import * as noArrows from 'babel-plugin-transform-es2015-arrow-functions';
 import * as desugarLoop from './src/desugarLoop';
 import * as desugarLabel from './src/desugarLabel';
 import * as desugarAndOr from './src/desugarAndOr';
+import * as desugarWhileToFunc from './src/desugarLoopToFunc';
 
 // Call Expression naming transform.
 import * as anf from './src/anf';
@@ -28,7 +29,9 @@ import * as noEvalVerifier from './src/verifiers/noEvalVerifier';
 // Helpers
 import * as h from './src/helpers';
 
-const desugarPasses = [noArrows, desugarLoop, desugarLabel, desugarAndOr];
+const desugarPasses = [
+  noArrows, desugarLoop, desugarLabel, desugarAndOr, desugarWhileToFunc
+];
 const yp = [yieldPass];
 const preCPS = [anf, addKArg];
 const cps = [cpsVisitor];

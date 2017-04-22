@@ -9,6 +9,7 @@ import * as noArrows from 'babel-plugin-transform-es2015-arrow-functions';
 import * as desugarLoop from '../src/desugarLoop';
 import * as desugarLabel from '../src/desugarLabel';
 import * as desugarAndOr from '../src/desugarAndOr';
+import * as desugarWhileToFunc from '../src/desugarLoopToFunc';
 
 // Call Expression naming transform.
 import * as anf from '../src/anf';
@@ -33,7 +34,7 @@ import {transform} from '../src/helpers';
 // Make sure all transformers are included here.
 const desugarPlugs: any[][] = [
   [noEvalVerifier, noArrows, desugarLoop, desugarLabel, desugarAndOr,
-    desugarVerifier]
+    desugarVerifier, desugarWhileToFunc]
 ];
 
 const yieldPlugs: any[][] = [

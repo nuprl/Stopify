@@ -13,7 +13,7 @@ import * as h from './helpers';
 
 // Object to contain the visitor functions
 const callExpression : VisitNode<t.CallExpression> = function (path: NodePath<t.CallExpression>): void {
-  if (h.isConsoleLog(path.node.callee)) return;
+  if (h.isNativeFunction(path.node.callee)) return;
 
   const p = path.parent;
   // Name the function application if it is not already named.

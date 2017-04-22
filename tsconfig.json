@@ -7,9 +7,9 @@
         "target": "es6",
         "pretty": true
     },
-    "exclude": [
-        "examples",
-        "node_modules",
-        "built"
+    "include": [
+      "src",
+      "test",
+      "transform.ts"
     ]
 }

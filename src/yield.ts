@@ -38,7 +38,7 @@ const program : VisitNode<t.Program> = {
 
 const callExpression: VisitNode<t.CallExpression> =
   function (path: NodePath<t.CallExpression>): void {
-    if (h.isConsoleLog(path.node.callee)) return;
+    if (h.isNativeFunction(path.node.callee)) return;
     if (t.isYieldExpression(path.parent)) return;
 
     const yieldExpr = t.yieldExpression(path.node, true);

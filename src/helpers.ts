@@ -42,10 +42,16 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   return t.blockStatement(newBody);
 }
 
-function isConsoleLog(node: t.Node): boolean {
+function isNativeFunction(node: t.Node): boolean {
+  const natives = [
+    'console',
+    'Math',
+    'String',
+    'JSON',
+    'window'
+  ]
   return t.isMemberExpression(node) &&
-    t.isIdentifier(node.object) && node.object.name === 'console' &&
-    t.isIdentifier(node.property) && node.property.name === 'log';
+    t.isIdentifier(node.object) && natives.includes(node.object.name);
 }
 
 function transform(src: string, plugs: any[][]): string {
@@ -68,7 +74,7 @@ export {
   letExpression,
   flatten,
   flatBodyStatement,
-  isConsoleLog,
+  isNativeFunction,
   transform
 };
 

@@ -9,16 +9,21 @@ interface CallExpression extends t.CallExpression {
 type Function = t.FunctionDeclaration|t.FunctionExpression;
 
 // Function to run top level callExpressions.
+// TODO(rachit): Make the run function check for stopped state.
 let runFunc = b.parseExpression(`
-function run(gen) {
-  let it = gen;
-  let res = { done: false };
-  while (res.done === false) {
-    res = it.next();
-  };
-  res = res.value;
-  return res;
-}
+  function run(gen, res = { done: false }) {
+    if (gen !== undefined && typeof gen.next === 'function') {
+      res = gen.next();
+      if (res.done) {
+        return res.value
+      }
+      else {
+        return run(gen, res)
+      }
+    } else {
+      return gen;
+    }
+  }
 `);
 const { id, params, body } = runFunc;
 const runFuncName = runFunc.id;

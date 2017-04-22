@@ -4,7 +4,8 @@
         "outDir": "./built",
         "allowJs": true,
         "allowUnreachableCode": true,
-        "target": "es6"
+        "target": "es6",
+        "pretty": true
     },
     "exclude": [
         "examples",

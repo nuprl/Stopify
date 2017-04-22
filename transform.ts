@@ -21,7 +21,9 @@ import * as applyStop from './src/stoppableApply';
 import * as yieldPass from './src/yield';
 
 // Verification transform.
-import * as verifier from './src/verifier';
+import * as cpsVerifier from './src/verifiers/cpsVerifier';
+import * as desugarVerifier from './src/verifiers/desugarVerifier';
+import * as noEvalVerifier from './src/verifiers/noEvalVerifier';
 
 // Helpers
 import * as h from './src/helpers';
@@ -30,7 +32,9 @@ const desugarPasses = [noArrows, desugarLoop, desugarLabel, desugarAndOr];
 const yp = [yieldPass];
 const preCPS = [anf, addKArg];
 const cps = [cpsVisitor];
-const defaults = [desugarPasses, preCPS, cps, [verifier]];
+const defaults = [
+  [noEvalVerifier], desugarPasses, preCPS, cps, [desugarVerifier]
+];
 
 function transform(src, plugs) {
     return h.transform(src, plugs);

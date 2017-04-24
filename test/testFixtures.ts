@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+const assert = require('assert');
 import * as babel from 'babel-core';
 import * as fs from 'fs';
 import * as path from 'path';

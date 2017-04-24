@@ -9,7 +9,7 @@
       window.stopped = true;
     }
 
-    function stopped() {
+    function isStop() {
       return window.stopped === true;
     }
 
@@ -23,7 +23,7 @@
 
     function run(gen, res = { done: false }) {
       setTimeout(_ => {
-        if (stopped()) {
+        if (isStop()) {
           onStop();
         } else {
           res = gen.next();if (res.done) {

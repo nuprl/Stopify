@@ -47,7 +47,11 @@ class CPSStopify implements Stoppable {
 
   run(): void {
     const that = this;
+    let interval = 0;
+    let counter = interval;
     let apply = function (f, k, ...args) {
+        if (counter-- === 0) {
+        counter = interval;
         setTimeout(_ => {
             if (that.isStop()) {
               that.onStop();
@@ -55,7 +59,9 @@ class CPSStopify implements Stoppable {
               return f(k, ...args);
             }
           }, 0);
-        };
+        } else {
+          return f(k, ...args);
+        }};
     eval(that.cps);
   };
 

@@ -10,6 +10,7 @@ class YieldStopify implements Stoppable {
   private transformed: string;
   private isStop: () => boolean;
   private onStop: () => any;
+  private interval: number;
 
   constructor (code: string,
     isStop: () => boolean,
@@ -25,8 +26,13 @@ class YieldStopify implements Stoppable {
       this.stop = stop;
     };
 
+    setInterval(that): void {
+      this.interval = that;
+    }
+
     run(): void {
       const that = this;
+      let counter = 0;
       const $runYield = function run(gen,
         res = { done: false, value: undefined }) {
         setTimeout(_ => {
@@ -58,5 +64,5 @@ const yieldStopify : stopify = function (code: string,
 }
 
 export {
-    cpsStopify,
+    yieldStopify,
 };

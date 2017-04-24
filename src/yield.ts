@@ -17,7 +17,7 @@ const program : VisitNode<t.Program> = {
     path.node.body = [func]
   },
   exit: function (path: NodePath<t.Program>): void {
-    path.node.body = [runFunc, ...path.node.body]
+    path.node.body = [...path.node.body, runProg]
   },
 };
 

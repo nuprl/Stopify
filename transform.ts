@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const assert = require('assert');
 import * as fs from 'fs';
 import * as babel from 'babel-core';
 
@@ -36,7 +37,7 @@ const yp = [yieldPass];
 const preCPS = [anf, addKArg];
 const cps = [cpsVisitor];
 const defaults = [
-  [noEvalVerifier], desugarPasses, preCPS, cps, [desugarVerifier]
+  [noEvalVerifier], desugarPasses, preCPS, cps, [kApply], [desugarVerifier]
 ];
 
 function transform(src, plugs) {
@@ -70,6 +71,7 @@ function parsePlugins(code) {
 
 // read the filename from the command line arguments
 const fileName = process.argv[2];
+const output = process.argv[3];
 
 // read the code from this file
 fs.readFile(fileName, (err, data) => {
@@ -79,6 +81,12 @@ fs.readFile(fileName, (err, data) => {
   const plugsObj = parsePlugins(src);
   const str = transform(src, plugsObj.arr);
 
-  // print the generated code to screen
-  console.log(str);
+  if (output === '--eval') {
+    // eval the transformed code. Tests are assumed to contain an assert on
+    // testing the output.
+    const te = eval(str);
+  } else if (output === '--print' || output === undefined) {
+    // print the generated code to screen
+    console.log(str);
+  }
 });

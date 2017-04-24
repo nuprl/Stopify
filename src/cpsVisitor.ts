@@ -78,7 +78,11 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
         const { id, init } = declarations[0];
         if (t.isCallExpression(init)) {
           const tailFunction = createTailFunction(tailPath, tail, headK, id);
-          const headFunction = createHeadFunction(init.callee, headK, tailFunction, ...init.arguments);
+          let args = init.arguments;
+          if (t.isIdentifier(init.callee) && path.scope.hasBinding(init.callee.name)) {
+            args = [tailFunction, ...args];
+          }
+          const headFunction = createHeadFunction(init.callee, headK, ...args);
           return headFunction;
         } else {
           const k : any = path.scope.generateUidIdentifier('k');

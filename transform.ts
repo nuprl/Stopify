@@ -29,9 +29,11 @@ import * as noEvalVerifier from './src/verifiers/noEvalVerifier';
 
 // Helpers
 import * as h from './src/helpers';
+import {Stoppable} from './src/stopifyInterface';
+import {cpsStopify} from './src/stopifyCPSEval';
 
 const desugarPasses = [
-  noArrows, desugarLoop, desugarLabel, desugarAndOr, desugarWhileToFunc
+  noArrows, desugarLoop, desugarWhileToFunc, desugarLabel, desugarAndOr
 ];
 const yp = [yieldPass];
 const preCPS = [anf, addKArg];
@@ -73,6 +75,14 @@ function parsePlugins(code) {
 const fileName = process.argv[2];
 const output = process.argv[3];
 
+function stopify(code: string): Stoppable {
+    let stopped = false;
+    let isStop = function () { return stopped; };
+    let onStop = function () { console.log('stopped'); };
+    let stop = function () { stopped = true; };
+    return cpsStopify(code, isStop, onStop, stop);
+}
+
 // read the code from this file
 fs.readFile(fileName, (err, data) => {
   if (err) throw err;
@@ -80,6 +90,7 @@ fs.readFile(fileName, (err, data) => {
 
   const plugsObj = parsePlugins(src);
   const str = transform(src, plugsObj.arr);
+//  const stoppableEval = stopify(src);
 
   if (output === '--eval') {
     // eval the transformed code. Tests are assumed to contain an assert on

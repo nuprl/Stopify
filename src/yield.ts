@@ -5,23 +5,8 @@ import * as h from './helpers';
 
 type Function = t.FunctionDeclaration|t.FunctionExpression;
 
-// Function to run top level callExpressions.
-let runFunc = b.parseExpression(`
-  function run(gen, res = { done: false }) {
-    setTimeout(_ => {
-      res = gen.next();
-      if (res.done) {
-        return res.value
-      }
-      else {
-        return run(gen, res)
-      }
-    })
-  }
-`);
-
 let runProg = b.parseExpression(`
-run($runProg())
+$runYield($runProg())
 `)
 
 const program : VisitNode<t.Program> = {
@@ -32,7 +17,7 @@ const program : VisitNode<t.Program> = {
     path.node.body = [func]
   },
   exit: function (path: NodePath<t.Program>): void {
-    path.node.body = [runFunc, ...path.node.body, runProg]
+    path.node.body = [runFunc, ...path.node.body]
   },
 };
 

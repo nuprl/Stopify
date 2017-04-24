@@ -26,6 +26,7 @@ class CPSStopify implements Stoppable {
   private cps: string;
   private isStop: Function;
   private onStop: Function;
+  private interval: number;
 
   constructor (code: string,
     isStop: () => boolean,
@@ -43,15 +44,15 @@ class CPSStopify implements Stoppable {
       this.isStop = isStop;
       this.onStop = onStop;
       this.stop = stop;
+      this.interval = 10;
     };
 
   run(): void {
     const that = this;
-    let interval = 0;
-    let counter = interval;
+    let counter = that.interval;
     let apply = function (f, k, ...args) {
         if (counter-- === 0) {
-        counter = interval;
+        counter = that.interval;
         setTimeout(_ => {
             if (that.isStop()) {
               that.onStop();
@@ -67,6 +68,10 @@ class CPSStopify implements Stoppable {
 
   stop(): void {
     return this.stop();
+  }
+
+  setInterval(n: number): void {
+    this.interval = n;
   }
 };
 

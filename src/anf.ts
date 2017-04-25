@@ -16,7 +16,7 @@ const callExpression : VisitNode<t.CallExpression> = function (path: NodePath<t.
   if (h.isNativeFunction(path.node.callee)) return;
 
   const p = path.parent;
-  if (!t.isVariableDeclarator(p) || !t.isReturnStatement(p)) {
+  if (!t.isVariableDeclarator(p) && !t.isReturnStatement(p)) {
     // Name the function application if it is not already named.
     const name = path.scope.generateUidIdentifier('app');
     const bind = h.letExpression(name, path.node);

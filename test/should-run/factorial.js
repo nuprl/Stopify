@@ -6,4 +6,4 @@ function fact(x) {
     }
 }
 
-assert(fact(5) === 120)
+assert.equal(120, fact(5));

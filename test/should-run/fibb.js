@@ -10,4 +10,4 @@ function fibb(n) {
   return helper(0, 1, n);
 }
 
-fibb(1000);
+assert.equal(55, fibb(10));

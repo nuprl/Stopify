@@ -32,7 +32,7 @@ class YieldStopify implements Stoppable {
 
     run(): void {
       const that = this;
-      let counter = 0;
+      const $yieldCounter = this.interval;
       const $runYield = function run(gen,
         res = { done: false, value: undefined }) {
         setTimeout(_ => {

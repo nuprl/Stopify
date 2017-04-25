@@ -23,7 +23,7 @@ import {transform} from './helpers';
 
 class CPSStopify implements Stoppable {
   private original: string;
-  private cps: string;
+  transformed: string;
   private isStop: Function;
   private onStop: Function;
   private interval: number;
@@ -40,7 +40,7 @@ class CPSStopify implements Stoppable {
         [kApply],
         [applyStop],
       ];
-      this.cps = transform(code, plugins);
+      this.transformed = transform(code, plugins);
       this.isStop = isStop;
       this.onStop = onStop;
       this.stop = stop;
@@ -64,7 +64,7 @@ class CPSStopify implements Stoppable {
         } else {
           return f(k, ...args);
         }};
-    eval(that.cps);
+    eval(that.transformed);
   };
 
   stop(): void {

@@ -1,22 +1,6 @@
 import { stopify, Stoppable } from '../src/stopifyInterface';
+import { StopWrapper } from '../src/helpers';
 import * as process from 'process';
-
-// Object to wrap the state of the stop, onStop, isStop functions
-class StopWrapper {
-  private hasStopped: boolean;
-  constructor() {
-    this.hasStopped = false;
-  }
-  onStop() {
-    throw 'Execution stopped'
-  }
-  stop() {
-   this.hasStopped = true;
-  }
-  isStop() {
-    return this.hasStopped === true;
-  }
-}
 
 const benchmarkResponsiveness = function (stopifyFunc: stopify,
   code: string,

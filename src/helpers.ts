@@ -1,6 +1,24 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 
+// Object to wrap the state of the stop, onStop, isStop functions
+class StopWrapper {
+  private hasStopped: boolean;
+  constructor() {
+    this.hasStopped = false;
+  }
+  onStop() {
+    throw 'Execution stopped'
+  }
+  stop() {
+   this.hasStopped = true;
+  }
+  isStop() {
+    return this.hasStopped === true;
+  }
+}
+
+
 function isAtomic(node: t.Node): boolean {
   return t.isLiteral(node) || t.isIdentifier(node);
 }
@@ -72,6 +90,7 @@ export {
   flatten,
   flatBodyStatement,
   isNativeFunction,
-  transform
+  transform,
+  StopWrapper,
 };
 

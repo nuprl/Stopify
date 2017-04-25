@@ -11,6 +11,7 @@
     "include": [
       "src",
       "test",
-      "transform.ts"
+      "transform.ts",
+      "stopify.ts"
     ]
 }

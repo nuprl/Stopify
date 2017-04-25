@@ -7,7 +7,7 @@ import { transform } from './helpers';
 
 class YieldStopify implements Stoppable {
   private original: string;
-  private transformed: string;
+  transformed: string;
   private isStop: () => boolean;
   private onStop: () => any;
   private interval: number;

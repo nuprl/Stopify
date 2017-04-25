@@ -48,6 +48,7 @@ class CPSStopify implements Stoppable {
     };
 
   run(): void {
+    'use strict';
     const that = this;
     let counter = that.interval;
     let apply = function (f, k, ...args) {
@@ -68,11 +69,11 @@ class CPSStopify implements Stoppable {
 
   stop(): void {
     return this.stop();
-  }
+  };
 
   setInterval(n: number): void {
     this.interval = n;
-  }
+  };
 };
 
 const cpsStopify : stopify = function (code: string,

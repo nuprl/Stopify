@@ -24,6 +24,7 @@ class YieldStopify implements Stoppable {
       this.isStop = isStop;
       this.onStop = onStop;
       this.stop = stop;
+      this.interval = 10;
     };
 
     setInterval(that): void {
@@ -33,6 +34,7 @@ class YieldStopify implements Stoppable {
     run(): void {
       const that = this;
       const $yieldCounter = this.interval;
+      let $counter = 0;
       const $runYield = function run(gen,
         res = { done: false, value: undefined }) {
         setTimeout(_ => {

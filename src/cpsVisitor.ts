@@ -172,7 +172,7 @@ const block : VisitNode<t.BlockStatement> = {
 // CPS [[ return e; ]] =>
 //   let k = return continuation;
 //   [[ function (k') {
-//        return k(e);
+//        return k(`CPS [[ e ]]`);
 //      } ]]
 //
 // Assumptions:
@@ -181,6 +181,13 @@ const block : VisitNode<t.BlockStatement> = {
 const ret : VisitNode<t.ReturnStatement> =
   function (path: NodePath<ReturnStatement>): void {
     if (isCPS(path.node)) return;
+    if (t.isCallExpression(path.node.argument)) {
+      const callArgs = [path.node.kArg, ...path.node.argument.arguments];
+      path.node.argument.arguments = callArgs;
+      (<CPS<t.Node>>path.node.argument).cps = true;
+      (<CPS<t.Node>>path.node).cps = true;
+      return;
+    }
 
     const k : any = path.scope.generateUidIdentifier('k');
     const returnCall : CPS<t.CallExpression> = t.callExpression(path.node.kArg, [path.node.argument]);

@@ -11,11 +11,13 @@ class YieldStopify implements Stoppable {
   private isStop: () => boolean;
   private onStop: () => any;
   private interval: number;
+  private onDone: (any?) => any
 
   constructor (code: string,
     isStop: () => boolean,
     onStop: () => any,
-    stop: () => void) {
+    stop: () => void,
+    onDone: (any?) => any) {
       this.original = code;
       const plugins = [
         [noArrows, desugarAndOr], [anf], [yieldPass]
@@ -25,6 +27,7 @@ class YieldStopify implements Stoppable {
       this.onStop = onStop;
       this.stop = stop;
       this.interval = 10;
+      this.onDone = onDone;
     };
 
     setInterval(that): void {
@@ -43,7 +46,7 @@ class YieldStopify implements Stoppable {
           }
           res = gen.next();
           if (res.done) {
-            return res.value;
+            return that.onDone(res.value);
           }
           else {
             return run(gen, res);

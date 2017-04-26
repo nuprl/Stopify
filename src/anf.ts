@@ -55,6 +55,6 @@ const anfVisitor : Visitor = {
   "Loop": loop,
 }
 
-module.exports = function (babel) {
+module.exports = function() {
   return { visitor: anfVisitor };
 };

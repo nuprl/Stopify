@@ -14,6 +14,6 @@ const verifyVisitor = {
   }
 }
 
-module.exports = function (babel) {
+module.exports = function() {
   return { visitor: verifyVisitor };
 };

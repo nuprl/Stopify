@@ -29,6 +29,6 @@ const kApplyVisitor : Visitor = {
   Program: program
 };
 
-module.exports = function (babel) {
+module.exports = function() {
   return { visitor: kApplyVisitor };
 };

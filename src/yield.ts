@@ -62,6 +62,6 @@ const yieldVisitor: Visitor = {
   CallExpression: callExpression
 }
 
-module.exports = function (babel) {
+module.exports = function() {
   return { visitor: yieldVisitor };
 };

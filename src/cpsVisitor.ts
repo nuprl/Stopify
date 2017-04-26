@@ -318,6 +318,6 @@ const cpsVisitor : Visitor = {
   Function: func
 }
 
-module.exports = function (babel) {
+module.exports = function() {
   return { visitor: cpsVisitor };
 };

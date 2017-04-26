@@ -6,7 +6,10 @@
         "allowUnreachableCode": true,
         "lib": ["es2016"],
         "target": "es6",
-        "pretty": true
+        "pretty": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noUnusedParameters": true
     },
     "include": [
       "src",

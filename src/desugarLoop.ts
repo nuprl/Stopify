@@ -98,6 +98,6 @@ const loopVisitor = {
   }
 }
 
-module.exports = function (babel) {
+module.exports = function() {
   return { visitor: loopVisitor };
 };

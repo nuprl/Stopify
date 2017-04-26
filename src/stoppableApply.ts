@@ -22,6 +22,6 @@ const stopApplyVisitor : Visitor = {
     }
 }
 
-module.exports = function (babel) {
+module.exports = function() {
     return { visitor: stopApplyVisitor };
 };

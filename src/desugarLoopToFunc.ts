@@ -2,7 +2,7 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from './helpers';
 
-module.exports = function (babel) {
+module.exports = function() {
   return {
     visitor: {
       WhileStatement: function WhileStatement(path: NodePath<t.WhileStatement>) {

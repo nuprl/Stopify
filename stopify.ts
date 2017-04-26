@@ -17,18 +17,20 @@ if (transform === undefined) {
   throw new Error('No transformation was specified')
 }
 
-let stoppable;
+let stopifyFunc;
 const sw: StopWrapper = new StopWrapper();
 switch(transform) {
   case 'yield':
-    stoppable = yieldStopify(code, sw.isStop, sw.onStop, sw.stop);
+    stopifyFunc = yieldStopify
     break;
   case 'cps':
-    stoppable = cpsStopify(code, sw.isStop, sw.onStop, sw.stop);
+    stopifyFunc = cpsStopify
     break;
   default:
     throw new Error(`Unknown transform: ${transform}`)
 }
+
+const stoppable = stopifyFunc(code, sw.isStop, sw.onStop, sw.stop, sw.onDone)
 
 switch(output) {
   case 'print':

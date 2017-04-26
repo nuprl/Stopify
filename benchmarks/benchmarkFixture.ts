@@ -12,7 +12,8 @@ const benchmarkResponsiveness = function (stopifyFunc: stopify,
   ): number[] {
     return [...Array(trails).keys()].map(function () {
       const sw: StopWrapper = new StopWrapper();
-      let stoppable = stopifyFunc(code, sw.isStop, sw.onStop, sw.stop)
+      let stoppable =
+        stopifyFunc(code, sw.isStop, sw.onStop, sw.stop, sw.onDone)
       stoppable.setInterval(yieldInterval);
       stoppable.run()
 
@@ -37,7 +38,8 @@ const benchmarkRuntime = function (stopifyFunc: stopify,
   trails: number): number[] {
     return [...Array(n).keys()].map(function () {
       const sw: StopWrapper = new StopWrapper();
-      const stoppable = stopifyFunc(code, sw.isStop, sw.onStop, sw.stop)
+      const stoppable =
+        stopifyFunc(code, sw.isStop, sw.onStop, sw.stop, sw.onDone)
       stoppable.setInterval(yieldInterval);
       const startTime = process.hrtime();
       stoppable.run();

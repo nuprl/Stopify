@@ -4,7 +4,8 @@ import * as t from 'babel-types';
 // Object to wrap the state of the stop, onStop, isStop functions
 class StopWrapper {
   private hasStopped: boolean;
-  constructor() {
+  onDone: (any?) => any
+  constructor(onDone: (any?) => any = (value) => console.log(value)) {
     this.hasStopped = false;
   }
   onStop() {

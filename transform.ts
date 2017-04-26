@@ -75,14 +75,6 @@ function parsePlugins(code) {
 const fileName = process.argv[2];
 const output = process.argv[3];
 
-function stopify(code: string): Stoppable {
-    let stopped = false;
-    let isStop = function () { return stopped; };
-    let onStop = function () { console.log('stopped'); };
-    let stop = function () { stopped = true; };
-    return cpsStopify(code, isStop, onStop, stop);
-}
-
 // read the code from this file
 fs.readFile(fileName, (err, data) => {
   if (err) throw err;
@@ -95,7 +87,7 @@ fs.readFile(fileName, (err, data) => {
   if (output === '--eval') {
     // eval the transformed code. Tests are assumed to contain an assert on
     // testing the output.
-    const te = eval(str);
+    console.log(eval(str));
   } else if (output === '--print' || output === undefined) {
     // print the generated code to screen
     console.log(str);

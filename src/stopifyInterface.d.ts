@@ -8,4 +8,5 @@ export interface Stoppable {
 export type stopify = (code: string,
     isStop: () => boolean,
     onStop: () => any,
-    stop: () => void) => Stoppable;
+    stop: () => void,
+    onDone: (any?) => any) => Stoppable;

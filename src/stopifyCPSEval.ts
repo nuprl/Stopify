@@ -26,14 +26,12 @@ class CPSStopify implements Stoppable {
   transformed: string;
   private isStop: Function;
   private onStop: Function;
-  private onDone: Function;
   private interval: number;
 
   constructor (code: string,
     isStop: () => boolean,
     onStop: () => any,
-    stop: () => void,
-    onDone: (any?) => any) {
+    stop: () => void) {
       this.original = code;
       const plugins = [
         [noArrows, desugarLoop, desugarWhileToFunc, desugarLabel, desugarAndOr],
@@ -46,11 +44,10 @@ class CPSStopify implements Stoppable {
       this.isStop = isStop;
       this.onStop = onStop;
       this.stop = stop;
-      this.onDone = onDone;
       this.interval = 10;
     };
 
-  run(): void {
+  run(onDone: (any?) => any): void {
     'use strict';
     const that = this;
     let counter = that.interval;
@@ -67,7 +64,6 @@ class CPSStopify implements Stoppable {
         } else {
           return f(k, ...args);
         }};
-    let onDone = this.onDone;
     eval(that.transformed);
   };
 
@@ -83,9 +79,8 @@ class CPSStopify implements Stoppable {
 const cpsStopify : stopify = function (code: string,
   isStop: () => boolean,
   onStop: () => any,
-  stop: () => void,
-  onDone: (any?) => any): CPSStopify {
-    return new CPSStopify(code, isStop, onStop, stop, onDone);
+  stop: () => void): CPSStopify {
+    return new CPSStopify(code, isStop, onStop, stop);
 }
 
 export {

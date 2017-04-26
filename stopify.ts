@@ -37,7 +37,7 @@ switch(output) {
     console.log(stoppable.transformed)
     break;
   case 'eval':
-    stoppable.run()
+    stoppable.run(x => console.log(x))
     break;
   default:
     throw new Error(`Unknown output format: ${output}`)

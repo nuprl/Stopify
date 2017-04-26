@@ -12,10 +12,9 @@ const benchmarkResponsiveness = function (stopifyFunc: stopify,
   ): number[] {
     return [...Array(trails).keys()].map(function () {
       const sw: StopWrapper = new StopWrapper();
-      let stoppable =
-        stopifyFunc(code, sw.isStop, sw.onStop, sw.stop, sw.onDone)
+      let stoppable = stopifyFunc(code, sw.isStop, sw.onStop, sw.stop)
       stoppable.setInterval(yieldInterval);
-      stoppable.run()
+      stoppable.run(sw.onDone)
 
       let startTime = process.hrtime();
       try {
@@ -39,11 +38,10 @@ const benchmarkRuntime = function (stopifyFunc: stopify,
   trails: number): number[] {
     return [...Array(trails).keys()].map(function () {
       const sw: StopWrapper = new StopWrapper();
-      const stoppable =
-        stopifyFunc(code, sw.isStop, sw.onStop, sw.stop, sw.onDone)
+      const stoppable = stopifyFunc(code, sw.isStop, sw.onStop, sw.stop)
       stoppable.setInterval(yieldInterval);
       const startTime = process.hrtime();
-      stoppable.run();
+      stoppable.run(sw.onDone);
       const diff = process.hrtime(startTime);
       return diff[0] * 1e9 + diff[1]
     })

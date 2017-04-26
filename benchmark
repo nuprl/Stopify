@@ -16,18 +16,18 @@ echo 'inteval,time1,time2,time3,time4,time5;' >> $YIELD_LOG
 
 for i in "${INTERVALS[@]}"; do
   echo -n "$i" >> $CPS_LOG
-  for i in `seq 1 5`; do
+  for j in `seq 1 5`; do
     echo -n ',' >> $CPS_LOG
-    /usr/bin/time --output=$CPS_LOG --append --format '%E' ./built/stopify.js -i factorial.js -t cps -o 'eval'
+    /usr/bin/time --output=$CPS_LOG --append --format '%E' ./built/stopify.js -i factorial.js -t cps -o 'eval' -y $i
   done
   echo -n ';' >> $CPS_LOG
 done
 
 for i in "${INTERVALS[@]}"; do
   echo -n "$i" >> $YIELD_LOG
-  for i in `seq 1 5`; do
+  for j in `seq 1 5`; do
     echo -n ',' >> $YIELD_LOG
-    /usr/bin/time --output=$YIELD_LOG --append --format '%E' ./built/stopify.js -i factorial.js -t yield -o 'eval'
+    /usr/bin/time --output=$YIELD_LOG --append --format '%E' ./built/stopify.js -i factorial.js -t yield -o 'eval' -y $i
   done
   echo -n ';' >> $YIELD_LOG
 done

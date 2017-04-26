@@ -32,6 +32,13 @@ switch(transform) {
 
 const stoppable = stopifyFunc(code, sw.isStop, sw.onStop, sw.stop, sw.onDone)
 
+const yieldInterval = argv.y || argv.yieldInterval
+if (yieldInterval !== undefined) {
+  let interval = parseInt(argv.y || argv.yieldInterval)
+  if (isNaN(interval)) throw new Error(`Unknown interval: ${yieldInterval}`)
+  stoppable.setInterval(interval);
+}
+
 switch(output) {
   case 'print':
     console.log(stoppable.transformed)

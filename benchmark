@@ -1,0 +1,36 @@
+#!/bin/bash
+
+CPS_LOG='./cps-times.csv'
+YIELD_LOG='./yield-times.csv'
+INTERVALS=(1 10 25 50 75 100 150 200 250 300 350 400 450 500)
+
+if [[ -f $CPS_LOG ]]; then
+  rm $CPS_LOG
+fi
+if [[ -f $YIELD_LOG ]]; then
+  rm $YIELD_LOG
+fi
+
+echo 'inteval,time1,time2,time3,time4,time5;' >> $CPS_LOG
+echo 'inteval,time1,time2,time3,time4,time5;' >> $YIELD_LOG
+
+for i in "${INTERVALS[@]}"; do
+  echo -n "$i" >> $CPS_LOG
+  for i in `seq 1 5`; do
+    echo -n ',' >> $CPS_LOG
+    /usr/bin/time --output=$CPS_LOG --append --format '%E' ./built/stopify.js -i factorial.js -t cps -o 'eval'
+  done
+  echo -n ';' >> $CPS_LOG
+done
+
+for i in "${INTERVALS[@]}"; do
+  echo -n "$i" >> $YIELD_LOG
+  for i in `seq 1 5`; do
+    echo -n ',' >> $YIELD_LOG
+    /usr/bin/time --output=$YIELD_LOG --append --format '%E' ./built/stopify.js -i factorial.js -t yield -o 'eval'
+  done
+  echo -n ';' >> $YIELD_LOG
+done
+
+sed -i ':a;N;$!ba;s/\n//g' $CPS_LOG $YIELD_LOG
+sed -i 's/[0-9]*://g' $CPS_LOG $YIELD_LOG

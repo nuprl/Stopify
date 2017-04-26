@@ -7,13 +7,8 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
 
-interface CallExpression extends t.CallExpression {
-  dontTransform: boolean;
-}
-
 const stopApplyVisitor : Visitor = {
-    CallExpression: function (path: NodePath<CallExpression>): void {
-        if (path.node.dontTransform) return
+    CallExpression: function (path: NodePath<t.CallExpression>): void {
         const applyId = t.identifier('apply');
         const applyArgs = [path.node.callee, ...path.node.arguments];
         const applyCall = t.callExpression(applyId, applyArgs);

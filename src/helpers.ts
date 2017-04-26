@@ -7,6 +7,7 @@ class StopWrapper {
   onDone: (any?) => any
   constructor(onDone: (any?) => any = (value) => console.log(value)) {
     this.hasStopped = false;
+    this.onDone = onDone;
   }
   onStop() {
     throw 'Execution stopped'

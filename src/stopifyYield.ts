@@ -64,8 +64,9 @@ class YieldStopify implements Stoppable {
 const yieldStopify : stopify = function (code: string,
   isStop: () => boolean,
   onStop: () => any,
-  stop: () => void): YieldStopify {
-    return new YieldStopify(code, isStop, onStop, stop);
+  stop: () => void,
+  onDone: (any?) => any): YieldStopify {
+    return new YieldStopify(code, isStop, onStop, stop, onDone);
 }
 
 export {

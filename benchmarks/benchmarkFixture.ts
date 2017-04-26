@@ -20,6 +20,7 @@ const benchmarkResponsiveness = function (stopifyFunc: stopify,
       let startTime = process.hrtime();
       try {
         stoppable.stop()
+        return -1;
       } catch (e) {
         if (e === 'Execution stopped') {
           let diff = process.hrtime(startTime)
@@ -36,7 +37,7 @@ const benchmarkRuntime = function (stopifyFunc: stopify,
   code: string,
   yieldInterval: number,
   trails: number): number[] {
-    return [...Array(n).keys()].map(function () {
+    return [...Array(trails).keys()].map(function () {
       const sw: StopWrapper = new StopWrapper();
       const stoppable =
         stopifyFunc(code, sw.isStop, sw.onStop, sw.stop, sw.onDone)

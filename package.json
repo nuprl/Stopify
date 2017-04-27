@@ -17,9 +17,6 @@
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
     "babel-types": "^6.22.0",
     "babylon": "^6.16.1",
-    "eslint": "^3.12.2",
-    "eslint-config-airbnb-base": "^11.0.1",
-    "eslint-plugin-import": "^2.2.0",
     "file": "^0.2.2",
     "glob": "^7.1.1",
     "minimist": "^1.2.0",
@@ -29,11 +26,7 @@
   },
   "scripts": {
     "build": "./node_modules/.bin/tsc || true",
-    "test": "./node_modules/.bin/mocha built/test/ || true",
-    "lint": "./node_modules/.bin/eslint --color src/* || true",
-    "lintall": "./node_modules/.bin/eslint --color src/* test/* || true",
-    "fix": "./node_modules/.bin/eslint --fix src/* || true ",
-    "fixall": "./node_modules/.bin/eslint --fix src/* test/* || true "
+    "test": "./node_modules/.bin/mocha built/test/ || true"
   },
   "author": "Rachit Nigam",
   "license": "ISC"

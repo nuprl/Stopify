@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { yieldStopify } from './src/stopifyYield'
 import { cpsStopify } from './src/stopifyCPSEval'
+import { regeneratorStopify } from './src/stopifyRegenerator'
 import { StopWrapper } from './src/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -26,11 +27,14 @@ switch(transform) {
   case 'cps':
     stopifyFunc = cpsStopify
     break;
+  case 'regen':
+    stopifyFunc = regeneratorStopify
+    break;
   default:
     throw new Error(`Unknown transform: ${transform}`)
 }
 
-const stoppable = stopifyFunc(code, sw.isStop, sw.onStop, sw.stop, sw.onDone)
+const stoppable = stopifyFunc(code, sw.isStop, sw.onStop, sw.stop)
 
 const yieldInterval = argv.y || argv.yieldInterval
 if (yieldInterval !== undefined) {

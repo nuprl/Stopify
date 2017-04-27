@@ -2,6 +2,7 @@
 
 CPS_LOG='./cps-times.csv'
 YIELD_LOG='./yield-times.csv'
+REGEN_LOG='./regen-times.csv'
 INTERVALS=(1 10 25 50 75 100 150 200 250 300 350 400 450 500)
 
 if [[ -f $CPS_LOG ]]; then
@@ -10,9 +11,13 @@ fi
 if [[ -f $YIELD_LOG ]]; then
   rm $YIELD_LOG
 fi
+if [[ -f $REGEN_LOG ]]; then
+  rm $REGEN_LOG
+fi
 
-echo 'inteval,time1,time2,time3,time4,time5;' >> $CPS_LOG
-echo 'inteval,time1,time2,time3,time4,time5;' >> $YIELD_LOG
+echo 'Interval,time1,time2,time3,time4,time5;' >> $CPS_LOG
+echo 'Interval,time1,time2,time3,time4,time5;' >> $YIELD_LOG
+echo 'Interval,time1,time2,time3,time4,time5;' >> $REGEN_LOG
 
 for i in "${INTERVALS[@]}"; do
   echo -n "$i" >> $CPS_LOG
@@ -32,5 +37,18 @@ for i in "${INTERVALS[@]}"; do
   echo -n ';' >> $YIELD_LOG
 done
 
-sed -i ':a;N;$!ba;s/\n//g' $CPS_LOG $YIELD_LOG
-sed -i 's/[0-9]*://g' $CPS_LOG $YIELD_LOG
+for i in "${INTERVALS[@]}"; do
+  echo -n "$i" >> $REGEN_LOG
+  for j in `seq 1 5`; do
+    echo -n ',' >> $REGEN_LOG
+    /usr/bin/time --output=$REGEN_LOG --append --format '%E' node --stack_size=1000000 ./built/stopify.js -i factorial.js -t regen -o 'eval' -y $i
+  done
+  echo -n ';' >> $REGEN_LOG
+done
+
+# Cleanup files
+sed -i ':a;N;$!ba;s/\n//g' $CPS_LOG $YIELD_LOG $REGEN_LOG
+sed -i 's/;/\n/g' $CPS_LOG $YIELD_LOG $REGEN_LOG
+
+# Cleanup times
+sed -i 's/[0-9]*://g' $CPS_LOG $YIELD_LOG $REGEN_LOG

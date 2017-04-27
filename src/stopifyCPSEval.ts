@@ -34,7 +34,8 @@ class CPSStopify implements Stoppable {
     stop: () => void) {
       this.original = code;
       const plugins = [
-        [noArrows, desugarLoop, desugarWhileToFunc, desugarLabel, desugarAndOr],
+        [noArrows, desugarLoop, desugarLabel],
+        [desugarWhileToFunc, desugarAndOr],
         [anf, addKArg],
         [cps],
         [applyStop],

@@ -14,7 +14,7 @@ const onDone = function (res) { console.log(res + 7) }
 
 const sw = new StopWrapper(onDone)
 
-const stoppable = yieldStopify(code, sw.isStop, sw.onStop, sw.stop);
+const stoppable = yieldStopify(code, sw.isStop, sw.stop);
 
 stoppable.run(x => console.log(x + 1))
 stoppable.run(x => console.log(x + 2))

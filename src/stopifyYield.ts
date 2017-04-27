@@ -39,7 +39,7 @@ class YieldStopify implements Stoppable {
       res = { done: false, value: undefined }) {
       setTimeout(_ => {
         if ($that.isStop()) {
-          $that.onStop();
+          return $that.onStop();
         }
         res = gen.next();
         if (res.done) {

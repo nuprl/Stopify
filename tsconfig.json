@@ -13,7 +13,6 @@
     "include": [
       "src",
       "test",
-      "benchmarks",
       "transform.ts",
       "stopify.ts"
     ]

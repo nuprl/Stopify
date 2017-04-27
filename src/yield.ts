@@ -56,6 +56,14 @@ const callExpression: VisitNode<t.CallExpression> =
     path.replaceWith(yieldExpr);
   };
 
+const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {
+  if (t.isBlockStatement(path.node.body)) {
+    path.node.body.body.unshift(ifYield);
+  } else {
+    throw new Error('Body of loop is not a block statement')
+  }
+}
+
 const func: VisitNode<Function> = function (path: NodePath<Function>): void {
   // Add a dummy yield at the top of the function to force it to pause.
   (<Function>path.node).body.body.unshift(ifYield);
@@ -66,7 +74,8 @@ const yieldVisitor: Visitor = {
   Program: program,
   FunctionDeclaration: func,
   FunctionExpression: func,
-  CallExpression: callExpression
+  CallExpression: callExpression,
+  "Loop": loop,
 }
 
 module.exports = function() {

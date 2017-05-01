@@ -26,11 +26,11 @@ class CPSStopify implements Stoppable {
   transformed: string;
   private isStop: Function;
   private onStop: Function;
+  private stopTarget: () => void
   private interval: number;
 
   constructor (code: string,
     isStop: () => boolean,
-    onStop: () => any,
     stop: () => void) {
       this.original = code;
       const plugins = [
@@ -43,8 +43,7 @@ class CPSStopify implements Stoppable {
       ];
       this.transformed = transform(code, plugins);
       this.isStop = isStop;
-      this.onStop = onStop;
-      this.stop = stop;
+      this.stopTarget = stop;
       this.interval = 10;
     };
 
@@ -68,8 +67,9 @@ class CPSStopify implements Stoppable {
     eval(that.transformed);
   };
 
-  stop(): void {
-    return this.stop();
+  stop(onStop: () => any): void {
+    this.onStop = onStop;
+    return this.stopTarget();
   };
 
   setInterval(n: number): void {
@@ -79,9 +79,8 @@ class CPSStopify implements Stoppable {
 
 const cpsStopify : stopify = function (code: string,
   isStop: () => boolean,
-  onStop: () => any,
   stop: () => void): CPSStopify {
-    return new CPSStopify(code, isStop, onStop, stop);
+    return new CPSStopify(code, isStop, stop);
 }
 
 export {

@@ -34,7 +34,7 @@ switch(transform) {
     throw new Error(`Unknown transform: ${transform}`)
 }
 
-const stoppable = stopifyFunc(code, sw.isStop, sw.onStop, sw.stop)
+const stoppable = stopifyFunc(code, sw.isStop, sw.stop)
 
 const yieldInterval = argv.y || argv.yieldInterval
 if (yieldInterval !== undefined) {

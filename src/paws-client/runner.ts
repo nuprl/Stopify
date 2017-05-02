@@ -5,10 +5,20 @@
 'use strict';
 
 import { yieldStopify } from '../stopifyYield';
+import { cpsStopify } from '../stopifyCPSEval';
+import { shamStopify } from '../stopifySham';
+import { regeneratorStopify } from '../stopifyRegenerator';
 import { Stoppable } from '../stopifyInterface';
 let stopped = false;
 
 let running: Stoppable = null;
+
+const transforms = {
+  'sham': shamStopify,
+  'yield': yieldStopify,
+  'regenerator': regeneratorStopify,
+  'cps': cpsStopify
+}
 
 export function stopify(f, code: string): Stoppable {
   let stopped = false;
@@ -17,13 +27,9 @@ export function stopify(f, code: string): Stoppable {
 
 window.addEventListener('message', evt => {
   if (evt.data.code) {
-    if (evt.data.isStoppable) {
-      running = stopify(yieldStopify, evt.data.code);
-      running.run(() => console.log("Done"));
-    }
-    else {
-      eval(evt.data.code);
-    }
+    running = stopify(transforms[evt.data.transform],
+      evt.data.code);
+    running.run(() => console.log("Done"));
   }
   else if (evt.data === 'stop') {
     running.stop(() => console.log("Terminated"));

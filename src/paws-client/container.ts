@@ -18,7 +18,7 @@ editor.setValue(
 
 
 let iframe = null;
-function loadJavaScript(jsCode, isStoppable) {
+function loadJavaScript(jsCode, transform) {
   if (iframe !== null) {
     iframe.parentNode.removeChild(iframe);
   }
@@ -31,26 +31,29 @@ function loadJavaScript(jsCode, isStoppable) {
   iframe.style.border = 'none';
   container.appendChild(iframe);
   iframe.onload = () => {
-    iframe.contentWindow.postMessage({ code: jsCode, isStoppable: isStoppable }, '*');
+    iframe.contentWindow.postMessage({ code: jsCode, transform: transform }, '*');
   }
 }
 
-function run(isStoppable) {
+function run(transform) {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', '/compile/ocaml');
   xhr.send(editor.getValue());
   xhr.addEventListener('load', () => {
-    loadJavaScript(xhr.responseText, isStoppable);
+    loadJavaScript(xhr.responseText, transform);
   });
 }
 
-document.getElementById("run").addEventListener('click', () => {
-  run(true);
-});
+function setupRun(name) {
+  document.getElementById("run-" + name).addEventListener('click', () => {
+    run(name);
+  });
+}
 
-document.getElementById("fast").addEventListener('click', () => {
-  run(false);
-});
+setupRun('sham');
+setupRun('regenerator');
+setupRun('yield');
+setupRun('cps');
 
 document.getElementById("stop").addEventListener('click', () => {
   if (iframe === null) {

@@ -26,8 +26,8 @@ import * as noEvalVerifier from '../src/verifiers/noEvalVerifier';
 
 
 const desugarPlugs: any[][] = [
-  [noEvalVerifier, noArrows, desugarLoop, desugarLabel, desugarAndOr,
-    desugarVerifier, desugarWhileToFunc]
+  [noEvalVerifier, noArrows, desugarLoop, desugarLabel],
+  [desugarWhileToFunc, desugarAndOr, desugarVerifier]
 ];
 
 const cpsPlugs: any[][] = [

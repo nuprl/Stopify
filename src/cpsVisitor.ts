@@ -157,7 +157,10 @@ const block : VisitNode<t.BlockStatement> = {
     if (isCPS(path.node)) return;
     const { body } = path.node;
 
-    const bodyPath = path.get('body.0');
+    let bodyPath = path.get('body.0');
+    if (bodyPath === undefined) {
+      bodyPath = path;
+    }
     const newBody = foldSequence(bodyPath, body);
 
     const newBlock : CPS<t.BlockStatement> = t.blockStatement([t.expressionStatement(newBody)]);
@@ -309,12 +312,36 @@ const func : VisitNode<Function> = {
   },
 };
 
+const breakStatement : VisitNode<t.BreakStatement> =
+  function (path: NodePath<t.BreakStatement>): void {
+    const { label } = path.node;
+    if (label === null) {
+      return;
+    }
+    const labelCall : CPS<t.CallExpression> = t.callExpression(label, [t.unaryExpression('void', t.numericLiteral(0))]);
+    labelCall.cps = true;
+    const labelReturn : CPS<t.ReturnStatement> = t.returnStatement(labelCall);
+    labelReturn.cps = true;
+    path.replaceWith(labelReturn);
+  };
+
+const labelStatement : VisitNode<t.LabeledStatement> = {
+  enter(path: NodePath<t.LabeledStatement>): void {
+    const { label, body } = path.node;
+    const newBody = t.isBlockStatement(body) ? body : t.blockStatement([body]);
+    const labelFunc = t.functionExpression(null, [<any>label], newBody);
+    path.replaceWith(t.expressionStatement(labelFunc));
+  }
+};
+
 const cpsVisitor : Visitor = {
   Program: program,
   BlockStatement: block,
   ReturnStatement: ret,
   ExpressionStatement: exp,
   IfStatement: ifStatement,
+  BreakStatement: breakStatement,
+  LabeledStatement: labelStatement,
   Function: func
 }
 

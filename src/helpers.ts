@@ -1,6 +1,16 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 
+// Wrap AST nodes with `cps` property
+type CPS<T> = T & {
+  cps?: boolean;
+};
+function cps<T>(t: T): CPS<T> {
+    const cpsd = <CPS<T>>t;
+    cpsd.cps = true;
+    return cpsd;
+}
+
 // Object to wrap the state of the stop, onStop, isStop functions
 class StopWrapper {
   private hasStopped: boolean;
@@ -94,5 +104,7 @@ export {
   isNativeFunction,
   transform,
   StopWrapper,
+  CPS,
+  cps,
 };
 

@@ -4,13 +4,11 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
+import {CPS, cps} from './helpers';
 
 type Function = t.FunctionDeclaration | t.FunctionExpression;
 interface ReturnStatement extends t.ReturnStatement {
   kArg: t.Expression;
-};
-type CPS<T> = T & {
-  cps?: boolean;
 };
 
 // Hack to avoid applying visitors to newly constructed nodes.
@@ -24,14 +22,10 @@ function createTailFunction(tailPath: NodePath<t.Node>,
   headK: any,
   tailK: any): t.FunctionExpression {
     const newTail = foldSequence(tailPath, tail);
-    const tailCall : CPS<t.CallExpression> = t.callExpression(newTail, [headK]);
-    tailCall.cps = true;
-    const tailReturn : CPS<t.ReturnStatement> = t.returnStatement(tailCall);
-    tailReturn.cps = true;
-    const tailBody : CPS<t.BlockStatement> = t.blockStatement([tailReturn]);
-    tailBody.cps = true;
-    const tailFunction : CPS<t.FunctionExpression> = t.functionExpression(null, [tailK], tailBody);
-    tailFunction.cps = true;
+    const tailCall = cps(t.callExpression(newTail, [headK]));
+    const tailReturn = cps(t.returnStatement(tailCall));
+    const tailBody = cps(t.blockStatement([tailReturn]));
+    const tailFunction = cps(t.functionExpression(null, [tailK], tailBody));
     return tailFunction;
   }
 
@@ -39,14 +33,10 @@ function createTailFunction(tailPath: NodePath<t.Node>,
 function createHeadFunction(head: t.Expression,
   headK: any,
   ...headCallArgs: Array<t.Expression|t.SpreadElement>): t.FunctionExpression {
-    const headCall : CPS<t.CallExpression> = t.callExpression(head, [...headCallArgs]);
-    headCall.cps = true;
-    const headReturn : CPS<t.ReturnStatement> = t.returnStatement(headCall);
-    headReturn.cps = true;
-    const headBody : CPS<t.BlockStatement> = t.blockStatement([headReturn]);
-    headBody.cps = true;
-    const headFunction : CPS<t.FunctionExpression> = t.functionExpression(null, [headK], headBody);
-    headFunction.cps = true;
+    const headCall = cps(t.callExpression(head, [...headCallArgs]));
+    const headReturn = cps(t.returnStatement(headCall));
+    const headBody = cps(t.blockStatement([headReturn]));
+    const headFunction = cps(t.functionExpression(null, [headK], headBody));
     return headFunction;
   }
 
@@ -57,14 +47,10 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
   const tailK = path.scope.generateUidIdentifier('k');
   if (head === undefined) {
     const k : any = path.scope.generateUidIdentifier('k');
-    const kCall : CPS<t.CallExpression> = t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]);
-    kCall.cps = true;
-    const kReturn : CPS<t.ReturnStatement> = t.returnStatement(kCall);
-    kReturn.cps = true;
-    const kBody : CPS<t.BlockStatement> = t.blockStatement([kReturn]);
-    kBody.cps = true;
-    const kFunction : CPS<t.FunctionExpression> = t.functionExpression(null, [k], kBody);
-    kFunction.cps = true;
+    const kCall = cps(t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]));
+    const kReturn = cps(t.returnStatement(kCall));
+    const kBody = cps(t.blockStatement([kReturn]));
+    const kFunction = cps(t.functionExpression(null, [k], kBody));
     return kFunction;
   } else {
     switch (head.type) {
@@ -86,14 +72,10 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
           return headFunction;
         } else {
           const k : any = path.scope.generateUidIdentifier('k');
-          const kCall : CPS<t.CallExpression> = t.callExpression(k, <any[]>[id]);
-          kCall.cps = true;
-          const kReturn : CPS<t.ReturnStatement> = t.returnStatement(kCall);
-          kReturn.cps = true;
-          const kBody : CPS<t.BlockStatement> = t.blockStatement([head, kReturn]);
-          kBody.cps = true;
-          const expFunction : CPS<t.FunctionExpression> = t.functionExpression(null, [k], kBody);
-          expFunction.cps = true;
+          const kCall = cps(t.callExpression(k, <any[]>[id]));
+          const kReturn = cps(t.returnStatement(kCall));
+          const kBody = cps(t.blockStatement([head, kReturn]));
+          const expFunction = cps(t.functionExpression(null, [k], kBody));
 
           const tailFunction = createTailFunction(tailPath, tail, headK, id);
           const headFunction = createHeadFunction(expFunction, headK, tailFunction);
@@ -101,14 +83,10 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
         }
       } case 'FunctionDeclaration': {
         const k : any = path.scope.generateUidIdentifier('k');
-        const kCall : CPS<t.CallExpression> = t.callExpression(k, [head.id]);
-        kCall.cps = true;
-        const kReturn : CPS<t.ReturnStatement> = t.returnStatement(kCall);
-        kReturn.cps = true;
-        const kBody : CPS<t.BlockStatement> = t.blockStatement([head, kReturn]);
-        kBody.cps = true;
-        const expFunction : CPS<t.FunctionExpression> = t.functionExpression(null, [k], kBody);
-        expFunction.cps = true;
+        const kCall = cps(t.callExpression(k, [head.id]));
+        const kReturn = cps(t.returnStatement(kCall));
+        const kBody = cps(t.blockStatement([head, kReturn]));
+        const expFunction = cps(t.functionExpression(null, [k], kBody));
 
         const tailFunction = createTailFunction(tailPath, tail, headK, head.id);
         const headFunction = createHeadFunction(expFunction, headK, tailFunction);
@@ -118,14 +96,10 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
         const tailFunction = createTailFunction(tailPath, tail, headK, tailK);
 
         const k : any = path.scope.generateUidIdentifier('k');
-        const kCall : CPS<t.CallExpression> = t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]);
-        kCall.cps = true;
-        const kReturn : CPS<t.ReturnStatement> = t.returnStatement(kCall);
-        kReturn.cps = true;
-        const kBody : CPS<t.BlockStatement> = t.blockStatement(<t.Statement[]>[path.node, kReturn]);
-        kBody.cps = true;
-        const expFunction : CPS<t.FunctionExpression> = t.functionExpression(null, [k], kBody);
-        expFunction.cps = true;
+        const kCall = cps(t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]));
+        const kReturn = cps(t.returnStatement(kCall));
+        const kBody = cps(t.blockStatement(<t.Statement[]>[path.node, kReturn]));
+        const expFunction = cps(t.functionExpression(null, [k], kBody));
 
         return expFunction;
       }
@@ -137,8 +111,7 @@ const program : VisitNode<t.Program> = {
   exit(path: NodePath<t.Program>): void {
     const { body } = path.node;
     const bodyPath = path.get('body.0');
-    const newBody : CPS<t.ExpressionStatement> = t.expressionStatement(foldSequence(bodyPath, body));
-    newBody.cps = true;
+    const newBody = cps(t.expressionStatement(foldSequence(bodyPath, body)));
     path.node.body = [newBody];
   },
 };
@@ -163,8 +136,6 @@ const block : VisitNode<t.BlockStatement> = {
     }
     const newBody = foldSequence(bodyPath, body);
 
-    const newBlock : CPS<t.BlockStatement> = t.blockStatement([t.expressionStatement(newBody)]);
-    newBlock.cps = true;
     path.node.body = [t.expressionStatement(newBody)];
   },
 };
@@ -193,16 +164,11 @@ const ret : VisitNode<t.ReturnStatement> =
     }
 
     const k : any = path.scope.generateUidIdentifier('k');
-    const returnCall : CPS<t.CallExpression> = t.callExpression(path.node.kArg, [path.node.argument]);
-    returnCall.cps = true;
-    const newReturn : CPS<t.ReturnStatement> = t.returnStatement(returnCall);
-    newReturn.cps = true;
-    const returnBody : CPS<t.BlockStatement> = t.blockStatement([newReturn]);
-    returnBody.cps = true;
-    const returnFunction : CPS<t.FunctionExpression> = t.functionExpression(null, [k], returnBody);
-    returnFunction.cps = true;
-    const fExp : CPS<t.ExpressionStatement> = t.expressionStatement(returnFunction);
-    fExp.cps = true;
+    const returnCall = cps(t.callExpression(path.node.kArg, [path.node.argument]));
+    const newReturn = cps(t.returnStatement(returnCall));
+    const returnBody = cps(t.blockStatement([newReturn]));
+    const returnFunction = cps(t.functionExpression(null, [k], returnBody));
+    const fExp = cps(t.expressionStatement(returnFunction));
 
     path.replaceWith(fExp);
   };
@@ -226,16 +192,11 @@ const exp : VisitNode<t.ExpressionStatement> =
 
     path.node.cps = true;
     const k : any = path.scope.generateUidIdentifier('k');
-    const kCall : CPS<t.CallExpression> = t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]);
-    kCall.cps = true;
-    const kReturn : CPS<t.ReturnStatement> = t.returnStatement(kCall);
-    kReturn.cps = true;
-    const kBody : CPS<t.BlockStatement> = t.blockStatement([path.node, kReturn]);
-    kBody.cps = true;
-    const expFunction : CPS<t.FunctionExpression> = t.functionExpression(null, [k], kBody);
-    expFunction.cps = true;
-    const newExp : CPS<t.ExpressionStatement> = t.expressionStatement(expFunction);
-    newExp.cps = true;
+    const kCall = cps(t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]));
+    const kReturn = cps(t.returnStatement(kCall));
+    const kBody = cps(t.blockStatement([path.node, kReturn]));
+    const expFunction = cps(t.functionExpression(null, [k], kBody));
+    const newExp = cps(t.expressionStatement(expFunction));
 
     path.replaceWith(newExp);
   };
@@ -262,23 +223,17 @@ const ifStatement: VisitNode<t.IfStatement> = {
 
     path.node.cps = true;
     const k : any = path.scope.generateUidIdentifier('k');
-    const trueCall : CPS<t.CallExpression> = t.callExpression((<any>consequent).body[0].expression, [k]);
-    trueCall.cps = true;
-    const trueReturn : CPS<t.ReturnStatement> = t.returnStatement(trueCall);
-    trueReturn.cps = true;
+    const trueCall = cps(t.callExpression((<any>consequent).body[0].expression, [k]));
+    const trueReturn = cps(t.returnStatement(trueCall));
     path.node.consequent = trueReturn;
     if (alternate !== null) {
-      const falseCall : CPS<t.CallExpression> = t.callExpression((<any>alternate).body[0].expression, [k]);
-      falseCall.cps = true;
-      const falseReturn : CPS<t.ReturnStatement> = t.returnStatement(falseCall);
-      falseReturn.cps = true;
+      const falseCall = cps(t.callExpression((<any>alternate).body[0].expression, [k]));
+      const falseReturn = cps(t.returnStatement(falseCall));
       path.node.alternate = falseReturn;
     }
 
-    const ifBody : CPS<t.BlockStatement> = t.blockStatement([path.node]);
-    ifBody.cps = true;
-    const ifFunction : CPS<t.FunctionExpression> = t.functionExpression(null, [k], ifBody);
-    ifFunction.cps = true;
+    const ifBody = cps(t.blockStatement([path.node]));
+    const ifFunction = cps(t.functionExpression(null, [k], ifBody));
 
     path.replaceWith(ifFunction);
   },
@@ -302,12 +257,9 @@ const func : VisitNode<Function> = {
 
     if (t.isReturnStatement(body.body[0])) return;
     const bodyFunc = (<t.ExpressionStatement>body.body[0]).expression;
-    const bodyCall : CPS<t.CallExpression> = t.callExpression(bodyFunc, [<any>params[0]]);
-    bodyCall.cps = true;
-    const bodyReturn : CPS<t.ReturnStatement> = t.returnStatement(bodyCall);
-    bodyReturn.cps = true;
-    const bodyBlock : CPS<t.BlockStatement> = t.blockStatement([bodyReturn]);
-    bodyBlock.cps = true;
+    const bodyCall = cps(t.callExpression(bodyFunc, [<any>params[0]]));
+    const bodyReturn = cps(t.returnStatement(bodyCall));
+    const bodyBlock = cps(t.blockStatement([bodyReturn]));
     path.node.body = bodyBlock;
   },
 };
@@ -318,10 +270,8 @@ const breakStatement : VisitNode<t.BreakStatement> =
     if (label === null) {
       return;
     }
-    const labelCall : CPS<t.CallExpression> = t.callExpression(label, [t.unaryExpression('void', t.numericLiteral(0))]);
-    labelCall.cps = true;
-    const labelReturn : CPS<t.ReturnStatement> = t.returnStatement(labelCall);
-    labelReturn.cps = true;
+    const labelCall = cps(t.callExpression(label, [t.unaryExpression('void', t.numericLiteral(0))]));
+    const labelReturn = cps(t.returnStatement(labelCall));
     path.replaceWith(labelReturn);
   };
 

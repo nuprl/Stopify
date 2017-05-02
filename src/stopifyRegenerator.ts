@@ -10,11 +10,11 @@ class RegeneratorStopify implements Stoppable {
   transformed: string;
   private isStop: () => boolean;
   private onStop: () => any;
+  private stopTarget: () => void
   private interval: number;
 
   constructor (code: string,
     isStop: () => boolean,
-    onStop: () => any,
     stop: () => void) {
       this.original = code;
       const plugins = [
@@ -25,8 +25,7 @@ class RegeneratorStopify implements Stoppable {
         includeRuntime: true
       }).code;
       this.isStop = isStop;
-      this.onStop = onStop;
-      this.stop = stop;
+      this.stopTarget = stop;
       this.interval = 10;
     };
 
@@ -56,16 +55,16 @@ class RegeneratorStopify implements Stoppable {
       eval(that.transformed);
     };
 
-    stop(): void {
-      return this.stop();
+    stop(onStop: () => any): void {
+      this.onStop = onStop;
+      return this.stopTarget();
     }
 };
 
 const regeneratorStopify : stopify = function (code: string,
   isStop: () => boolean,
-  onStop: () => any,
   stop: () => void): RegeneratorStopify {
-    return new RegeneratorStopify(code, isStop, onStop, stop);
+    return new RegeneratorStopify(code, isStop, stop);
 }
 
 export {

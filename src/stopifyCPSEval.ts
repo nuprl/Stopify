@@ -24,8 +24,8 @@ import {transform} from './helpers';
 class CPSStopify implements Stoppable {
   private original: string;
   transformed: string;
-  private isStop: Function;
-  private onStop: Function;
+  private isStop: () => boolean;
+  private onStop: () => any;
   private stopTarget: () => void
   private interval: number;
 

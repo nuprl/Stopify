@@ -17,6 +17,7 @@
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
     "babel-types": "^6.22.0",
     "babylon": "^6.16.1",
+    "brace": "^0.10.0",
     "file": "^0.2.2",
     "glob": "^7.1.1",
     "minimist": "^1.2.0",
@@ -25,9 +26,17 @@
     "typescript": "^2.2.2"
   },
   "scripts": {
-    "build": "./node_modules/.bin/tsc || true",
+    "build": "./node_modules/.bin/tsc && ./node_modules/.bin/browserify built/src/paws-client/container.js -o html/container.js && ./node_modules/.bin/browserify built/src/paws-client/runner.js -o html/runner.js",
     "test": "./node_modules/.bin/mocha built/test/ || true"
   },
   "author": "Rachit Nigam",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "browserify": "^14.3.0",
+    "express": "^4.15.2",
+    "fs-extra": "^3.0.0",
+    "stream-to-string": "^1.1.0",
+    "tmp": "0.0.31"
+  }
 }

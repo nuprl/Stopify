@@ -7,4 +7,4 @@ export interface Stoppable {
 
 export type stopify = (code: string,
     isStop: () => boolean,
-    onStop: () => any) => Stoppable;
+    stop: () => any) => Stoppable;

@@ -1,7 +1,6 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
-import generate from 'babel-generator';
 import * as h from './helpers';
 
 type Transformed<T> = T & {

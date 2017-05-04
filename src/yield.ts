@@ -4,6 +4,10 @@ import * as b from 'babylon';
 import generate from 'babel-generator';
 import * as h from './helpers';
 
+type Transformed<T> = T & {
+  isTransformed: boolean
+}
+
 const runProg = t.expressionStatement(t.callExpression(
   t.identifier('$runYield'), [t.callExpression(t.identifier('$runProg'), [])]))
 
@@ -46,13 +50,19 @@ const program : VisitNode<t.Program> = {
   },
 };
 
-const callExpression: VisitNode<t.CallExpression> =
-  function (path: NodePath<t.CallExpression>): void {
-    if (h.isNativeFunction(path.node.callee)) return;
-    if (t.isYieldExpression(path.parent)) return;
+// NOTE(rachit): Assumes that all functions in the call expression are
+// identifiers.
+const callExpression: VisitNode<Transformed<t.CallExpression>> =
+  function (path: NodePath<Transformed<t.CallExpression>>): void {
+    const exp = path.node;
+    if(exp.isTransformed) return
+    else exp.isTransformed = true;
 
-    const yieldExpr = t.yieldExpression(path.node, true);
-    path.replaceWith(yieldExpr);
+    const cond = t.conditionalExpression(
+      t.memberExpression(path.node.callee, t.identifier('$isGen')),
+      t.yieldExpression(path.node, true),
+      path.node)
+    path.replaceWith(cond);
   };
 
 const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {

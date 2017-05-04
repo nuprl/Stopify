@@ -82,8 +82,23 @@ const funcd: VisitNode<t.FunctionDeclaration> =
   // Set isGen property on the function.
   const assign = t.assignmentExpression('=',
     t.memberExpression(path.node.id, t.identifier('$isGen')),
-    t.booleanLiteral(true))
+    t.booleanLiteral(true));
+  const callAssign = t.assignmentExpression('=',
+    t.memberExpression(
+      t.memberExpression(<t.Expression>path.node.id, t.identifier('call')),
+      t.identifier('$isGen')),
+    t.booleanLiteral(true)
+  )
+  const applyAssign = t.assignmentExpression('=',
+    t.memberExpression(
+      t.memberExpression(<t.Expression>path.node.id, t.identifier('apply')),
+      t.identifier('$isGen')),
+    t.booleanLiteral(true)
+  )
+
   path.insertAfter(t.expressionStatement(assign))
+  path.insertAfter(t.expressionStatement(callAssign))
+  path.insertAfter(t.expressionStatement(applyAssign))
 };
 
 const funce: VisitNode<t.FunctionExpression> =
@@ -101,7 +116,22 @@ const funce: VisitNode<t.FunctionExpression> =
       const assign = t.assignmentExpression('=',
         t.memberExpression(<t.Expression>decl.id, t.identifier('$isGen')),
         t.booleanLiteral(true))
+      const callAssign = t.assignmentExpression('=',
+        t.memberExpression(
+          t.memberExpression(<t.Expression>decl.id, t.identifier('call')),
+          t.identifier('$isGen')),
+        t.booleanLiteral(true)
+      )
+      const applyAssign = t.assignmentExpression('=',
+        t.memberExpression(
+          t.memberExpression(<t.Expression>decl.id, t.identifier('apply')),
+          t.identifier('$isGen')),
+        t.booleanLiteral(true)
+      )
+
       path.getStatementParent().insertAfter(t.expressionStatement(assign))
+      path.getStatementParent().insertAfter(t.expressionStatement(callAssign))
+      path.getStatementParent().insertAfter(t.expressionStatement(applyAssign))
     }
 }
 

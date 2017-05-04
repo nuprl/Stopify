@@ -8,7 +8,8 @@
         "target": "es6",
         "pretty": true,
         "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true
+        "noImplicitReturns": true,
+        "strictNullChecks": true
     },
     "include": [
       "src",

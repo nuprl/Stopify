@@ -91,7 +91,8 @@ const funce: VisitNode<t.FunctionExpression> =
     // Set isGen property on the function.
     const decl = path.parent;
     if (!t.isVariableDeclarator(decl)) {
-      throw new Error(`Parent of function expression was ${decl.type}`)
+      throw new Error(
+        `Parent of function expression was ${decl.type} on line ${decl.loc.start.line}`)
     } else {
       path.node.body.body.unshift(ifYield);
       path.node.generator = true;

@@ -53,7 +53,7 @@ const funcExpr: VisitNode<t.FunctionExpression> =
   function (path: NodePath<t.FunctionExpression>): void {
   const p = path.parent;
 
-  if (!t.isVariableDeclarator(p) && !t.isReturnStatement(p)) {
+  if (!t.isVariableDeclarator(p)) {
     // Name the function expression if it is not already named.
     const name = path.scope.generateUidIdentifier('funcExpr');
     const bind = h.letExpression(name, path.node);

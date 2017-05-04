@@ -49,10 +49,24 @@ const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {
   path.node.body = t.blockStatement([path.node.body])
 }
 
+const funcExpr: VisitNode<t.FunctionExpression> =
+  function (path: NodePath<t.FunctionExpression>): void {
+  const p = path.parent;
+
+  if (!t.isVariableDeclarator(p) && !t.isReturnStatement(p)) {
+    // Name the function expression if it is not already named.
+    const name = path.scope.generateUidIdentifier('funcExpr');
+    const bind = h.letExpression(name, path.node);
+    path.getStatementParent().insertBefore(bind);
+    path.replaceWith(name);
+  }
+}
+
 const anfVisitor : Visitor = {
   CallExpression: callExpression,
   IfStatement: ifStatement,
   "Loop": loop,
+  FunctionExpression: funcExpr,
 }
 
 module.exports = function() {

@@ -9,11 +9,11 @@ editor.getSession().setMode('ace/mode/ocaml');
 editor.setTheme('ace/theme/monokai');
 editor.setValue(
   `
-  let rec tail_fac n acc =
+  let rec tail_sum n acc =
       print_endline ("acc: " ^ (string_of_int acc));
-  if n = 0 then acc else tail_fac (n - 1) (acc * n)
+  if n = 0 then acc else tail_sum (n - 1) (acc + n)
 
-  let _ = tail_fac 100 1
+  let _ = tail_sum 1000000 1
   `);
 
 

@@ -26,7 +26,7 @@
     "typescript": "^2.2.2"
   },
   "scripts": {
-    "build": "./node_modules/.bin/tsc && ./node_modules/.bin/browserify built/src/paws-client/container.js -o html/container.js && ./node_modules/.bin/browserify built/src/paws-client/runner.js -o html/runner.js",
+    "build": "./node_modules/.bin/tsc || true && ./node_modules/.bin/browserify built/src/paws-client/container.js -o html/container.js && ./node_modules/.bin/browserify built/src/paws-client/runner.js -o html/runner.js",
     "test": "./node_modules/.bin/mocha built/test/ || true"
   },
   "author": "Rachit Nigam",

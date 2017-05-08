@@ -1,5 +1,5 @@
-const yieldStopify = require('./src/stopifyYield').yieldStopify;
-const StopWrapper = require('./src/helpers').StopWrapper;
+const yieldStopify = require('../../built/src/stopifyYield').yieldStopify;
+const StopWrapper = require('../../built/src/helpers').StopWrapper;
 
 const code = `
 function sum(n, acc) {

@@ -17,7 +17,7 @@ editor.setValue(
   `);
 
 
-let iframe = null;
+let iframe;
 function loadJavaScript(jsCode, transform) {
   if (iframe !== null) {
     iframe.parentNode.removeChild(iframe);
@@ -29,7 +29,7 @@ function loadJavaScript(jsCode, transform) {
   iframe.width = "100%";
   iframe.height = "100%";
   iframe.style.border = 'none';
-  container.appendChild(iframe);
+  (<Node>container).appendChild(iframe);
   iframe.onload = () => {
     iframe.contentWindow.postMessage({ code: jsCode, transform: transform }, '*');
   }
@@ -45,7 +45,7 @@ function run(transform) {
 }
 
 function setupRun(name) {
-  document.getElementById("run-" + name).addEventListener('click', () => {
+  (<Node>document.getElementById("run-" + name)).addEventListener('click', () => {
     run(name);
   });
 }
@@ -55,7 +55,7 @@ setupRun('regenerator');
 setupRun('yield');
 setupRun('cps');
 
-document.getElementById("stop").addEventListener('click', () => {
+(<Node>document.getElementById("stop")).addEventListener('click', () => {
   if (iframe === null) {
     return;
   }

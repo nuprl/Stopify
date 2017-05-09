@@ -30,13 +30,14 @@ const labelVisitor = {
     if (label === null) {
       const labeledParent : NodePath<Break<t.Node>> =
         path.findParent(p => p.isWhileStatement() || p.isSwitchStatement());
+      const typ = labeledParent.type;
 
       if (labeledParent === null) {
         throw new Error(
-          `Parent of ${labeledParent.type} wasn't a labeledStatement`);
+          `Parent of ${typ} wasn't a labeledStatement`);
       }
 
-      path.node.label = labeledParent.node.break_label;
+      path.node.label = <t.Identifier>labeledParent.node.break_label;
     }
   },
 

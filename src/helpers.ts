@@ -45,7 +45,7 @@ function letExpression(name: t.Identifier, value: t.Expression): t.VariableDecla
 }
 
 function flatten(seq: t.Statement[]): t.Statement[] {
-  return seq.reduce((prog, statements) => prog.concat(statements), []);
+  return seq.reduce((prog: t.Statement[], statements) => prog.concat(statements), []);
 }
 
 /**
@@ -53,7 +53,7 @@ function flatten(seq: t.Statement[]): t.Statement[] {
  * @param body An array of statements
  */
 function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
-  const newBody = [];
+  const newBody : t.Statement[] = [];
   body.forEach((elem) => {
     if (t.isBlockStatement(elem)) {
       elem.body.forEach((e) => {
@@ -84,7 +84,7 @@ function isNativeFunction(node: t.Node): boolean {
 function transform(src: string, plugs: any[][]): string {
   let { code, ast } = babel.transform(src, { babelrc: false });
   plugs.forEach(trs => {
-    const res = babel.transformFromAst(ast, code, {
+    const res = babel.transformFromAst(<t.Node>ast, code, {
       plugins: [...trs],
       babelrc: false,
     });
@@ -92,7 +92,7 @@ function transform(src: string, plugs: any[][]): string {
     ast = res.ast;
   });
 
-  return code;
+  return code === undefined ? "" : code;
 }
 
 export {

@@ -11,7 +11,7 @@ import { regeneratorStopify } from '../stopifyRegenerator';
 import { Stoppable } from '../stopifyInterface';
 let stopped = false;
 
-let running: Stoppable = null;
+let running: Stoppable;
 
 const transforms = {
   'sham': shamStopify,
@@ -45,6 +45,6 @@ window.console.log = function(message) {
   elt.appendChild(document.createTextNode(message.toString()));
   document.body.appendChild(elt);
   if (document.body.children.length > 1000) {
-    document.body.removeChild(document.body.firstChild);
+    document.body.removeChild(<Node>document.body.firstChild);
   }
 }

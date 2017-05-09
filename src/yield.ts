@@ -32,7 +32,7 @@ const ifYield = t.ifStatement(
 
 const program : VisitNode<t.Program> = {
   enter: function (path: NodePath<t.Program>): void {
-    const lastLine = path.node.body.pop();
+    const lastLine = <t.Statement>path.node.body.pop();
     if(t.isExpressionStatement(lastLine)) {
       let result = t.returnStatement(lastLine.expression);
       path.node.body.push(result);

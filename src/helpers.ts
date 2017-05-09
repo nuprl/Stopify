@@ -2,7 +2,7 @@ import * as babel from 'babel-core';
 import * as t from 'babel-types';
 
 // Wrap AST nodes with `cps` property
-type CPS<T> = T & {
+export type CPS<T> = T & {
   cps?: boolean;
 };
 function cps<T>(t: T): CPS<T> {
@@ -104,7 +104,6 @@ export {
   isNativeFunction,
   transform,
   StopWrapper,
-  CPS,
   cps,
 };
 

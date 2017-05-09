@@ -13,30 +13,28 @@ interface ReturnStatement extends t.ReturnStatement {
 
 // Hack to avoid applying visitors to newly constructed nodes.
 function isCPS(node: CPS<t.Node>): boolean {
-  return node.cps;
+  return node.cps === undefined ? false : true;
 }
 
-// TODO: fix any cast on headK/tailK identifiers.
 function createTailFunction(tailPath: NodePath<t.Node>,
   tail: t.Statement[],
-  headK: any,
-  tailK: any): t.FunctionExpression {
+  headK: t.Identifier,
+  tailK: t.Identifier): t.FunctionExpression {
     const newTail = foldSequence(tailPath, tail);
     const tailCall = cps(t.callExpression(newTail, [headK]));
     const tailReturn = cps(t.returnStatement(tailCall));
     const tailBody = cps(t.blockStatement([tailReturn]));
-    const tailFunction = cps(t.functionExpression(null, [tailK], tailBody));
+    const tailFunction = cps(t.functionExpression(undefined, [tailK], tailBody));
     return tailFunction;
   }
 
-// TODO: fix any cast on headK identifier.
 function createHeadFunction(head: t.Expression,
-  headK: any,
+  headK: t.Identifier,
   ...headCallArgs: Array<t.Expression|t.SpreadElement>): t.FunctionExpression {
     const headCall = cps(t.callExpression(head, [...headCallArgs]));
     const headReturn = cps(t.returnStatement(headCall));
     const headBody = cps(t.blockStatement([headReturn]));
-    const headFunction = cps(t.functionExpression(null, [headK], headBody));
+    const headFunction = cps(t.functionExpression(undefined, [headK], headBody));
     return headFunction;
   }
 
@@ -46,11 +44,11 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
   const headK = path.scope.generateUidIdentifier('k');
   const tailK = path.scope.generateUidIdentifier('k');
   if (head === undefined) {
-    const k : any = path.scope.generateUidIdentifier('k');
+    const k = path.scope.generateUidIdentifier('k');
     const kCall = cps(t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]));
     const kReturn = cps(t.returnStatement(kCall));
     const kBody = cps(t.blockStatement([kReturn]));
-    const kFunction = cps(t.functionExpression(null, [k], kBody));
+    const kFunction = cps(t.functionExpression(undefined, [k], kBody));
     return kFunction;
   } else {
     switch (head.type) {
@@ -63,7 +61,7 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
         const { declarations } = head;
         const { id, init } = declarations[0];
         if (t.isCallExpression(init)) {
-          const tailFunction = createTailFunction(tailPath, tail, headK, id);
+          const tailFunction = createTailFunction(tailPath, tail, headK, <t.Identifier>id);
           let args = init.arguments;
           if (t.isIdentifier(init.callee) && path.scope.hasBinding(init.callee.name)) {
             args = [tailFunction, ...args];
@@ -71,22 +69,22 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
           const headFunction = createHeadFunction(init.callee, headK, ...args);
           return headFunction;
         } else {
-          const k : any = path.scope.generateUidIdentifier('k');
-          const kCall = cps(t.callExpression(k, <any[]>[id]));
+          const k = path.scope.generateUidIdentifier('k');
+          const kCall = cps(t.callExpression(k, [<t.Identifier>id]));
           const kReturn = cps(t.returnStatement(kCall));
           const kBody = cps(t.blockStatement([head, kReturn]));
-          const expFunction = cps(t.functionExpression(null, [k], kBody));
+          const expFunction = cps(t.functionExpression(undefined, [k], kBody));
 
-          const tailFunction = createTailFunction(tailPath, tail, headK, id);
+          const tailFunction = createTailFunction(tailPath, tail, headK, <t.Identifier>id);
           const headFunction = createHeadFunction(expFunction, headK, tailFunction);
           return headFunction;
         }
       } case 'FunctionDeclaration': {
-        const k : any = path.scope.generateUidIdentifier('k');
+        const k = path.scope.generateUidIdentifier('k');
         const kCall = cps(t.callExpression(k, [head.id]));
         const kReturn = cps(t.returnStatement(kCall));
         const kBody = cps(t.blockStatement([head, kReturn]));
-        const expFunction = cps(t.functionExpression(null, [k], kBody));
+        const expFunction = cps(t.functionExpression(undefined, [k], kBody));
 
         const tailFunction = createTailFunction(tailPath, tail, headK, head.id);
         const headFunction = createHeadFunction(expFunction, headK, tailFunction);
@@ -95,11 +93,11 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
         tailPath = tailPath.scope === null ? path : tailPath;
         const tailFunction = createTailFunction(tailPath, tail, headK, tailK);
 
-        const k : any = path.scope.generateUidIdentifier('k');
+        const k = path.scope.generateUidIdentifier('k');
         const kCall = cps(t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]));
         const kReturn = cps(t.returnStatement(kCall));
         const kBody = cps(t.blockStatement(<t.Statement[]>[path.node, kReturn]));
-        const expFunction = cps(t.functionExpression(null, [k], kBody));
+        const expFunction = cps(t.functionExpression(undefined, [k], kBody));
 
         return expFunction;
       }
@@ -163,11 +161,11 @@ const ret : VisitNode<t.ReturnStatement> =
       return;
     }
 
-    const k : any = path.scope.generateUidIdentifier('k');
+    const k = path.scope.generateUidIdentifier('k');
     const returnCall = cps(t.callExpression(path.node.kArg, [path.node.argument]));
     const newReturn = cps(t.returnStatement(returnCall));
     const returnBody = cps(t.blockStatement([newReturn]));
-    const returnFunction = cps(t.functionExpression(null, [k], returnBody));
+    const returnFunction = cps(t.functionExpression(undefined, [k], returnBody));
     const fExp = cps(t.expressionStatement(returnFunction));
 
     path.replaceWith(fExp);
@@ -191,11 +189,11 @@ const exp : VisitNode<t.ExpressionStatement> =
     if (t.isFunctionExpression(path.node.expression)) return;
 
     path.node.cps = true;
-    const k : any = path.scope.generateUidIdentifier('k');
+    const k = path.scope.generateUidIdentifier('k');
     const kCall = cps(t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]));
     const kReturn = cps(t.returnStatement(kCall));
     const kBody = cps(t.blockStatement([path.node, kReturn]));
-    const expFunction = cps(t.functionExpression(null, [k], kBody));
+    const expFunction = cps(t.functionExpression(undefined, [k], kBody));
     const newExp = cps(t.expressionStatement(expFunction));
 
     path.replaceWith(newExp);
@@ -222,7 +220,7 @@ const ifStatement: VisitNode<t.IfStatement> = {
     const { test, consequent, alternate } = path.node;
 
     path.node.cps = true;
-    const k : any = path.scope.generateUidIdentifier('k');
+    const k = path.scope.generateUidIdentifier('k');
     const trueCall = cps(t.callExpression((<any>consequent).body[0].expression, [k]));
     const trueReturn = cps(t.returnStatement(trueCall));
     path.node.consequent = trueReturn;
@@ -233,7 +231,7 @@ const ifStatement: VisitNode<t.IfStatement> = {
     }
 
     const ifBody = cps(t.blockStatement([path.node]));
-    const ifFunction = cps(t.functionExpression(null, [k], ifBody));
+    const ifFunction = cps(t.functionExpression(undefined, [k], ifBody));
 
     path.replaceWith(ifFunction);
   },
@@ -279,7 +277,7 @@ const labelStatement : VisitNode<t.LabeledStatement> = {
   enter(path: NodePath<t.LabeledStatement>): void {
     const { label, body } = path.node;
     const newBody = t.isBlockStatement(body) ? body : t.blockStatement([body]);
-    const labelFunc = t.functionExpression(null, [<any>label], newBody);
+    const labelFunc = t.functionExpression(undefined, [<any>label], newBody);
     path.replaceWith(t.expressionStatement(labelFunc));
   }
 };

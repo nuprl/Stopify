@@ -21,35 +21,32 @@ function makeSpawn(wd) {
 
 export let buildDir;
 
-export function compile(clojureCode, jsReceiver) {
-  tmp.dir((_, tmpDir) => {
-    buildDir = tmpDir + '/';
-    const run = makeSpawn(tmpDir);
+export function compile(tmpDir, clojureCode, jsReceiver) {
+  console.log(tmpDir);
+  const run = makeSpawn(tmpDir);
 
-    fs.mkdir(tmpDir + '/src', err => {
-      fs.mkdir(tmpDir + '/src/cljs', writeCljFile);
-    });
-
-    function writeCljFile(exitCode) {
-      fs.writeFile(tmpDir + '/src/cljs/code.cljs',
-            '(ns cljs.code)\n(enable-console-print!)\n' + clojureCode,
-            copyJarAndBuild);
-    }
-
-    function copyJarAndBuild(exitCode) {
-      fsExtra.copySync(__dirname + '/../../../data/project.clj',
-            tmpDir + '/project.clj');
-      console.log(tmpDir);
-      run('lein',
-            'cljsbuild',
-            'once').on('exit', runBrowserify);
-    }
-
-    function runBrowserify(exitCode) {
-      const outJs = browserify(tmpDir + '/out/main.js').bundle();
-      streamToString(outJs, 'utf8', (err, str) => {
-        jsReceiver(str);
-      });
-    }
+  fs.mkdir(tmpDir + '/src', err => {
+    fs.mkdir(tmpDir + '/src/cljs', writeCljFile);
   });
+
+  function writeCljFile(exitCode) {
+    fs.writeFile(tmpDir + '/src/cljs/code.cljs',
+        '(ns cljs.code)\n(enable-console-print!)\n' + clojureCode,
+        copyJarAndBuild);
+  }
+
+  function copyJarAndBuild(exitCode) {
+    fsExtra.copySync(__dirname + '/../../../data/project.clj',
+        tmpDir + '/project.clj');
+    run('lein',
+        'cljsbuild',
+        'once').on('exit', runBrowserify);
+  }
+
+  function runBrowserify(exitCode) {
+    const outJs = browserify(tmpDir + '/out/main.js').bundle();
+    streamToString(outJs, 'utf8', (err, str) => {
+      jsReceiver(str);
+    });
+  }
 }

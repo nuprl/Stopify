@@ -9,15 +9,19 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, '../html')));
 
-app.post('/compile/ocaml', bodyParser.text(), (req, res) => {
-  BuckleScript.compile(req.body, jsCode => {
-    res.send(jsCode);
+tmp.dir((_, ocamlTmp) => {
+  app.post('/compile/ocaml', bodyParser.text(), (req, res) => {
+    BuckleScript.compile(ocamlTmp, req.body, jsCode => {
+      res.send(jsCode);
+    });
   });
 });
 
-app.post('/compile/cljs', bodyParser.text(), (req, res) => {
-  Cljs.compile(req.body, jsCode => {
-    res.send(jsCode);
+tmp.dir((_, cljsTmp) => {
+  app.post('/compile/cljs', bodyParser.text(), (req, res) => {
+    Cljs.compile(cljsTmp, req.body, jsCode => {
+      res.send(jsCode);
+    });
   });
 });
 

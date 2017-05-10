@@ -21,31 +21,28 @@ function makeSpawn(wd) {
   };
 }
 
-export function compile(ocamlCode, jsReceiver) {
-  tmp.dir((_, tmpDir) => {
-    const run = makeSpawn(tmpDir);
-    fs.writeFile(tmpDir + '/main.ml', ocamlCode, npmLink);
+export function compile(tmpDir, ocamlCode, jsReceiver) {
+  const run = makeSpawn(tmpDir);
+  fs.writeFile(tmpDir + '/main.ml', ocamlCode, npmLink);
 
-    function npmLink() {
-      run('npm', 'link', 'bs-platform').on('exit', copyBsConfig);
-    }
+  function npmLink() {
+    run('npm', 'link', 'bs-platform').on('exit', copyBsConfig);
+  }
 
-    function copyBsConfig(exitCode) {
-      assert(exitCode === 0);
-      fsExtra.copySync(__dirname + '/../../../data/bsconfig.json',
-        tmpDir + '/bsconfig.json');
-      run('bsb').on('exit', runBrowserify);
-    }
+  function copyBsConfig(exitCode) {
+    assert(exitCode === 0);
+    fsExtra.copySync(__dirname + '/../../../data/bsconfig.json',
+      tmpDir + '/bsconfig.json');
+    run('bsb').on('exit', runBrowserify);
+  }
 
-    function runBrowserify(exitCode) {
-      console.log('Exit code is ', exitCode);
-      assert(exitCode === 0);
-      const outJs = browserify(tmpDir + '/lib/js/main.js')
-        .bundle()
-      streamToString(outJs, 'utf8', (err, str) => {
-        jsReceiver(str)
-      });
-    }
-
-  });
+  function runBrowserify(exitCode) {
+    console.log('Exit code is ', exitCode);
+    assert(exitCode === 0);
+    const outJs = browserify(tmpDir + '/lib/js/main.js')
+      .bundle();
+    streamToString(outJs, 'utf8', (err, str) => {
+      jsReceiver(str);
+    });
+  }
 }

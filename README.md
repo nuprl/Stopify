@@ -33,7 +33,7 @@ languages within a web browser. Running the `paws-server` requires optional
 server dependencies to be installed.
 
 ### Building
-1. `npm run build`
+1. `npm run build-webpage`
 
 ### Running
  - `<project-root>$ ./paws-server.sh`

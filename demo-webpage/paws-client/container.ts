@@ -18,7 +18,7 @@ const clojureDefault: string =
   (defn tail_sum [n acc]
     (println (str "acc: " acc))
     (if (= n 0)
-      (acc)
+      acc
       (tail_sum (- n 1) (+ acc n))))
   (println (tail_sum 6 1))
   `;

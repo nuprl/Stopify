@@ -14,7 +14,9 @@
               :builds [{:id "dev"
                         :jar true
                         :source-paths ["src"]
+                        :incremental true
                         :compiler {
+                                   :optimizations :none
                                    :main cljs.code
                                    :output-to "out/main.js"
                                    :output-dir "out"}}]})

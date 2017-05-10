@@ -2,13 +2,13 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as BuckleScript from '../compilers/bucklescript';
 import * as Cljs from '../compilers/clojurescript';
-import { spawn } from 'child_process';
 import * as tmp from 'tmp';
+import * as path from 'path';
 
 const app = express();
 
-console.log(__dirname);
-app.use(express.static(__dirname + '/../../../html'));
+app.use(express.static(path.join(__dirname, '../html')));
+
 app.post('/compile/ocaml', bodyParser.text(), (req, res) => {
   BuckleScript.compile(req.body, jsCode => {
     res.send(jsCode);
@@ -21,7 +21,5 @@ app.post('/compile/cljs', bodyParser.text(), (req, res) => {
   });
 });
 
-console.log("Listening");
+console.log("Listening on port 8080");
 app.listen(8080);
-
-

@@ -17,5 +17,8 @@
       "transform.ts",
       "stopify.ts",
       "demo-webpage"
+    ],
+    "exclude": [
+      "demo-webpage/html"
     ]
 }

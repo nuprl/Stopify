@@ -1,2 +1,2 @@
 #!/bin/sh
-node built/src/paws-server/main.js $@
+node built/demo-webpage/paws-server/main.js $@

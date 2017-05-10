@@ -25,6 +25,7 @@ export function compile(clojureCode, jsReceiver) {
   tmp.dir((_, tmpDir) => {
     buildDir = tmpDir + '/';
     const run = makeSpawn(tmpDir);
+
     fs.mkdir(tmpDir + '/src', err => {
       fs.mkdir(tmpDir + '/src/cljs', writeCljFile);
     });
@@ -36,16 +37,12 @@ export function compile(clojureCode, jsReceiver) {
     }
 
     function copyJarAndBuild(exitCode) {
-      fsExtra.copySync(__dirname + '/../../../data/cljs.jar',
-            tmpDir + '/cljs.jar');
-      fsExtra.copySync(__dirname + '/../../../data/build.clj',
-            tmpDir + '/build.clj');
+      fsExtra.copySync(__dirname + '/../../../data/project.clj',
+            tmpDir + '/project.clj');
       console.log(tmpDir);
-      run('java',
-            '-cp',
-            'cljs.jar:src',
-            'clojure.main',
-            'build.clj').on('exit', runClosure);
+      run('lein',
+            'cljsbuild',
+            'once').on('exit', runClosure);
     }
 
     function runClosure(exitCode) {

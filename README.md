@@ -10,7 +10,6 @@
  - `npm install -g bs-platform`
 2. For ClojureScript support
  - `brew install leiningen`
- - `brew install closure-compiler`
 
 ## Program Transformation Plugins
 Stopify includes a collection of `babel` plugins for transforming JavaScript

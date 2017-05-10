@@ -42,22 +42,11 @@ export function compile(clojureCode, jsReceiver) {
       console.log(tmpDir);
       run('lein',
             'cljsbuild',
-            'once').on('exit', runClosure);
-    }
-
-    function runClosure(exitCode) {
-      run('closure-compiler',
-              'out/cljs_deps.js',
-              'out/cljs/*.js',
-              'out/goog/*.js',
-              'out/goog/*/*.js',
-              '--js_output_file',
-              'out/closure.js')
-          .on('exit', runBrowserify);
+            'once').on('exit', runBrowserify);
     }
 
     function runBrowserify(exitCode) {
-      const outJs = browserify(tmpDir + '/out/closure.js').bundle();
+      const outJs = browserify(tmpDir + '/out/main.js').bundle();
       streamToString(outJs, 'utf8', (err, str) => {
         jsReceiver(str);
       });

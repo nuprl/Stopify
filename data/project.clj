@@ -16,7 +16,9 @@
                         :source-paths ["src"]
                         :incremental true
                         :compiler {
-                                   :optimizations :none
-                                   :main cljs.code
+                                   :cache-analysis true
+                                   :parallel-build true
+                                   :optimizations :advanced
                                    :output-to "out/main.js"
-                                   :output-dir "out"}}]})
+                                   :output-dir "out"
+                                   :static-fns true}}]})

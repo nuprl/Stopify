@@ -15,6 +15,7 @@
       "src",
       "test",
       "transform.ts",
-      "stopify.ts"
+      "stopify.ts",
+      "demo-webpage"
     ]
 }

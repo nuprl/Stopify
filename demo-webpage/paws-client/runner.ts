@@ -4,11 +4,11 @@
 // before it has been stopified and (2) a message directing execution to stop.
 'use strict';
 
-import { yieldStopify } from '../stopifyYield';
-import { cpsStopify } from '../stopifyCPSEval';
-import { shamStopify } from '../stopifySham';
-import { regeneratorStopify } from '../stopifyRegenerator';
-import { Stoppable } from '../stopifyInterface';
+import { yieldStopify } from '../../src/stopifyYield';
+import { cpsStopify } from '../../src/stopifyCPSEval';
+import { shamStopify } from '../../src/stopifySham';
+import { regeneratorStopify } from '../../src/stopifyRegenerator';
+import { Stoppable } from '../../src/stopifyInterface';
 let stopped = false;
 
 let running: Stoppable;

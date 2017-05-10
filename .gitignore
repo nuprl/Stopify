@@ -5,5 +5,6 @@ node_modules
 scratch
 tags
 built
-/html/container.js
-/html/runner.js
+demo-webpage/html/container.js
+demo-webpage/html/runner.js
+/benchmarks/*.csv

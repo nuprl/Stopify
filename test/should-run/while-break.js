@@ -1,3 +1,4 @@
+const assert = require("assert")
 let i = 0;
 while (true) {
     i++;

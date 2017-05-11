@@ -1,3 +1,4 @@
+const assert = require("assert")
 function inc(x) { return x + 1; }
 
 let sum = 0;

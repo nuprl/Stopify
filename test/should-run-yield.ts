@@ -19,10 +19,8 @@ const plugs = [ [noEvalVerifier, noArrows, desugarAndOr], [anf], [yieldPass] ]
 // NOTE(rachit): Don't use arrow functions, otherwise timeout doesn't work.
 describe('Yield transformation tests', function () {
   f.testFiles.forEach(function(filename) {
-    const prog = fs.readFileSync(filename, 'utf-8').toString();
     it(filename, function () {
-      f.retainValueTest(prog, plugs)
+      f.stopifyTest(filename, 'yield');
     })
   })
 })
-

@@ -1,3 +1,4 @@
+const assert = require("assert")
 var count = 0;
 function f() {
   count++;

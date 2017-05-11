@@ -40,9 +40,7 @@ describe('CPS transform tests', function () {
   f.testFiles.forEach(function(filename) {
     const prog = fs.readFileSync(filename, 'utf-8').toString();
     it(filename, function () {
-      this.timeout(1000)
-      f.retainValueTest(prog, cpsPlugs)
+      f.stopifyTest(filename, 'cps')
     })
   })
 })
-

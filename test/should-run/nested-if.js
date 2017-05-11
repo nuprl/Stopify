@@ -1,3 +1,4 @@
+const assert = require("assert")
 let x = 0;
 
 if (x > 2) {

@@ -1,3 +1,4 @@
+const assert = require("assert")
 function g() {
     let x = 1;
     return x;

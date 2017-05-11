@@ -42,6 +42,11 @@ class CPSStopify implements Stoppable {
         [kApply],
       ];
       this.transformed = transform(code, plugins);
+
+      if(this.transformed.length < code.length) {
+        throw new Error('Transformed code is smaller than original code')
+      }
+
       this.isStop = isStop;
       this.stopTarget = stop;
       this.interval = 10;

@@ -20,6 +20,10 @@ class YieldStopify implements Stoppable {
     ];
     this.transformed = transform(code, plugins);
 
+    if(this.transformed.length < code.length) {
+      throw new Error('Transformed code is smaller than original code')
+    }
+
     this.isStop = isStop;
     const onStopDef = (function() { throw 'Execution terminated' })
     this.onStop = onStopDef

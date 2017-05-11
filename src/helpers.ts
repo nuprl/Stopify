@@ -69,18 +69,6 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   return t.blockStatement(newBody);
 }
 
-function isNativeFunction(node: t.Node): boolean {
-  const natives = [
-    'console',
-    'Math',
-    'String',
-    'JSON',
-    'window'
-  ]
-  return t.isMemberExpression(node) &&
-    t.isIdentifier(node.object) && natives.includes(node.object.name);
-}
-
 function transform(src: string, plugs: any[][]): string {
   let { code, ast } = babel.transform(src, { babelrc: false });
   plugs.forEach(trs => {
@@ -101,7 +89,6 @@ export {
   letExpression,
   flatten,
   flatBodyStatement,
-  isNativeFunction,
   transform,
   StopWrapper,
   cps,

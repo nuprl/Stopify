@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as glob from 'glob';
 import { spawnSync } from 'child_process';
-import * as sanitizeFilename from 'sanitize-filename';
 import * as tmp from 'tmp';
 import {transform} from '../src/helpers';
 
@@ -38,15 +37,13 @@ export function retainValueTest(org: string, plugs: any[][]) {
     `Failed: original evals to '${oe}' while transformed evals to '${te}'`);
 }
 
-type transforms = 'cps' | 'yield' | 'regen'
-
-export function stopifyTest(srcFile: string, transform: transforms) {
+export function stopifyTest(srcFile: string, transform: string) {
   const runner = spawnSync(
     './built/stopify.js',
     ['-i', srcFile, '-t', transform, '-o', 'eval'],
     { timeout: 1000 }
   )
 
-  assert.equal(runner.status, 0, runner.stderr.toString());
+  assert.equal(runner.status, 0, (runner.stderr || "").toString());
 }
 

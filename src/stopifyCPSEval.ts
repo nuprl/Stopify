@@ -15,6 +15,7 @@ import * as anf from './anf';
 // CPS transforms.
 import * as addKArg from './addContinuationArg';
 import * as cps from './cpsVisitor';
+import * as tagFree from './tagUnboundIds';
 import * as kApply from './applyContinuation';
 import * as applyStop from './stoppableApply';
 
@@ -36,7 +37,7 @@ class CPSStopify implements Stoppable {
       const plugins = [
         [noArrows, desugarLoop, desugarLabel],
         [desugarWhileToFunc, desugarAndOr],
-        [anf, addKArg],
+        [anf, addKArg, tagFree],
         [cps],
         [applyStop],
         [kApply],
@@ -56,19 +57,27 @@ class CPSStopify implements Stoppable {
     'use strict';
     const that = this;
     let counter = that.interval;
+    let applyWithK = function (f, k, ...args) {
+      if (f.$isFree === undefined) {
+        return f(k, ...args);
+      } else {
+        return k(f(...args));
+      }
+    };
     let apply = function (f, k, ...args) {
-        if (counter-- === 0) {
-        counter = that.interval;
-        setTimeout(_ => {
-            if (that.isStop()) {
-              that.onStop();
-            } else {
-              return f(k, ...args);
-            }
-          }, 0);
-        } else {
-          return f(k, ...args);
-        }};
+      if (counter-- === 0) {
+      counter = that.interval;
+      setTimeout(_ => {
+          if (that.isStop()) {
+            that.onStop();
+          } else {
+            return applyWithK(f, k, ...args);
+          }
+        }, 0);
+      } else {
+        return applyWithK(f, k, ...args);
+      }
+    };
     eval(that.transformed);
   };
 

@@ -4,7 +4,12 @@ import * as b from 'babylon';
 import * as h from './helpers';
 
 type Transformed<T> = T & {
-  isTransformed: boolean
+  isTransformed?: boolean
+}
+
+function transformed<N>(n: Transformed<N>): Transformed<N> {
+  n.isTransformed = true;
+  return n;
 }
 
 const runProg = t.expressionStatement(t.callExpression(
@@ -132,14 +137,28 @@ const funce: VisitNode<t.FunctionExpression> =
       path.getStatementParent().insertAfter(t.expressionStatement(callAssign))
       path.getStatementParent().insertAfter(t.expressionStatement(applyAssign))
     }
-}
+};
+
+const newVisit: VisitNode<t.NewExpression> =
+  function (path: NodePath<t.NewExpression>): void {
+    let genId = path.scope.generateUidIdentifier('gen');
+    let objId = path.scope.generateUidIdentifier('obj');
+    let emptyObj = t.objectExpression([]);
+    path.getStatementParent().insertBefore(h.letExpression(objId, emptyObj));
+    let callMember = t.memberExpression(path.node.callee, t.identifier('call'));
+    let constructCall = t.callExpression(callMember, [objId, ...path.node.arguments]);
+    let constructGen = h.letExpression(genId, constructCall);
+    path.getStatementParent().insertBefore(constructGen);
+    path.replaceWith(objId);
+  };
 
 const yieldVisitor: Visitor = {
-  Program: program,
   FunctionDeclaration: funcd,
   FunctionExpression: funce,
   CallExpression: callExpression,
   "Loop": loop,
+  NewExpression: newVisit,
+  Program: program,
 }
 
 module.exports = function() {

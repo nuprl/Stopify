@@ -8,6 +8,7 @@ import * as path from 'path'
 
 const argv = require('minimist')(process.argv.slice(2));
 const filename = argv.file || argv.i
+const timeFlag = !argv.notime || true;
 
 const code = fs.readFileSync(
   path.join(process.cwd(), filename), 'utf-8').toString()
@@ -34,7 +35,16 @@ switch(transform) {
     throw new Error(`Unknown transform: ${transform}`)
 }
 
-const stoppable = stopifyFunc(code, sw.isStop, sw.stop)
+let compileTime;
+let stoppable;
+if(timeFlag) {
+  const compileStart = process.hrtime();
+  stoppable = stopifyFunc(code, sw.isStop, sw.stop)
+  const compileEnd = process.hrtime(compileStart);
+  compileTime = (compileEnd[0] * 1e9 + compileEnd[1]) * 1e-6
+} else {
+  stoppable = stopifyFunc(code, sw.isStop, sw.stop)
+}
 
 const yieldInterval = argv.y || argv.yieldInterval
 if (yieldInterval !== undefined) {
@@ -46,9 +56,22 @@ if (yieldInterval !== undefined) {
 switch(output) {
   case 'print':
     console.log(stoppable.transformed)
+    if(timeFlag) {
+      console.log(`Compilation time: ${compileTime} ms`)
+    }
     break;
   case 'eval':
-    stoppable.run(x => console.log(x))
+    if(timeFlag) {
+      const runStart = process.hrtime();
+      stoppable.run(x => {
+        console.log(`Output: ${x}`)
+        console.log(`Compilation time: ${compileTime} ms`)
+        const runEnd = process.hrtime(runStart);
+        console.log(`Runtime: ${(runEnd[0] * 1e9 + runEnd[1]) * 1e-6} ms`)
+      })
+    } else {
+      stoppable.run(x => console.log(`Output: ${x}`))
+    }
     break;
   default:
     throw new Error(`Unknown output format: ${output}`)

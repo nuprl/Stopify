@@ -15,7 +15,7 @@ import * as desugarVerifier from '../src/verifiers/desugarVerifier';
 
 const desugarPlugs: any[][] = [
   [noEvalVerifier, noArrows, desugarLoop, desugarLabel],
-  [desugarAndOr, desugarVerifier]
+  [desugarWhileToFunc, desugarAndOr, desugarVerifier]
 ];
 
 // NOTE(rachit): Don't use arrow functions, otherwise timeout doesn't work.

@@ -33,7 +33,8 @@ import {Stoppable} from './src/stopifyInterface';
 import {cpsStopify} from './src/stopifyCPSEval';
 
 const desugarPasses = [
-  noArrows, desugarLoop, desugarWhileToFunc, desugarLabel, desugarAndOr
+  [noArrows, desugarLoop, desugarLabel],
+  [desugarWhileToFunc, desugarAndOr]
 ];
 const yp = [yieldPass];
 const preCPS = [anf, addKArg];

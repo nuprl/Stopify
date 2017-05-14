@@ -10,9 +10,14 @@ export interface CompilerSupport {
 
 // Interface providing paws-client support to a language.
 export interface CompilerClient {
-  aceMode: string,
-  defaultCode: string,
-  compileUrl: string
+  aceMode: string,      // `aceMode` is the ace url to the language's mode
+                        // (e.g. ace/mode/ocaml)
+
+  defaultCode: string,  // `defaultCode` is the default program loaded into the
+                        // editor
+
+  compileUrl: string    // `compileUrl` is the url the server listens on for
+                        // POST requests
 }
 
 // Supported languages implementing the compiler interface:

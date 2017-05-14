@@ -3,7 +3,7 @@ const assert = require('assert');
 import {Stoppable, stopify} from './stopifyInterface';
 
 // Desugaring transforms.
-import * as noArrows from 'babel-plugin-transform-es2015-arrow-functions';
+const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 import * as desugarLoop from './desugarLoop';
 import * as desugarWhileToFunc from './desugarLoopToFunc';
 import * as desugarLabel from './desugarLabel';
@@ -21,6 +21,11 @@ import * as applyStop from './stoppableApply';
 
 // Helpers
 import {transform} from './helpers';
+
+type MaybeBound = {
+    (...args: any[]): any,
+    $isFree?: boolean,
+}
 
 class CPSStopify implements Stoppable {
   private original: string;
@@ -53,18 +58,18 @@ class CPSStopify implements Stoppable {
       this.interval = 10;
     };
 
-  run(onDone: (any?) => any): void {
+  run(onDone: (arg?: any) => any): void {
     'use strict';
     const that = this;
     let counter = that.interval;
-    let applyWithK = function (f, k, ...args) {
+    let applyWithK = function (f: MaybeBound, k: any, ...args: any[]) {
       if (f.$isFree === undefined) {
         return f(k, ...args);
       } else {
         return k(f(...args));
       }
     };
-    let apply = function (f, k, ...args) {
+    let apply = function (f: MaybeBound, k: any, ...args: any[]) {
       if (counter-- === 0) {
       counter = that.interval;
       setTimeout(_ => {

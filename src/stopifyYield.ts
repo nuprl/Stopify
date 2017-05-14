@@ -1,5 +1,5 @@
 import { Stoppable, stopify } from './stopifyInterface';
-import * as noArrows from 'babel-plugin-transform-es2015-arrow-functions';
+const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 import * as desugarAndOr from './desugarAndOr';
 import * as anf from './anf';
 import * as yieldPass from './yield';
@@ -31,15 +31,15 @@ class YieldStopify implements Stoppable {
     this.interval = 10;
   };
 
-  setInterval(that): void {
+  setInterval(that: number): void {
     this.interval = that;
   }
 
-  run(onDone: (any?) => any = x => x): void {
+  run(onDone: (arg?: any) => any = x => x): void {
     const $that = this;
     const $yieldCounter = this.interval;
     let $counter = 0;
-    const $runYield = function run(gen,
+    const $runYield = function run(gen: Generator,
       res = { done: false, value: undefined }) {
       setTimeout(_ => {
         if ($that.isStop()) {

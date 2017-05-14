@@ -1,7 +1,7 @@
 export interface Stoppable {
-  run: (onDone: (any?) => any) => void;
+  run: (onDone: (arg?: any) => any) => void;
   stop: (onStop: () => any) => void;
-  setInterval: (number) => void;
+  setInterval: (n: number) => void;
   transformed: string
 }
 

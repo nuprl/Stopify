@@ -7,7 +7,7 @@ class Sham implements Stoppable {
     this.transformed = code;
   }
 
-  run(onDone: (any?) => any) {
+  run(onDone: (arg?: any) => any) {
     onDone(eval(this.transformed));
   }
 

@@ -28,7 +28,17 @@ editor.setTheme('ace/theme/monokai');
 editor.getSession().setMode('ace/mode/ocaml');
 editor.setValue(ocamlDefault);
 
-const langs = {
+type languageAPI = {
+  mode: string,
+  code: string,
+  compile: string
+}
+
+interface supportedLangs {
+    [lang: string]: languageAPI
+}
+
+const langs : supportedLangs = {
     OCaml: {
       mode: 'ace/mode/ocaml',
       code: ocamlDefault,
@@ -42,7 +52,7 @@ const langs = {
 };
 
 let iframe: any = null;
-function loadJavaScript(jsCode, transform) {
+function loadJavaScript(jsCode: string, transform: string) {
   if (iframe !== null) {
     iframe.parentNode.removeChild(iframe);
   }
@@ -59,7 +69,7 @@ function loadJavaScript(jsCode, transform) {
   }
 }
 
-function run(transform) {
+function run(transform: string) {
   const languageSelect = <any>document.getElementById("language-selection");
   const val = languageSelect.value;
   const xhr = new XMLHttpRequest();
@@ -70,7 +80,7 @@ function run(transform) {
   });
 }
 
-function setupRun(name) {
+function setupRun(name: string) {
   (<Node>document.getElementById("run-" + name)).addEventListener('click', () => {
     run(name);
   });

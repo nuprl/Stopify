@@ -35,7 +35,7 @@ switch(transform) {
     throw new Error(`Unknown transform: ${transform}`)
 }
 
-let compileTime;
+let compileTime: number = 0;
 let stoppable;
 if(timeFlag) {
   const compileStart = process.hrtime();

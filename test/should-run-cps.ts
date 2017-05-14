@@ -1,10 +1,10 @@
 import * as f from './testFixtures.js';
 import * as path from 'path';
 import * as fs from  'fs';
-import * as file from 'file';
+const file = require('file');
 
 // Desugar Transforms
-import * as noArrows from 'babel-plugin-transform-es2015-arrow-functions';
+const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 import * as desugarLoop from '../src/desugarLoop';
 import * as desugarLabel from '../src/desugarLabel';
 import * as desugarAndOr from '../src/desugarAndOr';
@@ -37,7 +37,7 @@ const cpsPlugs: any[][] = [
 
 // NOTE(rachit): Don't use arrow functions, otherwise timeout doesn't work.
 describe('CPS transform tests', function () {
-  f.testFiles.forEach(function(filename) {
+  f.testFiles.forEach(function(filename: string) {
     const prog = fs.readFileSync(filename, 'utf-8').toString();
     it(filename, function () {
       f.stopifyTest(filename, 'cps')

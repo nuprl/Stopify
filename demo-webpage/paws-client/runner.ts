@@ -8,26 +8,26 @@ import { yieldStopify } from '../../src/stopifyYield';
 import { cpsStopify } from '../../src/stopifyCPSEval';
 import { shamStopify } from '../../src/stopifySham';
 import { regeneratorStopify } from '../../src/stopifyRegenerator';
-import { Stoppable } from '../../src/stopifyInterface';
+import { Stoppable, stopify } from '../../src/stopifyInterface';
 let stopped = false;
 
 let running: Stoppable;
 
-const transforms = {
+const transforms : { [transform: string]: stopify }= {
   'sham': shamStopify,
   'yield': yieldStopify,
   'regenerator': regeneratorStopify,
   'cps': cpsStopify
 }
 
-export function stopify(f, code: string): Stoppable {
+function stopifyTransform(f: stopify, code: string): Stoppable {
   let stopped = false;
   return f(code, () => stopped, () => stopped = true);
 }
 
 window.addEventListener('message', evt => {
   if (evt.data.code) {
-    running = stopify(transforms[evt.data.transform],
+    running = stopifyTransform(transforms[evt.data.transform],
       evt.data.code);
     running.run(() => console.log("Done"));
   }
@@ -40,7 +40,7 @@ document.body.style.fontFamily = 'Monaco';
 
 const originalConsole = window.console;
 
-window.console.log = function(message) {
+window.console.log = function(message: string) {
   const elt = document.createElement('div');
   elt.appendChild(document.createTextNode(message.toString()));
   document.body.appendChild(elt);

@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-const assert = require('assert');
 import * as fs from 'fs';
 import * as babel from 'babel-core';
 
 // Desugaring transforms.
-import * as noArrows from 'babel-plugin-transform-es2015-arrow-functions';
+const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 import * as desugarLoop from './src/desugarLoop';
 import * as desugarLabel from './src/desugarLabel';
 import * as desugarAndOr from './src/desugarAndOr';
@@ -43,7 +42,7 @@ const defaults = [
   [noEvalVerifier], desugarPasses, preCPS, cps, [kApply], [desugarVerifier]
 ];
 
-function transform(src, plugs) {
+function transform(src: string, plugs: any[]) {
     return h.transform(src, plugs);
 }
 
@@ -54,7 +53,7 @@ function transform(src, plugs) {
  * the variable names in this file.
  * Returns an array of variable names.
  */
-function parsePlugins(code) {
+function parsePlugins(code: string) {
   const reg = /\/\* plugins:.*\*\//;
   const line = reg.exec(code);
   // No match

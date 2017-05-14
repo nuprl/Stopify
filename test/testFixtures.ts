@@ -2,9 +2,9 @@ const assert = require('assert');
 import * as babel from 'babel-core';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as glob from 'glob';
+const glob = require('glob');
 import { spawnSync } from 'child_process';
-import * as tmp from 'tmp';
+const tmp = require('tmp');
 import {transform} from '../src/helpers';
 
 export const testFiles = glob.sync('test/should-run/*.js', {})

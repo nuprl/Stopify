@@ -20,8 +20,8 @@ export interface ReturnStatement extends t.ReturnStatement {
 // Object to wrap the state of the stop, onStop, isStop functions
 class StopWrapper {
   private hasStopped: boolean;
-  onDone: (any?) => any
-  constructor(onDone: (any?) => any = (value) => console.log(value)) {
+  onDone: (arg?: any) => any
+  constructor(onDone: (arg?: any) => any = (value) => console.log(value)) {
     this.hasStopped = false;
     this.onDone = onDone;
   }

@@ -5,7 +5,7 @@ type Visited<T> = T & {
   visited?: boolean;
 };
 
-function visited(n: Visited<t.Node>): Visited<t.Node> {
+function visited<T>(n: Visited<T>): Visited<T> {
     n.visited = true;
     return n;
 }
@@ -20,7 +20,7 @@ const tagFree: Visitor = {
       const freeProp = visited(t.identifier('$isFree'));
       path.node.visited = true;
       const assign = t.assignmentExpression('=',
-        <t.Identifier>visited(t.memberExpression(path.node, <t.Identifier>freeProp)),
+        visited(t.memberExpression(path.node, freeProp)),
         t.booleanLiteral(true))
       path.getStatementParent().insertBefore(t.expressionStatement(assign));
     }
@@ -36,7 +36,7 @@ const tagFree: Visitor = {
           const freeProp = visited(t.identifier('$isFree'));
           path.node.visited = true;
           const assign = t.assignmentExpression('=',
-            <t.Identifier>visited(t.memberExpression(path.node, <t.Identifier>freeProp)),
+            visited(t.memberExpression(path.node, freeProp)),
             t.booleanLiteral(true))
           path.getStatementParent().insertBefore(t.expressionStatement(assign));
         }

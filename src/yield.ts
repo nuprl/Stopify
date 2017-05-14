@@ -89,13 +89,13 @@ const funcd: VisitNode<t.FunctionDeclaration> =
     t.booleanLiteral(true));
   const callAssign = t.assignmentExpression('=',
     t.memberExpression(
-      t.memberExpression(<t.Expression>path.node.id, t.identifier('call')),
+      t.memberExpression(path.node.id, t.identifier('call')),
       t.identifier('$isGen')),
     t.booleanLiteral(true)
   )
   const applyAssign = t.assignmentExpression('=',
     t.memberExpression(
-      t.memberExpression(<t.Expression>path.node.id, t.identifier('apply')),
+      t.memberExpression(path.node.id, t.identifier('apply')),
       t.identifier('$isGen')),
     t.booleanLiteral(true)
   )

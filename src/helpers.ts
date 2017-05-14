@@ -13,6 +13,10 @@ function cps<T>(t: T): CPS<T> {
     return cpsd;
 }
 
+export interface ReturnStatement extends t.ReturnStatement {
+  kArg: t.Expression;
+};
+
 // Object to wrap the state of the stop, onStop, isStop functions
 class StopWrapper {
   private hasStopped: boolean;

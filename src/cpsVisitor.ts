@@ -4,11 +4,7 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {CPS, cps, FunctionNode} from './helpers';
-
-interface ReturnStatement extends t.ReturnStatement {
-  kArg: t.Expression;
-};
+import {CPS, cps, FunctionNode, ReturnStatement} from './helpers';
 
 // Hack to avoid applying visitors to newly constructed nodes.
 function isCPS(node: CPS<t.Node>): boolean {

@@ -4,11 +4,7 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {FunctionNode} from './helpers';
-
-interface ReturnStatement extends t.ReturnStatement {
-  kArg: t.Node;
-};
+import {FunctionNode, ReturnStatement} from './helpers';
 
 const func : VisitNode<FunctionNode> =
   function (path: NodePath<FunctionNode>): void {
@@ -20,7 +16,7 @@ const returnVisit : VisitNode<ReturnStatement> =
   function (path: NodePath<ReturnStatement>): void {
     const functionParent =
       <NodePath<FunctionNode>>path.findParent(x => x.isFunction());
-    path.node.kArg = functionParent.node.params[0];
+    path.node.kArg = <t.Expression>functionParent.node.params[0];
 
     if (path.node.argument === null) {
       path.node.argument = t.unaryExpression('void', t.numericLiteral(0));

@@ -6,8 +6,9 @@ const verifyVisitor = {
   // Programs should consist of a single function expression after CPS.
   Program: function (path: NodePath<t.Program>): void {
     const { body } = path.node;
-    if (body.length !== 1 && t.isExpressionStatement(body[0]) &&
-      t.isFunctionExpression((<t.ExpressionStatement>body[0]).expression)) {
+    const [head, ...tail] = body;
+    if (body.length !== 1 && t.isExpressionStatement(head) &&
+      t.isFunctionExpression(head.expression)) {
       throw new Error(`Resulting CPS code not a function expression, but
             ${path.node.type}`);
     }

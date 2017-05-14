@@ -1,4 +1,4 @@
-const assert = require("assert")
+const assert = require("assert");
 function inc(x) { return x + 1; }
 
 let sum = 0;
@@ -8,4 +8,4 @@ while (iter++ < 10) {
   sum = inc(sum);
 }
 
-assert.equal(sum, 10)
+assert.equal(sum, 10);

@@ -1,4 +1,4 @@
-const assert = require("assert")
+const assert = require("assert");
 var count = 0;
 function f() {
   count++;
@@ -6,4 +6,4 @@ function f() {
 }
 var tmp = f() && true;
 
-assert.equal(count, 1)
+assert.equal(count, 1);

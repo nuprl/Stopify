@@ -1,4 +1,4 @@
-const assert = require("assert")
+const assert = require("assert");
 let x = 0;
 
 if (x > 2) {
@@ -13,4 +13,4 @@ else {
   }
 }
 
-assert.equal(x, 10)
+assert.equal(x, 10);

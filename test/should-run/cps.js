@@ -1,4 +1,4 @@
-const assert = require("assert")
+const assert = require("assert");
 function f(a, b) {
 	let x = a(b(6));
 	let r = a(x) + b(a(x));

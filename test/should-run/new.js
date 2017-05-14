@@ -1,8 +1,8 @@
-const assert = require("assert")
+const assert = require("assert");
 function foo() {
   this.a = "prop";
 }
 
 var f = new foo();
 
-assert(f.a === "prop")
+assert(f.a === "prop");

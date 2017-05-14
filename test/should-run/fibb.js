@@ -1,4 +1,4 @@
-const assert = require("assert")
+const assert = require("assert");
 'use strict';
 function helper(a, b, n) {
   if (n > 0) {

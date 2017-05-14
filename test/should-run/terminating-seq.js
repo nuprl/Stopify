@@ -1,4 +1,4 @@
-const assert = require("assert")
+const assert = require("assert");
 function g() {
     let x = 1;
     return x;
@@ -13,5 +13,4 @@ function f() {
 }
 let x = f();
 
-assert.equal(x, 3)
-
+assert.equal(x, 3);

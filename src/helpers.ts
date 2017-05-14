@@ -1,6 +1,8 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 
+export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
+
 // Wrap AST nodes with `cps` property
 export type CPS<T> = T & {
   cps?: boolean;

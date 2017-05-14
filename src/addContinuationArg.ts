@@ -4,8 +4,8 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
+import {FunctionNode} from './helpers';
 
-type FunctionNode = t.FunctionDeclaration|t.FunctionExpression;
 interface ReturnStatement extends t.ReturnStatement {
   kArg: t.Node;
 };

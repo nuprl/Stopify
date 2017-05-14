@@ -4,9 +4,8 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {CPS, cps} from './helpers';
+import {CPS, cps, FunctionNode} from './helpers';
 
-type Function = t.FunctionDeclaration | t.FunctionExpression;
 interface ReturnStatement extends t.ReturnStatement {
   kArg: t.Expression;
 };
@@ -245,8 +244,8 @@ const ifStatement: VisitNode<t.IfStatement> = {
 // Assumptions:
 //  - `s` has been visited and is a block statement containing a single
 //    function expression.
-const func : VisitNode<Function> = {
-  exit(path: NodePath<Function>): void {
+const func : VisitNode<FunctionNode> = {
+  exit(path: NodePath<FunctionNode>): void {
     if (isCPS(path.node)) return;
     const { params, body } = path.node;
 

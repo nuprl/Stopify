@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-import * as BuckleScript from '../compilers/bucklescript';
-import * as Cljs from '../compilers/clojurescript';
+import {BuckleScript} from '../compilers/bucklescript';
+import {Cljs} from '../compilers/clojurescript';
 const tmp = require('tmp');
 import * as path from 'path';
 

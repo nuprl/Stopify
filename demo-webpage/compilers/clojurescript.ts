@@ -1,8 +1,6 @@
 'use strict';
 
 import * as fs from 'fs';
-import * as process from 'process';
-const tmp = require('tmp');
 const fsExtra = require('fs-extra');
 
 import {makeSpawn, runBrowserify} from './utils';

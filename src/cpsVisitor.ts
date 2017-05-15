@@ -86,9 +86,16 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
         const blockFunction = foldSequence(path, head.body);
         const headFunction = createHeadFunction(blockFunction, headK, tailFunction);
         return headFunction;
+      } case 'ReturnStatement': {
+        tailPath = tailPath.scope === null ? path : tailPath;
+        const tailFunction = createTailFunction(tailPath, tail, headK, tailK);
+        const returnBlock = cps(t.blockStatement([head]));
+        const returnFunction = cps(t.functionExpression(undefined, [headK], returnBlock));
+        const headFunction = createHeadFunction(returnFunction, headK, tailFunction);
+        return headFunction;
       } case 'ThrowStatement':
-        case 'EmptyStatement':
-        case 'ReturnStatement': {
+        case 'TryStatement':
+        case 'EmptyStatement': {
         const k = path.scope.generateUidIdentifier('k');
         const kCall = cps(t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]));
         const kReturn = cps(t.returnStatement(kCall));
@@ -266,8 +273,9 @@ const breakStatement : VisitNode<t.BreakStatement> =
     if (label === null) {
       return;
     }
-    const labelCall = cps(t.callExpression(label, [t.unaryExpression('void', t.numericLiteral(0))]));
-    const labelReturn = cps(t.returnStatement(labelCall));
+    const labelCall = t.callExpression(label, [t.unaryExpression('void', t.numericLiteral(0))]);
+    const labelReturn = <ReturnStatement>t.returnStatement(labelCall);
+    labelReturn.kArg = label;
     path.replaceWith(labelReturn);
   };
 

@@ -81,10 +81,12 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
         const tailFunction = createTailFunction(tailPath, tail, headK, head.id);
         const headFunction = createHeadFunction(expFunction, headK, tailFunction);
         return headFunction;
-      } default: {
-        tailPath = tailPath.scope === null ? path : tailPath;
+      } case 'BlockStatement': {
         const tailFunction = createTailFunction(tailPath, tail, headK, tailK);
-
+        const blockFunction = foldSequence(path, head.body);
+        const headFunction = createHeadFunction(blockFunction, headK, tailFunction);
+        return headFunction;
+      } default: {
         const k = path.scope.generateUidIdentifier('k');
         const kCall = cps(t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]));
         const kReturn = cps(t.returnStatement(kCall));

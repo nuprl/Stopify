@@ -1,5 +1,3 @@
-const assert = require('assert');
-
 import {Stoppable, stopify} from './stopifyInterface';
 
 // Desugaring transforms.

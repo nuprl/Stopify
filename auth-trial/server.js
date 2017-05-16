@@ -28,8 +28,10 @@ app.post('/tokensignin', function(req, res) {
         idToken,
         '576255310053-nl3vla4sgg0cmu9ieb3l79fca2iuhrcs.apps.googleusercontent.com',
         function(e, login) {
+            console.log(e);
             var payload = login.getPayload();
             var userid = payload['sub'];
+            console.log(payload);
         });
 
     // print the ID Token to the server console 

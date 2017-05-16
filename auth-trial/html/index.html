@@ -4,25 +4,47 @@
       <script src="https://apis.google.com/js/platform.js" async defer></script>
       <meta name="google-signin-client_id" content="576255310053-nl3vla4sgg0cmu9ieb3l79fca2iuhrcs.apps.googleusercontent.com">
       <div class="g-signin2" data-onsuccess="onSignIn"></div>
-      <script>  function onSignIn(googleUser) {
-         var profile = googleUser.getBasicProfile();
-
-         // Do not send to your backend! Use an ID token instead.
-         console.log('ID: ' + profile.getId());
-         console.log('Name: ' + profile.getName());
-         console.log('Image URL: ' + profile.getImageUrl());
-
-         // This is null if the 'email' scope is not present.
-         console.log('Email: ' + profile.getEmail());
+      <script type="text/javascript">
+         "use strict"  
+         
+         /*
+         When the user signs in, get the user's profile information, request information from the server on the user's ID Token, write it to the console, and sends the request to the server. 
+         */
+         function onSignIn(googleUser) {
+          // some code taken from google authentication tutorial
+          var profile = googleUser.getBasicProfile();
+          // Do not send to your backend! Use an ID token instead.
+          console.log('ID: ' + profile.getId());
+          console.log('Name: ' + profile.getName());
+          console.log('Image URL: ' + profile.getImageUrl());
+          // This is null if the 'email' scope is not present.
+          console.log('Email: ' + profile.getEmail());
+          var id_token = googleUser.getAuthResponse().id_token;
+          var xhr = new XMLHttpRequest(); 
+          xhr.open('POST', '/tokensignin');
+          xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+          xhr.onload = function() {
+            console.log('Signed in as: ' + xhr.responseText);
+          };
+          // must create an object local to the function
+          const obj = {
+            IDToken: id_token 
+          };
+          // send the request to the server
+          // must pass in a string so convert the object to a JSON string 
+          xhr.send(JSON.stringify(obj)); 
          }
       </script>
       <a href="#" onclick="signOut();">Sign out</a>
       <script>
+         /*
+         When the user signs out, call the signOut function and print that the user signed out to the web browser console. 
+         */
          function signOut() {
            var auth2 = gapi.auth2.getAuthInstance();
-         auth2.signOut().then(function () {
-           console.log('User signed out.');
-         });
+           auth2.signOut().then(function () {
+             console.log('User signed out.');
+           });
          }
       </script>
    </body>

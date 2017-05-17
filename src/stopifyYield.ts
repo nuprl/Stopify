@@ -39,7 +39,7 @@ class YieldStopify implements Stoppable {
     const $that = this;
     const $yieldCounter = this.interval;
     let $counter = 0;
-    const $runYield = function run(gen: Generator,
+    const $runYield = function run(gen: Iterator<any>,
       res = { done: false, value: undefined }) {
       setTimeout(_ => {
         if ($that.isStop()) {

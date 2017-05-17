@@ -93,9 +93,7 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
         const returnFunction = cps(t.functionExpression(undefined, [headK], returnBlock));
         const headFunction = createHeadFunction(returnFunction, headK, tailFunction);
         return headFunction;
-      } case 'ThrowStatement':
-        case 'TryStatement':
-        case 'EmptyStatement': {
+      } case 'EmptyStatement': {
         const k = path.scope.generateUidIdentifier('k');
         const kCall = cps(t.callExpression(k, [t.unaryExpression('void', t.numericLiteral(0))]));
         const kReturn = cps(t.returnStatement(kCall));
@@ -103,7 +101,10 @@ function foldSequence(path: NodePath<t.Node>, statements: Array<t.Statement>): t
         const expFunction = cps(t.functionExpression(undefined, [k], kBody));
 
         return expFunction;
-      } default: {
+      } case 'SwitchStatement':
+        case 'ThrowStatement':
+        case 'TryStatement':
+        default: {
         throw new Error(`Unexpected statement of type ${head.type} encountered within sequence.`);
       }
     }

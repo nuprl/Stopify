@@ -13,7 +13,7 @@ export let Cljs : ClojureScript = {
     console.log(tmpDir);
     const run = makeSpawn(tmpDir);
 
-    fs.mkdir(tmpDir + '/src', err => {
+    fs.mkdir(tmpDir + '/src', (err: never) => {
       fs.mkdir(tmpDir + '/src/cljs', writeCljFile);
     });
 

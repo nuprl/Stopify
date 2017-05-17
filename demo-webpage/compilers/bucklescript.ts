@@ -1,8 +1,7 @@
 'use strict';
 
-import * as fs from 'fs';
 import * as assert from 'assert';
-const fsExtra = require('fs-extra');
+const fs = require('fs-extra');
 
 import {makeSpawn, runBrowserify} from './utils';
 import {OCaml} from './compiler';
@@ -20,7 +19,7 @@ export let BuckleScript : OCaml = {
 
       function copyBsConfig(exitCode: number) {
         assert(exitCode === 0);
-        fsExtra.copySync(__dirname + '/../../../data/bsconfig.json',
+        fs.copySync(__dirname + '/../../../data/bsconfig.json',
           tmpDir + '/bsconfig.json');
         run('bsb').on('exit', runBrowserify(tmpDir + '/lib/js/main.js', jsReceiver));
       }

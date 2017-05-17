@@ -1,11 +1,13 @@
 'use strict';
 
 import * as ace from 'brace';
-import {CompilerClient} from '../compilers/compiler';
-import {BuckleScript} from '../compilers/bucklescript-client';
-import {Cljs} from '../compilers/clojurescript-client';
+import { CompilerClient } from '../compilers/compiler';
+import { BuckleScript } from '../compilers/bucklescript-client';
+import { Cljs } from '../compilers/clojurescript-client';
+import { ScalaJS } from '../compilers/scalajs-client';
 require('brace/mode/ocaml');
 require('brace/mode/clojure');
+require('brace/mode/scala')
 require('brace/theme/monokai');
 
 const editor = ace.edit('editor');
@@ -20,6 +22,7 @@ const defaultLang = 'OCaml';
 const langs : supportedLangs = {
     OCaml: BuckleScript,
     ClojureScript: Cljs,
+    ScalaJS: ScalaJS
 };
 
 editor.getSession().setMode(langs[defaultLang].aceMode);
@@ -64,6 +67,7 @@ function selectLanguage() {
   const languageSelect = <any>document.getElementById("language-selection");
   languageSelect.addEventListener('input', () => {
     const val = (<any>document.getElementById("language-selection")).value;
+    console.log(langs[val])
     editor.getSession().setMode(langs[val].aceMode);
     editor.setValue(langs[val].defaultCode);
   });

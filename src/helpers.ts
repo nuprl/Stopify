@@ -76,11 +76,12 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
 }
 
 function transform(src: string, plugs: any[][]): string {
-  let { code, ast } = babel.transform(src, { babelrc: false });
+  let { code, ast } = babel.transform(src, { babelrc: false, sourceMaps: 'inline' });
   plugs.forEach(trs => {
     const res = babel.transformFromAst(<t.Node>ast, code, {
       plugins: [...trs],
       babelrc: false,
+      sourceMaps: 'inline',
     });
     code = res.code;
     ast = res.ast;

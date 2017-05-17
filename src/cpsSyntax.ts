@@ -137,7 +137,7 @@ function cpsStmt(stmt: t.Statement, k: (arg: AExpr) => CExpr): CExpr {
     case "ExpressionStatement":
         return cpsExpr(stmt.expression, _ => k(t.identifier("undefined")));
     case "ReturnStatement":
-        cpsExpr(stmt.argument, r => k(r));
+        return cpsExpr(stmt.argument, r => k(r));
     default:
         throw "missing case";
     }

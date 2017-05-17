@@ -3,6 +3,7 @@ import {Stoppable, stopify} from './stopifyInterface';
 // Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 import * as desugarLoop from './desugarLoop';
+import * as desugarFunctionDecl from './desugarFunctionDecl';
 import * as desugarWhileToFunc from './desugarLoopToFunc';
 import * as desugarLabel from './desugarLabel';
 import * as desugarAndOr from './desugarAndOr';
@@ -38,7 +39,7 @@ class CPSStopify implements Stoppable {
     stop: () => void) {
       this.original = code;
       const plugins = [
-        [noArrows, desugarLoop, desugarLabel],
+        [noArrows, desugarLoop, desugarLabel, desugarFunctionDecl],
         [desugarWhileToFunc, desugarAndOr],
         [anf, addKArg, tagFree],
         [cps],

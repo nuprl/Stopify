@@ -1,145 +1,318 @@
+import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
+import {flatBodyStatement, letExpression, ReturnStatement} from './helpers';
+
+type binop = "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" |
+  "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" |
+  "<" | ">=" | "<=";
+type unop = "-" | "+" | "!" | "~" | "typeof" | "void" | "delete";
 
 type AExpr = t.Identifier | t.Literal;
 
-interface BExpr { }
-interface CExpr { }
+interface BExpr { type: string }
+interface CExpr { type: string }
 
-class BFun implements BExpr {
-    kind: "BFun";
+interface BFun extends BExpr {
+    type: "BFun";
+    id: t.Identifier | undefined;
     args: t.Identifier[];
-    body: CExpr;
+    body: C;
 }
 
-function bfun(args: t.Identifier[], body: CExpr): BFun {
-    return { kind: "BFun", args, body };
+function bfun(id: t.Identifier | undefined, args: t.Identifier[], body: C): BFun {
+    return { type: "BFun", id, args, body };
 }
 
-class BAtom implements BExpr {
-    kind: "atom";
+interface BAtom extends BExpr {
+    type: "atom";
     atom: AExpr
 }
 
-class BOp2 implements BExpr {
-    kind: "op2";
-    name: String;
-    v1: AExpr;
-    v2: AExpr
+function atom(atom: AExpr): BAtom {
+  return { type: 'atom', atom };
 }
 
-class BOp1 implements BExpr {
-    kind: "op1";
-    name: String;
+interface BOp2 extends BExpr {
+    type: "op2";
+    name: binop;
+    l: AExpr;
+    r: AExpr
+}
+
+function bop2(name: binop, l: AExpr, r: AExpr): BOp2 {
+  return { type: 'op2', name, l, r };
+}
+
+interface BOp1 extends BExpr {
+    type: "op1";
+    name: unop;
     v: AExpr;
 }
 
-class BAssign implements BExpr {
-    kind: "assign";
-    x: t.Identifier;
-    v: AExpr;
+function bop1(name: unop, v: AExpr): BOp1 {
+  return { type: 'op1', name, v };
 }
 
-class BObj implements BExpr {
-    kind: "obj";
-    fields: Map<String, AExpr>
+interface BAssign extends BExpr {
+  type: "assign";
+  operator: string;
+  x: t.LVal;
+  v: AExpr;
 }
 
-class BArrayLit implements BExpr {
-    kind: "arraylit";
+function bassign(operator: string, x: t.LVal, v: AExpr): BAssign {
+  return { type: 'assign', operator, x, v };
+}
+
+interface BObj extends BExpr {
+    type: "obj";
+    fields: Map<string, AExpr>
+}
+
+interface BArrayLit extends BExpr {
+    type: "arraylit";
     arrayItems: AExpr[];
 }
 
-class BGet implements BExpr {
-    kind: "get";
-    obj: AExpr;
-    key: AExpr;
+interface BGet extends BExpr {
+    type: "get";
+    object: AExpr;
+    property: AExpr;
 }
 
-class BUpdate implements BExpr {
-    kind: "update";
+function member(object: AExpr, property: AExpr): BGet {
+  return { type: 'get', object, property };
+}
+
+interface BIncrDecr extends BExpr {
+  type: 'incr/decr';
+  operator: '++' | '--';
+  argument: AExpr;
+  prefix: boolean;
+}
+
+function incrDecr(operator: '++' | '--', argument: AExpr, prefix: boolean): BIncrDecr {
+  return { type: 'incr/decr', operator, argument, prefix };
+}
+
+interface BUpdate extends BExpr {
+    type: "update";
     obj: AExpr;
     key: AExpr;
     e: AExpr; 
 }
 
-class CApp implements CExpr {
-    kind: "app";
+type B = BFun | BAtom | BOp2 | BOp1 | BAssign | BObj | BArrayLit | BGet | BIncrDecr | BUpdate
+
+interface CApp extends CExpr {
+    type: "app";
     f: AExpr;
     args: AExpr[]
 }
 
-function capp(f: AExpr, args: AExpr[]): CExpr {
-    return { kind: "app", f, args };
+function capp(f: AExpr, args: AExpr[]): CApp {
+    return { type: "app", f, args };
 }
 
-class ITE implements CExpr {
-    kind: "ITE";
+interface ITE extends CExpr {
+    type: "ITE";
     e1: AExpr;
-    e2: CExpr;
-    e3: CExpr
+    e2: C;
+    e3: C;
 }
 
+function ite(e1: AExpr, e2: C, e3: C): ITE {
+  return { type: "ITE", e1, e2, e3 };
+}
+
+type kind = 'const' | 'var' | 'let' | undefined;
 // This is really letrec
-class CLet implements CExpr {
-    kind: "let";
-    x: t.Identifier;
-    named: BExpr;
-    body: CExpr;
+interface CLet extends CExpr {
+  type: "let";
+  kind: kind;    
+  x: t.LVal;
+  named: B;
+  body: C;
 }
 
-function clet(x: t.Identifier, named: BExpr, body: CExpr): CLet {
-    return { kind: "let", x, named, body };
+type C = CLet | ITE | CApp;
+
+function clet(kind: kind, x: t.LVal, named: B, body: C): CLet {
+    return { type: "let", kind, x, named, body };
 }
 
-function cpsExprList(exprs: t.Expression[], k: (arg: AExpr[]) => CExpr): CExpr {
+function cpsExprList(exprs: t.Expression[], k: (arg: AExpr[]) => C, path: NodePath<t.Node>): C {
     if (exprs.length === 0) {
         return k([]);
     }
     else {
         const [ hd, ...tl ] = exprs;
-        return cpsExpr(hd, v => cpsExprList(tl, vs => k([v, ...vs])));
+        return cpsExpr(hd, v => cpsExprList(tl, vs => k([v, ...vs]), path), path);
     }
 }
 
-function mkLet(x: t.Identifier, named: BExpr, body: (x: t.Identifier) => CExpr): CExpr {
-    return clet(x, named, body(x));
+function mkLet(x: t.Identifier, named: B, body: (x: t.Identifier) => C): C {
+    return clet('let', x, named, body(x));
 }
 
-function tmpLet(named: BExpr, body: (x: t.Identifier) => CExpr): CExpr {
-    const x = t.identifier("t");
-    return clet(x, named, body(x));
+function tmpLet(named: B, body: (x: t.Identifier) => C, path: NodePath<t.Node>): C {
+    const x = path.scope.generateUidIdentifier('tmp');
+    return clet('let', x, named, body(x));
 }
 
 const undefExpr: AExpr = t.identifier("undefined");
 
-function cpsExpr(expr: t.Expression, k: (arg: AExpr) => CExpr): CExpr {
-    switch (expr.type) {
+function cpsExpr(expr: t.Expression, k: (arg: AExpr) => C, path: NodePath<t.Node>): C {
+  switch (expr.type) {
+    case 'Identifier':
+      return k(expr);
+    case 'BooleanLiteral':
+    case 'NumericLiteral':
+    case 'StringLiteral':
+    case 'NullLiteral':
+    case 'RegExpLiteral':
+    case 'TemplateLiteral':
+      return k(expr);
+    case "AssignmentExpression":
+      return cpsExpr(expr.right, r => {
+        const assign = path.scope.generateUidIdentifier('assign');
+        return clet('const', assign, bassign(expr.operator, expr.left, r), k(r));
+      }, path);
+    case 'BinaryExpression':
+      return cpsExpr(expr.left, l =>
+        cpsExpr(expr.right, r => {
+          let bop = path.scope.generateUidIdentifier('bop');
+          return clet('const', bop, bop2(expr.operator, l, r), k(bop));
+        }, path), path);
+    case 'UnaryExpression':
+      return cpsExpr(expr.argument, v => {
+        let unop = path.scope.generateUidIdentifier('unop');
+        return clet('const', unop, bop1(expr.operator, v), k(unop));
+      }, path);
     case "FunctionExpression":
-        const sk = t.identifier("tmp");
-        return tmpLet(bfun([sk, ...<t.Identifier[]>(expr.params)],
-                           cpsStmt(expr.body, r => capp(sk, [undefExpr]))), k);
+      return tmpLet(bfun(expr.id, <t.Identifier[]>(expr.params),
+        cpsStmt(expr.body, r =>
+          capp(<t.Identifier>(expr.params[0]), [undefExpr]), path)), k, path);
     case "CallExpression":
-        return cpsExpr(expr.callee, f =>
-                       cpsExprList(<t.Expression[]>(expr.arguments), args => {
-                           let kFun = t.identifier("tmp");
-                           let r = t.identifier("tmp");
-                           return clet(kFun, bfun([r], k(r)),
-                                       { kind: "app", f, args: [ kFun, ...args ] });
-                       }));
-    }
-    throw "nyi";
+      return cpsExpr(expr.callee, f =>
+        cpsExprList(<t.Expression[]>(expr.arguments), args => {
+          const kFun = path.scope.generateUidIdentifier('kFun');
+          const r = path.scope.generateUidIdentifier('r');
+          return clet('const', kFun, bfun(undefined, [r], k(r)),
+            capp(f, [kFun, ...args]));
+        }, path), path);
+    case 'MemberExpression':
+      return cpsExpr(expr.object, o =>
+        cpsExpr(expr.property, p => {
+          const obj = path.scope.generateUidIdentifier('obj');
+          return clet('const', obj, member(o, p), k(obj));
+        }, path), path);
+    case 'UpdateExpression':
+      return cpsExpr(expr.argument, (v: AExpr) => {
+        const tmp = path.scope.generateUidIdentifier('update');
+        return clet('const', tmp, incrDecr(expr.operator, v, expr.prefix), k(tmp));
+      }, path);
+  }
+  throw new Error(`${expr.type} not yet implemented`);
 }
 
-function cpsStmt(stmt: t.Statement, k: (arg: AExpr) => CExpr): CExpr {
-    switch (stmt.type) {
+function cpsStmt(stmt: t.Statement, k: (arg: AExpr) => C, path: NodePath<t.Node>): C {
+  switch (stmt.type) {
+    case "BlockStatement": {
+      let [head, ...tail] = stmt.body;
+      if (head === undefined) {
+        return k(undefExpr);
+      } else if (tail === []) {
+        return cpsStmt(head, k, path);
+      } else {
+        return cpsStmt(head, v => cpsStmt(t.blockStatement(tail), k, path), path);
+      }
+    }
+    case "BreakStatement":
+      return cpsExpr(stmt.label, label => capp(label, [undefExpr]), path);
     case "EmptyStatement":
-        return k(t.identifier("undefined"));
+        return k(undefExpr);
     case "ExpressionStatement":
-        return cpsExpr(stmt.expression, _ => k(t.identifier("undefined")));
+        return cpsExpr(stmt.expression, _ => k(undefExpr), path);
+    case "IfStatement":
+      return cpsExpr(stmt.test, tst => ite(tst,
+        cpsStmt(stmt.consequent, k, path),
+        cpsStmt(stmt.alternate, k, path)), path);
+    case "LabeledStatement":
+      return cpsExpr(t.callExpression(t.functionExpression(undefined, [stmt.label],
+        flatBodyStatement([stmt.body])), [t.unaryExpression('void', t.numericLiteral(0))]),
+        k, path);
     case "ReturnStatement":
-        return cpsExpr(stmt.argument, r => k(r));
+        let returnK = (r: AExpr) => capp(<t.Identifier>(<ReturnStatement>stmt).kArg, [r]);
+        return cpsExpr(stmt.argument, r => returnK(r), path);
+    case "VariableDeclaration": {
+      const { declarations } = stmt;
+      const [head, ...tail] = declarations;
+      if (head === undefined) {
+        return k(undefExpr);
+      } else if (tail === []) {
+        return cpsExpr(head.init, v =>
+          clet(stmt.kind, <t.Identifier>head.id, atom(v), k(undefExpr)), path);
+      } else {
+        return cpsExpr(head.init, v =>
+          clet(stmt.kind, <t.Identifier>head.id, atom(v),
+            cpsStmt(t.variableDeclaration(stmt.kind, tail), k, path)), path);
+      }
+    }
     default:
-        throw "missing case";
+      throw new Error(`${stmt.type} not yet implemented`);
     }
 }
 
+function generateBExpr(bexpr: B): t.Expression {
+  switch (bexpr.type) {
+    case 'BFun':
+      return t.functionExpression(bexpr.id, bexpr.args, flatBodyStatement(generateJS(bexpr.body)));
+    case 'atom':
+      return bexpr.atom;
+    case 'op2':
+      return t.binaryExpression(bexpr.name, bexpr.l, bexpr.r);
+    case 'op1':
+      return t.unaryExpression(bexpr.name, bexpr.v);
+    case 'assign':
+      return t.assignmentExpression(bexpr.operator, bexpr.x, bexpr.v);
+    case 'obj':
+      const properties : t.ObjectProperty[] = [];
+      bexpr.fields.forEach((value, key) =>
+        properties.push(t.objectProperty(t.identifier(key), value)));
+      return t.objectExpression(properties);
+    case 'get':
+      return t.memberExpression(bexpr.object, bexpr.property);
+    case 'incr/decr':
+      return t.updateExpression(bexpr.operator, bexpr.argument, bexpr.prefix);
+    case 'arraylit':
+    case 'update':
+      throw new Error(`${bexpr.type} generation is not yet implemented`);
+  }
+}
+
+function generateJS(cexpr: C): t.Statement[] {
+  switch (cexpr.type) {
+    case 'app':
+      return [t.returnStatement(t.callExpression(cexpr.f, cexpr.args))];
+    case 'ITE':
+      return [t.ifStatement(cexpr.e1,
+        flatBodyStatement(generateJS(cexpr.e2)),
+        flatBodyStatement(generateJS(cexpr.e3)))];
+    case 'let':
+      const decl = letExpression(cexpr.x, generateBExpr(cexpr.named), cexpr.kind);
+      return [decl, ...generateJS(cexpr.body)];
+  }
+}
+
+const cpsExpression : Visitor = {
+  Program: function (path: NodePath<t.Program>): void {
+    const { body } = path.node;
+    const cexpr = cpsStmt(t.blockStatement(body), v => capp(t.identifier('onDone'), [v]), path);
+    path.node.body = generateJS(cexpr);
+  }
+};
+
+module.exports = function() {
+  return { visitor: cpsExpression };
+};

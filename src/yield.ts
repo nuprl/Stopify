@@ -139,17 +139,28 @@ const funce: VisitNode<t.FunctionExpression> =
     }
 };
 
-const newVisit: VisitNode<t.NewExpression> =
-  function (path: NodePath<t.NewExpression>): void {
-    let genId = path.scope.generateUidIdentifier('gen');
+const newVisit: VisitNode<Transformed<t.NewExpression>> =
+  function (path: NodePath<Transformed<t.NewExpression>>): void {
+    if(path.node.isTransformed === true) return
     let objId = path.scope.generateUidIdentifier('obj');
+
     let emptyObj = t.objectExpression([]);
+
     path.getStatementParent().insertBefore(h.letExpression(objId, emptyObj));
+
     let callMember = t.memberExpression(path.node.callee, t.identifier('call'));
-    let constructCall = t.callExpression(callMember, [objId, ...path.node.arguments]);
-    let constructGen = h.letExpression(genId, constructCall);
-    path.getStatementParent().insertBefore(constructGen);
+    let yieldCall = t.yieldExpression(
+      transformed(t.callExpression(callMember, [objId, ...path.node.arguments])),
+      true
+    )
+    const constructCall = t.conditionalExpression(
+      t.memberExpression(path.node.callee, t.identifier('$isGen')),
+      yieldCall,
+      t.assignmentExpression('=', objId, transformed(path.node))
+    )
+    path.getStatementParent().insertBefore(constructCall);
     path.replaceWith(objId);
+
   };
 
 const yieldVisitor: Visitor = {

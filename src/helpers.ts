@@ -46,7 +46,7 @@ function isTerminating(node: t.Node): boolean {
 }
 
 function letExpression(name: t.Identifier, value: t.Expression): t.VariableDeclaration {
-  return t.variableDeclaration('const',
+  return t.variableDeclaration('let',
     [t.variableDeclarator(name, value)]);
 }
 

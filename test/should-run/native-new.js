@@ -1,5 +1,7 @@
+const assert = require("assert");
+
 let map = new WeakMap()
+let a = {}
+map.set(a, 1)
 
-map.set('a', 1)
-
-assert.equals(map.get('a'), 1)
+assert.equal(map.get(a), 1)

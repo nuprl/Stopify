@@ -16,7 +16,7 @@ module.exports = function() {
           t.ifStatement(test, h.flatBodyStatement([body,
             t.returnStatement(t.callExpression(fName, []))]))]);
         // Create the function representing the while loop.
-        const fExpr = t.functionExpression(undefined, [], fBody);
+        const fExpr = t.functionExpression(fName, [], fBody);
         const fDecl = h.letExpression(fName, fExpr);
         path.replaceWith(h.flatBodyStatement([fDecl, t.expressionStatement(
           t.callExpression(fName, []))]));

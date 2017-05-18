@@ -151,10 +151,6 @@ function cpsExprList(exprs: t.Expression[], k: (arg: AExpr[]) => C, path: NodePa
     }
 }
 
-function mkLet(x: t.Identifier, named: B, body: (x: t.Identifier) => C): C {
-    return clet('let', x, named, body(x));
-}
-
 function tmpLet(named: B, body: (x: t.Identifier) => C, path: NodePath<t.Node>): C {
     const x = path.scope.generateUidIdentifier('tmp');
     return clet('let', x, named, body(x));

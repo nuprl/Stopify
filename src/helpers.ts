@@ -45,10 +45,12 @@ function isTerminating(node: t.Node): boolean {
   return !t.isCallExpression(node);
 }
 
-function letExpression(name: t.Identifier, value: t.Expression): t.VariableDeclaration {
-  return t.variableDeclaration('let',
-    [t.variableDeclarator(name, value)]);
-}
+type kind = 'const' | 'var' | 'let' | undefined;
+function letExpression(name: t.LVal,
+  value: t.Expression,
+  kind: kind = 'const'): t.VariableDeclaration {
+    return t.variableDeclaration(kind, [t.variableDeclarator(name, value)]);
+  }
 
 function flatten(seq: t.Statement[]): t.Statement[] {
   return seq.reduce((prog: t.Statement[], statements) => prog.concat(statements), []);

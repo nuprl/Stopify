@@ -7,16 +7,11 @@ import * as t from 'babel-types';
 const program : VisitNode<t.Program> = function (path: NodePath<t.Program>): void {
   const { body } = path.node;
 
-  const k = path.scope.generateUidIdentifier('k');
-  const cpsFunction = (<t.ExpressionStatement>body[0]).expression;
-  const kArgs = [k];
-  const onDoneCall = t.callExpression(t.identifier('onDone'), [k])
-  const kont =
-    t.functionExpression(undefined, kArgs, t.blockStatement([
-      t.returnStatement(onDoneCall)]))
-  const cpsApply = t.callExpression(cpsFunction, [kont]);
+  const onDone = t.identifier('onDone');
+  const kont = t.functionExpression(undefined, [onDone], t.blockStatement(body));
+  const kontCall = t.callExpression(kont, [onDone])
 
-  path.node.body = [t.expressionStatement(cpsApply)];
+  path.node.body = [t.expressionStatement(kontCall)];
 };
 
 const kApplyVisitor : Visitor = {

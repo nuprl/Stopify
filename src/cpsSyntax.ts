@@ -151,11 +151,6 @@ function cpsExprList(exprs: t.Expression[], k: (arg: AExpr[]) => C, path: NodePa
     }
 }
 
-function tmpLet(named: B, body: (x: t.Identifier) => C, path: NodePath<t.Node>): C {
-    const x = path.scope.generateUidIdentifier('tmp');
-    return clet('let', x, named, body(x));
-}
-
 const undefExpr: AExpr = t.identifier("undefined");
 
 function cpsExpr(expr: t.Expression, k: (arg: AExpr) => C, path: NodePath<t.Node>): C {
@@ -186,9 +181,10 @@ function cpsExpr(expr: t.Expression, k: (arg: AExpr) => C, path: NodePath<t.Node
         return clet('const', unop, bop1(expr.operator, v), k(unop));
       }, path);
     case "FunctionExpression":
-      return tmpLet(bfun(expr.id, <t.Identifier[]>(expr.params),
+      let func = path.scope.generateUidIdentifier('func');
+      return clet('const', func, bfun(expr.id, <t.Identifier[]>(expr.params),
         cpsStmt(expr.body, r =>
-          capp(<t.Identifier>(expr.params[0]), [undefExpr]), path)), k, path);
+          capp(<t.Identifier>(expr.params[0]), [undefExpr]), path)), k(func));
     case "CallExpression":
       return cpsExpr(expr.callee, f =>
         cpsExprList(<t.Expression[]>(expr.arguments), args => {

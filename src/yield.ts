@@ -144,15 +144,22 @@ const newVisit: VisitNode<Transformed<t.NewExpression>> =
     if(path.node.isTransformed === true) return
     let objId = path.scope.generateUidIdentifier('obj');
 
-    let emptyObj = t.objectExpression([]);
+    // Build an empty object using Object.create(<function>.prototype)
+    let objectInit = transformed(t.callExpression(
+      t.memberExpression(t.identifier('Object'), t.identifier('create')),
+      [t.memberExpression(path.node.callee, t.identifier('prototype'))]
+    ))
 
-    path.getStatementParent().insertBefore(h.letExpression(objId, emptyObj));
+    path.getStatementParent().insertBefore(h.letExpression(objId, objectInit));
 
     let callMember = t.memberExpression(path.node.callee, t.identifier('call'));
     let yieldCall = t.yieldExpression(
       transformed(t.callExpression(callMember, [objId, ...path.node.arguments])),
       true
     )
+
+    // Build conditional expression that yields if the function is a generator
+    // and otherwise assigns the dummy object with `new <function>`
     const constructCall = t.conditionalExpression(
       t.memberExpression(path.node.callee, t.identifier('$isGen')),
       yieldCall,

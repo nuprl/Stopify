@@ -13,7 +13,7 @@ import * as anf from './anf';
 
 // CPS transforms.
 import * as addKArg from './addContinuationArg';
-import * as cps from './cpsVisitor';
+import * as cps from './cpsSyntax';
 import * as tagFree from './tagUnboundIds';
 import * as kApply from './applyContinuation';
 import * as applyStop from './stoppableApply';
@@ -43,8 +43,7 @@ class CPSStopify implements Stoppable {
         [desugarWhileToFunc, desugarAndOr],
         [anf, addKArg, tagFree],
         [cps],
-        [applyStop],
-        [kApply],
+        [applyStop, kApply],
       ];
       this.transformed = transform(code, plugins);
 

@@ -164,6 +164,9 @@ function cpsExpr(expr: t.Expression,
     k: (arg: AExpr) => C,
     ek: (arg: AExpr) => C,
     path: NodePath<t.Node>): C {
+      if (expr === null) {
+        return k(t.nullLiteral());
+      }
   switch (expr.type) {
     case 'Identifier':
       return k(expr);

@@ -258,9 +258,7 @@ function cpsStmt(stmt: t.Statement,
         cpsStmt(stmt.alternate, k, ek, path)), ek, path);
     case "LabeledStatement":
       return cpsExpr(t.callExpression(t.functionExpression(undefined,
-          [stmt.label],
-          flatBodyStatement([stmt.body])),
-          [t.unaryExpression('void', t.numericLiteral(0))]),
+          [stmt.label], flatBodyStatement([stmt.body])), []),
         k, ek, path);
     case "ReturnStatement":
         let returnK = (r: AExpr) =>

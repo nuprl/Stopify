@@ -266,6 +266,8 @@ function cpsStmt(stmt: t.Statement,
         let returnK = (r: AExpr) =>
               capp(<t.Identifier>(<ReturnStatement>stmt).kArg, [r]);
         return cpsExpr(stmt.argument, r => returnK(r), ek, path);
+    case "ThrowStatement":
+      return cpsExpr(stmt.argument, ek, v => capp(v, [undefExpr]), path);
     case "VariableDeclaration": {
       const { declarations } = stmt;
       const [head, ...tail] = declarations;

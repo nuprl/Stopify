@@ -188,6 +188,10 @@ function cpsExpr(expr: t.Expression,
           let bop = path.scope.generateUidIdentifier('bop');
           return clet('const', bop, bop2(expr.operator, l, r), k(bop));
         }, ek, path), ek, path);
+    case 'ConditionalExpression':
+      return cpsExpr(expr.test, tst => ite(tst,
+        cpsExpr(expr.consequent, k, ek, path),
+        cpsExpr(expr.alternate, k, ek, path)), ek, path);
     case 'UnaryExpression':
       return cpsExpr(expr.argument, v => {
         let unop = path.scope.generateUidIdentifier('unop');

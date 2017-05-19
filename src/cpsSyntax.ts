@@ -257,8 +257,13 @@ function cpsStmt(stmt: t.Statement,
         let returnK = (r: AExpr) =>
               capp(<t.Identifier>(<ReturnStatement>stmt).kArg, [r]);
         return cpsExpr(stmt.argument, r => returnK(r), ek, path);
-    case "ThrowStatement":
+    case 'ThrowStatement':
       return cpsExpr(stmt.argument, ek, v => capp(v, [undefExpr]), path);
+    case 'TryStatement':
+      return cpsStmt(stmt.block, k, v =>
+        cpsExpr(t.functionExpression(undefined,
+          [stmt.handler.param],
+          stmt.handler.body), f => capp(f, [v]), ek, path), path);
     case "VariableDeclaration": {
       const { declarations } = stmt;
       const [head, ...tail] = declarations;

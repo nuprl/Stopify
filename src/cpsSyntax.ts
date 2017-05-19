@@ -142,8 +142,8 @@ function clet(kind: kind, x: t.LVal, named: B, body: C): CLet {
 }
 
 function cpsExprList(exprs: t.Expression[],
-    k: (arg: AExpr[]) => C,
-    ek: (arg: AExpr[]) => C,
+    k: (args: AExpr[]) => C,
+    ek: (arg: AExpr) => C,
     path: NodePath<t.Node>): C {
     if (exprs.length === 0) {
         return k([]);
@@ -154,12 +154,7 @@ function cpsExprList(exprs: t.Expression[],
             (v: AExpr) => cpsExprList(tl,
                 (vs: AExpr[]) => k([v, ...vs]),
                 ek,
-                path),
-            (v: AExpr) => cpsExprList(tl,
-                k,
-                (vs: AExpr[]) => ek([v, ...vs]),
-                path),
-            path);
+                path), ek, path);
     }
 }
 
@@ -200,21 +195,18 @@ function cpsExpr(expr: t.Expression,
       return clet('const', func, bfun(expr.id, <t.Identifier[]>(expr.params),
         cpsStmt(expr.body,
             r => capp(<t.Identifier>(expr.params[0]), [undefExpr]),
-            ek,
+            r => capp(<t.Identifier>(expr.params[1]), [undefExpr]),
             path)), k(func));
     case "CallExpression":
       return cpsExpr(expr.callee, f =>
         cpsExprList(<t.Expression[]>(expr.arguments), args => {
           const kFun = path.scope.generateUidIdentifier('kFun');
+          const kErr = path.scope.generateUidIdentifier('kErr');
           const r = path.scope.generateUidIdentifier('r');
           return clet('const', kFun, bfun(undefined, [r], k(r)),
-            capp(f, [kFun, ...args]));
-        },  args => {
-          const kFun = path.scope.generateUidIdentifier('kFun');
-          const r = path.scope.generateUidIdentifier('r');
-          return clet('const', kFun, bfun(undefined, [r], ek(r)),
-            capp(f, [kFun, ...args]));
-        }, path), ek, path);
+            clet('const', kErr, bfun(undefined, [r], ek(r)),
+              capp(f, [kFun, kErr, ...args])));
+        }, ek, path), ek, path);
     case 'MemberExpression':
       return cpsExpr(expr.object, o =>
         cpsExpr(expr.property, p => {
@@ -257,8 +249,9 @@ function cpsStmt(stmt: t.Statement,
         cpsStmt(stmt.consequent, k, ek, path),
         cpsStmt(stmt.alternate, k, ek, path)), ek, path);
     case "LabeledStatement":
+      const kErr = path.scope.generateUidIdentifier('kErr');
       return cpsExpr(t.callExpression(t.functionExpression(undefined,
-          [stmt.label], flatBodyStatement([stmt.body])), []),
+          [stmt.label, kErr], flatBodyStatement([stmt.body])), []),
         k, ek, path);
     case "ReturnStatement":
         let returnK = (r: AExpr) =>

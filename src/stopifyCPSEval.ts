@@ -60,25 +60,28 @@ class CPSStopify implements Stoppable {
     'use strict';
     const that = this;
     let counter = that.interval;
-    let applyWithK = function (f: MaybeBound, k: any, ...args: any[]) {
+    let onError = function (arg?: any) {
+      console.log('ERROR');
+    };
+    let applyWithK = function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
       if (f.$isFree === undefined) {
-        return f(k, ...args);
+        return f(k, ek, ...args);
       } else {
         return k(f(...args));
       }
     };
-    let apply = function (f: MaybeBound, k: any, ...args: any[]) {
+    let apply = function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
       if (counter-- === 0) {
       counter = that.interval;
       setTimeout(_ => {
           if (that.isStop()) {
             that.onStop();
           } else {
-            return applyWithK(f, k, ...args);
+            return applyWithK(f, k, ek, ...args);
           }
         }, 0);
       } else {
-        return applyWithK(f, k, ...args);
+        return applyWithK(f, k, ek, ...args);
       }
     };
     eval(that.transformed);

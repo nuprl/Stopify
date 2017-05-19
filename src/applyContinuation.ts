@@ -8,8 +8,9 @@ const program : VisitNode<t.Program> = function (path: NodePath<t.Program>): voi
   const { body } = path.node;
 
   const onDone = t.identifier('onDone');
-  const kont = t.functionExpression(undefined, [onDone], t.blockStatement(body));
-  const kontCall = t.callExpression(kont, [onDone])
+  const onError = t.identifier('onError');
+  const kont = t.functionExpression(undefined, [onDone, onError], t.blockStatement(body));
+  const kontCall = t.callExpression(kont, [onDone, onError])
 
   path.node.body = [t.expressionStatement(kontCall)];
 };

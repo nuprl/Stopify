@@ -9,7 +9,8 @@ import {FunctionNode, ReturnStatement} from './helpers';
 const func : VisitNode<FunctionNode> =
   function (path: NodePath<FunctionNode>): void {
     const k = path.scope.generateUidIdentifier('k');
-    path.node.params = [k, ...path.node.params];
+    const ek = path.scope.generateUidIdentifier('ek');
+    path.node.params = [k, ek, ...path.node.params];
   };
 
 const returnVisit : VisitNode<ReturnStatement> =

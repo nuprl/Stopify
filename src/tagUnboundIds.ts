@@ -47,7 +47,13 @@ const tagFree: Visitor = {
     enter(path: NodePath<t.LVal>): void {
       path.skip();
     }
-  }
+  },
+  BreakStatement: function(path: NodePath<t.BreakStatement>): void {
+    path.node.label = visited(path.node.label);
+  },
+  LabeledStatement: function(path: NodePath<t.LabeledStatement>): void {
+    path.node.label = visited(path.node.label);
+  },
 };
 
 module.exports = function() {

@@ -20,10 +20,23 @@ const runProg = t.expressionStatement(t.callExpression(
   )]
 ))
 
+/** function $mark_func(func, generator) {
+ *    func.__generator__  = generator;
+ *    func.$isGen = true;
+ *    func.call.__generator = generator.call;
+ *    func.call.$isGen = true;
+ *    func.apply.__generator = generator.apply;
+ *    func.apply.$isGen = true;
+ *  }
+ */
 const markFunc = t.functionDeclaration(
   t.identifier('$mark_func'),
-  [t.identifier('func')],
+  [t.identifier('func'), t.identifier('generator')],
   t.blockStatement([
+    t.expressionStatement(t.assignmentExpression('=',
+      t.memberExpression(t.identifier('func'), t.identifier('__generator__')),
+      t.identifier('generator')
+    )),
     t.expressionStatement(t.assignmentExpression('=',
       t.memberExpression(t.identifier('func'), t.identifier('$isGen')),
       t.booleanLiteral(true)
@@ -36,9 +49,27 @@ const markFunc = t.functionDeclaration(
     )),
     t.expressionStatement(t.assignmentExpression('=',
       t.memberExpression(
+        t.memberExpression(t.identifier('func'), t.identifier('call')),
+        t.identifier('__generator__')),
+      t.memberExpression(
+        t.memberExpression(t.identifier('func'), t.identifier('__generator__')),
+        t.identifier('call')
+      )
+    )),
+    t.expressionStatement(t.assignmentExpression('=',
+      t.memberExpression(
         t.memberExpression(t.identifier('func'), t.identifier('apply')),
         t.identifier('$isGen')),
       t.booleanLiteral(true)
+    )),
+    t.expressionStatement(t.assignmentExpression('=',
+      t.memberExpression(
+        t.memberExpression(t.identifier('func'), t.identifier('apply')),
+        t.identifier('__generator__')),
+      t.memberExpression(
+        t.memberExpression(t.identifier('func'), t.identifier('__generator__')),
+        t.identifier('call')
+      )
     )),
     t.returnStatement(t.identifier('func'))
   ])
@@ -121,16 +152,16 @@ const funcd: VisitNode<t.FunctionDeclaration> =
     const genFunc = transformed(
       t.functionExpression(undefined, params, t.blockStatement(body), true, false)
     )
-    const assignGen = t.assignmentExpression('=',
-      t.memberExpression(id, t.identifier('__generator__')), genFunc
-    )
 
     // Change body of function to throw statement
     const throwString = `Generator function ${id.name} called directly.`
     path.node.body.body = [t.throwStatement(t.stringLiteral(throwString))]
 
-    path.insertAfter(transformed(t.callExpression(t.identifier('$mark_func'), [id])))
-    path.insertAfter(assignGen)
+    path.insertAfter(
+      transformed(t.callExpression(
+        t.identifier('$mark_func'), [id, genFunc]
+      ))
+    )
 };
 
 const funce: VisitNode<Transformed<t.FunctionExpression>> =
@@ -149,17 +180,13 @@ const funce: VisitNode<Transformed<t.FunctionExpression>> =
       const genFunc = transformed(
         t.functionExpression(undefined, params, t.blockStatement(body), true, false)
       )
-      const assignGen = t.assignmentExpression('=',
-        t.memberExpression(id, t.identifier('__generator__')), genFunc
-      )
 
       // Change body of function to throw statement
       const throwString = `Generator function called directly.`
       path.node.body.body = [t.throwStatement(t.stringLiteral(throwString))]
 
       path.getStatementParent().insertAfter(
-        transformed(t.callExpression(t.identifier('$mark_func'), [id])));
-      path.getStatementParent().insertAfter(t.expressionStatement(assignGen));
+        transformed(t.callExpression(t.identifier('$mark_func'), [id, genFunc])));
     }
 };
 

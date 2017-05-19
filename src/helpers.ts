@@ -48,7 +48,7 @@ function isTerminating(node: t.Node): boolean {
 type kind = 'const' | 'var' | 'let' | undefined;
 function letExpression(name: t.LVal,
   value: t.Expression,
-  kind: kind = 'const'): t.VariableDeclaration {
+  kind: kind = 'let'): t.VariableDeclaration {
     return t.variableDeclaration(kind, [t.variableDeclarator(name, value)]);
   }
 

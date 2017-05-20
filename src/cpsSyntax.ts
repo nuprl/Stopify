@@ -218,8 +218,8 @@ function cpsExpr(expr: t.Expression,
         let func = path.scope.generateUidIdentifier('func');
         return new CLet('const', func, new BFun(expr.id, <t.Identifier[]>(expr.params),
           cpsStmt(expr.body,
-            r => new CApp(<t.Identifier>(expr.params[0]), [undefExpr]),
-            r => new CApp(<t.Identifier>(expr.params[1]), [undefExpr]),
+            r => new CApp(<t.Identifier>(expr.params[0]), [r]),
+            r => new CApp(<t.Identifier>(expr.params[1]), [r]),
             path)), k(func));
       case "CallExpression":
         return cpsExpr(expr.callee, f =>
@@ -272,11 +272,12 @@ function cpsStmt(stmt: t.Statement,
         return cpsExpr(stmt.test, tst => new ITE(tst,
           cpsStmt(stmt.consequent, k, ek, path),
           cpsStmt(stmt.alternate, k, ek, path)), ek, path);
-      case "LabeledStatement":
+      case "LabeledStatement": {
         const kErr = path.scope.generateUidIdentifier('kErr');
         return cpsExpr(t.callExpression(t.functionExpression(undefined,
           [stmt.label, kErr], flatBodyStatement([stmt.body])), []),
           k, ek, path);
+      }
       case "ReturnStatement":
         let returnK = (r: AExpr) =>
           new CApp(<t.Identifier>(<ReturnStatement>stmt).kArg, [r]);
@@ -284,10 +285,13 @@ function cpsStmt(stmt: t.Statement,
       case 'ThrowStatement':
         return cpsExpr(stmt.argument, ek, v => new CApp(v, [undefExpr]), path);
       case 'TryStatement':
-        return cpsStmt(stmt.block, k, v =>
-          cpsExpr(t.functionExpression(undefined,
-            [stmt.handler.param],
-            stmt.handler.body), f => new CApp(f, [v]), ek, path), path);
+        const kFun = path.scope.generateUidIdentifier('kFun');
+        const kErr = path.scope.generateUidIdentifier('kErr');
+        return cpsExpr(t.callExpression(t.functionExpression(undefined,
+          [kFun, kErr],
+          stmt.block), []), k, e =>
+            new CLet('const', stmt.handler.param, new BAtom(e),
+              cpsStmt(stmt.handler.body, k, ek, path)), path);
       case "VariableDeclaration": {
         const { declarations } = stmt;
         const [head, ...tail] = declarations;

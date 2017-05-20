@@ -1,7 +1,7 @@
 const assert = require("assert");
 try {
   throw 5;
-  assert(false);
+  assert.equal(true, false);
 } catch (e) {
   assert.equal(5, e);
 }

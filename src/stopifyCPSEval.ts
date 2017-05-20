@@ -61,13 +61,17 @@ class CPSStopify implements Stoppable {
     const that = this;
     let counter = that.interval;
     let onError = function (arg?: any) {
-      console.log('ERROR');
+      throw new Error(`Unexpected error: ${arg}`);
     };
     let applyWithK = function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
       if (f.$isFree === undefined) {
         return f(k, ek, ...args);
       } else {
-        return k(f(...args));
+        try {
+          return k(f(...args));
+        } catch (e) {
+          ek(e);
+        }
       }
     };
     let apply = function (f: MaybeBound, k: any, ek: any, ...args: any[]) {

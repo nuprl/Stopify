@@ -41,36 +41,6 @@ const markFunc = t.functionDeclaration(
       t.memberExpression(t.identifier('func'), t.identifier('$isGen')),
       t.booleanLiteral(true)
     )),
-    t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(
-        t.memberExpression(t.identifier('func'), t.identifier('call')),
-        t.identifier('$isGen')),
-      t.booleanLiteral(true)
-    )),
-    t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(
-        t.memberExpression(t.identifier('func'), t.identifier('call')),
-        t.identifier('__generator__')),
-      t.memberExpression(
-        t.memberExpression(t.identifier('func'), t.identifier('__generator__')),
-        t.identifier('call')
-      )
-    )),
-    t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(
-        t.memberExpression(t.identifier('func'), t.identifier('apply')),
-        t.identifier('$isGen')),
-      t.booleanLiteral(true)
-    )),
-    t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(
-        t.memberExpression(t.identifier('func'), t.identifier('apply')),
-        t.identifier('__generator__')),
-      t.memberExpression(
-        t.memberExpression(t.identifier('func'), t.identifier('__generator__')),
-        t.identifier('call')
-      )
-    )),
     t.returnStatement(t.identifier('func'))
   ])
 )
@@ -190,43 +160,11 @@ const funce: VisitNode<Transformed<t.FunctionExpression>> =
     }
 };
 
-const newVisit: VisitNode<Transformed<t.NewExpression>> =
-  function (path: NodePath<Transformed<t.NewExpression>>): void {
-    if(path.node.isTransformed === true) return
-    let objId = path.scope.generateUidIdentifier('obj');
-
-    // Build an empty object using Object.create(<function>.prototype)
-    let objectInit = transformed(t.callExpression(
-      t.memberExpression(t.identifier('Object'), t.identifier('create')),
-      [t.memberExpression(path.node.callee, t.identifier('prototype'))]
-    ))
-
-    path.getStatementParent().insertBefore(h.letExpression(objId, objectInit));
-
-    let callMember = t.memberExpression(path.node.callee, t.identifier('call'));
-    let yieldCall = t.yieldExpression(
-      transformed(t.callExpression(callMember, [objId, ...path.node.arguments])),
-      true
-    )
-
-    // Build conditional expression that yields if the function is a generator
-    // and otherwise assigns the dummy object with `new <function>`
-    const constructCall = t.conditionalExpression(
-      t.memberExpression(path.node.callee, t.identifier('$isGen')),
-      yieldCall,
-      t.assignmentExpression('=', objId, transformed(path.node))
-    )
-    path.getStatementParent().insertBefore(constructCall);
-    path.replaceWith(objId);
-
-  };
-
 const yieldVisitor: Visitor = {
   FunctionDeclaration: funcd,
   FunctionExpression: funce,
   CallExpression: callExpression,
   "Loop": loop,
-  NewExpression: newVisit,
   Program: program,
 }
 

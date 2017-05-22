@@ -25,7 +25,7 @@ const $knownBuiltIns = [
 ]
 
 // Function to handle native constructors properly.
-function $handleNew(constr, ...args) {
+const $handleNew = function (constr, ...args) {
   if($knownBuiltIns.includes(constr)) {
     // Don't transform this new
     return new constr(...args);

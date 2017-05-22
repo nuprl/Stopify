@@ -1,6 +1,6 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import * as b from 'babylon';
+import { parseExpression } from 'babylon';
 import * as h from './helpers';
 
 type Transformed<T> = T & {
@@ -20,29 +20,22 @@ const runProg = t.expressionStatement(t.callExpression(
   )]
 ))
 
-/** function $mark_func(func, generator) {
- *    func.__generator__  = generator;
- *    func.$isGen = true;
- *    func.call.__generator = generator.call;
- *    func.call.$isGen = true;
- *    func.apply.__generator = generator.apply;
- *    func.apply.$isGen = true;
- *  }
- */
-const markFunc = t.functionDeclaration(
+const markFunc: t.Statement = h.letExpression(
   t.identifier('$mark_func'),
-  [t.identifier('func'), t.identifier('generator')],
-  t.blockStatement([
-    t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(t.identifier('func'), t.identifier('__generator__')),
-      t.identifier('generator')
-    )),
-    t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(t.identifier('func'), t.identifier('$isGen')),
-      t.booleanLiteral(true)
-    )),
-    t.returnStatement(t.identifier('func'))
-  ])
+  parseExpression(`
+    (function (func, generator) {
+      func.__generator__ = generator;
+      func.$isGen = true;
+      func.call = {
+        $isGen: true,
+        __generator__: generator.call.bind(generator)
+      }
+      func.apply = {
+        $isGen: true,
+        __generator__: generator.apply.bind(generator)
+      }
+    })
+    `)
 )
 
 const ifYield = t.ifStatement(

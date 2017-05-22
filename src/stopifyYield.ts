@@ -1,6 +1,8 @@
 import { Stoppable, stopify } from './stopifyInterface';
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
+
 import * as desugarAndOr from './desugarAndOr';
+import * as desugarNew from './desugarNew';
 import * as anf from './anf';
 import * as yieldPass from './yield';
 import { transform } from './helpers';
@@ -16,7 +18,7 @@ class YieldStopify implements Stoppable {
   constructor (code: string, isStop: () => boolean, stop: () => void) {
     this.original = code;
     const plugins = [
-      [noArrows, desugarAndOr], [anf], [yieldPass]
+      [noArrows, desugarNew, desugarAndOr], [anf], [yieldPass]
     ];
     this.transformed = transform(code, plugins);
 

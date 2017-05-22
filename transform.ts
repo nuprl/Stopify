@@ -4,43 +4,33 @@ import * as babel from 'babel-core';
 
 // Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
-import * as desugarLoop from './src/desugarLoop';
-import * as desugarLabel from './src/desugarLabel';
-import * as desugarAndOr from './src/desugarAndOr';
-import * as desugarWhileToFunc from './src/desugarLoopToFunc';
+const desugarLoop = require('./src/desugarLoop');
+const desugarLabel = require('./src/desugarLabel');
+const desugarAndOr = require('./src/desugarAndOr');
+const desugarWhileToFunc = require('./src/desugarLoopToFunc');
+const desugarNew = require('./src/desugarNew');
 
 // Call Expression naming transform.
-import * as anf from './src/anf';
+const anf = require('./src/anf');
 
 // CPS transforms.
-import * as addKArg from './src/addContinuationArg';
-import * as cpsVisitor from './src/cpsVisitor';
-import * as kApply from './src/applyContinuation';
-import * as applyStop from './src/stoppableApply';
+const addKArg = require('./src/addContinuationArg');
+const cpsVisitor = require('./src/cpsVisitor');
+const kApply = require('./src/applyContinuation');
+const applyStop = require('./src/stoppableApply');
 
 // Yield transform.
-import * as yieldPass from './src/yield';
+const yieldPass = require('./src/yield');
 
 // Verification transform.
-import * as cpsVerifier from './src/verifiers/cpsVerifier';
-import * as desugarVerifier from './src/verifiers/desugarVerifier';
-import * as noEvalVerifier from './src/verifiers/noEvalVerifier';
+const cpsVerifier = require('./src/verifiers/cpsVerifier');
+const desugarVerifier = require('./src/verifiers/desugarVerifier');
+const noEvalVerifier = require('./src/verifiers/noEvalVerifier');
 
 // Helpers
 import * as h from './src/helpers';
 import {Stoppable} from './src/stopifyInterface';
 import {cpsStopify} from './src/stopifyCPSEval';
-
-const desugarPasses = [
-  [noArrows, desugarLoop, desugarLabel],
-  [desugarWhileToFunc, desugarAndOr]
-];
-const yp = [yieldPass];
-const preCPS = [anf, addKArg];
-const cps = [cpsVisitor];
-const defaults = [
-  [noEvalVerifier], desugarPasses, preCPS, cps, [kApply], [desugarVerifier]
-];
 
 function transform(src: string, plugs: any[]) {
     return h.transform(src, plugs);
@@ -58,7 +48,7 @@ function parsePlugins(code: string) {
   const line = reg.exec(code);
   // No match
   if (line === null) {
-    return { str: '', arr: defaults };
+    return { str: '', arr: [] };
   } else {
     const str = line[0];
     let plugs = str.substring(str.indexOf('['), str.lastIndexOf(']') + 1);

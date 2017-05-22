@@ -9,12 +9,13 @@ import * as desugarLoop from '../src/desugarLoop';
 import * as desugarLabel from '../src/desugarLabel';
 import * as desugarAndOr from '../src/desugarAndOr';
 import * as desugarWhileToFunc from '../src/desugarLoopToFunc';
+import * as desugarNew from '../src/desugarNew';
 
 import * as noEvalVerifier from '../src/verifiers/noEvalVerifier';
 import * as desugarVerifier from '../src/verifiers/desugarVerifier';
 
 const desugarPlugs: any[][] = [
-  [noEvalVerifier, noArrows, desugarLoop, desugarLabel],
+  [noEvalVerifier, noArrows, desugarNew, desugarLoop, desugarLabel],
   [desugarAndOr, desugarVerifier]
 ];
 

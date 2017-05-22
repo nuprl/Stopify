@@ -194,6 +194,11 @@ function cpsExpr(expr: t.Expression,
       case 'RegExpLiteral':
       case 'TemplateLiteral':
         return k(expr);
+      case 'ArrayExpression':
+        return cpsExprList(<t.Expression[]>expr.elements, (args: AExpr[]) => {
+          const arr = path.scope.generateUidIdentifier('arr');
+          return new CLet('const', arr, new BArrayLit(args), k(arr));
+        }, ek, path);
       case "AssignmentExpression":
         return cpsExpr(expr.right, r => {
           const assign = path.scope.generateUidIdentifier('assign');

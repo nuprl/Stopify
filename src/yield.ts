@@ -137,9 +137,18 @@ const funce: VisitNode<Transformed<t.FunctionExpression>> =
       // Create __generator__ property for function
       const { params }  = path.node;
       const id = <t.Expression>decl.id
+
       // Make a copy of the body.
       const body = path.node.body.body.slice(0)
       body.unshift(ifYield);
+
+      // If the function expression is itseld named, declare in the generator
+      // body.
+      const funeName = (<t.FunctionExpression>decl.init).id
+      if(funeName) {
+        body.unshift(h.letExpression(funeName, <t.Identifier>decl.id))
+      }
+
       const genFunc = transformed(
         t.functionExpression(undefined, params, t.blockStatement(body), true, false)
       )

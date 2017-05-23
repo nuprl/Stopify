@@ -192,14 +192,17 @@ function addLoc(obj: any,
     for (const prop in Object.keys(obj)) {
       if (obj[prop] !== undefined &&
         (obj[prop].loc === undefined || obj[prop].loc === nullLoc)) {
-        obj.start = start;
-        obj.end = end;
-        obj[prop] = loc;
+        obj[prop].start = start;
+        obj[prop].end = end;
+        obj[prop].loc = loc;
         if (typeof obj[prop] === 'object') {
           addLoc(obj[prop], start, end, loc);
         }
       }
     }
+    obj.start = start;
+    obj.end = end;
+    obj.loc = loc;
     return obj;
   }
 
@@ -414,7 +417,7 @@ function generateBExpr(bexpr: BExpr): t.Expression {
         flatBodyStatement(generateJS(bexpr.body))),
         bexpr.start, bexpr.end, bexpr.loc);
     case 'atom':
-      return bexpr.atom;
+      return addLoc(bexpr.atom, bexpr.start, bexpr.end, bexpr.loc);
     case 'op2':
       return addLoc(t.binaryExpression(bexpr.name, bexpr.l, bexpr.r),
         bexpr.start, bexpr.end, bexpr.loc);

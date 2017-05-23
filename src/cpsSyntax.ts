@@ -245,7 +245,8 @@ function cpsExpr(expr: t.Expression,
       case "AssignmentExpression":
         return cpsExpr(expr.right, r => {
           const assign = path.scope.generateUidIdentifier('assign');
-          return new CLet('const', assign, new BAssign(expr.operator, expr.left, r), k(r));
+          return new CLet('const', assign,
+            new BAssign(expr.operator, expr.left, r), k(r));
         }, ek, path);
       case 'BinaryExpression':
         return cpsExpr(expr.left, l =>
@@ -264,11 +265,12 @@ function cpsExpr(expr: t.Expression,
         }, ek, path);
       case "FunctionExpression":
         let func = path.scope.generateUidIdentifier('func');
-        return new CLet('const', func, new BFun(expr.id, <t.Identifier[]>(expr.params),
-          cpsStmt(expr.body,
-            r => new CApp(<t.Identifier>(expr.params[0]), [r]),
-            r => new CApp(<t.Identifier>(expr.params[1]), [r]),
-            path)), k(func));
+        return new CLet('const', func,
+          new BFun(expr.id, <t.Identifier[]>(expr.params),
+            cpsStmt(expr.body,
+              r => new CApp(<t.Identifier>(expr.params[0]), [r]),
+              r => new CApp(<t.Identifier>(expr.params[1]), [r]),
+              path)), k(func));
       case "CallExpression":
         return cpsExpr(expr.callee, f =>
           cpsExprList(<t.Expression[]>(expr.arguments), args => {
@@ -304,7 +306,8 @@ function cpsExpr(expr: t.Expression,
       case 'UpdateExpression':
         return cpsExpr(expr.argument, (v: AExpr) => {
           const tmp = path.scope.generateUidIdentifier('update');
-          return new CLet('const', tmp, new BIncrDecr(expr.operator, v, expr.prefix), k(tmp));
+          return new CLet('const', tmp,
+            new BIncrDecr(expr.operator, v, expr.prefix), k(tmp));
         }, ek, path);
     }
     throw new Error(`${expr.type} not yet implemented`);
@@ -363,11 +366,13 @@ function cpsStmt(stmt: t.Statement,
           return k(undefExpr);
         } else if (tail === []) {
           return cpsExpr(head.init, v =>
-            new CLet(stmt.kind, <t.Identifier>head.id, new BAtom(v), k(undefExpr)), ek, path);
+            new CLet(stmt.kind, <t.Identifier>head.id, new BAtom(v), k(undefExpr)),
+            ek, path);
         } else {
           return cpsExpr(head.init, v =>
             new CLet(stmt.kind, <t.Identifier>head.id, new BAtom(v),
-              cpsStmt(t.variableDeclaration(stmt.kind, tail), k, ek, path)), ek, path);
+              cpsStmt(t.variableDeclaration(stmt.kind, tail), k, ek, path)),
+            ek, path);
         }
       }
       default:
@@ -378,7 +383,9 @@ function cpsStmt(stmt: t.Statement,
 function generateBExpr(bexpr: BExpr): t.Expression {
   switch (bexpr.type) {
     case 'BFun':
-      return t.functionExpression(bexpr.id, bexpr.args, flatBodyStatement(generateJS(bexpr.body)));
+      return t.functionExpression(bexpr.id,
+        bexpr.args,
+        flatBodyStatement(generateJS(bexpr.body)));
     case 'atom':
       return bexpr.atom;
     case 'op2':

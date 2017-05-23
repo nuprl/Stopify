@@ -1,42 +1,10 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import { parseExpression } from 'babylon';
-import * as h from './helpers';
-
-type Transformed<T> = T & {
-  isTransformed?: boolean
-}
-
-function transformed<N>(n: Transformed<N>): Transformed<N> {
-  n.isTransformed = true;
-  return n;
-}
+import {parseExpression} from 'babylon';
+import { Transformed, transformed } from './helpers'
 
 const runProg = t.expressionStatement(t.callExpression(
-  t.identifier('$runYield'),
-  [t.callExpression(
-    t.memberExpression(t.identifier('$runProg'), t.identifier('__generator__')),
-    []
-  )]
-))
-
-const markFunc: t.Statement = h.letExpression(
-  t.identifier('$mark_func'),
-  parseExpression(`
-    (function (func, generator) {
-      func.__generator__ = generator;
-      func.$isGen = true;
-      func.call = {
-        $isGen: true,
-        __generator__: generator.call.bind(generator)
-      }
-      func.apply = {
-        $isGen: true,
-        __generator__: generator.apply.bind(generator)
-      }
-    })
-    `)
-)
+  t.identifier('$runYield'), [t.callExpression(t.identifier('$runProg'), [])]))
 
 const ifYield = t.ifStatement(
   t.binaryExpression('===',
@@ -73,7 +41,7 @@ const program : VisitNode<t.Program> = {
     path.node.body = [func]
   },
   exit: function (path: NodePath<t.Program>): void {
-    path.node.body = [markFunc, ...path.node.body, runProg]
+    path.node.body = [...path.node.body, runProg]
   },
 };
 
@@ -85,15 +53,10 @@ const callExpression: VisitNode<Transformed<t.CallExpression>> =
     if(exp.isTransformed) return
     else exp.isTransformed = true;
 
-    const { callee, arguments: args } = path.node;
-
     const cond = t.conditionalExpression(
-      t.memberExpression(path.node.callee, t.identifier('$isGen')),
-      t.yieldExpression(transformed(t.callExpression(
-        t.memberExpression(callee, t.identifier('__generator__')), args
-      )), true),
-      path.node
-    )
+      t.memberExpression(path.node.callee, t.identifier('$isTransformed')),
+      t.yieldExpression(path.node, true),
+      path.node)
     path.replaceWith(cond);
   };
 
@@ -107,58 +70,23 @@ const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {
 
 const funcd: VisitNode<t.FunctionDeclaration> =
   function (path: NodePath<t.FunctionDeclaration>): void {
-    // Create __generator__ property for function
-    const { params, id }  = path.node
-    // Make a copy of the body.
-    const body = path.node.body.body.slice(0)
-    body.unshift(ifYield);
-    const genFunc = transformed(
-      t.functionExpression(undefined, params, t.blockStatement(body), true, false)
-    )
-
-    // Change body of function to throw statement
-    const throwString = `Generator function ${id.name} called directly.`
-    path.node.body.body = [t.throwStatement(t.stringLiteral(throwString))]
-
-    path.insertAfter(
-      transformed(t.callExpression(
-        t.identifier('$mark_func'), [id, genFunc]
-      ))
-    )
+    // Add a dummy yield at the top of the function to force it to pause.
+    path.node.body.body.unshift(ifYield);
+    path.node.generator = true;
+    transformed(path.node)
 };
 
-const funce: VisitNode<Transformed<t.FunctionExpression>> =
-  function (path: NodePath<Transformed<t.FunctionExpression>>): void {
-    if(path.node.isTransformed) return
+const funce: VisitNode<t.FunctionExpression> =
+  function (path: NodePath<t.FunctionExpression>): void {
+    // Set isGen property on the function.
     const decl = path.parent;
     if (!t.isVariableDeclarator(decl)) {
-      return
+      throw new Error(
+        `Parent of function expression was ${decl.type} on line ${decl.loc.start.line}`)
     } else {
-      // Create __generator__ property for function
-      const { params }  = path.node;
-      const id = <t.Expression>decl.id
-
-      // Make a copy of the body.
-      const body = path.node.body.body.slice(0)
-      body.unshift(ifYield);
-
-      // If the function expression is itseld named, declare in the generator
-      // body.
-      const funeName = (<t.FunctionExpression>decl.init).id
-      if(funeName) {
-        body.unshift(h.letExpression(funeName, <t.Identifier>decl.id))
-      }
-
-      const genFunc = transformed(
-        t.functionExpression(undefined, params, t.blockStatement(body), true, false)
-      )
-
-      // Change body of function to throw statement
-      const throwString = `Generator function called directly.`
-      path.node.body.body = [t.throwStatement(t.stringLiteral(throwString))]
-
-      path.getStatementParent().insertAfter(
-        transformed(t.callExpression(t.identifier('$mark_func'), [id, genFunc])));
+      path.node.body.body.unshift(ifYield);
+      path.node.generator = true;
+      transformed(decl)
     }
 };
 

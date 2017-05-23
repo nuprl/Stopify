@@ -3,6 +3,16 @@ import * as t from 'babel-types';
 
 export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
 
+// Mark a node as transformed. Used by the transformMarked transform.
+export type Transformed<T> = T & {
+    isTransformed?: boolean
+}
+export function transformed<T>(t: T): Transformed<T> {
+  const trans = (<Transformed<T>>t);
+  trans.isTransformed = true;
+  return trans;
+}
+
 // Wrap AST nodes with `cps` property
 export type CPS<T> = T & {
   cps?: boolean;

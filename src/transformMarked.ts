@@ -1,27 +1,42 @@
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { parseExpression, parse } from 'babylon';
 import * as h from './helpers';
 
 const markFuncName = t.identifier('$mark_func')
 
-const markFunc: t.Statement = h.letExpression(
+const p = t.identifier('f')
+const tr = t.identifier('$isTransformed')
+
+const markFunc = t.functionDeclaration(
   markFuncName,
-  parseExpression(`
-    function (f) {
-      f.$isTransformed = true;
-      f.call = f.call.bind(f);
-      f.call.$isTransformed = true;
-      f.apply = f.apply.bind(f);
-      f.apply.$isTransformed = true;
-      return f;
-    }
-    `)
+  [p],
+  t.blockStatement([
+    t.expressionStatement(t.assignmentExpression('=',
+      t.memberExpression(p, tr),
+      t.booleanLiteral(true))),
+    t.expressionStatement(t.assignmentExpression('=',
+      t.memberExpression(p, t.identifier('call')),
+      t.callExpression(t.memberExpression(
+        t.memberExpression(p, t.identifier('call')),
+        t.identifier('bind')), [p]))),
+    t.expressionStatement(t.assignmentExpression('=',
+      t.memberExpression(t.memberExpression(p, t.identifier('call')), tr),
+      t.booleanLiteral(true))),
+    t.expressionStatement(t.assignmentExpression('=',
+      t.memberExpression(p, t.identifier('apply')),
+      t.callExpression(t.memberExpression(
+        t.memberExpression(p, t.identifier('apply')),
+        t.identifier('bind')), [p]))),
+    t.expressionStatement(t.assignmentExpression('=',
+      t.memberExpression(t.memberExpression(p, t.identifier('apply')), tr),
+      t.booleanLiteral(true))),
+    t.returnStatement(p)
+  ])
 )
 
 const program : VisitNode<t.Program> = {
   exit(path: NodePath<t.Program>): void {
-    path.node.body = [markFunc, ...path.node.body]
+    path.node.body.unshift(markFunc);
   },
 };
 
@@ -45,7 +60,7 @@ const funce: VisitNode<h.Transformed<t.FunctionExpression>> =
 const visitor = {
   Program: program,
   FunctionDeclaration: funcd,
-  FunctionExpression: funce
+  FunctionExpression: funce,
 }
 
 module.exports = function () {

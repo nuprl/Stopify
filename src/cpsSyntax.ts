@@ -183,6 +183,26 @@ class CLet extends Node {
 
 type CExpr = CLet | ITE | CApp;
 
+const undefExpr: AExpr = t.identifier("undefined");
+
+function addLoc(obj: any,
+  start: number,
+  end: number,
+  loc: t.SourceLocation): any {
+    for (const prop in Object.keys(obj)) {
+      if (obj[prop] !== undefined &&
+        (obj[prop].loc === undefined || obj[prop].loc === nullLoc)) {
+        obj.start = start;
+        obj.end = end;
+        obj[prop] = loc;
+        if (typeof obj[prop] === 'object') {
+          addLoc(obj[prop], start, end, loc);
+        }
+      }
+    }
+    return obj;
+  }
+
 function cpsExprList(exprs: t.Expression[],
   k: (args: AExpr[]) => CExpr,
   ek: (arg: AExpr) => CExpr,
@@ -199,8 +219,6 @@ function cpsExprList(exprs: t.Expression[],
           path), ek, path);
     }
   }
-
-const undefExpr: AExpr = t.identifier("undefined");
 
 function cpsObjMembers(mems: t.ObjectMember[],
   k: (args: AExpr[][]) => CExpr,
@@ -236,43 +254,44 @@ function cpsExpr(expr: t.Expression,
       case 'NullLiteral':
       case 'RegExpLiteral':
       case 'TemplateLiteral':
-        return k(expr);
+        return addLoc(k(expr), expr.start, expr.end, expr.loc);
       case 'ArrayExpression':
-        return cpsExprList(<t.Expression[]>expr.elements, (args: AExpr[]) => {
+        return addLoc(cpsExprList(<t.Expression[]>expr.elements, (args: AExpr[]) => {
           const arr = path.scope.generateUidIdentifier('arr');
           return new CLet('const', arr, new BArrayLit(args), k(arr));
-        }, ek, path);
+        }, ek, path), expr.start, expr.end, expr.loc);
       case "AssignmentExpression":
-        return cpsExpr(expr.right, r => {
+        return addLoc(cpsExpr(expr.right, r => {
           const assign = path.scope.generateUidIdentifier('assign');
           return new CLet('const', assign,
             new BAssign(expr.operator, expr.left, r), k(r));
-        }, ek, path);
+        }, ek, path), expr.start, expr.end, expr.loc);
       case 'BinaryExpression':
-        return cpsExpr(expr.left, l =>
+        return addLoc(cpsExpr(expr.left, l =>
           cpsExpr(expr.right, r => {
             let bop = path.scope.generateUidIdentifier('bop');
             return new CLet('const', bop, new BOp2(expr.operator, l, r), k(bop));
-          }, ek, path), ek, path);
+          }, ek, path), ek, path), expr.start, expr.end, expr.loc);
       case 'ConditionalExpression':
-        return cpsExpr(expr.test, tst => new ITE(tst,
+        return addLoc(cpsExpr(expr.test, tst => new ITE(tst,
           cpsExpr(expr.consequent, k, ek, path),
-          cpsExpr(expr.alternate, k, ek, path)), ek, path);
+          cpsExpr(expr.alternate, k, ek, path)), ek, path),
+          expr.start, expr.end, expr.loc);
       case 'UnaryExpression':
-        return cpsExpr(expr.argument, v => {
+        return addLoc(cpsExpr(expr.argument, v => {
           let unop = path.scope.generateUidIdentifier('unop');
           return new CLet('const', unop, new BOp1(expr.operator, v), k(unop));
-        }, ek, path);
+        }, ek, path), expr.start, expr.end, expr.loc);
       case "FunctionExpression":
         let func = path.scope.generateUidIdentifier('func');
-        return new CLet('const', func,
+        return addLoc(new CLet('const', func,
           new BFun(expr.id, <t.Identifier[]>(expr.params),
             cpsStmt(expr.body,
               r => new CApp(<t.Identifier>(expr.params[0]), [r]),
               r => new CApp(<t.Identifier>(expr.params[1]), [r]),
-              path)), k(func));
+              path)), k(func)), expr.start, expr.end, expr.loc);
       case "CallExpression":
-        return cpsExpr(expr.callee, f =>
+        return addLoc(cpsExpr(expr.callee, f =>
           cpsExprList(<t.Expression[]>(expr.arguments), args => {
             const kFun = path.scope.generateUidIdentifier('kFun');
             const kErr = path.scope.generateUidIdentifier('kErr');
@@ -280,18 +299,19 @@ function cpsExpr(expr: t.Expression,
             return new CLet('const', kFun, new BFun(undefined, [r], k(r)),
               new CLet('const', kErr, new BFun(undefined, [r], ek(r)),
                 new CApp(f, [kFun, kErr, ...args])));
-          }, ek, path), ek, path);
+          }, ek, path), ek, path), expr.start, expr.end, expr.loc);
       case 'MemberExpression':
-        return cpsExpr(expr.object, o =>
+        return addLoc(cpsExpr(expr.object, o =>
           cpsExpr(expr.property, p => {
             const obj = path.scope.generateUidIdentifier('obj');
             return new CLet('const', obj, new BGet(o, p), k(obj));
-          }, ek, path), ek, path);
+          }, ek, path), ek, path), expr.start, expr.end, expr.loc);
       case 'NewExpression':
         const tmp = path.scope.generateUidIdentifier('new');
-        return new CLet('const', tmp, expr, k(tmp));
+        return addLoc(new CLet('const', tmp, expr, k(tmp)),
+          expr.start, expr.end, expr.loc);
       case 'ObjectExpression':
-        return cpsObjMembers(<t.ObjectMember[]>expr.properties,
+        return addLoc(cpsObjMembers(<t.ObjectMember[]>expr.properties,
           (mems: AExpr[][]) => {
             const obj = path.scope.generateUidIdentifier('obj');
             const fields = new Map();
@@ -302,13 +322,13 @@ function cpsExpr(expr: t.Expression,
             return new CLet('const', obj, new BObj(fields), k(obj));
           },
           ek,
-          path);
+          path), expr.start, expr.end, expr.loc);
       case 'UpdateExpression':
-        return cpsExpr(expr.argument, (v: AExpr) => {
+        return addLoc(cpsExpr(expr.argument, (v: AExpr) => {
           const tmp = path.scope.generateUidIdentifier('update');
           return new CLet('const', tmp,
             new BIncrDecr(expr.operator, v, expr.prefix), k(tmp));
-        }, ek, path);
+        }, ek, path), expr.start, expr.end, expr.loc);
     }
     throw new Error(`${expr.type} not yet implemented`);
   }
@@ -321,58 +341,64 @@ function cpsStmt(stmt: t.Statement,
       case "BlockStatement": {
         let [head, ...tail] = stmt.body;
         if (head === undefined) {
-          return k(undefExpr);
+          return addLoc(k(undefExpr), stmt.start, stmt.end, stmt.loc);
         } else if (tail === []) {
-          return cpsStmt(head, k, ek, path);
+          return addLoc(cpsStmt(head, k, ek, path), stmt.start, stmt.end, stmt.loc);
         } else {
-          return cpsStmt(head, v => cpsStmt(t.blockStatement(tail),
-            k, ek, path), ek, path);
+          return addLoc(cpsStmt(head, v => cpsStmt(t.blockStatement(tail),
+            k, ek, path), ek, path), stmt.start, stmt.end, stmt.loc);
         }
       }
       case "BreakStatement":
-        return cpsExpr(stmt.label, label => new CApp(label, [undefExpr]), ek, path);
+        return addLoc(cpsExpr(stmt.label, label =>
+          new CApp(label, [undefExpr]), ek, path), stmt.start, stmt.end, stmt.loc);
       case "EmptyStatement":
-        return k(undefExpr);
+        return addLoc(k(undefExpr), stmt.start, stmt.end, stmt.loc);
       case "ExpressionStatement":
-        return cpsExpr(stmt.expression, _ => k(undefExpr), ek, path);
+        return addLoc(cpsExpr(stmt.expression, _ =>
+          k(undefExpr), ek, path), stmt.start, stmt.end, stmt.loc);
       case "IfStatement":
-        return cpsExpr(stmt.test, tst => new ITE(tst,
+        return addLoc(cpsExpr(stmt.test, tst => new ITE(tst,
           cpsStmt(stmt.consequent, k, ek, path),
-          cpsStmt(stmt.alternate, k, ek, path)), ek, path);
+          cpsStmt(stmt.alternate, k, ek, path)), ek, path),
+          stmt.start, stmt.end, stmt.loc);
       case "LabeledStatement": {
         const kErr = path.scope.generateUidIdentifier('kErr');
-        return cpsExpr(t.callExpression(t.functionExpression(undefined,
+        return addLoc(cpsExpr(t.callExpression(t.functionExpression(undefined,
           [stmt.label, kErr], flatBodyStatement([stmt.body])), []),
-          k, ek, path);
+          k, ek, path), stmt.start, stmt.end, stmt.loc);
       }
       case "ReturnStatement":
         let returnK = (r: AExpr) =>
           new CApp(<t.Identifier>(<ReturnStatement>stmt).kArg, [r]);
-        return cpsExpr(stmt.argument, r => returnK(r), ek, path);
+        return addLoc(cpsExpr(stmt.argument, r =>
+          returnK(r), ek, path), stmt.start, stmt.end, stmt.loc);
       case 'ThrowStatement':
-        return cpsExpr(stmt.argument, ek, v => new CApp(v, [undefExpr]), path);
+        return addLoc(cpsExpr(stmt.argument, ek, v =>
+          new CApp(v, [undefExpr]), path), stmt.start, stmt.end, stmt.loc);
       case 'TryStatement':
         const kFun = path.scope.generateUidIdentifier('kFun');
         const kErr = path.scope.generateUidIdentifier('kErr');
-        return cpsExpr(t.callExpression(t.functionExpression(undefined,
+        return addLoc(cpsExpr(t.callExpression(t.functionExpression(undefined,
           [kFun, kErr],
           stmt.block), []), k, e =>
             new CLet('const', stmt.handler.param, new BAtom(e),
-              cpsStmt(stmt.handler.body, k, ek, path)), path);
+              cpsStmt(stmt.handler.body, k, ek, path)), path),
+          stmt.start, stmt.end, stmt.loc);
       case "VariableDeclaration": {
         const { declarations } = stmt;
         const [head, ...tail] = declarations;
         if (head === undefined) {
-          return k(undefExpr);
+          return addLoc(k(undefExpr), stmt.start, stmt.end, stmt.loc);
         } else if (tail === []) {
-          return cpsExpr(head.init, v =>
+          return addLoc(cpsExpr(head.init, v =>
             new CLet(stmt.kind, <t.Identifier>head.id, new BAtom(v), k(undefExpr)),
-            ek, path);
+            ek, path), stmt.start, stmt.end, stmt.loc);
         } else {
-          return cpsExpr(head.init, v =>
+          return addLoc(cpsExpr(head.init, v =>
             new CLet(stmt.kind, <t.Identifier>head.id, new BAtom(v),
               cpsStmt(t.variableDeclaration(stmt.kind, tail), k, ek, path)),
-            ek, path);
+            ek, path), stmt.start, stmt.end, stmt.loc);
         }
       }
       default:
@@ -383,30 +409,38 @@ function cpsStmt(stmt: t.Statement,
 function generateBExpr(bexpr: BExpr): t.Expression {
   switch (bexpr.type) {
     case 'BFun':
-      return t.functionExpression(bexpr.id,
+      return addLoc(t.functionExpression(bexpr.id,
         bexpr.args,
-        flatBodyStatement(generateJS(bexpr.body)));
+        flatBodyStatement(generateJS(bexpr.body))),
+        bexpr.start, bexpr.end, bexpr.loc);
     case 'atom':
       return bexpr.atom;
     case 'op2':
-      return t.binaryExpression(bexpr.name, bexpr.l, bexpr.r);
+      return addLoc(t.binaryExpression(bexpr.name, bexpr.l, bexpr.r),
+        bexpr.start, bexpr.end, bexpr.loc);
     case 'op1':
-      return t.unaryExpression(bexpr.name, bexpr.v);
+      return addLoc(t.unaryExpression(bexpr.name, bexpr.v),
+        bexpr.start, bexpr.end, bexpr.loc);
     case 'assign':
-      return t.assignmentExpression(bexpr.operator, bexpr.x, bexpr.v);
+      return addLoc(t.assignmentExpression(bexpr.operator, bexpr.x, bexpr.v),
+        bexpr.start, bexpr.end, bexpr.loc);
     case 'obj':
       const properties : t.ObjectProperty[] = [];
       bexpr.fields.forEach((value, key) =>
         properties.push(t.objectProperty(key, value)));
-      return t.objectExpression(properties);
+      return addLoc(t.objectExpression(properties),
+        bexpr.start, bexpr.end, bexpr.loc);
     case 'get':
-      return t.memberExpression(bexpr.object, bexpr.property);
+      return addLoc(t.memberExpression(bexpr.object, bexpr.property),
+        bexpr.start, bexpr.end, bexpr.loc);
     case 'NewExpression':
       return bexpr;
     case 'incr/decr':
-      return t.updateExpression(bexpr.operator, bexpr.argument, bexpr.prefix);
+      return addLoc(t.updateExpression(bexpr.operator, bexpr.argument, bexpr.prefix),
+        bexpr.start, bexpr.end, bexpr.loc);
     case 'arraylit':
-      return t.arrayExpression(bexpr.arrayItems);
+      return addLoc(t.arrayExpression(bexpr.arrayItems),
+        bexpr.start, bexpr.end, bexpr.loc);
     case 'update':
       throw new Error(`${bexpr.type} generation is not yet implemented`);
   }
@@ -415,14 +449,17 @@ function generateBExpr(bexpr: BExpr): t.Expression {
 function generateJS(cexpr: CExpr): t.Statement[] {
   switch (cexpr.type) {
     case 'app':
-      return [t.returnStatement(t.callExpression(cexpr.f, cexpr.args))];
+      return [addLoc(t.returnStatement(t.callExpression(cexpr.f, cexpr.args)),
+        cexpr.start, cexpr.end, cexpr.loc)];
     case 'ITE':
-      return [t.ifStatement(cexpr.e1,
+      return [addLoc(t.ifStatement(cexpr.e1,
         flatBodyStatement(generateJS(cexpr.e2)),
-        flatBodyStatement(generateJS(cexpr.e3)))];
+        flatBodyStatement(generateJS(cexpr.e3))),
+        cexpr.start, cexpr.end, cexpr.loc)];
     case 'let':
       const decl = letExpression(cexpr.x, generateBExpr(cexpr.named), cexpr.kind);
-      return [decl, ...generateJS(cexpr.body)];
+      return [addLoc(decl, cexpr.start, cexpr.end, cexpr.loc),
+        ...generateJS(cexpr.body)];
   }
 }
 

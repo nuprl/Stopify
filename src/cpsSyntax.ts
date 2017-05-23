@@ -66,11 +66,17 @@ class BAssign {
 
 }
 
+// TODO(sbaxter): Object literals need to track whether property keys are
+// computed for proper JS generation:
+//
+// const obj = {
+//   ['foo' + 9000]: val,
+// }
 class BObj {
   type: "obj";
-  fields: Map<string, AExpr>;
+  fields: Map<AExpr, AExpr>;
 
-  constructor(fields: Map<string, AExpr>) {
+  constructor(fields: Map<AExpr, AExpr>) {
     return { type: 'obj', fields };
   }
 }
@@ -177,6 +183,24 @@ function cpsExprList(exprs: t.Expression[],
 
 const undefExpr: AExpr = t.identifier("undefined");
 
+function cpsObjMembers(mems: t.ObjectMember[],
+  k: (args: AExpr[][]) => CExpr,
+  ek: (arg: AExpr) => CExpr,
+  path: NodePath<t.Node>): CExpr {
+    if (mems.length === 0) {
+      return k([]);
+    }
+    else {
+      const [ hd, ...tl ] = mems;
+      return cpsExpr(hd.key,
+        (id: AExpr) => cpsExpr(hd.value,
+          (v: AExpr) => cpsObjMembers(tl,
+            (vs: AExpr[][]) => k([[id,v], ...vs]),
+            ek,
+            path), ek, path), ek, path);
+    }
+  }
+
 function cpsExpr(expr: t.Expression,
   k: (arg: AExpr) => CExpr,
   ek: (arg: AExpr) => CExpr,
@@ -245,6 +269,19 @@ function cpsExpr(expr: t.Expression,
       case 'NewExpression':
         const tmp = path.scope.generateUidIdentifier('new');
         return new CLet('const', tmp, expr, k(tmp));
+      case 'ObjectExpression':
+        return cpsObjMembers(<t.ObjectMember[]>expr.properties,
+          (mems: AExpr[][]) => {
+            const obj = path.scope.generateUidIdentifier('obj');
+            const fields = new Map();
+            mems.forEach(function (item) {
+              const [id, v] = item;
+              fields.set(id, v);
+            });
+            return new CLet('const', obj, new BObj(fields), k(obj));
+          },
+          ek,
+          path);
       case 'UpdateExpression':
         return cpsExpr(expr.argument, (v: AExpr) => {
           const tmp = path.scope.generateUidIdentifier('update');
@@ -334,7 +371,7 @@ function generateBExpr(bexpr: BExpr): t.Expression {
     case 'obj':
       const properties : t.ObjectProperty[] = [];
       bexpr.fields.forEach((value, key) =>
-        properties.push(t.objectProperty(t.identifier(key), value)));
+        properties.push(t.objectProperty(key, value)));
       return t.objectExpression(properties);
     case 'get':
       return t.memberExpression(bexpr.object, bexpr.property);
@@ -343,6 +380,7 @@ function generateBExpr(bexpr: BExpr): t.Expression {
     case 'incr/decr':
       return t.updateExpression(bexpr.operator, bexpr.argument, bexpr.prefix);
     case 'arraylit':
+      return t.arrayExpression(bexpr.arrayItems);
     case 'update':
       throw new Error(`${bexpr.type} generation is not yet implemented`);
   }

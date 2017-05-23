@@ -119,7 +119,7 @@ class BUpdate {
 
 type BExpr =
   BFun | BAtom | BOp2 | BOp1 | BAssign | BObj | BArrayLit | BGet | BIncrDecr
-  | BUpdate
+  | BUpdate | t.NewExpression
 
 class CApp {
   type: "app";
@@ -242,6 +242,9 @@ function cpsExpr(expr: t.Expression,
             const obj = path.scope.generateUidIdentifier('obj');
             return new CLet('const', obj, new BGet(o, p), k(obj));
           }, ek, path), ek, path);
+      case 'NewExpression':
+        const tmp = path.scope.generateUidIdentifier('new');
+        return new CLet('const', tmp, expr, k(tmp));
       case 'UpdateExpression':
         return cpsExpr(expr.argument, (v: AExpr) => {
           const tmp = path.scope.generateUidIdentifier('update');
@@ -335,6 +338,8 @@ function generateBExpr(bexpr: BExpr): t.Expression {
       return t.objectExpression(properties);
     case 'get':
       return t.memberExpression(bexpr.object, bexpr.property);
+    case 'NewExpression':
+      return bexpr;
     case 'incr/decr':
       return t.updateExpression(bexpr.operator, bexpr.argument, bexpr.prefix);
     case 'arraylit':

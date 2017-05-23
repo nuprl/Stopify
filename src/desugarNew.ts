@@ -12,8 +12,7 @@ import { letExpression, transformed } from './helpers';
 const handleNewFunc = letExpression(
   t.identifier('$handleNew'),
   transformed(parseExpression(`
-    // Function to handle native constructors properly.
-    (function (constr, ...args) {
+    function (constr, ...args) {
       const $knownBuiltIns = [
         WeakMap,
         Map,
@@ -38,7 +37,7 @@ const handleNewFunc = letExpression(
         constr.call(a, ...args)
         return a;
       }
-    })
+    }
 `, [])))
 
 const program: VisitNode<t.Program> = {

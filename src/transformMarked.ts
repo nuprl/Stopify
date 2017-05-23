@@ -1,6 +1,6 @@
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {parseExpression} from 'babylon';
+import { parseExpression, parse } from 'babylon';
 import * as h from './helpers';
 
 const markFuncName = t.identifier('$mark_func')
@@ -8,14 +8,14 @@ const markFuncName = t.identifier('$mark_func')
 const markFunc: t.Statement = h.letExpression(
   markFuncName,
   parseExpression(`
-    (function (f) {
+    function (f) {
       f.$isTransformed = true;
       f.call = f.call.bind(f);
       f.call.$isTransformed = true;
       f.apply = f.apply.bind(f);
       f.apply.$isTransformed = true;
       return f;
-    })
+    }
     `)
 )
 

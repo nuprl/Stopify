@@ -86,7 +86,7 @@ const funce: VisitNode<t.FunctionExpression> =
     } else {
       path.node.body.body.unshift(ifYield);
       path.node.generator = true;
-      transformed(decl)
+      transformed(path.node)
     }
 };
 

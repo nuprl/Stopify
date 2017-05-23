@@ -6,41 +6,44 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import { parse } from 'babylon';
+import { parseExpression } from 'babylon';
+import { letExpression, transformed } from './helpers';
 
-const handleNewFunc = parse(`
-const $knownBuiltIns = [
-  WeakMap,
-  Map,
-  Set,
-  WeakSet,
-  String,
-  Number,
-  Function,
-  Object,
-  Array,
-  Date,
-  RegExp,
-  Error
-]
+const handleNewFunc = letExpression(
+  t.identifier('$handleNew'),
+  transformed(parseExpression(`
+    // Function to handle native constructors properly.
+    (function (constr, ...args) {
+      const $knownBuiltIns = [
+        WeakMap,
+        Map,
+        Set,
+        WeakSet,
+        String,
+        Number,
+        Function,
+        Object,
+        Array,
+        Date,
+        RegExp,
+        Error
+      ]
 
-// Function to handle native constructors properly.
-const $handleNew = function (constr, ...args) {
-  if($knownBuiltIns.includes(constr)) {
-    // Don't transform this new
-    return new constr(...args);
-  } else {
-    // This should be transformed.
-    const a = Object.create(constr.prototype);
-    constr.call(a, ...args)
-    return a;
-  }
-}
-`, [])
+      if($knownBuiltIns.includes(constr)) {
+        // Don't transform this new
+        return new constr(...args);
+      } else {
+        // This should be transformed.
+        const a = Object.create(constr.prototype);
+        constr.call(a, ...args)
+        return a;
+      }
+    })
+`, [])))
 
 const program: VisitNode<t.Program> = {
   exit(path: NodePath<t.Program>) {
-    path.node.body.unshift(...handleNewFunc.program.body)
+    path.node.body.unshift(handleNewFunc)
   }
 }
 

@@ -8,60 +8,80 @@ type binop = "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" |
 
 type unop = "-" | "+" | "!" | "~" | "typeof" | "void" | "delete";
 
-type AExpr = t.Identifier | t.Literal;
-
 type kind = 'const' | 'var' | 'let' | undefined;
 
-class BFun {
-  type: "BFun";
-  id: t.Identifier | undefined;
-  args: t.Identifier[];
-  body: CExpr;
+const nullLoc : t.SourceLocation = {
+  start: {
+    line: 0,
+    column: 0,
+  },
+  end: {
+    line: 0,
+    column: 0,
+  },
+};
 
-  constructor(id: t.Identifier | undefined, args: t.Identifier[], body: CExpr) {
-    return { type: "BFun", id, args, body };
+class Node {
+  start: number;
+  end: number;
+  loc: t.SourceLocation;
+
+  constructor() {
+    this.start = 0;
+    this.end = 0;
+    this.loc = nullLoc;
   }
 }
 
-class BAtom {
-  type: "atom";
-  atom: AExpr
+type AExpr = t.Identifier | t.Literal;
 
-  constructor(atom: AExpr) {
-    return { type: 'atom', atom };
+class BFun extends Node {
+  type: 'BFun';
+
+  constructor(public id: t.Identifier | undefined,
+    public args: t.Identifier[],
+    public body: CExpr) {
+    super();
+    this.type = 'BFun';
   }
 }
 
-class BOp2 {
-  type: "op2";
-  name: binop;
-  l: AExpr;
-  r: AExpr;
+class BAtom extends Node {
+  type: 'atom';
 
-  constructor(name: binop, l: AExpr, r: AExpr) {
-    return { type: 'op2', name, l, r };
+  constructor(public atom: AExpr) {
+    super();
+    this.type = 'atom';
   }
 }
 
-class BOp1 {
-  type: "op1";
-  name: unop;
-  v: AExpr;
+class BOp2 extends Node {
+  type: 'op2';
 
-  constructor(name: unop, v: AExpr) {
-    return { type: 'op1', name, v };
+  constructor(public name: binop,
+    public l: AExpr,
+    public r: AExpr) {
+    super();
+    this.type = 'op2';
+  }
+}
+
+class BOp1 extends Node {
+  type: 'op1';
+
+  constructor(public name: unop, public v: AExpr) {
+    super();
+    this.type = 'op1';
   }
 }
 
 
-class BAssign {
-  type: "assign";
-  operator: string;
-  x: t.LVal;
-  v: AExpr;
+class BAssign extends Node {
+  type: 'assign';
 
-  constructor(operator: string, x: t.LVal, v: AExpr) {
-    return { type: 'assign', operator, x, v };
+  constructor(public operator: string, public x: t.LVal, public v: AExpr) {
+    super();
+    this.type = 'assign';
   }
 
 }
@@ -72,54 +92,53 @@ class BAssign {
 // const obj = {
 //   ['foo' + 9000]: val,
 // }
-class BObj {
-  type: "obj";
-  fields: Map<AExpr, AExpr>;
+class BObj extends Node {
+  type: 'obj';
 
-  constructor(fields: Map<AExpr, AExpr>) {
-    return { type: 'obj', fields };
+  constructor(public fields: Map<AExpr, AExpr>) {
+    super();
+    this.type = 'obj';
   }
 }
 
-class BArrayLit {
-  type: "arraylit";
-  arrayItems: AExpr[];
+class BArrayLit extends Node {
+  type: 'arraylit';
 
-  constructor(arrayItems: AExpr[]) {
-    return { type: "arraylit", arrayItems }
+  constructor(public arrayItems: AExpr[]) {
+    super();
+    this.type = 'arraylit';
   }
 }
 
-class BGet {
-  type: "get";
-  object: AExpr;
-  property: AExpr;
+class BGet extends Node {
+  type: 'get';
 
-  constructor(object: AExpr, property: AExpr) {
-    return { type: 'get', object, property };
+  constructor(public object: AExpr,public  property: AExpr) {
+    super();
+    this.type = 'get';
   }
 }
 
 
-class BIncrDecr {
+class BIncrDecr extends Node {
   type: 'incr/decr';
-  operator: '++' | '--';
-  argument: AExpr;
-  prefix: boolean;
 
-  constructor(operator: '++' | '--', argument: AExpr, prefix: boolean) {
-    return { type: 'incr/decr', operator, argument, prefix };
+  constructor(public operator: '++' | '--',
+    public argument: AExpr,
+    public prefix: boolean) {
+    super();
+    this.type = 'incr/decr';
   }
 }
 
-class BUpdate {
-  type: "update";
-  obj: AExpr;
-  key: AExpr;
-  e: AExpr;
+class BUpdate extends Node {
+  type: 'update';
 
-  constructor(obj: AExpr, key: AExpr, e: AExpr) {
-    return { type: "update", obj, key, e }
+  constructor(public obj: AExpr,
+    public key: AExpr,
+    public e: AExpr) {
+    super();
+    this.type = 'update';
   }
 }
 
@@ -127,37 +146,37 @@ type BExpr =
   BFun | BAtom | BOp2 | BOp1 | BAssign | BObj | BArrayLit | BGet | BIncrDecr
   | BUpdate | t.NewExpression
 
-class CApp {
-  type: "app";
-  f: AExpr;
-  args: AExpr[]
+class CApp extends Node {
+  type: 'app';
 
-  constructor(f: AExpr, args: AExpr[]) {
-    return { type: "app", f, args };
+  constructor(public f: AExpr, public args: AExpr[]) {
+    super();
+    this.type = 'app';
   }
 
 }
 
-class ITE {
-  type: "ITE";
-  e1: AExpr;
-  e2: CExpr;
-  e3: CExpr;
-  constructor(e1: AExpr, e2: CExpr, e3: CExpr) {
-    return { type: "ITE", e1, e2, e3 };
+class ITE extends Node {
+  type: 'ITE';
+
+  constructor(public e1: AExpr,
+    public e2: CExpr,
+    public e3: CExpr) {
+    super();
+    this.type = 'ITE';
   }
 }
 
 // This is really letrec
-class CLet {
-  type: "let";
-  kind: kind;
-  x: t.LVal;
-  named: BExpr;
-  body: CExpr;
+class CLet extends Node {
+  type: 'let';
 
-  constructor(kind: kind, x: t.LVal, named: BExpr, body: CExpr) {
-    return { type: "let", kind, x, named, body };
+  constructor(public kind: kind,
+    public x: t.LVal,
+    public named: BExpr,
+    public body: CExpr) {
+    super();
+    this.type = 'let';
   }
 
 }

@@ -10,14 +10,14 @@ type unop = "-" | "+" | "!" | "~" | "typeof" | "void" | "delete";
 
 type kind = 'const' | 'var' | 'let' | undefined;
 
-const nullLoc : t.SourceLocation = {
+const nullLoc : any  = {
   start: {
-    line: 0,
-    column: 0,
+    line: null,
+    column: null,
   },
   end: {
-    line: 0,
-    column: 0,
+    line: null,
+    column: null,
   },
 };
 

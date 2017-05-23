@@ -36,25 +36,12 @@ class StopWrapper {
   }
 }
 
-
-function isAtomic(node: t.Node): boolean {
-  return t.isLiteral(node) || t.isIdentifier(node);
-}
-
-function isTerminating(node: t.Node): boolean {
-  return !t.isCallExpression(node);
-}
-
 type kind = 'const' | 'var' | 'let' | undefined;
 function letExpression(name: t.LVal,
   value: t.Expression,
   kind: kind = 'let'): t.VariableDeclaration {
     return t.variableDeclaration(kind, [t.variableDeclarator(name, value)]);
   }
-
-function flatten(seq: t.Statement[]): t.Statement[] {
-  return seq.reduce((prog: t.Statement[], statements) => prog.concat(statements), []);
-}
 
 /**
  * Use this when the contents of the body need to be flattened.
@@ -93,10 +80,7 @@ function transform(src: string, plugs: any[][]): string {
 }
 
 export {
-  isAtomic,
-  isTerminating,
   letExpression,
-  flatten,
   flatBodyStatement,
   transform,
   StopWrapper,

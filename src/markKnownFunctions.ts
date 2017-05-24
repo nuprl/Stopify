@@ -12,15 +12,14 @@ class Scope {
 class Env {
   scopes: Array<Scope>;
   constructor() {
-    const knownGlobals: Array<[string, Tag]> = [
+    this.scopes = new Array(new Scope([]));
+
+    // NOTE(rachit): Add more known globals here.
+    [
       'WeakMap', 'Map', 'Set', 'WeakSet', 'String', 'Number', 'Function',
       'Object', 'Array', 'Date', 'RegExp', 'Error', 'Object.create',
       'console.log'
-    ].map(function (e: string): [string, Tag] {
-      return [e, 'Untransformed'];
-    })
-    const globalScope = new Scope(knownGlobals)
-    this.scopes = new Array(globalScope)
+    ].map(e => this.addBinding(e, 'Untransformed'))
   }
   findBinding(id: string): Tag {
     for(let iter in this.scopes) {
@@ -51,15 +50,20 @@ class Env {
 
 const globalEnv = new Env();
 
-
-function nodeToString(node: t.Expression): string {
+function nodeToString(node: t.Expression): string | null {
   switch(node.type) {
     case 'Identifier': return node.name;
     case 'MemberExpression': {
-      return nodeToString(node.object) + '.' + nodeToString(node.property)
+      let l = nodeToString(node.object)
+      let r = nodeToString(node.property)
+      if (l && r) {
+        return l + '.' + r;
+      } else {
+        return null;
+      }
     }
     default: {
-      throw new Error(`${node.type} in callee position, cannot convert to string`)
+      return null
     }
   }
 }
@@ -67,8 +71,11 @@ function nodeToString(node: t.Expression): string {
 const markCallExpression: VisitNode<OptimizeMark<t.CallExpression>> =
   function (path: NodePath<OptimizeMark<t.CallExpression>>): void {
     const node = path.node
-    const tag: Tag = globalEnv.findBinding(nodeToString(node.callee))
-    node.OptimizeMark = tag
+    const name = nodeToString(node.callee)
+    if (name) {
+      const tag: Tag = globalEnv.findBinding(name)
+      node.OptimizeMark = tag
+    }
   }
 
 const markLetBoundFuncExpr: VisitNode<OptimizeMark<t.FunctionExpression>> =
@@ -81,8 +88,12 @@ const markLetBoundFuncExpr: VisitNode<OptimizeMark<t.FunctionExpression>> =
 
 const functionDeclaration: VisitNode<OptimizeMark<t.FunctionDeclaration>> = {
   enter (path: NodePath<OptimizeMark<t.FunctionDeclaration>>): void {
-    globalEnv.addBinding(path.node.id.name, 'Transformed');
-    globalEnv.pushScope(new Scope([[path.node.id.name, 'Transformed']]))
+    if (path.node.id) {
+      globalEnv.addBinding(path.node.id.name, 'Transformed');
+      globalEnv.pushScope(new Scope([[path.node.id.name, 'Transformed']]))
+    } else {
+      globalEnv.pushScope(new Scope([]));
+    }
   },
 
   exit (path: NodePath<OptimizeMark<t.FunctionDeclaration>>): void {
@@ -98,13 +109,13 @@ const program: VisitNode<t.Program> = {
 }
 
 const markingVisitor = {
-  CallExpression: markCallExpression,
+  "CallExpression|NewExpression": markCallExpression,
   FunctionExpression:  markLetBoundFuncExpr,
 }
 
 const visitor = {
   Program: program,
-  FunctionDeclaration: functionDeclaration,
+  "FunctionDeclaration|FunctionExpression": functionDeclaration,
 }
 
 module.exports = function () {

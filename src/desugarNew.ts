@@ -7,7 +7,7 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import { parseExpression } from 'babylon';
-import { letExpression, transformed } from './helpers';
+import { letExpression, transformed, Tag, OptimizeMark } from './helpers';
 
 const handleNewFunc = letExpression(
   t.identifier('$handleNew'),
@@ -30,11 +30,11 @@ const handleNewFunc = letExpression(
 
       if($knownBuiltIns.includes(constr)) {
         // Don't transform this new
-        return new constr(...args);
+        return new constr(...args)
       } else {
         // This should be transformed.
         const a = Object.create(constr.prototype);
-        constr.call(a, ...args)
+        constr.apply(a, args)
         return a;
       }
     }
@@ -46,8 +46,11 @@ const program: VisitNode<t.Program> = {
   }
 }
 
-const newVisit: VisitNode<t.NewExpression> =
-  function (path: NodePath<t.NewExpression>): void {
+const newVisit: VisitNode<OptimizeMark<t.NewExpression>> =
+  function (path: NodePath<OptimizeMark<t.NewExpression>>): void {
+    if (path.node.OptimizeMark === 'Untransformed') {
+      return;
+    }
     const { callee, arguments: args } = path.node;
     path.replaceWith(t.callExpression(
       t.identifier('$handleNew'),

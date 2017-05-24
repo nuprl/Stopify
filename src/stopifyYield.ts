@@ -20,8 +20,7 @@ class YieldStopify implements Stoppable {
   constructor (code: string, isStop: () => boolean, stop: () => void) {
     this.original = code;
     const plugins = [
-      [markKnown],
-      [noArrows, desugarNew, desugarAndOr], [anf], [yieldPass],
+      [noArrows, desugarNew, desugarAndOr], [anf], [markKnown], [yieldPass],
       [transformMarked]
     ];
     this.transformed = transform(code, plugins);

@@ -7,6 +7,7 @@ import * as anf from './anf';
 import * as yieldPass from './yield';
 import * as transformMarked from './transformMarked';
 import { transform } from './helpers';
+import * as markKnown from './markKnownFunctions'
 
 class YieldStopify implements Stoppable {
   private original: string;
@@ -19,6 +20,7 @@ class YieldStopify implements Stoppable {
   constructor (code: string, isStop: () => boolean, stop: () => void) {
     this.original = code;
     const plugins = [
+      [markKnown],
       [noArrows, desugarNew, desugarAndOr], [anf], [yieldPass],
       [transformMarked]
     ];

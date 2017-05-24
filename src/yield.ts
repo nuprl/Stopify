@@ -1,7 +1,7 @@
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {parseExpression} from 'babylon';
-import { Transformed, transformed } from './helpers'
+import { parseExpression } from 'babylon';
+import { Transformed, transformed, Tag, OptimizeMark } from './helpers'
 
 const runProg = t.expressionStatement(t.callExpression(
   t.identifier('$runYield'), [t.callExpression(t.identifier('$runProg'), [])]))
@@ -47,17 +47,25 @@ const program : VisitNode<t.Program> = {
 
 // NOTE(rachit): Assumes that all functions in the call expression are
 // identifiers.
-const callExpression: VisitNode<Transformed<t.CallExpression>> =
-  function (path: NodePath<Transformed<t.CallExpression>>): void {
+const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
+  function (path: NodePath<OptimizeMark<Transformed<t.CallExpression>>>): void {
     const exp = path.node;
     if(exp.isTransformed) return
     else exp.isTransformed = true;
 
-    const cond = t.conditionalExpression(
-      t.memberExpression(path.node.callee, t.identifier('$isTransformed')),
-      t.yieldExpression(path.node, true),
-      path.node)
-    path.replaceWith(cond);
+    if (exp.OptimizeMark === 'Untransformed') {
+      return;
+    }
+    else if (exp.OptimizeMark === 'Transformed') {
+      path.replaceWith(t.yieldExpression(exp, true))
+    }
+    else {
+      const cond = t.conditionalExpression(
+        t.memberExpression(path.node.callee, t.identifier('$isTransformed')),
+        t.yieldExpression(path.node, true),
+        path.node)
+      path.replaceWith(cond);
+    }
   };
 
 const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {

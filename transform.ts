@@ -24,6 +24,7 @@ const transformMarked = require('./src/transformMarked');
 // Yield transform.
 const yieldPass = require('./src/yield');
 
+const markKnown = require('./src/markKnownFunctions')
 
 // Verification transform.
 const cpsVerifier = require('./src/verifiers/cpsVerifier');

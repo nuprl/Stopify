@@ -13,6 +13,14 @@ export function transformed<T>(t: T): Transformed<T> {
   return trans;
 }
 
+// Used for marking known transformed functions
+export type Tag = 'Transformed' | 'Untransformed' | 'Unknown'
+
+export type OptimizeMark<T> = T & {
+  OptimizeMark: Tag
+}
+
+
 // Wrap AST nodes with `cps` property
 export type CPS<T> = T & {
   cps?: boolean;

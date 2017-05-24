@@ -17,12 +17,14 @@ import * as cps from './cpsSyntax';
 import * as kApply from './applyContinuation';
 import * as applyStop from './stoppableApply';
 
+import * as transformMarked from './transformMarked';
+
 // Helpers
 import {transform} from './helpers';
 
 type MaybeBound = {
     (...args: any[]): any,
-    $isFree?: boolean,
+    $isTransformed?: boolean,
 }
 
 class CPSStopify implements Stoppable {
@@ -41,8 +43,8 @@ class CPSStopify implements Stoppable {
         [noArrows, desugarLoop, desugarLabel, desugarFunctionDecl],
         [desugarWhileToFunc, desugarAndOr],
         [anf, addKArg],
-        [cps],
-        [applyStop, kApply],
+        [cps, applyStop],
+        [transformMarked, kApply],
       ];
       this.transformed = transform(code, plugins);
 
@@ -63,7 +65,7 @@ class CPSStopify implements Stoppable {
       throw new Error(`Unexpected error: ${arg}`);
     };
     let applyWithK = function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
-      if (f.$isFree === undefined) {
+      if (f.$isTransformed) {
         return f(k, ek, ...args);
       } else {
         try {
@@ -71,6 +73,20 @@ class CPSStopify implements Stoppable {
         } catch (e) {
           ek(e);
         }
+      }
+    };
+    let admin_apply = function (f: (...args: any[]) => any, ...args: any[]) {
+      if (counter-- === 0) {
+        counter = that.interval;
+        setTimeout(_ => {
+          if (that.isStop()) {
+            that.onStop();
+          } else {
+            return f(...args);
+          }
+        }, 0);
+      } else {
+        return f(...args);
       }
     };
     let apply = function (f: MaybeBound, k: any, ek: any, ...args: any[]) {

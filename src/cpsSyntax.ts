@@ -1,6 +1,10 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {flatBodyStatement, letExpression, ReturnStatement} from './helpers';
+import {administrative,
+  flatBodyStatement,
+  letExpression,
+  transformed,
+  ReturnStatement} from './helpers';
 
 type binop = "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" |
   "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" |
@@ -43,6 +47,17 @@ class BFun extends Node {
     public body: CExpr) {
     super();
     this.type = 'BFun';
+  }
+}
+
+class BAdminFun extends Node {
+  type: 'BAdminFun';
+
+  constructor(public id: t.Identifier | undefined,
+    public args: t.Identifier[],
+    public body: CExpr) {
+    super();
+    this.type = 'BAdminFun';
   }
 }
 
@@ -143,7 +158,7 @@ class BUpdate extends Node {
 }
 
 type BExpr =
-  BFun | BAtom | BOp2 | BOp1 | BAssign | BObj | BArrayLit | BGet | BIncrDecr
+  BFun | BAdminFun | BAtom | BOp2 | BOp1 | BAssign | BObj | BArrayLit | BGet | BIncrDecr
   | BUpdate | t.NewExpression
 
 class CApp extends Node {
@@ -152,6 +167,16 @@ class CApp extends Node {
   constructor(public f: AExpr, public args: (AExpr | t.SpreadElement)[]) {
     super();
     this.type = 'app';
+  }
+
+}
+
+class CAdminApp extends Node {
+  type: 'adminapp';
+
+  constructor(public f: AExpr, public args: (AExpr | t.SpreadElement)[]) {
+    super();
+    this.type = 'adminapp';
   }
 
 }
@@ -181,7 +206,7 @@ class CLet extends Node {
 
 }
 
-type CExpr = CLet | ITE | CApp;
+type CExpr = CLet | ITE | CApp | CAdminApp;
 
 const undefExpr: AExpr = t.identifier("undefined");
 
@@ -297,8 +322,8 @@ function cpsExpr(expr: t.Expression,
         return addLoc(new CLet('const', func,
           new BFun(expr.id, <t.Identifier[]>(expr.params),
             cpsStmt(expr.body,
-              r => new CApp(<t.Identifier>(expr.params[0]), [r]),
-              r => new CApp(<t.Identifier>(expr.params[1]), [r]),
+              r => new CAdminApp(<t.Identifier>(expr.params[0]), [r]),
+              r => new CAdminApp(<t.Identifier>(expr.params[1]), [r]),
               path)), k(func)), expr.start, expr.end, expr.loc);
       case "CallExpression":
         return addLoc(cpsExpr(expr.callee, f =>
@@ -306,8 +331,8 @@ function cpsExpr(expr: t.Expression,
             const kFun = path.scope.generateUidIdentifier('kFun');
             const kErr = path.scope.generateUidIdentifier('kErr');
             const r = path.scope.generateUidIdentifier('r');
-            return new CLet('const', kFun, new BFun(undefined, [r], k(r)),
-              new CLet('const', kErr, new BFun(undefined, [r], ek(r)),
+            return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
+              new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
                 new CApp(f, [kFun, kErr, ...args])));
           }, ek, path), ek, path), expr.start, expr.end, expr.loc);
       case 'MemberExpression':
@@ -361,7 +386,7 @@ function cpsStmt(stmt: t.Statement,
       }
       case "BreakStatement":
         return addLoc(cpsExpr(stmt.label, label =>
-          new CApp(label, [undefExpr]), ek, path), stmt.start, stmt.end, stmt.loc);
+          new CAdminApp(label, [undefExpr]), ek, path), stmt.start, stmt.end, stmt.loc);
       case "EmptyStatement":
         return addLoc(k(undefExpr), stmt.start, stmt.end, stmt.loc);
       case "ExpressionStatement":
@@ -380,12 +405,12 @@ function cpsStmt(stmt: t.Statement,
       }
       case "ReturnStatement":
         let returnK = (r: AExpr) =>
-          new CApp(<t.Identifier>(<ReturnStatement>stmt).kArg, [r]);
+          new CAdminApp(<t.Identifier>(<ReturnStatement>stmt).kArg, [r]);
         return addLoc(cpsExpr(stmt.argument, r =>
           returnK(r), ek, path), stmt.start, stmt.end, stmt.loc);
       case 'ThrowStatement':
         return addLoc(cpsExpr(stmt.argument, ek, v =>
-          new CApp(v, [undefExpr]), path), stmt.start, stmt.end, stmt.loc);
+          new CAdminApp(v, [undefExpr]), path), stmt.start, stmt.end, stmt.loc);
       case 'TryStatement':
         const kFun = path.scope.generateUidIdentifier('kFun');
         const kErr = path.scope.generateUidIdentifier('kErr');
@@ -419,6 +444,11 @@ function cpsStmt(stmt: t.Statement,
 function generateBExpr(bexpr: BExpr): t.Expression {
   switch (bexpr.type) {
     case 'BFun':
+      return addLoc(transformed(t.functionExpression(bexpr.id,
+        bexpr.args,
+        flatBodyStatement(generateJS(bexpr.body)))),
+        bexpr.start, bexpr.end, bexpr.loc);
+    case 'BAdminFun':
       return addLoc(t.functionExpression(bexpr.id,
         bexpr.args,
         flatBodyStatement(generateJS(bexpr.body))),
@@ -461,6 +491,9 @@ function generateJS(cexpr: CExpr): t.Statement[] {
     case 'app':
       return [addLoc(t.returnStatement(t.callExpression(cexpr.f, cexpr.args)),
         cexpr.start, cexpr.end, cexpr.loc)];
+    case 'adminapp':
+      return [addLoc(t.returnStatement(administrative(t.callExpression(cexpr.f, cexpr.args))),
+        cexpr.start, cexpr.end, cexpr.loc)];
     case 'ITE':
       return [addLoc(t.ifStatement(cexpr.e1,
         flatBodyStatement(generateJS(cexpr.e2)),
@@ -477,8 +510,8 @@ const cpsExpression : Visitor = {
   Program: function (path: NodePath<t.Program>): void {
     const { body } = path.node;
     const cexpr = cpsStmt(t.blockStatement(body),
-      v => new CApp(t.identifier('onDone'), [v]),
-      v => new CApp(t.identifier('onError'), [v]), path);
+      v => new CAdminApp(t.identifier('onDone'), [v]),
+      v => new CAdminApp(t.identifier('onError'), [v]), path);
     path.node.body = generateJS(cexpr);
   }
 };

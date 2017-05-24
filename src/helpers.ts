@@ -3,6 +3,15 @@ import * as t from 'babel-types';
 
 export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
 
+export type Administrative<T> = T & {
+    isAdmin?: boolean
+}
+function administrative<T>(t: T): Administrative<T> {
+  const admin = (<Administrative<T>>t);
+  admin.isAdmin = true;
+  return admin;
+}
+
 // Mark a node as transformed. Used by the transformMarked transform.
 export type Transformed<T> = T & {
     isTransformed?: boolean
@@ -98,6 +107,7 @@ function transform(src: string, plugs: any[][]): string {
 }
 
 export {
+  administrative,
   letExpression,
   flatBodyStatement,
   transform,

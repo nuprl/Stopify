@@ -7,7 +7,7 @@ export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
 export type Transformed<T> = T & {
     isTransformed?: boolean
 }
-export function transformed<T>(t: T): Transformed<T> {
+function transformed<T>(t: T): Transformed<T> {
   const trans = (<Transformed<T>>t);
   trans.isTransformed = true;
   return trans;
@@ -101,6 +101,7 @@ export {
   letExpression,
   flatBodyStatement,
   transform,
+  transformed,
   StopWrapper,
   cps,
 };

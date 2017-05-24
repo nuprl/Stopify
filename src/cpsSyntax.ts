@@ -49,7 +49,7 @@ class BFun extends Node {
 class BAtom extends Node {
   type: 'atom';
 
-  constructor(public atom: AExpr) {
+  constructor(public atom: AExpr | t.SpreadElement) {
     super();
     this.type = 'atom';
   }
@@ -149,7 +149,7 @@ type BExpr =
 class CApp extends Node {
   type: 'app';
 
-  constructor(public f: AExpr, public args: AExpr[]) {
+  constructor(public f: AExpr, public args: (AExpr | t.SpreadElement)[]) {
     super();
     this.type = 'app';
   }
@@ -206,8 +206,8 @@ function addLoc(obj: any,
     return obj;
   }
 
-function cpsExprList(exprs: t.Expression[],
-  k: (args: AExpr[]) => CExpr,
+function cpsExprList(exprs: (t.Expression | t.SpreadElement)[],
+  k: (args: (AExpr | t.SpreadElement)[]) => CExpr,
   ek: (arg: AExpr) => CExpr,
   path: NodePath<t.Node>): CExpr {
     if (exprs.length === 0) {
@@ -215,11 +215,18 @@ function cpsExprList(exprs: t.Expression[],
     }
     else {
       const [ hd, ...tl ] = exprs;
-      return cpsExpr(hd,
-        (v: AExpr) => cpsExprList(tl,
-          (vs: AExpr[]) => k([v, ...vs]),
+      if (t.isExpression(hd)) {
+        return cpsExpr(hd,
+          (v: AExpr) => cpsExprList(tl,
+            (vs: AExpr[]) => k([v, ...vs]),
+            ek,
+            path), ek, path);
+      } else {
+        return cpsExprList(tl,
+          (vs: AExpr[]) => k([hd, ...vs]),
           ek,
-          path), ek, path);
+          path);
+      }
     }
   }
 
@@ -259,7 +266,7 @@ function cpsExpr(expr: t.Expression,
       case 'TemplateLiteral':
         return addLoc(k(expr), expr.start, expr.end, expr.loc);
       case 'ArrayExpression':
-        return addLoc(cpsExprList(<t.Expression[]>expr.elements, (args: AExpr[]) => {
+        return addLoc(cpsExprList(expr.elements, (args: AExpr[]) => {
           const arr = path.scope.generateUidIdentifier('arr');
           return new CLet('const', arr, new BArrayLit(args), k(arr));
         }, ek, path), expr.start, expr.end, expr.loc);
@@ -295,7 +302,7 @@ function cpsExpr(expr: t.Expression,
               path)), k(func)), expr.start, expr.end, expr.loc);
       case "CallExpression":
         return addLoc(cpsExpr(expr.callee, f =>
-          cpsExprList(<t.Expression[]>(expr.arguments), args => {
+          cpsExprList(expr.arguments, args => {
             const kFun = path.scope.generateUidIdentifier('kFun');
             const kErr = path.scope.generateUidIdentifier('kErr');
             const r = path.scope.generateUidIdentifier('r');

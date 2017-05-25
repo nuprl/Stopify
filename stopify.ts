@@ -41,7 +41,7 @@ if(timeFlag) {
   const compileStart = process.hrtime();
   stoppable = stopifyFunc(code, sw.isStop, sw.stop)
   const compileEnd = process.hrtime(compileStart);
-  compileTime = (compileEnd[0] * 1e9 + compileEnd[1]) * 1e-6
+  compileTime = (compileEnd[0] * 1e9 + compileEnd[1]) * 1e-9
 } else {
   stoppable = stopifyFunc(code, sw.isStop, sw.stop)
 }
@@ -57,20 +57,19 @@ switch(output) {
   case 'print':
     console.log(stoppable.transformed)
     if(timeFlag) {
-      console.log(`Compilation time: ${compileTime} ms`)
+      console.log(`// Compilation time: ${compileTime}s`)
     }
     break;
   case 'eval':
     if(timeFlag) {
       const runStart = process.hrtime();
       stoppable.run(x => {
-        console.log(`Output: ${x}`)
-        console.log(`Compilation time: ${compileTime} ms`)
+        console.log(`Compilation time: ${compileTime}s`)
         const runEnd = process.hrtime(runStart);
-        console.log(`Runtime: ${(runEnd[0] * 1e9 + runEnd[1]) * 1e-6} ms`)
+        console.log(`Runtime: ${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}s`)
       })
     } else {
-      stoppable.run(x => console.log(`Output: ${x}`))
+      stoppable.run(x => x)
     }
     break;
   default:

@@ -3,23 +3,14 @@ import * as t from 'babel-types';
 
 export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
 
-export type Administrative<T> = T & {
-    isAdmin?: boolean
-}
-function administrative<T>(t: T): Administrative<T> {
-  const admin = (<Administrative<T>>t);
-  admin.isAdmin = true;
-  return admin;
-}
-
-// Mark a node as transformed. Used by the transformMarked transform.
-export type Transformed<T> = T & {
-    isTransformed?: boolean
-}
-function transformed<T>(t: T): Transformed<T> {
-  const trans = (<Transformed<T>>t);
-  trans.isTransformed = true;
-  return trans;
+// Helper to generate tagging function for AST tags preserved between traversals.
+function tag<T>(tag: string, t: T) {
+  type S<T> = T & {
+    [tag: string]: boolean
+  }
+  const tagged = <S<T>>t;
+  tagged[tag] = true;
+  return tagged;
 }
 
 // Used for marking known transformed functions
@@ -29,16 +20,23 @@ export type OptimizeMark<T> = T & {
   OptimizeMark: Tag
 }
 
-
-// Wrap AST nodes with `cps` property
-export type CPS<T> = T & {
-  cps?: boolean;
-};
-function cps<T>(t: T): CPS<T> {
-    const cpsd = <CPS<T>>t;
-    cpsd.cps = true;
-    return cpsd;
+// Mark a node as transformed. Used by the transformMarked transform.
+export type Transformed<T> = T & {
+    isTransformed?: boolean
 }
+export type Administrative<T> = T & {
+    isAdmin?: boolean
+}
+export type Call<T> = T & {
+    isCall?: boolean
+}
+export type Apply<T> = T & {
+    isApply?: boolean
+}
+const administrative = <T>(t: T) => tag('isAdmin', t);
+const call = <T>(t: T) => tag('isCall', t);
+const apply = <T>(t: T) => tag('isApply', t);
+const transformed = <T>(t: T) => tag('isTransformed', t);
 
 export interface ReturnStatement extends t.ReturnStatement {
   kArg: t.Expression;
@@ -113,6 +111,5 @@ export {
   transform,
   transformed,
   StopWrapper,
-  cps,
 };
 

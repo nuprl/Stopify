@@ -45,7 +45,7 @@ function applyWithK(f: MaybeBound, k: any, ek: any, ...args: any[]) {
 };
 
 function call_applyWithK(f: MaybeBound, k: any, ek: any, ...args: any[]) {
-  const [hd, tail] = args;
+  const [hd, ...tail] = args;
   if (f.$isTransformed) {
     return f.call(hd, k, ek, ...tail);
   } else {
@@ -57,15 +57,14 @@ function call_applyWithK(f: MaybeBound, k: any, ek: any, ...args: any[]) {
   }
 };
 
-function apply_applyWithK(f: MaybeBound, k: any, ek: any, ...args: any[]) {
-  const [hd, tail] = args;
+function apply_applyWithK(f: MaybeBound, k: any, ek: any, thisArg: any, args: any[]) {
   if (f.$isTransformed) {
-    return f.apply(hd, [k, ek, ...tail]);
+    return f.apply(thisArg, [k, ek, ...args]);
   } else {
     try {
-      return k(f.apply(hd, tail));
+      return k(f.apply(thisArg, args));
     } catch (e) {
-      ek(e);
+      return ek(e);
     }
   }
 };
@@ -129,8 +128,12 @@ class CPSStopify implements Stoppable {
     let call_apply = apply_helper(function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
       return call_applyWithK(f, k, ek, ...args);
     });
-    let apply_apply = apply_helper(function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
-      return apply_applyWithK(f, k, ek, ...args);
+    let apply_apply = apply_helper(function (f: MaybeBound,
+      k: any,
+      ek: any,
+      thisArg: any,
+      args: any[]) {
+      return apply_applyWithK(f, k, ek, thisArg, args);
     });
 
     eval(that.transformed);

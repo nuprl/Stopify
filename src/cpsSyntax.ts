@@ -28,7 +28,7 @@ const nullLoc : any  = {
   },
 };
 
-function bind(obj: t.Expression, prop: t.Identifier): t.ConditionalExpression {
+function bind(obj: t.Expression, prop: t.Expression): t.ConditionalExpression {
   return t.conditionalExpression(t.memberExpression(obj, t.identifier('$isTransformed')),
     t.memberExpression(obj, prop),
     directApply(t.callExpression(t.memberExpression(t.memberExpression(obj, prop),
@@ -198,15 +198,6 @@ class CApp extends Node {
   }
 }
 
-class CBindApp extends Node {
-  type: 'bindapp';
-
-  constructor(public f: AExpr, public args: (AExpr | t.SpreadElement)[]) {
-    super();
-    this.type = 'bindapp';
-  }
-}
-
 class CCallApp extends Node {
   type: 'callapp';
 
@@ -259,7 +250,7 @@ class CLet extends Node {
 
 }
 
-type CExpr = CLet | ITE | CApp | CBindApp | CCallApp | CApplyApp | CAdminApp;
+type CExpr = CLet | ITE | CApp | CCallApp | CApplyApp | CAdminApp;
 
 const undefExpr: AExpr = t.identifier("undefined");
 
@@ -405,13 +396,14 @@ function cpsExpr(expr: t.Expression,
         } else if (t.isMemberExpression(callee) &&
           t.isIdentifier(callee.property)) {
           const bnd = path.scope.generateUidIdentifier('bind');
-          return addLoc(new CLet('const', bnd, bind(callee.object, <t.Identifier>callee.property),            cpsExprList(expr.arguments, args => {
+          return addLoc(new CLet('const', bnd, bind(callee.object, <t.Identifier>callee.property),
+            cpsExprList(expr.arguments, args => {
               const kFun = path.scope.generateUidIdentifier('kFun');
               const kErr = path.scope.generateUidIdentifier('kErr');
               const r = path.scope.generateUidIdentifier('r');
               return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
                 new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
-                  new CBindApp(bnd, [kFun, kErr, ...args])));
+                  new CApp(bnd, [kFun, kErr, ...args])));
             }, ek, path)), expr.start, expr.end, expr.loc);
         } else {
           return addLoc(cpsExpr(callee, f =>
@@ -592,9 +584,6 @@ function generateBExpr(bexpr: BExpr): t.Expression {
 function generateJS(cexpr: CExpr): t.Statement[] {
   switch (cexpr.type) {
     case 'app':
-      return [addLoc(t.returnStatement(t.callExpression(cexpr.f, cexpr.args)),
-        cexpr.start, cexpr.end, cexpr.loc)];
-    case 'bindapp':
       return [addLoc(t.returnStatement(t.callExpression(cexpr.f, cexpr.args)),
         cexpr.start, cexpr.end, cexpr.loc)];
     case 'callapp':

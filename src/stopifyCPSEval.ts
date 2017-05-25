@@ -47,8 +47,6 @@ function applyWithK(f: MaybeBound, k: any, ek: any, ...args: any[]) {
 function call_applyWithK(f: MaybeBound, k: any, ek: any, ...args: any[]) {
   const [hd, tail] = args;
   if (f.$isTransformed) {
-    console.log(f);
-    console.log(f.call);
     return f.call(hd, k, ek, ...tail);
   } else {
     try {
@@ -129,7 +127,6 @@ class CPSStopify implements Stoppable {
       return applyWithK(f, k, ek, ...args);
     });
     let call_apply = apply_helper(function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
-      console.log('call');
       return call_applyWithK(f, k, ek, ...args);
     });
     let apply_apply = apply_helper(function (f: MaybeBound, k: any, ek: any, ...args: any[]) {

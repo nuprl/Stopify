@@ -7,7 +7,10 @@ import { spawnSync } from 'child_process';
 const tmp = require('tmp');
 import {transform} from '../src/helpers';
 
-export const testFiles = glob.sync('test/should-run/*.js', {})
+const simpleTests = glob.sync('test/should-run/*.js', {})
+const noEvalBench = glob.sync('test/should-run/no-eval/*.js', {})
+
+export const testFiles = simpleTests.concat(noEvalBench)
 
 export function transformTest(original: string, plugs: any[][]): string {
   let errorMessage = '';

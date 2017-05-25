@@ -7,6 +7,9 @@ class Scope {
   constructor(init: Array<[string, Tag]> = []) {
     this.bindings = new Map(init)
   }
+  toString() {
+    return this.bindings.toString()
+  }
 }
 
 class Env {
@@ -18,7 +21,7 @@ class Env {
     [
       'WeakMap', 'Map', 'Set', 'WeakSet', 'String', 'Number', 'Function',
       'Object', 'Array', 'Date', 'RegExp', 'Error', 'Object.create',
-      'console.log'
+      'console.log', 'console.dir'
     ].map(e => this.addBinding(e, 'Untransformed'))
   }
   findBinding(id: string): Tag {
@@ -78,13 +81,14 @@ const markCallExpression: VisitNode<OptimizeMark<t.CallExpression>> =
     }
   }
 
-const markLetBoundFuncExpr: VisitNode<OptimizeMark<t.FunctionExpression>> =
-  function (path: NodePath<OptimizeMark<t.FunctionExpression>>): void {
+const markLetBoundFuncExpr: VisitNode<OptimizeMark<t.FunctionExpression>> = {
+  enter (path: NodePath<OptimizeMark<t.FunctionExpression>>): void {
     const decl = path.parent;
     if(t.isVariableDeclarator(decl)) {
       globalEnv.addBinding((<t.Identifier>decl.id).name, 'Transformed')
     }
   }
+}
 
 const functionDeclaration: VisitNode<OptimizeMark<t.FunctionDeclaration>> = {
   enter (path: NodePath<OptimizeMark<t.FunctionDeclaration>>): void {
@@ -110,7 +114,6 @@ const program: VisitNode<t.Program> = {
 
 const markingVisitor = {
   "CallExpression|NewExpression": markCallExpression,
-  FunctionExpression:  markLetBoundFuncExpr,
 }
 
 const visitor = {

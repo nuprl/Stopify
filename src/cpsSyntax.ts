@@ -1,6 +1,9 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {administrative,
+  call,
+  apply,
+  directApply,
   flatBodyStatement,
   letExpression,
   transformed,
@@ -24,6 +27,13 @@ const nullLoc : any  = {
     column: null,
   },
 };
+
+function bind(obj: t.Expression, prop: t.Identifier): t.ConditionalExpression {
+  return t.conditionalExpression(t.memberExpression(obj, t.identifier('$isTransformed')),
+    t.memberExpression(obj, prop),
+    directApply(t.callExpression(t.memberExpression(t.memberExpression(obj, prop),
+      t.identifier('bind')), [obj])));
+}
 
 class Node {
   start: number;
@@ -159,7 +169,7 @@ class BUpdate extends Node {
 
 type BExpr =
   BFun | BAdminFun | BAtom | BOp2 | BOp1 | BAssign | BObj | BArrayLit | BGet | BIncrDecr
-  | BUpdate | t.NewExpression
+  | BUpdate | t.NewExpression | t.ConditionalExpression
 
 class CApp extends Node {
   type: 'app';
@@ -168,7 +178,33 @@ class CApp extends Node {
     super();
     this.type = 'app';
   }
+}
 
+class CBindApp extends Node {
+  type: 'bindapp';
+
+  constructor(public f: AExpr, public args: (AExpr | t.SpreadElement)[]) {
+    super();
+    this.type = 'bindapp';
+  }
+}
+
+class CCallApp extends Node {
+  type: 'callapp';
+
+  constructor(public f: t.Expression, public args: (AExpr | t.SpreadElement)[]) {
+    super();
+    this.type = 'callapp';
+  }
+}
+
+class CApplyApp extends Node {
+  type: 'applyapp';
+
+  constructor(public f: t.Expression, public args: (AExpr | t.SpreadElement)[]) {
+    super();
+    this.type = 'applyapp';
+  }
 }
 
 class CAdminApp extends Node {
@@ -178,7 +214,6 @@ class CAdminApp extends Node {
     super();
     this.type = 'adminapp';
   }
-
 }
 
 class ITE extends Node {
@@ -206,7 +241,7 @@ class CLet extends Node {
 
 }
 
-type CExpr = CLet | ITE | CApp | CAdminApp;
+type CExpr = CLet | ITE | CApp | CBindApp | CCallApp | CApplyApp | CAdminApp;
 
 const undefExpr: AExpr = t.identifier("undefined");
 
@@ -326,15 +361,51 @@ function cpsExpr(expr: t.Expression,
               r => new CAdminApp(<t.Identifier>(expr.params[1]), [r]),
               path)), k(func)), expr.start, expr.end, expr.loc);
       case "CallExpression":
-        return addLoc(cpsExpr(expr.callee, f =>
-          cpsExprList(expr.arguments, args => {
-            const kFun = path.scope.generateUidIdentifier('kFun');
-            const kErr = path.scope.generateUidIdentifier('kErr');
-            const r = path.scope.generateUidIdentifier('r');
-            return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
-              new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
-                new CApp(f, [kFun, kErr, ...args])));
-          }, ek, path), ek, path), expr.start, expr.end, expr.loc);
+        const callee = expr.callee;
+        if (t.isMemberExpression(callee) &&
+          t.isIdentifier(callee.property) &&
+          callee.property.name === 'call') {
+          return addLoc(cpsExprList(expr.arguments, args => {
+              const kFun = path.scope.generateUidIdentifier('kFun');
+              const kErr = path.scope.generateUidIdentifier('kErr');
+              const r = path.scope.generateUidIdentifier('r');
+              return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
+                new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
+                  new CCallApp(callee.object, [kFun, kErr, ...args])));
+            }, ek, path), expr.start, expr.end, expr.loc);
+        } else if (t.isMemberExpression(callee) &&
+          t.isIdentifier(callee.property) &&
+          callee.property.name === 'apply') {
+          return addLoc(cpsExprList(expr.arguments, args => {
+              const kFun = path.scope.generateUidIdentifier('kFun');
+              const kErr = path.scope.generateUidIdentifier('kErr');
+              const r = path.scope.generateUidIdentifier('r');
+              return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
+                new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
+                  new CApplyApp(callee.object, [kFun, kErr, ...args])));
+            }, ek, path), expr.start, expr.end, expr.loc);
+        } else if (t.isMemberExpression(callee) &&
+          t.isIdentifier(callee.property)) {
+          const bnd = path.scope.generateUidIdentifier('bind');
+          return addLoc(new CLet('const', bnd, bind(callee.object, <t.Identifier>callee.property),            cpsExprList(expr.arguments, args => {
+              const kFun = path.scope.generateUidIdentifier('kFun');
+              const kErr = path.scope.generateUidIdentifier('kErr');
+              const r = path.scope.generateUidIdentifier('r');
+              return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
+                new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
+                  new CBindApp(bnd, [kFun, kErr, ...args])));
+            }, ek, path)), expr.start, expr.end, expr.loc);
+        } else {
+          return addLoc(cpsExpr(callee, f =>
+            cpsExprList(expr.arguments, args => {
+              const kFun = path.scope.generateUidIdentifier('kFun');
+              const kErr = path.scope.generateUidIdentifier('kErr');
+              const r = path.scope.generateUidIdentifier('r');
+              return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
+                new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
+                  new CApp(f, [kFun, kErr, ...args])));
+            }, ek, path), ek, path), expr.start, expr.end, expr.loc);
+        }
       case 'MemberExpression':
         return addLoc(cpsExpr(expr.object, o =>
           cpsExpr(expr.property, p => {
@@ -443,6 +514,8 @@ function cpsStmt(stmt: t.Statement,
 
 function generateBExpr(bexpr: BExpr): t.Expression {
   switch (bexpr.type) {
+    case 'atom':
+      return addLoc(bexpr.atom, bexpr.start, bexpr.end, bexpr.loc);
     case 'BFun':
       return addLoc(transformed(t.functionExpression(bexpr.id,
         bexpr.args,
@@ -453,8 +526,8 @@ function generateBExpr(bexpr: BExpr): t.Expression {
         bexpr.args,
         flatBodyStatement(generateJS(bexpr.body))),
         bexpr.start, bexpr.end, bexpr.loc);
-    case 'atom':
-      return addLoc(bexpr.atom, bexpr.start, bexpr.end, bexpr.loc);
+    case 'ConditionalExpression':
+      return bexpr;
     case 'op2':
       return addLoc(t.binaryExpression(bexpr.name, bexpr.l, bexpr.r),
         bexpr.start, bexpr.end, bexpr.loc);
@@ -490,6 +563,15 @@ function generateJS(cexpr: CExpr): t.Statement[] {
   switch (cexpr.type) {
     case 'app':
       return [addLoc(t.returnStatement(t.callExpression(cexpr.f, cexpr.args)),
+        cexpr.start, cexpr.end, cexpr.loc)];
+    case 'bindapp':
+      return [addLoc(t.returnStatement(t.callExpression(cexpr.f, cexpr.args)),
+        cexpr.start, cexpr.end, cexpr.loc)];
+    case 'callapp':
+      return [addLoc(t.returnStatement(call(t.callExpression(cexpr.f, cexpr.args))),
+        cexpr.start, cexpr.end, cexpr.loc)];
+    case 'applyapp':
+      return [addLoc(t.returnStatement(apply(t.callExpression(cexpr.f, cexpr.args))),
         cexpr.start, cexpr.end, cexpr.loc)];
     case 'adminapp':
       return [addLoc(t.returnStatement(administrative(t.callExpression(cexpr.f, cexpr.args))),

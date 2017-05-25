@@ -33,9 +33,13 @@ export type Call<T> = T & {
 export type Apply<T> = T & {
     isApply?: boolean
 }
+export type Direct<T> = T & {
+    isDirect?: boolean
+}
 const administrative = <T>(t: T) => tag('isAdmin', t);
 const call = <T>(t: T) => tag('isCall', t);
 const apply = <T>(t: T) => tag('isApply', t);
+const directApply = <T>(t: T) => tag('isDirect', t);
 const transformed = <T>(t: T) => tag('isTransformed', t);
 
 export interface ReturnStatement extends t.ReturnStatement {
@@ -108,6 +112,7 @@ export {
   administrative,
   call,
   apply,
+  directApply,
   transformed,
   letExpression,
   flatBodyStatement,

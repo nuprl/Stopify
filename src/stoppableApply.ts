@@ -6,7 +6,7 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
-import {Administrative, Call, Apply} from './helpers';
+import {Administrative, Call, Apply, Direct} from './helpers';
 
 const stopApplyVisitor : Visitor = {
     CallExpression: function (path: NodePath<t.CallExpression>): void {
@@ -18,6 +18,8 @@ const stopApplyVisitor : Visitor = {
         applyId = t.identifier('call_apply');
       } else if ((<Apply<C>>path.node).isApply !== undefined) {
         applyId = t.identifier('apply_apply');
+      } else if ((<Direct<C>>path.node).isDirect !== undefined) {
+        return;
       } else {
         applyId = t.identifier('apply');
       }

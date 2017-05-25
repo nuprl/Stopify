@@ -24,9 +24,53 @@ import * as transformMarked from './transformMarked';
 import {transform} from './helpers';
 
 type MaybeBound = {
-    (...args: any[]): any,
-    $isTransformed?: boolean,
+  (...args: any[]): any,
+  $isTransformed?: boolean,
 }
+
+function onError(arg?: any) {
+  throw new Error(`Unexpected error: ${arg}`);
+};
+
+function applyWithK(f: MaybeBound, k: any, ek: any, ...args: any[]) {
+  if (f.$isTransformed) {
+    return f(k, ek, ...args);
+  } else {
+    try {
+      return k(f(...args));
+    } catch (e) {
+      return ek(e);
+    }
+  }
+};
+
+function call_applyWithK(f: MaybeBound, k: any, ek: any, ...args: any[]) {
+  const [hd, tail] = args;
+  if (f.$isTransformed) {
+    console.log(f);
+    console.log(f.call);
+    return f.call(hd, k, ek, ...tail);
+  } else {
+    try {
+      return k(f.call(hd, ...tail));
+    } catch (e) {
+      return ek(e);
+    }
+  }
+};
+
+function apply_applyWithK(f: MaybeBound, k: any, ek: any, ...args: any[]) {
+  const [hd, tail] = args;
+  if (f.$isTransformed) {
+    return f.apply(hd, [k, ek, ...tail]);
+  } else {
+    try {
+      return k(f.apply(hd, tail));
+    } catch (e) {
+      ek(e);
+    }
+  }
+};
 
 class CPSStopify implements Stoppable {
   private original: string;
@@ -62,48 +106,36 @@ class CPSStopify implements Stoppable {
     'use strict';
     const that = this;
     let counter = that.interval;
-    let onError = function (arg?: any) {
-      throw new Error(`Unexpected error: ${arg}`);
-    };
-    let applyWithK = function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
-      if (f.$isTransformed) {
-        return f(k, ek, ...args);
-      } else {
-        try {
-          return k(f(...args));
-        } catch (e) {
-          ek(e);
+    let apply_helper = function (how: any) {
+      return function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
+        if (counter-- === 0) {
+          counter = that.interval;
+          setTimeout(_ => {
+            if (that.isStop()) {
+              that.onStop();
+            } else {
+              return how(f, k, ek, ...args);
+            }
+          }, 0);
+        } else {
+          return how(f, k, ek, ...args);
         }
-      }
+      };
     };
-    let admin_apply = function (f: (...args: any[]) => any, ...args: any[]) {
-      if (counter-- === 0) {
-        counter = that.interval;
-        setTimeout(_ => {
-          if (that.isStop()) {
-            that.onStop();
-          } else {
-            return f(...args);
-          }
-        }, 0);
-      } else {
-        return f(...args);
-      }
-    };
-    let apply = function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
-      if (counter-- === 0) {
-      counter = that.interval;
-      setTimeout(_ => {
-          if (that.isStop()) {
-            that.onStop();
-          } else {
-            return applyWithK(f, k, ek, ...args);
-          }
-        }, 0);
-      } else {
-        return applyWithK(f, k, ek, ...args);
-      }
-    };
+    let admin_apply = apply_helper(function (f: MaybeBound, ...args: any[]) {
+      return f(...args);
+    });
+    let apply = apply_helper(function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
+      return applyWithK(f, k, ek, ...args);
+    });
+    let call_apply = apply_helper(function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
+      console.log('call');
+      return call_applyWithK(f, k, ek, ...args);
+    });
+    let apply_apply = apply_helper(function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
+      return apply_applyWithK(f, k, ek, ...args);
+    });
+
     eval(that.transformed);
   };
 

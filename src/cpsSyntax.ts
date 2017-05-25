@@ -167,9 +167,18 @@ class BUpdate extends Node {
   }
 }
 
+class BSeq extends Node {
+  type: 'seq';
+
+  constructor(public elements: AExpr[]) {
+    super();
+    this.type = 'seq';
+  }
+}
+
 type BExpr =
   BFun | BAdminFun | BAtom | BOp2 | BOp1 | BAssign | BObj | BArrayLit | BGet | BIncrDecr
-  | BUpdate | t.NewExpression | t.ConditionalExpression
+  | BUpdate | BSeq | t.NewExpression | t.ConditionalExpression
 
 class CApp extends Node {
   type: 'app';
@@ -429,6 +438,11 @@ function cpsExpr(expr: t.Expression,
           },
           ek,
           path), expr.start, expr.end, expr.loc);
+      case 'SequenceExpression':
+        return cpsExprList(expr.expressions, (vs: AExpr[]) => {
+          const seq = path.scope.generateUidIdentifier('seq');
+          return new CLet('const', seq, new BSeq(vs), k(seq));
+        }, ek, path);
       case 'UpdateExpression':
         return addLoc(cpsExpr(expr.argument, (v: AExpr) => {
           const tmp = path.scope.generateUidIdentifier('update');
@@ -554,6 +568,8 @@ function generateBExpr(bexpr: BExpr): t.Expression {
     case 'arraylit':
       return addLoc(t.arrayExpression(bexpr.arrayItems),
         bexpr.start, bexpr.end, bexpr.loc);
+    case 'seq':
+      return addLoc(t.sequenceExpression(bexpr.elements), bexpr.start, bexpr.end, bexpr.loc);
     case 'update':
       throw new Error(`${bexpr.type} generation is not yet implemented`);
   }

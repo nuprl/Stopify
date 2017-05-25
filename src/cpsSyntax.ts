@@ -138,7 +138,7 @@ class BArrayLit extends Node {
 class BGet extends Node {
   type: 'get';
 
-  constructor(public object: AExpr,public  property: AExpr) {
+  constructor(public object: AExpr, public  property: AExpr, public computed: boolean) {
     super();
     this.type = 'get';
   }
@@ -420,7 +420,7 @@ function cpsExpr(expr: t.Expression,
         return addLoc(cpsExpr(expr.object, o =>
           cpsExpr(expr.property, p => {
             const obj = path.scope.generateUidIdentifier('obj');
-            return new CLet('const', obj, new BGet(o, p), k(obj));
+            return new CLet('const', obj, new BGet(o, p, expr.computed), k(obj));
           }, ek, path), ek, path), expr.start, expr.end, expr.loc);
       case 'NewExpression':
         const tmp = path.scope.generateUidIdentifier('new');
@@ -562,7 +562,7 @@ function generateBExpr(bexpr: BExpr): t.Expression {
       return addLoc(t.objectExpression(properties),
         bexpr.start, bexpr.end, bexpr.loc);
     case 'get':
-      return addLoc(t.memberExpression(bexpr.object, bexpr.property),
+      return addLoc(t.memberExpression(bexpr.object, bexpr.property, bexpr.computed),
         bexpr.start, bexpr.end, bexpr.loc);
     case 'NewExpression':
       return bexpr;

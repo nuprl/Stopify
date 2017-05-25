@@ -11,29 +11,6 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from './helpers';
 
-// Object to contain the visitor functions
-const callExpression : VisitNode<t.CallExpression> = function (path: NodePath<t.CallExpression>): void {
-  const p = path.parent;
-  if (!t.isVariableDeclarator(p) && !t.isReturnStatement(p)) {
-    // Name the function application if it is not already named.
-    const name = path.scope.generateUidIdentifier('app');
-    const bind = h.letExpression(name, path.node);
-    path.getStatementParent().insertBefore(bind);
-    path.replaceWith(name);
-  }
-};
-
-const newExpression : VisitNode<t.NewExpression> = function (path: NodePath<t.NewExpression>): void {
-  const p = path.parent;
-  if (!t.isVariableDeclarator(p) && !t.isReturnStatement(p)) {
-    // Name the function application if it is not already named.
-    const name = path.scope.generateUidIdentifier('app');
-    const bind = h.letExpression(name, path.node);
-    path.getStatementParent().insertBefore(bind);
-    path.replaceWith(name);
-  }
-};
-
 // Consequents and alternatives in if statements must always be blocked,
 // otherwise variable declaration get pulled outside the branch.
 const ifStatement : VisitNode<t.IfStatement> = function (path: NodePath<t.IfStatement>): void {
@@ -72,8 +49,6 @@ const funcExpr: VisitNode<t.FunctionExpression> =
 }
 
 const anfVisitor : Visitor = {
-  CallExpression: callExpression,
-  NewExpression: newExpression,
   IfStatement: ifStatement,
   "Loop": loop,
   FunctionExpression: funcExpr,

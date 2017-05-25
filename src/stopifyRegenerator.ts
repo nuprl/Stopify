@@ -1,7 +1,7 @@
 import { Stoppable, stopify } from './stopifyInterface';
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 import * as desugarAndOr from './desugarAndOr';
-import * as anf from './anf';
+import * as makeBlockStmt from './makeBlockStmt';
 import * as yieldPass from './yield';
 import { transform } from './helpers';
 
@@ -18,7 +18,7 @@ class RegeneratorStopify implements Stoppable {
     stop: () => void) {
       this.original = code;
       const plugins = [
-        [noArrows, desugarAndOr], [anf], [yieldPass]
+        [noArrows, desugarAndOr], [makeBlockStmt], [yieldPass]
       ];
       const intermediate = transform(code, plugins);
       this.transformed = require('regenerator').compile(intermediate, {

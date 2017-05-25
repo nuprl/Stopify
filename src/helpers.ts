@@ -106,10 +106,12 @@ function transform(src: string, plugs: any[][]): string {
 
 export {
   administrative,
+  call,
+  apply,
+  transformed,
   letExpression,
   flatBodyStatement,
   transform,
-  transformed,
   StopWrapper,
 };
 

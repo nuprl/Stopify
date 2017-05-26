@@ -20,6 +20,7 @@
       "demo-webpage"
     ],
     "exclude": [
-      "demo-webpage/html"
+      "demo-webpage/html",
+      "test/should-run"
     ]
 }

@@ -24,7 +24,32 @@ type Break<T> = T & {
 };
 
 // Object containing the visitor functions
-const loopVisitor = {
+const loopVisitor : Visitor = {
+  ForInStatement: function (path: NodePath<t.ForInStatement>): void {
+    const { left, right, body } = path.node;
+    const it_obj = path.scope.generateUidIdentifier('it_obj');
+    const keys = path.scope.generateUidIdentifier('keys');
+    const idx = path.scope.generateUidIdentifier('idx');
+    const prop = t.isVariableDeclaration(left) ?
+      left.declarations[0].id :
+      t.identifier('');
+
+    path.insertBefore(h.letExpression(it_obj, right));
+    const newBody = h.flatBodyStatement([
+      h.letExpression(keys, t.callExpression(t.memberExpression(t.identifier('Object'),
+        t.identifier('keys')), [it_obj])),
+      t.forStatement(h.letExpression(idx, t.numericLiteral(0)),
+        t.binaryExpression('<', idx, t.memberExpression(keys, t.identifier('length'))),
+        t.updateExpression('++', idx),
+        h.flatBodyStatement([h.letExpression(prop, t.memberExpression(keys, idx, true)),
+          body])),
+      t.expressionStatement(t.assignmentExpression('=', it_obj,
+        t.callExpression(t.memberExpression(t.identifier('Object'),
+          t.identifier('getPrototypeOf')), [it_obj])))
+    ]);
+    path.replaceWith(t.whileStatement(t.binaryExpression('!==', it_obj, t.nullLiteral()),
+      newBody));
+  },
   // Convert For Statements into While Statements
   ForStatement: function ForStatement(path: NodePath<t.ForStatement>): void {
     const node = path.node;

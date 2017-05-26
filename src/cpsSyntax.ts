@@ -482,9 +482,13 @@ function cpsStmt(stmt: t.Statement,
         return addLoc(cpsExpr(stmt.expression, _ =>
           k(undefExpr), ek, path), stmt.start, stmt.end, stmt.loc);
       case "IfStatement":
-        return addLoc(cpsExpr(stmt.test, tst => new ITE(tst,
-          cpsStmt(stmt.consequent, k, ek, path),
-          cpsStmt(stmt.alternate, k, ek, path)), ek, path),
+        return addLoc(cpsExpr(stmt.test, tst => {
+          const cont = path.scope.generateUidIdentifier('if_cont');
+          return new CLet('const', cont, new BAdminFun(undefined, [cont],
+            k(cont)), new ITE(tst,
+              cpsStmt(stmt.consequent, v => new CAdminApp(cont, [v]), ek, path),
+              cpsStmt(stmt.alternate, v => new CAdminApp(cont, [v]), ek, path)));
+        }, ek, path),
           stmt.start, stmt.end, stmt.loc);
       case "LabeledStatement": {
         const kErr = path.scope.generateUidIdentifier('kErr');

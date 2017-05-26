@@ -13,13 +13,21 @@ export let ScalaJS : ScalaJSInterface = {
     jsReceiver: (code: string) => any): void {
       console.log(`Invoking scala compiler in ${__dirname}`)
       const run = makeSpawn(compilerDir);
+      const buildsbt = path.join(__dirname, '../../../data/build.sbt')
+      const projectPlugins = path.join(__dirname, '../../../data/project/plugins.sbt')
+
+      fsExtra.copySync(buildsbt, path.join(compilerDir, 'build.sbt'), {
+        replace: true
+      })
+      if (!fs.existsSync(path.join(compilerDir, 'project'))) {
+        fs.mkdirSync(path.join(compilerDir, 'project'));
+      }
+      fsExtra.copySync(projectPlugins,
+        path.join(compilerDir, 'project/plugins.sbt'), {
+          replace: true
+        })
 
       fs.writeFileSync(path.join(compilerDir, "Main.scala"), scalaCode);
-      fsExtra.copySync(path.join(__dirname, '../../../data/build.sbt'),
-        path.join(compilerDir, 'build.sbt'));
-      fs.mkdirSync(path.join(compilerDir, 'project'));
-      fsExtra.copySync(path.join(__dirname, '../../../data/project/plugins.sbt'),
-        path.join(compilerDir, 'project/plugins.sbt'));
 
       run('sbt', 'fastOptJS').on('exit', runBrowserify(
         path.join(compilerDir, 'target/scala-2.12/blah-fastopt.js'), jsReceiver));

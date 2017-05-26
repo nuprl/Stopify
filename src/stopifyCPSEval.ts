@@ -8,7 +8,6 @@ import * as desugarNew from './desugarNew';
 import * as desugarSwitch from './desugarSwitch';
 import * as desugarWhileToFunc from './desugarLoopToFunc';
 import * as desugarLabel from './desugarLabel';
-import * as desugarAndOr from './desugarAndOr';
 
 // Call Expression naming transform.
 import * as makeBlockStmt from './makeBlockStmt';
@@ -84,7 +83,7 @@ class CPSStopify implements Stoppable {
       this.original = code;
       const plugins = [
         [noArrows, desugarLoop, desugarLabel, desugarFunctionDecl, desugarNew],
-        [desugarSwitch, desugarWhileToFunc, desugarAndOr],
+        [desugarSwitch, desugarWhileToFunc],
         [makeBlockStmt, addKArg],
         [cps, applyStop],
         [transformMarked, kApply],

@@ -100,6 +100,16 @@ class BOp1 extends Node {
   }
 }
 
+class BLOp extends Node {
+  type: 'lop';
+
+  constructor(public name: '||' | '&&',
+    public l: AExpr,
+    public r: AExpr) {
+    super();
+    this.type = 'lop';
+  }
+}
 
 class BAssign extends Node {
   type: 'assign';
@@ -186,7 +196,7 @@ class BThis extends Node {
 }
 
 type BExpr =
-  BFun | BAdminFun | BAtom | BOp2 | BOp1 | BAssign | BObj | BArrayLit | BGet | BIncrDecr
+  BFun | BAdminFun | BAtom | BOp2 | BOp1 | BLOp | BAssign | BObj | BArrayLit | BGet | BIncrDecr
   | BUpdate | BSeq | BThis | t.NewExpression | t.ConditionalExpression
 
 class CApp extends Node {
@@ -351,10 +361,37 @@ function cpsExpr(expr: t.Expression,
             let bop = path.scope.generateUidIdentifier('bop');
             return new CLet('const', bop, new BOp2(expr.operator, l, r), k(bop));
           }, ek, path), ek, path), expr.start, expr.end, expr.loc);
+      case 'LogicalExpression':
+        if (expr.operator === '&&') {
+          return addLoc(cpsExpr(expr.left, l => {
+            const cont = path.scope.generateUidIdentifier('if_cont');
+            return new CLet('const', cont, new BFun(undefined, [cont], k(cont)),
+              new ITE(l, cpsExpr(expr.right, r => {
+                let lop = path.scope.generateUidIdentifier('lop');
+                return new CLet('const', lop, new BLOp(expr.operator, l, r),
+                  new CAdminApp(cont, [lop]));
+              }, ek, path),
+                new CAdminApp(cont, [t.booleanLiteral(false)])));
+          }, ek, path), expr.start, expr.end, expr.loc);
+        } else {
+          return addLoc(cpsExpr(expr.left, l => {
+            const cont = path.scope.generateUidIdentifier('if_cont');
+            return new CLet('const', cont, new BFun(undefined, [cont], k(cont)),
+              new ITE(l, new CAdminApp(cont, [t.booleanLiteral(true)]),
+                cpsExpr(expr.right, r => {
+                  let lop = path.scope.generateUidIdentifier('lop');
+                  return new CLet('const', lop, new BLOp(expr.operator, l, r),
+                    new CAdminApp(cont, [lop]));
+                }, ek, path)));
+          }, ek, path), expr.start, expr.end, expr.loc);
+        }
       case 'ConditionalExpression':
-        return addLoc(cpsExpr(expr.test, tst => new ITE(tst,
-          cpsExpr(expr.consequent, k, ek, path),
-          cpsExpr(expr.alternate, k, ek, path)), ek, path),
+        return addLoc(cpsExpr(expr.test, tst => {
+          const cont = path.scope.generateUidIdentifier('if_cont');
+          return new CLet('const', cont, new BFun(undefined, [cont], k(cont)),
+            new ITE(tst, cpsExpr(expr.consequent, v => new CAdminApp(cont, [v]), ek, path),
+              cpsExpr(expr.alternate, v => new CAdminApp(cont, [v]), ek, path)));
+        }, ek, path),
           expr.start, expr.end, expr.loc);
       case 'UnaryExpression':
         return addLoc(cpsExpr(expr.argument, v => {
@@ -555,6 +592,9 @@ function generateBExpr(bexpr: BExpr): t.Expression {
         bexpr.start, bexpr.end, bexpr.loc);
     case 'op1':
       return addLoc(t.unaryExpression(bexpr.name, bexpr.v),
+        bexpr.start, bexpr.end, bexpr.loc);
+    case 'lop':
+      return addLoc(t.logicalExpression(bexpr.name, bexpr.l, bexpr.r),
         bexpr.start, bexpr.end, bexpr.loc);
     case 'assign':
       return addLoc(t.assignmentExpression(bexpr.operator, bexpr.x, bexpr.v),

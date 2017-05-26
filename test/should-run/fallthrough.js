@@ -8,7 +8,8 @@ switch (test) {
   case 'foo':
   case 'bar':
     assert.equal(test, 'test');
-    break;
   default:
-    assert(false);
+    test = 'baz';
 }
+
+assert.equal(test, 'baz');

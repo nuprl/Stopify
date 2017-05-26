@@ -11,13 +11,14 @@ import * as desugarAndOr from '../src/desugarAndOr';
 import * as desugarFunctionDecl from '../src/desugarFunctionDecl';
 import * as desugarWhileToFunc from '../src/desugarLoopToFunc';
 import * as desugarNew from '../src/desugarNew';
+import * as desugarSwitch from '../src/desugarSwitch';
 
 import * as noEvalVerifier from '../src/verifiers/noEvalVerifier';
 import * as desugarVerifier from '../src/verifiers/desugarVerifier';
 
 const desugarPlugs: any[][] = [
   [noEvalVerifier, noArrows, desugarNew, desugarLoop, desugarLabel, desugarFunctionDecl],
-  [desugarAndOr, desugarVerifier]
+  [desugarSwitch, desugarAndOr, desugarVerifier]
 ];
 
 // NOTE(rachit): Don't use arrow functions, otherwise timeout doesn't work.

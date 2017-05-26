@@ -4,12 +4,12 @@ import * as t from 'babel-types';
 export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
 
 // Helper to generate tagging function for AST tags preserved between traversals.
-function tag<T>(tag: string, t: T) {
+function tag<T, V>(tag: string, t: T, v: V) {
   type S<T> = T & {
-    [tag: string]: boolean
+    [tag: string]: V
   }
   const tagged = <S<T>>t;
-  tagged[tag] = true;
+  tagged[tag] = v;
   return tagged;
 }
 
@@ -20,6 +20,12 @@ export type OptimizeMark<T> = T & {
   OptimizeMark: Tag
 }
 
+export type While<T> = T & {
+  continue_label?: t.Identifier;
+}
+export type Break<T> = T & {
+  break_label?: t.Identifier;
+}
 // Mark a node as transformed. Used by the transformMarked transform.
 export type Transformed<T> = T & {
     isTransformed?: boolean
@@ -36,11 +42,13 @@ export type Apply<T> = T & {
 export type Direct<T> = T & {
     isDirect?: boolean
 }
-const administrative = <T>(t: T) => tag('isAdmin', t);
-const call = <T>(t: T) => tag('isCall', t);
-const apply = <T>(t: T) => tag('isApply', t);
-const directApply = <T>(t: T) => tag('isDirect', t);
-const transformed = <T>(t: T) => tag('isTransformed', t);
+const breakLbl = <T>(t: T, v: t.Identifier) => tag('break_label', t, v);
+const continueLbl = <T>(t: T, v: t.Identifier) => tag('continue_label', t, v);
+const administrative = <T>(t: T) => tag('isAdmin', t, true);
+const call = <T>(t: T) => tag('isCall', t, true);
+const apply = <T>(t: T) => tag('isApply', t, true);
+const directApply = <T>(t: T) => tag('isDirect', t, true);
+const transformed = <T>(t: T) => tag('isTransformed', t, true);
 
 export interface ReturnStatement extends t.ReturnStatement {
   kArg: t.Expression;
@@ -114,6 +122,8 @@ export {
   apply,
   directApply,
   transformed,
+  breakLbl,
+  continueLbl,
   letExpression,
   flatBodyStatement,
   transform,

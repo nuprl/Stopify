@@ -8,13 +8,7 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-type While<T> = T & {
-  continue_label?: t.Identifier;
-};
-
-type Break<T> = T & {
-  break_label?: t.Identifier;
-};
+import {While, Break, breakLbl, continueLbl} from './helpers';
 
 // Object containing the visitor functions
 const labelVisitor : Visitor = {
@@ -41,12 +35,11 @@ const labelVisitor : Visitor = {
     }
   },
 
-  // TODO(rachit): Move this into a separate pass for desugaring switch statements
   SwitchStatement: function (path: NodePath<Break<t.SwitchStatement>>): void {
     if (t.isLabeledStatement(path.parent)) return;
 
     const breakLabel = path.scope.generateUidIdentifier('switch');
-    path.node.break_label = breakLabel;
+    path.node = breakLbl(path.node, breakLabel);
     const labeledStatement = t.labeledStatement(breakLabel, path.node);
     path.replaceWith(labeledStatement);
   }

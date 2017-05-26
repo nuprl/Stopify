@@ -16,13 +16,6 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from './helpers';
 
-type While<T> = T & {
-  continue_label?: t.Identifier;
-};
-type Break<T> = T & {
-  break_label?: t.Identifier;
-};
-
 // Object containing the visitor functions
 const loopVisitor : Visitor = {
   ForInStatement: function (path: NodePath<t.ForInStatement>): void {
@@ -73,8 +66,7 @@ const loopVisitor : Visitor = {
       test = t.booleanLiteral(true);
     }
 
-    const wl : While<t.WhileStatement> = t.whileStatement(test, wBody);
-    wl.continue_label = loopContinue;
+    const wl = h.continueLbl(t.whileStatement(test, wBody), loopContinue);
 
     // The init can either be a variable declaration or an expression
     let nInit : t.Statement = t.emptyStatement();
@@ -105,18 +97,18 @@ const loopVisitor : Visitor = {
       h.flatBodyStatement([runOnceInit, t.whileStatement(test, body)]));
   },
 
-  WhileStatement: function (path: NodePath<While<Break<t.WhileStatement>>>): void {
+  WhileStatement: function (path: NodePath<h.While<h.Break<t.WhileStatement>>>): void {
     // Wrap the body in a labeled continue block.
     if (path.node.continue_label === undefined) {
       const loopContinue = path.scope.generateUidIdentifier('loop_continue');
-      path.node.continue_label = loopContinue;
+      path.node = h.continueLbl(path.node, loopContinue);
       path.node.body = t.labeledStatement(loopContinue, path.node.body);
     }
 
     // Wrap the loop in labeled break block.
     if (path.node.break_label === undefined) {
       const loopBreak = path.scope.generateUidIdentifier('loop_break');
-      path.node.break_label = loopBreak;
+      path.node = h.breakLbl(path.node, loopBreak);
       const labeledStatement = t.labeledStatement(loopBreak, path.node);
       path.replaceWith(labeledStatement);
     }

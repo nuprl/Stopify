@@ -72,6 +72,13 @@ switch(output) {
       stoppable.run(x => x)
     }
     break;
+  case 'benchmark':
+    const runStart = process.hrtime();
+    stoppable.run(x => {
+      const runEnd = process.hrtime(runStart);
+      console.log(`${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}`)
+    })
+    break;
   default:
     throw new Error(`Unknown output format: ${output}`)
 }

@@ -17,10 +17,12 @@
       "test",
       "transform.ts",
       "stopify.ts",
-      "demo-webpage"
+      "demo-webpage",
+      "benchmarks"
     ],
     "exclude": [
       "demo-webpage/html",
-      "test/should-run"
+      "test/should-run",
+      "built"
     ]
 }

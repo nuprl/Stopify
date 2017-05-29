@@ -1,5 +1,6 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
+import * as b from './stepifyInterface';
 
 export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
 
@@ -116,6 +117,44 @@ function transform(src: string, plugs: any[][]): string {
   return code === undefined ? "" : code;
 }
 
+function parseMapping(code: string) {
+  const reg = /\/\* mapping:.*\*\//;
+  const line = reg.exec(code);
+  // No match
+  if (line === null) {
+    console.log('// No mapping found, using one-to-one map')
+    return null;
+  } else {
+    const str = line[0];
+    let map = str.substring(str.indexOf('['), str.lastIndexOf(']') + 1);
+    if (map.charAt(0) !== '[') {
+      throw new Error(`Malformed mapping string: ${str}`);
+    }
+    return new b.MapLineMapping(new Map<number, number>(eval(map)));
+  }
+}
+
+function transformWithLines(src: string, plugs: any[][], breakPoints: number[]): string {
+  let { code, ast } = babel.transform(src, { babelrc: false, sourceMaps: 'inline' });
+
+  let map = parseMapping(src);
+  if (map === null) {
+    map = new b.FunctionLineMapping(x => x)
+  }
+  (<any>ast).program.lineMapping = map;
+
+  plugs.forEach(trs => {
+    const res = babel.transformFromAst(<t.Node>ast, code, {
+      plugins: [...trs],
+      babelrc: false,
+    });
+    code = res.code;
+    ast = res.ast;
+  });
+
+  return code === undefined ? "" : code;
+}
+
 export {
   administrative,
   call,
@@ -127,6 +166,7 @@ export {
   letExpression,
   flatBodyStatement,
   transform,
+  transformWithLines,
   StopWrapper,
 };
 

@@ -56,7 +56,9 @@ class YieldSteppify implements Steppable {
           return $that.onStop();
         }
         res = gen.next();
-        console.log(res.value)
+        if (res.value !== null) {
+          console.log(res.value)
+        }
         if (res.done) {
           return onDone(res.value);
         }

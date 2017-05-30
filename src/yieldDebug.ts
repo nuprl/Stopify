@@ -84,8 +84,9 @@ const block: VisitNode<t.BlockStatement> = function (path: NodePath<t.BlockState
   path.node.body = nBody
 }
 
-const func: VisitNode<t.Function> = function (path: NodePath<t.Function>) {
+const func: VisitNode<Transformed<t.Function>> = function (path: NodePath<Transformed<t.Function>>) {
   path.node.generator = true;
+  path.node.isTransformed = true
 }
 
 const yieldVisitor: Visitor = {

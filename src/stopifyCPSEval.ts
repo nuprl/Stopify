@@ -85,8 +85,7 @@ class CPSStopify implements Stoppable {
         [noArrows, desugarLoop, desugarLabel, desugarFunctionDecl, desugarNew],
         [desugarSwitch, desugarWhileToFunc],
         [makeBlockStmt, addKArg],
-        [cps, applyStop],
-        [transformMarked, kApply],
+        [cps, applyStop, transformMarked],
       ];
       this.transformed = transform(code, plugins);
 

@@ -24,7 +24,6 @@ const stopApplyVisitor : Visitor = {
         applyId = t.identifier('apply');
       }
       const applyArgs = [path.node.callee, ...path.node.arguments];
-      const applyCall = t.callExpression(applyId, applyArgs);
       path.node.callee = applyId;
       path.node.arguments = applyArgs;
     }

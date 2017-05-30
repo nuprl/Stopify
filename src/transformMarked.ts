@@ -16,17 +16,17 @@ const markFunc = t.functionDeclaration(
       t.booleanLiteral(true))),
     t.expressionStatement(t.assignmentExpression('=',
       t.memberExpression(p, t.identifier('call')),
-      t.callExpression(t.memberExpression(
+      h.directApply(t.callExpression(t.memberExpression(
         t.memberExpression(p, t.identifier('call')),
-        t.identifier('bind')), [p]))),
+        t.identifier('bind')), [p])))),
     t.expressionStatement(t.assignmentExpression('=',
       t.memberExpression(t.memberExpression(p, t.identifier('call')), tr),
       t.booleanLiteral(true))),
     t.expressionStatement(t.assignmentExpression('=',
       t.memberExpression(p, t.identifier('apply')),
-      t.callExpression(t.memberExpression(
+      h.directApply(t.callExpression(t.memberExpression(
         t.memberExpression(p, t.identifier('apply')),
-        t.identifier('bind')), [p]))),
+        t.identifier('bind')), [p])))),
     t.expressionStatement(t.assignmentExpression('=',
       t.memberExpression(t.memberExpression(p, t.identifier('apply')), tr),
       t.booleanLiteral(true))),
@@ -43,7 +43,7 @@ const program : VisitNode<t.Program> = {
 const funcd: VisitNode<h.Transformed<t.FunctionDeclaration>> =
   function (path: NodePath<h.Transformed<t.FunctionDeclaration>>) {
     if(path.node.isTransformed) {
-      const markCall = t.callExpression(markFuncName, [path.node.id])
+      const markCall = h.directApply(t.callExpression(markFuncName, [path.node.id]));
       path.insertAfter(markCall)
     }
 }
@@ -53,7 +53,7 @@ const funce: VisitNode<h.Transformed<t.FunctionExpression>> =
   function (path: NodePath<h.Transformed<t.FunctionExpression>>) {
     if(path.node.isTransformed) {
       path.node.isTransformed = false;
-      path.replaceWith(t.callExpression(markFuncName, [path.node]))
+      path.replaceWith(h.directApply(t.callExpression(markFuncName, [path.node])));
     }
   }
 

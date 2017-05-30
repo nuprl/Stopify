@@ -658,12 +658,21 @@ function generateJS(cexpr: CExpr): t.Statement[] {
 }
 
 const cpsExpression : Visitor = {
-  Program: function (path: NodePath<t.Program>): void {
-    const { body } = path.node;
-    const cexpr = cpsStmt(t.blockStatement(body),
-      v => new CAdminApp(t.identifier('onDone'), [v]),
-      v => new CAdminApp(t.identifier('onError'), [v]), path);
-    path.node.body = generateJS(cexpr);
+  Program: {
+    enter(path: NodePath<t.Program>): void {
+      const { body } = path.node;
+      const cexpr = cpsStmt(t.blockStatement(body),
+        v => new CAdminApp(t.identifier('onDone'), [v]),
+        v => new CAdminApp(t.identifier('onError'), [v]), path);
+
+      const onDone = t.identifier('onDone');
+      const onError = t.identifier('onError');
+      const kont =
+        t.functionExpression(undefined, [onDone, onError], t.blockStatement(generateJS(cexpr)));
+      const kontCall = administrative(t.callExpression(kont, [onDone, onError]));
+
+      path.node.body = [t.expressionStatement(kontCall)];
+    }
   }
 };
 

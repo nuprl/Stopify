@@ -65,7 +65,9 @@ const regeneratorStopify : stopify = function (code: string,
   isStop: () => boolean,
   stop: () => void): RegeneratorStopify {
     return new RegeneratorStopify(code, isStop, stop);
-}
+};
+
+(<any>regeneratorStopify).isStopify = true;
 
 export {
     regeneratorStopify,

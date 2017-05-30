@@ -18,3 +18,7 @@ export type steppify = (code: string,
     breakPoints: number[],
     isStop: () => boolean,
     stop: () => any) => Steppable;
+
+export function isSteppify(func: any): func is steppify {
+  return func.isSteppify !== undefined;
+}

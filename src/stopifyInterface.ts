@@ -8,3 +8,7 @@ export interface Stoppable {
 export type stopify = (code: string,
     isStop: () => boolean,
     stop: () => any) => Stoppable;
+
+export function isStopify(func: any): func is stopify {
+  return func.isStopify !== undefined;
+}

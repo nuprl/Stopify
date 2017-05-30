@@ -79,7 +79,9 @@ class YieldSteppify implements Steppable {
 const yieldSteppify : steppify = function (code: string,
   breakPoints: number[], isStop: () => boolean, stop: () => any) {
     return new YieldSteppify(code, isStop, stop);
-}
+};
+
+(<any>yieldSteppify).isSteppify = true;
 
 export {
     yieldSteppify,

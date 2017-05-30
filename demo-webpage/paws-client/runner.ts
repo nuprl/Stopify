@@ -5,30 +5,37 @@
 'use strict';
 
 import { yieldStopify } from '../../src/stopifyYield';
+import { yieldSteppify } from '../../src/steppifyYield';
 import { cpsStopify } from '../../src/stopifyCPSEval';
 import { shamStopify } from '../../src/stopifySham';
 import { regeneratorStopify } from '../../src/stopifyRegenerator';
-import { Stoppable, stopify } from '../../src/stopifyInterface';
+import { Stoppable, stopify, isStopify } from '../../src/stopifyInterface';
+import { Steppable, steppify, isSteppify } from '../../src/steppifyInterface';
 let stopped = false;
 
 let running: Stoppable;
 
-const transforms : { [transform: string]: stopify }= {
+const transforms : { [transform: string]: stopify | steppify }= {
   'sham': shamStopify,
   'yield': yieldStopify,
   'regenerator': regeneratorStopify,
-  'cps': cpsStopify
+  'cps': cpsStopify,
+  'yield-debug': yieldSteppify,
 }
 
-function stopifyTransform(f: stopify, code: string): Stoppable {
+function transform(f: stopify | steppify, code: string): Stoppable {
   let stopped = false;
-  return f(code, () => stopped, () => stopped = true);
+  if (isStopify(f)) {
+    return f(code, () => stopped, () => stopped = true);
+  } else {
+    // TODO(rachit): Implement breakpoints
+    return f(code, [], () => stopped, () => stopped = true);
+  }
 }
 
 window.addEventListener('message', evt => {
   if (evt.data.code) {
-    running = stopifyTransform(transforms[evt.data.transform],
-      evt.data.code);
+    running = transform(transforms[evt.data.transform], evt.data.code);
     running.run(() => console.log("Done"));
   }
   else if (evt.data === 'stop') {

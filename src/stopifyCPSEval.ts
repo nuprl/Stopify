@@ -151,7 +151,9 @@ const cpsStopify : stopify = function (code: string,
   isStop: () => boolean,
   stop: () => void): CPSStopify {
     return new CPSStopify(code, isStop, stop);
-}
+};
+
+(<any>cpsStopify).isStopify = true;
 
 export {
     cpsStopify,

@@ -78,6 +78,7 @@ function selectLanguage() {
 
 setupRun('sham');
 setupRun('regenerator');
+setupRun('yield-debug');
 setupRun('yield');
 setupRun('cps');
 selectLanguage();

@@ -75,7 +75,9 @@ const yieldStopify : stopify = function (code: string,
   isStop: () => boolean,
   stop: () => void): YieldStopify {
     return new YieldStopify(code, isStop, stop);
-}
+};
+
+(<any>yieldStopify).isStopify = true;
 
 export {
     yieldStopify,

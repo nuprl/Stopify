@@ -5,24 +5,27 @@ import { CompilerClient } from '../compilers/compiler';
 import { BuckleScript } from '../compilers/bucklescript-client';
 import { Cljs } from '../compilers/clojurescript-client';
 import { ScalaJS } from '../compilers/scalajs-client';
+import { JavaScript } from '../compilers/javascript-client';
 require('brace/mode/ocaml');
 require('brace/mode/clojure');
 require('brace/mode/scala')
+require('brace/mode/javascript')
 require('brace/theme/monokai');
 
 const editor = ace.edit('editor');
 editor.setTheme('ace/theme/monokai');
 
 interface supportedLangs {
-    [lang: string]: CompilerClient
+  [lang: string]: CompilerClient
 }
 
 const defaultLang = 'OCaml';
 
 const langs : supportedLangs = {
-    OCaml: BuckleScript,
-    ClojureScript: Cljs,
-    ScalaJS: ScalaJS
+  OCaml: BuckleScript,
+  ClojureScript: Cljs,
+  ScalaJS: ScalaJS,
+  JavaScript: JavaScript,
 };
 
 editor.getSession().setMode(langs[defaultLang].aceMode);

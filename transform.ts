@@ -16,7 +16,6 @@ const anf = require('./src/anf');
 // CPS transforms.
 const addKArg = require('./src/addContinuationArg');
 const cpsVisitor = require('./src/cpsSyntax.ts');
-const kApply = require('./src/applyContinuation');
 const applyStop = require('./src/stoppableApply');
 
 const transformMarked = require('./src/transformMarked');

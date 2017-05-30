@@ -15,7 +15,6 @@ import * as makeBlockStmt from './makeBlockStmt';
 // CPS transforms.
 import * as addKArg from './addContinuationArg';
 import * as cps from './cpsSyntax';
-import * as kApply from './applyContinuation';
 import * as applyStop from './stoppableApply';
 
 import * as transformMarked from './transformMarked';

@@ -434,15 +434,16 @@ function cpsExpr(expr: t.Expression,
         } else if (t.isMemberExpression(callee) &&
           t.isIdentifier(callee.property)) {
           const bnd = path.scope.generateUidIdentifier('bind');
-          return addLoc(new CLet('const', bnd, bind(callee.object, <t.Identifier>callee.property),
-            cpsExprList(expr.arguments, args => {
-              const kFun = path.scope.generateUidIdentifier('kFun');
-              const kErr = path.scope.generateUidIdentifier('kErr');
-              const r = path.scope.generateUidIdentifier('r');
-              return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
-                new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
-                  new CApp(bnd, [kFun, kErr, ...args])));
-            }, ek, path)), expr.start, expr.end, expr.loc);
+          return addLoc(cpsExpr(callee.object, f =>
+            new CLet('const', bnd, bind(f, <t.Identifier>callee.property),
+              cpsExprList(expr.arguments, args => {
+                const kFun = path.scope.generateUidIdentifier('kFun');
+                const kErr = path.scope.generateUidIdentifier('kErr');
+                const r = path.scope.generateUidIdentifier('r');
+                return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
+                  new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
+                    new CCallApp(bnd, [kFun, kErr, f, ...args])));
+              }, ek, path)), ek, path), expr.start, expr.end, expr.loc);
         } else {
           return addLoc(cpsExpr(callee, f =>
             cpsExprList(expr.arguments, args => {

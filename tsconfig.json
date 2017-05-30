@@ -17,6 +17,7 @@
       "test",
       "transform.ts",
       "stopify.ts",
+      "steppify.ts",
       "demo-webpage"
     ],
     "exclude": [

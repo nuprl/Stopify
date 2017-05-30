@@ -10,7 +10,7 @@ import { transformWithLines } from './helpers';
 import * as markKnown from './markKnownFunctions'
 import * as renameC from './renameConstructor'
 
-class YieldStopify implements Steppable {
+class YieldSteppify implements Steppable {
   private original: string;
   private isStop: () => boolean;
   private interval: number;
@@ -37,6 +37,10 @@ class YieldStopify implements Steppable {
     this.interval = 10;
   };
 
+  step() {
+    // TODO(rachit): Implement this.
+  }
+
   setInterval(that: number): void {
     this.interval = that;
   }
@@ -52,6 +56,7 @@ class YieldStopify implements Steppable {
           return $that.onStop();
         }
         res = gen.next();
+        console.log(res.value)
         if (res.done) {
           return onDone(res.value);
         }
@@ -71,12 +76,11 @@ class YieldStopify implements Steppable {
   }
 };
 
-//const yieldStepify : steppify = function (code: string,
-  //isStop: () => booleanj
-  //stop: () => void): YieldStopify {
-    //return new YieldStopify(code, isStop, stop);
-//}
+const yieldSteppify : steppify = function (code: string,
+  breakPoints: number[], isStop: () => boolean, stop: () => any) {
+    return new YieldSteppify(code, isStop, stop);
+}
 
 export {
-    //yieldStepify,
+    yieldSteppify,
 };

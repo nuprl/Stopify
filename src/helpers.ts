@@ -20,12 +20,14 @@ export type Tag = 'Transformed' | 'Untransformed' | 'Unknown'
 export type OptimizeMark<T> = T & {
   OptimizeMark: Tag
 }
-
 export type While<T> = T & {
   continue_label?: t.Identifier;
 }
 export type Break<T> = T & {
   break_label?: t.Identifier;
+}
+export type LineMappingMark<T> = T & {
+  lineMapping?: b.LineMapping
 }
 // Mark a node as transformed. Used by the transformMarked transform.
 export type Transformed<T> = T & {
@@ -130,7 +132,11 @@ function parseMapping(code: string) {
     if (map.charAt(0) !== '[') {
       throw new Error(`Malformed mapping string: ${str}`);
     }
-    return new b.MapLineMapping(new Map<number, number>(eval(map)));
+    let lmap = new Map<number, number>(eval(map))
+    return new b.LineMapping((n: number | null) => {
+      if (n === null) return null
+      else return lmap.get(n) || null
+    })
   }
 }
 
@@ -139,7 +145,7 @@ function transformWithLines(src: string, plugs: any[][], breakPoints: number[]):
 
   let map = parseMapping(src);
   if (map === null) {
-    map = new b.FunctionLineMapping(x => x)
+    map = new b.LineMapping(x => x)
   }
   (<any>ast).program.lineMapping = map;
 

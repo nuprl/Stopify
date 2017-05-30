@@ -1,13 +1,26 @@
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { parseExpression } from 'babylon';
-import { Transformed, transformed, Tag, OptimizeMark } from './helpers'
+import {
+  Transformed, transformed, Tag, OptimizeMark, LineMappingMark
+} from './helpers'
+import { LineMapping } from './steppifyInterface';
+
+let lineMapping: LineMapping;
 
 const runProg = t.expressionStatement(t.callExpression(
   t.identifier('$runYield'), [t.callExpression(t.identifier('$runProg'), [])]))
 
-const program : VisitNode<t.Program> = {
-  enter: function (path: NodePath<t.Program>): void {
+const program : VisitNode<LineMappingMark<t.Program>> = {
+  enter: function (path: NodePath<LineMappingMark<t.Program>>): void {
+
+    if(path.node.lineMapping) {
+      lineMapping = path.node.lineMapping
+    } else {
+      // NOTE(rachit): This can't actually happen
+      throw new Error('No line mapping found')
+    }
+
     const lastLine = <t.Statement>path.node.body.pop();
     if(t.isExpressionStatement(lastLine)) {
       let result = t.returnStatement(lastLine.expression);
@@ -22,14 +35,6 @@ const program : VisitNode<t.Program> = {
   },
   exit: function (path: NodePath<t.Program>): void {
     path.node.body = [...path.node.body, runProg]
-    const { body } = path.node;
-    const nBody = []
-    for (let i =0; i<body.length; i++) {
-      nBody.push(t.expressionStatement(t.yieldExpression(t.numericLiteral(0))));
-      nBody.push(body[i]);
-    }
-
-    path.node.body = nBody
   },
 };
 
@@ -60,17 +65,35 @@ const block: VisitNode<t.BlockStatement> = function (path: NodePath<t.BlockState
   const { body } = path.node;
   const nBody = []
   for (let i =0; i<body.length; i++) {
-    nBody.push(t.expressionStatement(t.yieldExpression(t.numericLiteral(0))));
+    const loc = body[i].loc
+    let mark;
+    if (loc) {
+      const ln: number | null = lineMapping.getLine(loc.start.line)
+      if (ln) {
+        mark = t.numericLiteral(ln)
+      } else {
+        mark = t.nullLiteral()
+      }
+    } else {
+      mark = t.nullLiteral()
+    }
+    nBody.push(t.expressionStatement(t.yieldExpression(mark)));
     nBody.push(body[i]);
   }
 
   path.node.body = nBody
 }
 
+const func: VisitNode<t.Function> = function (path: NodePath<t.Function>) {
+  path.node.generator = true;
+}
+
 const yieldVisitor: Visitor = {
   BlockStatement: block,
   CallExpression: callExpression,
   Program: program,
+  FunctionDeclaration: func,
+  FunctionExpression: func,
 }
 
 module.exports = function() {

@@ -1,4 +1,4 @@
-import { Steppable, steppify } from './stepifyInterface';
+import { Steppable, steppify } from './steppifyInterface';
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 
 import * as desugarAndOr from './desugarAndOr';

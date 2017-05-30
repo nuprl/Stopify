@@ -1,6 +1,6 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
-import * as b from './stepifyInterface';
+import * as b from './steppifyInterface';
 
 export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
 

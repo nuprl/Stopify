@@ -29,7 +29,8 @@ const nullLoc : any  = {
 };
 
 function bind(obj: t.Expression, prop: t.Expression): t.ConditionalExpression {
-  return t.conditionalExpression(t.memberExpression(obj, t.identifier('$isTransformed')),
+  return t.conditionalExpression(t.memberExpression(t.memberExpression(obj, prop),
+    t.identifier('$isTransformed')),
     t.memberExpression(obj, prop),
     directApply(t.callExpression(t.memberExpression(t.memberExpression(obj, prop),
       t.identifier('bind')), [obj])));

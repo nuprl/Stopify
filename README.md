@@ -10,6 +10,8 @@
  - `npm install -g bs-platform`
 2. For ClojureScript support
  - `brew install leiningen`
+3. For ScalaJS, install [scala](https://www.scala-lang.org/download/) and
+   [sbt](http://www.scala-sbt.org/0.13/docs/Setup.html)
 
 ## Program Transformation Plugins
 Stopify includes a collection of `babel` plugins for transforming JavaScript
@@ -21,16 +23,14 @@ through a running program).
 1. `npm run build`
 
 ### Running
-The build produces executable javascript files in `<project-root>/built/`.
-Transformations can be run with the following:
- - `<project-root>$ ./built/stopify.js -i <test-file> -t <cps | yield | regen>
-   -o <eval | print>`
+The build produces the stopify executable in `<project-root>/built/`.
+Run the following to see the options:
+- `<projec-root>$ ./built/stopify.js --help`
 
 ## Paws Server
 Stopify also includes a server backend to support debugging multiple source
 languages within a web browser. Running the `paws-server` requires optional
 server dependencies to be installed.
-
 ### Building
 1. `npm run build-webpage`
 

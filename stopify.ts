@@ -6,17 +6,37 @@ import { StopWrapper } from './src/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 
-const argv = require('minimist')(process.argv.slice(2));
-const filename = argv.file || argv.i
-const timeFlag = !argv.notime || true;
+function showUsage() {
+  console.log('Usage: stopify.js -i <filename> -t [cps|yield|regen] [options]');
+  console.log('       stopify.js -s <string> -t [cps|yield|regen] [options]\n');
+  console.log('Options:')
+  console.log('  -y, --interval     Set yield interval')
+  console.log('  -o, --output       Can be print, eval, benchmark')
+  process.exit(0);
+}
 
-const code = fs.readFileSync(
-  path.join(process.cwd(), filename), 'utf-8').toString()
+const argv = require('minimist')(process.argv.slice(2));
+if (argv.h || argv.help) {
+  showUsage();
+}
+let code;
+if (argv.s) {
+  code = argv.s;
+} else if (argv.file || argv.i) {
+  const filename = argv.file || argv.i
+  code = fs.readFileSync(
+    path.join(process.cwd(), filename), 'utf-8').toString()
+} else {
+  console.log('No input')
+  showUsage();
+}
 
 const transform = argv.transform || argv.t
 const output = argv.output || argv.o || 'print';
+
 if (transform === undefined) {
-  throw new Error('No transformation was specified')
+  console.log('No transformation was specified')
+  showUsage();
 }
 
 let stopifyFunc;
@@ -35,16 +55,10 @@ switch(transform) {
     throw new Error(`Unknown transform: ${transform}`)
 }
 
-let compileTime: number = 0;
-let stoppable;
-if(timeFlag) {
-  const compileStart = process.hrtime();
-  stoppable = stopifyFunc(code, sw.isStop, sw.stop)
-  const compileEnd = process.hrtime(compileStart);
-  compileTime = (compileEnd[0] * 1e9 + compileEnd[1]) * 1e-9
-} else {
-  stoppable = stopifyFunc(code, sw.isStop, sw.stop)
-}
+const compileStart = process.hrtime();
+const stoppable = stopifyFunc(code, sw.isStop, sw.stop)
+const compileEnd = process.hrtime(compileStart);
+const compileTime = (compileEnd[0] * 1e9 + compileEnd[1]) * 1e-9
 
 const yieldInterval = argv.y || argv.yieldInterval
 if (yieldInterval !== undefined) {
@@ -54,31 +68,31 @@ if (yieldInterval !== undefined) {
 }
 
 switch(output) {
-  case 'print':
+  case 'print': {
     console.log(stoppable.transformed)
-    if(timeFlag) {
-      console.log(`// Compilation time: ${compileTime}s`)
-    }
+    console.log(`// Compilation time: ${compileTime}s`)
     break;
-  case 'eval':
-    if(timeFlag) {
-      const runStart = process.hrtime();
-      stoppable.run(x => {
-        console.log(`Compilation time: ${compileTime}s`)
-        const runEnd = process.hrtime(runStart);
-        console.log(`Runtime: ${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}s`)
-      })
-    } else {
-      stoppable.run(x => x)
-    }
+  }
+  case 'eval': {
+    const runStart = process.hrtime();
+    stoppable.run(x => {
+      console.log(`Compilation time: ${compileTime}s`)
+      const runEnd = process.hrtime(runStart);
+      console.log(`Runtime: ${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}s`)
+    })
     break;
-  case 'benchmark':
+  }
+  case 'benchmark': {
     const runStart = process.hrtime();
     stoppable.run(x => {
       const runEnd = process.hrtime(runStart);
-      console.log(`${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}`)
+      process.stdout.write(`${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}`)
     })
     break;
+  }
   default:
-    throw new Error(`Unknown output format: ${output}`)
+    console.log(`Unknown output format: ${output}`)
+    console.log(stoppable.transformed)
+    console.log(`// Compilation time: ${compileTime}s`)
+    break;
 }

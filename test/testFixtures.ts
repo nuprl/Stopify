@@ -44,7 +44,7 @@ export function stopifyTest(srcFile: string, transform: string) {
   const runner = spawnSync(
     './built/stopify.js',
     ['-i', srcFile, '-t', transform, '-o', 'eval', '--notime'],
-    { timeout: 1000 }
+    { timeout: 5000 }
   )
 
   assert.equal(runner.status, 0, (runner.stderr || "").toString());

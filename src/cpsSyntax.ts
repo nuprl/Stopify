@@ -544,11 +544,15 @@ function cpsStmt(stmt: t.Statement,
       case 'TryStatement':
         const kFun = path.scope.generateUidIdentifier('kFun');
         const kErr = path.scope.generateUidIdentifier('kErr');
+        const fin = stmt.finalizer === null ?
+          k : (v: AExpr) => cpsStmt(stmt.finalizer, k, ek, path);
+        const err = stmt.handler === null ?
+          ek : (e: AExpr) =>
+          new CLet('const', stmt.handler.param, new BAtom(e),
+            cpsStmt(stmt.handler.body, fin, ek, path));
         return addLoc(cpsExpr(t.callExpression(t.functionExpression(undefined,
           [kFun, kErr],
-          stmt.block), []), k, e =>
-            new CLet('const', stmt.handler.param, new BAtom(e),
-              cpsStmt(stmt.handler.body, k, ek, path)), path),
+          stmt.block), []), fin, err, path),
           stmt.start, stmt.end, stmt.loc);
       case "VariableDeclaration": {
         const { declarations } = stmt;

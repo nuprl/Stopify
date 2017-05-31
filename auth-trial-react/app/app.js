@@ -1,48 +1,67 @@
 import React from 'react';
 import { render } from 'react-dom';
-import brace from 'brace';
 import AceEditor from 'react-ace';
 import GooglePicker from 'react-google-picker';
 
 import 'brace/mode/java';
 import ReactDOM from 'react-dom';
 
-// The Browser API key obtained from the Google Developers Console.
-const developerKey = 'AIzaSyCZxBa8O8nqTM0xDBCjX0Q1ff8zwV9ZMzw';
+// // The Browser API key obtained from the Google Developers Console.
+// const developerKey = 'AIzaSyCZxBa8O8nqTM0xDBCjX0Q1ff8zwV9ZMzw';
+//
+// // The Client ID obtained from the Google Developers Console. Replace with your own Client ID.
+// const clientId = '576255310053-nl3vla4sgg0cmu9ieb3l79fca2iuhrcs.apps.googleusercontent.com';
+//
+// // Scope to use to access user's items.
+// const scope = ['https://www.googleapis.com/auth/drive'];
 
-// The Client ID obtained from the Google Developers Console. Replace with your own Client ID.
-const clientId = '576255310053-nl3vla4sgg0cmu9ieb3l79fca2iuhrcs.apps.googleusercontent.com';
 
-// Scope to use to access user's items.
-const scope = ['https://www.googleapis.com/auth/drive'];
 
-let pickerApiLoaded = false;
-let oauthToken;
-let data;
-let docID;
-let folderID;
 
-function onChange(newValue) {
-  console.log('change',newValue);
-}
+
 
 
 export default class UghWorld extends React.Component {
   constructor(props) {
     super(props);
+    this.developerKey = props.developerKey;
+
+    this.clientId = props.clientId;
+    // console.log("The client Id is: " + this.clientId);
+    // console.log("The client Id is also: " + props.clientId);
+    this.scope = props.scope;
+
+    // const developerKey = props.developerKey;
+    // const clientId = props.clientId;
+    // const scope = props.scope;
+    console.log("The scope is: " + this.scope);
+    console.log("The scope is also: " + props.scope);
+    this.pickerApiLoaded = false;
+    // // The Browser API key obtained from the Google Developers Console.
+    // this.developerKey = 'AIzaSyCZxBa8O8nqTM0xDBCjX0Q1ff8zwV9ZMzw';
+    //
+    // // The Client ID obtained from the Google Developers Console. Replace with your own Client ID.
+    // this.clientId = '576255310053-nl3vla4sgg0cmu9ieb3l79fca2iuhrcs.apps.googleusercontent.com';
+    //
+    // // Scope to use to access user's items.
+    // this.scope = ['https://www.googleapis.com/auth/drive'];
+
+
+
     this.state = { value: "hello" };
+
     this.onApiLoad();
     window.it = this;
   }
 
   createPicker() {
-    if (pickerApiLoaded && oauthToken) {
+    if (this.pickerApiLoaded && this.oauthToken) {
 
       // create a new picker object
       const picker = new google.picker.PickerBuilder()
                   .addView(google.picker.ViewId.DOCS)
-                  .setOAuthToken(oauthToken)
-                  .setDeveloperKey(developerKey)
+                  .setOAuthToken(this.oauthToken)
+                  .setDeveloperKey(this.developerKey)
                   .setCallback((data) => this.pickerCallback(data))
                   .build();
       picker.setVisible(true);
@@ -64,31 +83,39 @@ export default class UghWorld extends React.Component {
   }
 
   onAuthApiLoad() {
+      // console.log("The client id is now: " + this.clientId);
+      console.log("The scope is now: " + this.scope);
     window.gapi.auth.authorize({
-      client_id: clientId,
-      scope,
+      // client_id: clientId,
+      client_id: this.clientId,
+
+      // scope,
+      scope: this.scope,
       immediate: false,
     },
 
+
     // log the user in
-    this.handleAuthResult);
+    (authResult) => this.handleAuthResult(authResult));
+    //this.handleAuthResult);
   }
 
   onPickerApiLoad() {
-    pickerApiLoaded = true;
+    //this.pickerApiLoaded = true;
+      this.pickerApiLoaded = true;
   }
 
   handleAuthResult(authResult) {
     if (authResult && !authResult.error) {
-      oauthToken = authResult.access_token;
+      this.oauthToken = authResult.access_token;
+
       console.log('in the function handleAuthResult');
-      console.log(`The token is: ${oauthToken}`);
+      console.log(`The token is: ${this.oauthToken}`);
     }
   }
 
   // A simple callback implementation.
   pickerCallback(data) {
-    var that = this;
     if (data === undefined) {
       console.log('undefined callback');
       return;
@@ -102,21 +129,21 @@ export default class UghWorld extends React.Component {
       gapi.client.request({
         path: `/drive/v2/files/${doc.id}`,
         method: 'GET',
-        callback(obj) {
+        callback: (obj) => {
           const xhr = new XMLHttpRequest();
           xhr.open('GET', obj.downloadUrl);
           xhr.setRequestHeader('Authorization', `Bearer ${gapi.auth.getToken().access_token}`);
           console.log(`The access token is: ${gapi.auth.getToken().access_token}`);
-          xhr.onload = function () {
+          xhr.onload =  () =>  {
             console.log(xhr.response);
             const data = xhr.response;
             const output = document.getElementById('output');
-            docID = doc.id;
-            console.log(`The DOC ID is: ${docID}`);
+            this.docID = doc.id;
+            console.log(`The DOC ID is: ${this.docID}`);
             const responseObj = {
               Data: data,
             };
-            that.setState({value : data});
+            this.setState({value : data});
           };
           xhr.send();
         },
@@ -126,7 +153,7 @@ export default class UghWorld extends React.Component {
 
   createNewFile() {
       // (docID, this.state.value) => this.gd_updateFile(docID, this.state.value);
-      this.gd_updateFile(docID, this.state.value);
+      this.gd_updateFile(this.docID, this.state.value);
   }
 
   gd_updateFile(fileId, text, callback) {
@@ -194,6 +221,7 @@ export default class UghWorld extends React.Component {
 }
 
 ReactDOM.render(
-  <UghWorld />,
+  <UghWorld developerKey = {'AIzaSyCZxBa8O8nqTM0xDBCjX0Q1ff8zwV9ZMzw'} clientId = {'576255310053-nl3vla4sgg0cmu9ieb3l79fca2iuhrcs.apps.googleusercontent.com'} scope = {['https://www.googleapis.com/auth/drive']} />,
+  //<UghWorld />,
   document.getElementById('item1'),
 );

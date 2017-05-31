@@ -221,7 +221,9 @@ export default class UghWorld extends React.Component {
 }
 
 ReactDOM.render(
-  <UghWorld developerKey = {'AIzaSyCZxBa8O8nqTM0xDBCjX0Q1ff8zwV9ZMzw'} clientId = {'576255310053-nl3vla4sgg0cmu9ieb3l79fca2iuhrcs.apps.googleusercontent.com'} scope = {['https://www.googleapis.com/auth/drive']} />,
-  //<UghWorld />,
+  <UghWorld
+    developerKey = {'AIzaSyCZxBa8O8nqTM0xDBCjX0Q1ff8zwV9ZMzw'}
+    clientId = {'576255310053-nl3vla4sgg0cmu9ieb3l79fca2iuhrcs.apps.googleusercontent.com'}
+    scope = {['https://www.googleapis.com/auth/drive']} />,
   document.getElementById('item1'),
 );

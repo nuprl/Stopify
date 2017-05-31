@@ -12,10 +12,10 @@ Executable almabench
   Path:       almabench
   BuildTools: ocamlbuild
   MainIs:     almabench.ml
-  CompiledObject: native
+  CompiledObject: byte
 
 Executable boyer
   Path:       boyer
   BuildTools: ocamlbuild
   MainIs:     boyer.ml
-  CompiledObject: native
+  CompiledObject: byte

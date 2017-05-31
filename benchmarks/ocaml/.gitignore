@@ -1,11 +1,8 @@
 Makefile
 _build
-_tags
 *.native
-configure
-myocamlbuild.ml
+*.byte
 setup.data
 setup.log
-setup.ml
 lib
 .merlin

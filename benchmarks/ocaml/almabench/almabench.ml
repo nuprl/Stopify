@@ -346,7 +346,18 @@ let check_1 _ result =
     in
     raise (Benchmark_error s)
 
+(* Commented out operf-micro boilerplate that adds benchmark to bench runner *)
 (*let functions =
   [ "bench", Int (run, (fun i -> i), check_1,
                   [ Range (20, 100), Short ])
-  ]*)
+  ]
+*)
+
+(* Inserted custom test runner fixture *)
+
+let run_and_check () =
+  let res = run 20 in
+  check_1 () res
+
+let _ = Fixture.run_n_times 1000 run_and_check
+

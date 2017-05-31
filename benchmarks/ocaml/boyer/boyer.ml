@@ -888,8 +888,15 @@ let check b =
   if not b then
   raise (Benchmark_error "Cannot prove")
 
+(* Commented out operf-micro boilerplate that adds benchmark to bench runner *)
 (*let functions =
-  [ "boyer", Unit (run, check, Long) ]*)
+  [ "boyer", Unit (run, check, Long) ]
+*)
 
-let _  = check (run ())
+(* Inserted custom test runner fixture *)
 
+let run_and_check () =
+  let res = run () in
+  check res
+
+let _ = Fixture.run_n_times 1000 run_and_check

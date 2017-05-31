@@ -75,7 +75,7 @@ switch(output) {
   }
   case 'eval': {
     const runStart = process.hrtime();
-    stoppable.run(x => {
+    stoppable.run(() => {
       console.log(`Compilation time: ${compileTime}s`)
       const runEnd = process.hrtime(runStart);
       console.log(`Runtime: ${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}s`)
@@ -84,7 +84,7 @@ switch(output) {
   }
   case 'benchmark': {
     const runStart = process.hrtime();
-    stoppable.run(x => {
+    stoppable.run(() => {
       const runEnd = process.hrtime(runStart);
       process.stdout.write(`${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}`)
     })

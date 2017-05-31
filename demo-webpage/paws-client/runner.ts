@@ -10,10 +10,11 @@ import { cpsStopify } from '../../src/stopifyCPSEval';
 import { shamStopify } from '../../src/stopifySham';
 import { regeneratorStopify } from '../../src/stopifyRegenerator';
 import { Stoppable, stopify, isStopify } from '../../src/stopifyInterface';
-import { Steppable, steppify, isSteppify } from '../../src/steppifyInterface';
+import { Steppable, steppify, isSteppable } from '../../src/steppifyInterface';
+//import { editorSetLine } from './container'
 let stopped = false;
 
-let running: Stoppable;
+let running: Stoppable | Steppable;
 
 const transforms : { [transform: string]: stopify | steppify }= {
   'sham': shamStopify,
@@ -23,23 +24,31 @@ const transforms : { [transform: string]: stopify | steppify }= {
   'yield-debug': yieldSteppify,
 }
 
-function transform(f: stopify | steppify, code: string): Stoppable {
+function transform(f: stopify | steppify, code: string): Stoppable | Steppable {
   let stopped = false;
   if (isStopify(f)) {
     return f(code, () => stopped, () => stopped = true);
   } else {
     // TODO(rachit): Implement breakpoints
-    return f(code, [], () => stopped, () => stopped = true);
+    return f(code, [], () => stopped, () => stopped = true, (lin) => console.log(`Highlighted line ${lin}`))
   }
 }
 
 window.addEventListener('message', evt => {
   if (evt.data.code) {
     running = transform(transforms[evt.data.transform], evt.data.code);
-    running.run(() => console.log("Done"));
+    console.log("Compilation successful. Hit 'Run' to execute program." )
+  }
+  else if (evt.data === 'run') {
+    running.run(() => console.log('Done'))
   }
   else if (evt.data === 'stop') {
     running.stop(() => console.log("Terminated"));
+  }
+  else if (evt.data === 'step') {
+    if (isSteppable(running)) {
+      running.step(() => console.log('Done'), false)
+    }
   }
 });
 

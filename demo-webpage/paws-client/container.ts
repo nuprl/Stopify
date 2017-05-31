@@ -11,9 +11,16 @@ require('brace/mode/clojure');
 require('brace/mode/scala')
 require('brace/mode/javascript')
 require('brace/theme/monokai');
+//const Range = ace.require('ace/range').Range
 
+// TODO(rachit): Hack to share the editor with the runner. Should probably
+// be fixed.
 const editor = ace.edit('editor');
 editor.setTheme('ace/theme/monokai');
+
+//export function editorSetLine(n: number) {
+  //(<any>editor.session.addMarker)(new Range(n, 0, n, 1), "myMarker", "fullLine");
+//}
 
 interface supportedLangs {
   [lang: string]: CompilerClient
@@ -83,10 +90,16 @@ setupRun('yield');
 setupRun('cps');
 selectLanguage();
 
-(<Node>document.getElementById("stop")).addEventListener('click', () => {
-  if (iframe === null) {
-    return;
-  }
+function setupButton(buttonId: string, eventName: string) {
+  (<Node>document.getElementById(buttonId)).addEventListener('click', () => {
+    if (iframe === null) {
+      return;
+    }
 
-  iframe.contentWindow.postMessage('stop', '*');
-});
+    iframe.contentWindow.postMessage(eventName, '*');
+  });
+}
+
+setupButton('stop', 'stop')
+setupButton('step', 'step')
+setupButton('code-run', 'run')

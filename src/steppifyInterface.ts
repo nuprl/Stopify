@@ -25,3 +25,7 @@ export type steppify = (
 export function isSteppify(func: any): func is steppify {
   return func.isSteppify !== undefined;
 }
+
+export function isSteppable(obj: any): obj is Steppable {
+  return obj.step !== undefined;
+}

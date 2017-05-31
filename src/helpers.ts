@@ -1,6 +1,8 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 import * as b from './steppifyInterface';
+import { SourceMapConsumer } from 'source-map';
+import * as smc from 'convert-source-map';
 
 export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
 
@@ -120,22 +122,21 @@ function transform(src: string, plugs: any[][]): string {
 }
 
 function parseMapping(code: string) {
-  const reg = /\/\* mapping:.*\*\//;
-  const line = reg.exec(code);
+  const mapConverter = smc.fromSource(code);
   // No match
-  if (line === null) {
+  if (mapConverter === null) {
     console.log('// No mapping found, using one-to-one map')
-    return null;
+    return new b.LineMapping((line, column) => line);
   } else {
-    const str = line[0];
-    let map = str.substring(str.indexOf('['), str.lastIndexOf(']') + 1);
-    if (map.charAt(0) !== '[') {
-      throw new Error(`Malformed mapping string: ${str}`);
-    }
-    let lmap = new Map<number, number>(eval(map))
-    return new b.LineMapping((n: number | null) => {
-      if (n === null) return null
-      else return lmap.get(n) || null
+    console.log('// Mapping found')
+    const map = new SourceMapConsumer(mapConverter.toObject())
+    return new b.LineMapping((line: number, column: number) => {
+      const mapping = map.originalPositionFor({ line, column });
+      if (mapping.source === null || mapping.source.includes('node_modules') || mapping.line === null) {
+        return null;
+      } else {
+        return mapping.line
+      }
     })
   }
 }
@@ -144,9 +145,6 @@ function transformWithLines(src: string, plugs: any[][], breakPoints: number[]):
   let { code, ast } = babel.transform(src, { babelrc: false, sourceMaps: 'inline' });
 
   let map = parseMapping(src);
-  if (map === null) {
-    map = new b.LineMapping(x => x)
-  }
   (<any>ast).program.lineMapping = map;
 
   plugs.forEach(trs => {

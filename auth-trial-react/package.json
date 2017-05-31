@@ -1,8 +1,8 @@
 {
-  "name": "workshop-4-5",
+  "name": "google-drive-file-edit",
   "version": "0.0.1",
-  "description": "Repository for CS326 Workshop 4 and 5",
-  "author": "John Vilk <jvilk@cs.umass.edu>",
+  "description": "Repository for Picking a file from Google Drive and saving it",
+  "author": "Nicole Andrews <andre22n@mtholyoke.edu>",
   "license": "MIT",
   "scripts": {
     "build": "webpack",

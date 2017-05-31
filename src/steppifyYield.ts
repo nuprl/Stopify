@@ -59,12 +59,12 @@ class YieldSteppify implements Steppable {
         setTimeout(_ => {
           return this.step(onDone, runToCompletion)
         }, 0)
-      } else if(res.value === null) {
+      } else if(res.value === null || res.value - 1 === 0) {
         setTimeout(_ => {
           return this.step(onDone, runToCompletion)
         }, 0)
       } else {
-        return this.onStep(res.value)
+        return this.onStep(res.value - 1)
       }
     } else {
       return onDone();

@@ -17,6 +17,7 @@ require('brace/theme/monokai');
 // be fixed.
 const editor = ace.edit('editor');
 editor.setTheme('ace/theme/monokai');
+editor.setFontSize('15')
 
 //export function editorSetLine(n: number) {
   //(<any>editor.session.addMarker)(new Range(n, 0, n, 1), "myMarker", "fullLine");

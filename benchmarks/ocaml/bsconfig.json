@@ -1,7 +1,14 @@
 {
-  "name": "page",
+  "name": "stopify-ocaml",
   "sources":
   {
-    "dir": "."
+    "dir": ".",
+    "subdirs": [
+        "almabench",
+        "boyer"
+    ],
+    "files": [
+      "fixture.ml"
+    ]
   }
 }

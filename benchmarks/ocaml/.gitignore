@@ -1,0 +1,11 @@
+Makefile
+_build
+_tags
+*.native
+configure
+myocamlbuild.ml
+setup.data
+setup.log
+setup.ml
+lib
+.merlin

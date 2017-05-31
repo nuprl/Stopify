@@ -47,7 +47,7 @@ switch(transform) {
 }
 
 const compileStart = process.hrtime();
-const steppable = steppifyFunc(code, [], sw.isStop, sw.stop)
+const steppable = steppifyFunc(code, [], sw.isStop, sw.stop, () => console.log('Clicked step'))
 const compileEnd = process.hrtime(compileStart);
 const compileTime = (compileEnd[0] * 1e9 + compileEnd[1]) * 1e-9
 
@@ -59,7 +59,7 @@ switch(output) {
   }
   case 'eval': {
     const runStart = process.hrtime();
-    steppable.run(x => {
+    steppable.run(() => {
       console.log(`Compilation time: ${compileTime}s`)
       const runEnd = process.hrtime(runStart);
       console.log(`Runtime: ${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}s`)
@@ -68,7 +68,7 @@ switch(output) {
   }
   case 'benchmark': {
     const runStart = process.hrtime();
-    steppable.run(x => {
+    steppable.run(() => {
       const runEnd = process.hrtime(runStart);
       process.stdout.write(`${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}`)
     })

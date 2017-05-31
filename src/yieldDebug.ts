@@ -8,12 +8,18 @@ import { LineMapping } from './steppifyInterface';
 
 let lineMapping: LineMapping;
 
-const runProg = t.expressionStatement(t.callExpression(
-  t.identifier('$runYield'), [t.callExpression(t.identifier('$runProg'), [])]))
+ /* NOTE(rachit): Expects that the program is being ervaluated in a context
+  * where `$that` is set to the steppable object that owns the code.
+  */
+const runProg = t.expressionStatement(t.assignmentExpression('=',
+  t.memberExpression(t.identifier('$that'), t.identifier('$currentState')),
+  t.callExpression(t.identifier('$runProg'), [])
+))
 
 const program : VisitNode<LineMappingMark<t.Program>> = {
   enter: function (path: NodePath<LineMappingMark<t.Program>>): void {
 
+    // Set line mapping
     if(path.node.lineMapping) {
       lineMapping = path.node.lineMapping
     } else {
@@ -21,13 +27,7 @@ const program : VisitNode<LineMappingMark<t.Program>> = {
       throw new Error('No line mapping found')
     }
 
-    const lastLine = <t.Statement>path.node.body.pop();
-    if(t.isExpressionStatement(lastLine)) {
-      let result = t.returnStatement(lastLine.expression);
-      path.node.body.push(result);
-    } else {
-      path.node.body.push(lastLine)
-    }
+    // Wrap program into a function.
     const prog = path.node.body;
     const func = t.functionDeclaration(
       t.identifier('$runProg'), [], t.blockStatement(prog))
@@ -68,7 +68,7 @@ const block: VisitNode<t.BlockStatement> = function (path: NodePath<t.BlockState
     const loc = body[i].loc
     let mark;
     if (loc) {
-      const ln: number | null = lineMapping.getLine(loc.start.line)
+      const ln: number | null = lineMapping.getLine(loc.start.line, loc.start.column)
       if (ln) {
         mark = t.numericLiteral(ln)
       } else {

@@ -13,61 +13,66 @@ import * as renameC from './renameConstructor'
 class YieldSteppify implements Steppable {
   private original: string;
   private isStop: () => boolean;
-  private interval: number;
-  private stopTarget: () => void
+  private stopTarget: () => void;
+  private $currentState: Iterator<any>;
   transformed: string;
   onStop: () => any;
+  onStep: (ln: number) => void;
 
-  constructor (code: string, isStop: () => boolean, stop: () => void) {
+  constructor (
+    code: string,
+    isStop: () => boolean,
+    stop: () => void,
+    onStep: (ln: number) => void) {
+    this.isStop = isStop;
+    const onStopDef = (function() { throw 'Execution terminated' })
+    this.onStop = onStopDef
+    this.stopTarget = stop;
+    this.onStep = onStep;
     this.original = code;
+
     const plugins = [
       [noArrows, desugarNew, renameC], [makeBlockStmt], [markKnown], [yieldDebug],
       [transformMarked]
     ];
     this.transformed = transformWithLines(code, plugins, [])
 
-    if(this.transformed.length < code.length) {
-      throw new Error('Transformed code is smaller than original code')
-    }
+    /* Eval the code with $that set to `this` and set the $currentState
+     * property to be the top level generator function produced by the
+     * yield transform.
+     */
+    const $that = this
+    eval(this.transformed)
 
-    this.isStop = isStop;
-    const onStopDef = (function() { throw 'Execution terminated' })
-    this.onStop = onStopDef
-    this.stopTarget = stop;
-    this.interval = 10;
   };
 
-  step() {
-    // TODO(rachit): Implement this.
-  }
-
-  setInterval(that: number): void {
-    this.interval = that;
-  }
-
-  run(onDone: (arg?: any) => any = x => x): void {
-    const $that = this;
-    const $yieldCounter = this.interval;
-    let $counter = 0;
-    const $runYield = function run(gen: Iterator<any>,
-      res = { done: false, value: undefined }) {
-      setTimeout(_ => {
-        if ($that.isStop()) {
-          return $that.onStop();
-        }
-        res = gen.next();
-        if (res.value !== null) {
-          console.log(res.value)
-        }
-        if (res.done) {
-          return onDone(res.value);
-        }
-        else {
-          return run(gen, res);
-        }
-      }, 0)
+  /* NOTE(rachit): `runToCompletion` basially implies that `step` was called
+   * through `run`.
+   */
+  step(onDone: () => void, runToCompletion: boolean = false) {
+    const res = this.$currentState.next()
+    if (runToCompletion && this.isStop()) {
+      return this.onStop();
     }
-    eval($that.transformed);
+    if (!res.done) {
+      if(runToCompletion) {
+        setTimeout(_ => {
+          return this.step(onDone, runToCompletion)
+        }, 0)
+      } else if(res.value === null) {
+        setTimeout(_ => {
+          return this.step(onDone, runToCompletion)
+        }, 0)
+      } else {
+        return this.onStep(res.value)
+      }
+    } else {
+      return onDone();
+    }
+  }
+
+  run(onDone: () => void = () => console.log('Complete Execution')): void {
+    return this.step(onDone, true)
   };
 
   stop(onStop: () => any): void {
@@ -79,8 +84,11 @@ class YieldSteppify implements Steppable {
 };
 
 const yieldSteppify : steppify = function (code: string,
-  breakPoints: number[], isStop: () => boolean, stop: () => any) {
-    return new YieldSteppify(code, isStop, stop);
+  breakPoints: number[],
+  isStop: () => boolean,
+  stop: () => any,
+  onStep: (ln: number) => void) {
+    return new YieldSteppify(code, isStop, stop, onStep);
 };
 
 (<any>yieldSteppify).isSteppify = true;

@@ -1,23 +1,26 @@
 export class LineMapping {
-  getLine: (n: number | null) => number | null;
+  getLine: (line: number, column: number) => number | null;
 
-  constructor(func: (n: number | null) => number | null) {
+  constructor(func: (line: number, column: number) => number | null) {
     this.getLine = func;
   }
 }
 
 export interface Steppable {
-  run: (onDone: (arg?: any) => any) => void;
-  step: () => void;
+  run: (onDone: () => void) => void;
   stop: (onStop: () => any) => void;
-  setInterval: (n: number) => void;
-  transformed: string
+  transformed: string;
+  step: (onDone: () => void, runToCompletion: boolean) => void;
+  onStep: (ln?: number) => void;
 };
 
-export type steppify = (code: string,
-    breakPoints: number[],
-    isStop: () => boolean,
-    stop: () => any) => Steppable;
+export type steppify = (
+  code: string,
+  breakPoints: number[],
+  isStop: () => boolean,
+  stop: () => any,
+  onStep: (ln: number) => void,
+) => Steppable;
 
 export function isSteppify(func: any): func is steppify {
   return func.isSteppify !== undefined;

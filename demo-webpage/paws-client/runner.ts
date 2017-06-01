@@ -30,7 +30,10 @@ function transform(f: stopify | steppify, code: string): Stoppable | Steppable {
     return f(code, () => stopped, () => stopped = true);
   } else {
     // TODO(rachit): Implement breakpoints
-    return f(code, [], () => stopped, () => stopped = true, (lin) => console.log(`Highlighted line ${lin}`))
+      return f(code, [], () => stopped, () => stopped = true,
+               (lin) => {
+                   window.parent.postMessage(lin, '*');
+               })
   }
 }
 

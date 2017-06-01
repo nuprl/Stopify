@@ -11,7 +11,7 @@ require('brace/mode/clojure');
 require('brace/mode/scala')
 require('brace/mode/javascript')
 require('brace/theme/monokai');
-//const Range = ace.require('ace/range').Range
+const Range = ace.acequire('ace/range').Range;
 
 // TODO(rachit): Hack to share the editor with the runner. Should probably
 // be fixed.
@@ -19,9 +19,19 @@ const editor = ace.edit('editor');
 editor.setTheme('ace/theme/monokai');
 editor.setFontSize('15')
 
-//export function editorSetLine(n: number) {
-  //(<any>editor.session.addMarker)(new Range(n, 0, n, 1), "myMarker", "fullLine");
-//}
+let lastLineMarker: number | null = null;
+function editorSetLine(n: number) {
+    if (lastLineMarker !== null) {
+      editor.session.removeMarker(lastLineMarker);
+    }
+    lastLineMarker = editor.session.addMarker(
+        new Range(n - 1, 0, n - 1, 1),
+        "myMarker", "fullLine", false);
+}
+
+window.addEventListener('message', evt => {
+    editorSetLine(evt.data);
+});
 
 interface supportedLangs {
   [lang: string]: CompilerClient

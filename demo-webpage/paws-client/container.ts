@@ -25,7 +25,7 @@ function editorSetLine(n: number) {
       editor.session.removeMarker(lastLineMarker);
     }
     lastLineMarker = editor.session.addMarker(
-        new Range(n - 1, 0, n - 1, 1),
+        new Range(n, 0, n, 1),
         "myMarker", "fullLine", false);
 }
 

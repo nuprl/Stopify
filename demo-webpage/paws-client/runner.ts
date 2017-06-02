@@ -11,7 +11,6 @@ import { shamStopify } from '../../src/stopifySham';
 import { regeneratorStopify } from '../../src/stopifyRegenerator';
 import { Stoppable, stopify, isStopify } from '../../src/stopifyInterface';
 import { Steppable, steppify, isSteppable } from '../../src/steppifyInterface';
-//import { editorSetLine } from './container'
 let stopped = false;
 
 let running: Stoppable | Steppable;
@@ -40,17 +39,23 @@ function transform(f: stopify | steppify, code: string): Stoppable | Steppable {
 window.addEventListener('message', evt => {
   if (evt.data.code) {
     running = transform(transforms[evt.data.transform], evt.data.code);
-    console.log("Compilation successful. Hit 'Run' to execute program." )
+    if (isSteppable(running)) {
+      console.log("Compilation successful in debugging mode. Hit 'Step' to single step or hit 'Run' to execute program." )
+    } else {
+      console.log("Compilation successful. Hit 'Run' to execute program." )
+    }
   }
   else if (evt.data === 'run') {
     running.run(() => console.log('Done'))
   }
   else if (evt.data === 'stop') {
-    running.stop(() => console.log("Terminated"));
+    running.stop(() => console.log('Stopped'));
   }
   else if (evt.data === 'step') {
     if (isSteppable(running)) {
       running.step(() => console.log('Done'), false)
+    } else {
+      console.log('Not in debugging mode. Please compile with debug mode.')
     }
   }
 });

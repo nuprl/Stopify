@@ -21,7 +21,7 @@ export function runBrowserify(src: string,
   jsReceiver: (code: string) => any): (exitCode: number) => void {
     return function (exitCode: number): void {
       assert(exitCode === 0);
-      const outJs = browserify(src).bundle();
+      const outJs = browserify(src, { debug: true }).bundle();
       streamToString(outJs, 'utf8', (err: any, str: string) => {
         jsReceiver(str);
       });

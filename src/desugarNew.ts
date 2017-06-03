@@ -15,19 +15,39 @@ function makeIdList(ids: string[]): t.Identifier[] {
   return ids.map(id => t.identifier(id));
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects
 const knowns = letExpression(knownsId, t.arrayExpression(makeIdList(
-  ['WeakMap',
+  ['Object',
+    'Function',
+    'Boolean',
+    'Symbol',
+    'Error',
+    'EvalError',
+    //'InternalError',
+    'RangeError',
+    'ReferenceError',
+    'SyntaxError',
+    'TypeError',
+    'URIError',
+    'Number',
+    'Math',
+    'Date',
+    'String',
+    'RegExp',
+    'Array',
+    'Int8Array',
+    'Uint8Array',
+    'Uint8ClampedArray',
+    'Int16Array',
+    'Uint16Array',
+    'Int32Array',
+    'Uint32Array',
+    'Float32Array',
+    'Float64Array',
     'Map',
     'Set',
-    'WeakSet',
-    'String',
-    'Number',
-    'Function',
-    'Object',
-    'Array',
-    'Date',
-    'RegExp',
-    'Error'])));
+    'WeakMap',
+    'WeakSet'])));
 
 const constr: t.Identifier = t.identifier('constr');
 const restArgs: t.RestElement = t.restElement(t.identifier('args'));

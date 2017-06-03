@@ -1,5 +1,19 @@
 ## Stopify [![Build Status](https://travis-ci.org/plasma-umass/Stopify.svg?branch=master)](https://travis-ci.org/plasma-umass/Stopify)
 
+Web-based programming environments lack many basic features that programmers
+expect to find in desktop-based IDEs. For example, given a non-terminating
+program, many environments simply crash the browser. Some environments implement
+"infinite loop detectors", but these sacrifice the ability to execute
+long-running, interactive programs. The few exceptions that handle this
+correctly, such as Pyret and WeScheme, have required tremendous effort to build
+and are tightly coupled to specific programming languages.
+
+We present Stopify, a new approach to building web-based programming
+environments, that supports any language that compiles to JavaScript and
+generates source maps. Stopify transforms the JavaScript produced by an ordinary
+compiler and implements a runtime scheduler that adds support for pausing,
+resuming, stepping, and break-pointing at the source language level.
+
 ## Dependencies
 1. Install the latest version of node.
 2. To install the dependecies, run `npm install` in the root of the project.

@@ -112,7 +112,6 @@ function transform(src: string, plugs: any[][]): string {
     const res = babel.transformFromAst(<t.Node>ast, code, {
       plugins: [...trs],
       babelrc: false,
-      sourceMaps: 'inline',
     });
     code = res.code;
     ast = res.ast;

@@ -97,6 +97,7 @@ function selectLanguage() {
 setupRun('sham');
 setupRun('regenerator');
 setupRun('yield-debug');
+setupRun('cps-trampoline');
 setupRun('yield');
 setupRun('cps');
 selectLanguage();

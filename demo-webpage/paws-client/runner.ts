@@ -7,6 +7,7 @@
 import { yieldStopify } from '../../src/stopifyYield';
 import { yieldSteppify } from '../../src/steppifyYield';
 import { cpsStopify } from '../../src/stopifyCPSEval';
+import { trampolinedCpsStopify } from '../../src/stopifyCPSTrampoline';
 import { shamStopify } from '../../src/stopifySham';
 import { regeneratorStopify } from '../../src/stopifyRegenerator';
 import { Stoppable, stopify, isStopify } from '../../src/stopifyInterface';
@@ -21,6 +22,7 @@ const transforms : { [transform: string]: stopify | steppify }= {
   'regenerator': regeneratorStopify,
   'cps': cpsStopify,
   'yield-debug': yieldSteppify,
+  'cps-trampoline': trampolinedCpsStopify,
 }
 
 function transform(f: stopify | steppify, code: string): Stoppable | Steppable {

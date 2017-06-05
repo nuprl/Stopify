@@ -410,28 +410,6 @@ function cpsExpr(expr: t.Expression,
       case "CallExpression":
         const callee = expr.callee;
         if (t.isMemberExpression(callee) &&
-          t.isIdentifier(callee.property) &&
-          callee.property.name === 'call') {
-          return addLoc(cpsExprList(expr.arguments, args => {
-              const kFun = path.scope.generateUidIdentifier('kFun');
-              const kErr = path.scope.generateUidIdentifier('kErr');
-              const r = path.scope.generateUidIdentifier('r');
-              return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
-                new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
-                  new CCallApp(callee.object, [kFun, kErr, ...args])));
-            }, ek, path), expr.start, expr.end, expr.loc);
-        } else if (t.isMemberExpression(callee) &&
-          t.isIdentifier(callee.property) &&
-          callee.property.name === 'apply') {
-          return addLoc(cpsExprList(expr.arguments, args => {
-              const kFun = path.scope.generateUidIdentifier('kFun');
-              const kErr = path.scope.generateUidIdentifier('kErr');
-              const r = path.scope.generateUidIdentifier('r');
-              return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
-                new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
-                  new CApplyApp(callee.object, [kFun, kErr, ...args])));
-            }, ek, path), expr.start, expr.end, expr.loc);
-        } else if (t.isMemberExpression(callee) &&
           t.isIdentifier(callee.property)) {
           const bnd = path.scope.generateUidIdentifier('bind');
           return addLoc(cpsExpr(callee.object, f =>
@@ -442,6 +420,10 @@ function cpsExpr(expr: t.Expression,
                 const r = path.scope.generateUidIdentifier('r');
                 return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
                   new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
+                    (<t.Identifier>callee.property).name === 'apply' ?
+                    new CApplyApp(f, [kFun, kErr, ...args]) :
+                    (<t.Identifier>callee.property).name === 'call' ?
+                    new CCallApp(f, [kFun, kErr, ...args]) :
                     new CCallApp(bnd, [kFun, kErr, f, ...args])));
               }, ek, path)), ek, path), expr.start, expr.end, expr.loc);
         } else {

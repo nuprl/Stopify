@@ -105,9 +105,8 @@ class TrampolinedCPSStopify implements Stoppable {
 
     function $runTrampolined(f: any) {
       while(f && f.tramp) {
-        if(counter-- !== that.interval) {
-          f = f.f()
-        } else {
+        if(counter-- === 0) {
+          counter = that.interval
           setTimeout(_ => {
             if(that.isStop()) {
               that.onStop();
@@ -115,6 +114,8 @@ class TrampolinedCPSStopify implements Stoppable {
               return $runTrampolined(f)
             }
           }, 0)
+        } else {
+          f = f.f()
         }
       }
     }

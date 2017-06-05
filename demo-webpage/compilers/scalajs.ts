@@ -2,6 +2,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as smc from 'convert-source-map';
 const fsExtra = require('fs-extra');
 
 import { ScalaJSInterface } from './compiler';
@@ -29,7 +30,14 @@ export let ScalaJS : ScalaJSInterface = {
 
       fs.writeFileSync(path.join(compilerDir, "Main.scala"), scalaCode);
 
-      run('sbt', 'fastOptJS').on('exit', runBrowserify(
-        path.join(compilerDir, 'target/scala-2.12/blah-fastopt.js'), jsReceiver));
+      run('sbt', 'fastOptJS').on('exit', () => {
+        const srcFile = path.join(compilerDir,
+                      'target/scala-2.12/blah-fastopt.js');
+        const prog = fs.readFileSync(srcFile).toString();
+        const inlineMap = smc.fromMapFileComment(prog,
+          path.join(compilerDir, 'target/scala-2.12/')).toComment();
+        fs.writeFileSync(srcFile, smc.removeMapFileComments(prog) + inlineMap)
+        runBrowserify(srcFile, jsReceiver)
+      });
     }
 }

@@ -14,12 +14,14 @@ module.exports = function() {
         // Create the body for the function.
         const fBody = h.flatBodyStatement([
           t.ifStatement(test, h.flatBodyStatement([body,
-            t.returnStatement(t.callExpression(fName, []))]))]);
+            t.returnStatement(t.callExpression(t.memberExpression(fName,
+              t.identifier('call')), [t.thisExpression()]))]))]);
         // Create the function representing the while loop.
         const fExpr = t.functionExpression(fName, [], fBody);
         const fDecl = h.letExpression(fName, fExpr);
         path.replaceWith(h.flatBodyStatement([fDecl, t.expressionStatement(
-          t.callExpression(fName, []))]));
+          t.callExpression(t.memberExpression(fName,
+            t.identifier('call')), [t.thisExpression()]))]));
       },
     },
   }

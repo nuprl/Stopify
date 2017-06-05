@@ -513,9 +513,10 @@ function cpsStmt(stmt: t.Statement,
           stmt.start, stmt.end, stmt.loc);
       case "LabeledStatement": {
         const kErr = path.scope.generateUidIdentifier('kErr');
-        return addLoc(cpsExpr(t.callExpression(t.functionExpression(undefined,
-          [stmt.label, kErr], flatBodyStatement([stmt.body])), []),
-          k, ek, path), stmt.start, stmt.end, stmt.loc);
+        return addLoc(cpsExpr(t.callExpression(t.memberExpression(
+          t.functionExpression(undefined,
+          [stmt.label, kErr], flatBodyStatement([stmt.body])), t.identifier('call')),
+          [t.thisExpression()]), k, ek, path), stmt.start, stmt.end, stmt.loc);
       }
       case "ReturnStatement":
         let returnK = (r: AExpr) =>
@@ -569,8 +570,7 @@ function generateBExpr(bexpr: BExpr): t.Expression {
         flatBodyStatement(generateJS(bexpr.body)))),
         bexpr.start, bexpr.end, bexpr.loc);
     case 'BAdminFun':
-      return addLoc(t.functionExpression(bexpr.id,
-        bexpr.args,
+      return addLoc(t.arrowFunctionExpression(bexpr.args,
         flatBodyStatement(generateJS(bexpr.body))),
         bexpr.start, bexpr.end, bexpr.loc);
     case 'ConditionalExpression':

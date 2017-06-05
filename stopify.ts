@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { yieldStopify } from './src/stopifyYield'
 import { cpsStopify } from './src/stopifyCPSEval'
+import { trampolinedCpsStopify } from './src/stopifyCPSTrampoline'
 import { regeneratorStopify } from './src/stopifyRegenerator'
 import { StopWrapper } from './src/helpers'
 import * as fs from 'fs'
@@ -47,6 +48,9 @@ switch(transform) {
     break;
   case 'cps':
     stopifyFunc = cpsStopify
+    break;
+  case 'tcps':
+    stopifyFunc = trampolinedCpsStopify
     break;
   case 'regen':
     stopifyFunc = regeneratorStopify

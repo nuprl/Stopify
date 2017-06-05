@@ -69,7 +69,7 @@ function apply_applyWithK(f: MaybeBound, k: any, ek: any, thisArg: any, args: an
   }
 };
 
-class CPSStopify implements Stoppable {
+class TrampolinedCPSStopify implements Stoppable {
   private original: string;
   transformed: string;
   private isStop: () => boolean;
@@ -85,7 +85,7 @@ class CPSStopify implements Stoppable {
         [noArrows, desugarLoop, desugarLabel, desugarFunctionDecl, desugarNew],
         [desugarSwitch, desugarWhileToFunc],
         [makeBlockStmt, addKArg],
-        [cps, applyStop, transformMarked],
+        [cps, applyStop, trampolineApply, transformMarked, ],
       ];
       this.transformed = transform(code, plugins);
 
@@ -102,20 +102,26 @@ class CPSStopify implements Stoppable {
     'use strict';
     const that = this;
     let counter = that.interval;
-    let apply_helper = function (how: any) {
-      return function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
-        if (counter-- === 0) {
-          counter = that.interval;
+
+    function $runTrampolined(f: any) {
+      while(f && f.tramp) {
+        if(counter-- !== that.interval) {
+          f = f.f()
+        } else {
           setTimeout(_ => {
-            if (that.isStop()) {
+            if(that.isStop()) {
               that.onStop();
             } else {
-              return how(f, k, ek, ...args);
+              return $runTrampolined(f)
             }
-          }, 0);
-        } else {
-          return how(f, k, ek, ...args);
+          }, 0)
         }
+      }
+    }
+
+    let apply_helper = function (how: any) {
+      return function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
+        return how(f, k, ek, ...args);
       };
     };
     let admin_apply = apply_helper(function (f: MaybeBound, ...args: any[]) {
@@ -148,14 +154,14 @@ class CPSStopify implements Stoppable {
   };
 };
 
-const cpsStopify : stopify = function (code: string,
+const trampolinedCpsStopify : stopify = function (code: string,
   isStop: () => boolean,
-  stop: () => void): CPSStopify {
-    return new CPSStopify(code, isStop, stop);
+  stop: () => void): TrampolinedCPSStopify {
+    return new TrampolinedCPSStopify(code, isStop, stop);
 };
 
-(<any>cpsStopify).isStopify = true;
+(<any>trampolinedCpsStopify).isStopify = true;
 
 export {
-    cpsStopify,
+    trampolinedCpsStopify,
 };

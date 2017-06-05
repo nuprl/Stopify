@@ -75,7 +75,7 @@ class BAdminFun extends Node {
 class BAtom extends Node {
   type: 'atom';
 
-  constructor(public atom: AExpr | t.SpreadElement) {
+  constructor(public atom: AExpr) {
     super();
     this.type = 'atom';
   }

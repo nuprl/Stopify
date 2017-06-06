@@ -4,34 +4,34 @@ import * as babel from 'babel-core';
 
 // Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
-const desugarLoop = require('./src/desugarLoop');
-const desugarLabel = require('./src/desugarLabel');
-const desugarAndOr = require('./src/desugarAndOr');
-const desugarWhileToFunc = require('./src/desugarLoopToFunc');
-const desugarNew = require('./src/desugarNew');
+const desugarLoop = require('../src/desugarLoop');
+const desugarLabel = require('../src/desugarLabel');
+const desugarAndOr = require('../src/desugarAndOr');
+const desugarWhileToFunc = require('../src/desugarLoopToFunc');
+const desugarNew = require('../src/desugarNew');
 
 // Call Expression naming transform.
-const anf = require('./src/anf');
+const anf = require('../src/anf');
 
 // CPS transforms.
-const addKArg = require('./src/addContinuationArg');
-const cpsVisitor = require('./src/cpsSyntax.ts');
-const applyStop = require('./src/stoppableApply');
+const addKArg = require('../src/addContinuationArg');
+const cpsVisitor = require('../src/cpsSyntax.ts');
+const applyStop = require('../src/stoppableApply');
 
-const transformMarked = require('./src/transformMarked');
+const transformMarked = require('../src/transformMarked');
 
 // Yield transform.
-const yieldPass = require('./src/yield');
+const yieldPass = require('../src/yield');
 
-const markKnown = require('./src/markKnownFunctions')
+const markKnown = require('../src/markKnownFunctions')
 
 // Verification transform.
-const cpsVerifier = require('./src/verifiers/cpsVerifier');
-const desugarVerifier = require('./src/verifiers/desugarVerifier');
-const noEvalVerifier = require('./src/verifiers/noEvalVerifier');
+const cpsVerifier = require('../src/verifiers/cpsVerifier');
+const desugarVerifier = require('../src/verifiers/desugarVerifier');
+const noEvalVerifier = require('../src/verifiers/noEvalVerifier');
 
 // Helpers
-import * as h from './src/helpers';
+import * as h from '../src/helpers';
 
 function transform(src: string, plugs: any[]) {
     return h.transform(src, plugs);

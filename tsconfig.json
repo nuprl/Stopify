@@ -15,9 +15,7 @@
     "include": [
       "src",
       "test",
-      "transform.ts",
-      "stopify.ts",
-      "steppify.ts",
+      "bin",
       "demo-webpage"
     ],
     "exclude": [

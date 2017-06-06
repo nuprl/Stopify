@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import { yieldStopify } from './src/stopifyImplementation/stopifyYield'
-import { cpsStopify } from './src/stopifyImplementation/stopifyCPSEval'
-import { trampolinedCpsStopify } from './src/stopifyImplementation/stopifyCPSTrampoline'
-import { regeneratorStopify } from './src/stopifyImplementation/stopifyRegenerator'
-import { StopWrapper } from './src/helpers'
+import { yieldStopify } from '../src/stopifyImplementation/stopifyYield'
+import { cpsStopify } from '../src/stopifyImplementation/stopifyCPSEval'
+import { trampolinedCpsStopify } from '../src/stopifyImplementation/stopifyCPSTrampoline'
+import { regeneratorStopify } from '../src/stopifyImplementation/stopifyRegenerator'
+import { StopWrapper } from '../src/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 

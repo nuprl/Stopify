@@ -372,7 +372,7 @@ function cpsExpr(expr: t.Expression,
                   l, r), new CAdminApp(cont, [lop])));
               }, ek, path).map(r =>
                 new CLet('const', cont, new BFun(undefined, [cont], c),
-                  new ITE(l, r, new CAdminApp(cont, [t.booleanLiteral(false)])))));
+                  new ITE(l, r, new CAdminApp(cont, [l])))));
           }, ek, path);
         } else {
           return cpsExpr(expr.left, l => {
@@ -384,7 +384,7 @@ function cpsExpr(expr: t.Expression,
                   l, r), new CAdminApp(cont, [lop])));
               }, ek, path).map(r =>
                 new CLet('const', cont, new BFun(undefined, [cont], c),
-                  new ITE(l, new CAdminApp(cont, [t.booleanLiteral(true)]), r))));
+                  new ITE(l, new CAdminApp(cont, [l]), r))));
           }, ek, path);
         }
       case 'ConditionalExpression':

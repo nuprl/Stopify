@@ -9,3 +9,4 @@ demo-webpage/html/container.js
 demo-webpage/html/runner.js
 /benchmarks/*.csv
 package-lock.json
+auth-trial/html/src-noconflict

@@ -34,7 +34,7 @@
     "typescript": "^2.2.2"
   },
   "scripts": {
-    "build": "./node_modules/.bin/tsc || true && chmod +x built/bin/stopify.js ",
+    "build": "./node_modules/.bin/tsc || true",
     "build-webpage": "npm run build && ./node_modules/.bin/browserify built/demo-webpage/paws-client/container.js -o demo-webpage/html/container.js && ./node_modules/.bin/browserify built/demo-webpage/paws-client/runner.js -o demo-webpage/html/runner.js && cp -R ./demo-webpage/html built/demo-webpage/",
     "test": "npm run build && ./node_modules/.bin/mocha built/test/ || true"
   },

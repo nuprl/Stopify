@@ -15,7 +15,6 @@
     "include": [
       "src",
       "test",
-      "bin",
       "demo-webpage"
     ],
     "exclude": [

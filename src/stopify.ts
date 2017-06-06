@@ -1,13 +1,16 @@
-#!/usr/bin/env node
-import { yieldSteppify } from '../src/stepifyImplementation/steppifyYield'
-import { StopWrapper } from '../src/helpers'
+import { yieldStopify } from './stopifyImplementation/stopifyYield'
+import { cpsStopify } from './stopifyImplementation/stopifyCPSEval'
+import { trampolinedCpsStopify } from './stopifyImplementation/stopifyCPSTrampoline'
+import { regeneratorStopify } from './stopifyImplementation/stopifyRegenerator'
+import { StopWrapper } from './helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 
 function showUsage() {
-  console.log('Usage: steppify.js -i <filename> -t [cps|yield|regen] [options]');
-  console.log('       steppify.js -s <string> -t [cps|yield|regen] [options]\n');
+  console.log('Usage: stopify.js -i <filename> -t [cps|tcps|yield|regen] [options]');
+  console.log('       stopify.js -s <string> -t [cps|tcps|yield|regen] [options]\n');
   console.log('Options:')
+  console.log('  -y, --interval     Set yield interval')
   console.log('  -o, --output       Can be print, eval, benchmark')
   process.exit(0);
 }
@@ -36,30 +39,46 @@ if (transform === undefined) {
   showUsage();
 }
 
-let steppifyFunc;
+let stopifyFunc;
 const sw: StopWrapper = new StopWrapper();
 switch(transform) {
   case 'yield':
-    steppifyFunc = yieldSteppify
+    stopifyFunc = yieldStopify
+    break;
+  case 'cps':
+    stopifyFunc = cpsStopify
+    break;
+  case 'tcps':
+    stopifyFunc = trampolinedCpsStopify
+    break;
+  case 'regen':
+    stopifyFunc = regeneratorStopify
     break;
   default:
     throw new Error(`Unknown transform: ${transform}`)
 }
 
 const compileStart = process.hrtime();
-const steppable = steppifyFunc(code, [], sw.isStop, sw.stop, () => console.log('Clicked step'))
+const stoppable = stopifyFunc(code, sw.isStop, sw.stop)
 const compileEnd = process.hrtime(compileStart);
 const compileTime = (compileEnd[0] * 1e9 + compileEnd[1]) * 1e-9
 
+const yieldInterval = argv.y || argv.yieldInterval
+if (yieldInterval !== undefined) {
+  let interval = parseInt(argv.y || argv.yieldInterval)
+  if (isNaN(interval)) throw new Error(`Unknown interval: ${yieldInterval}`)
+  stoppable.setInterval(interval);
+}
+
 switch(output) {
   case 'print': {
-    console.log(steppable.transformed)
+    console.log(stoppable.transformed)
     console.log(`// Compilation time: ${compileTime}s`)
     break;
   }
   case 'eval': {
     const runStart = process.hrtime();
-    steppable.run(() => {
+    stoppable.run(() => {
       console.log(`Compilation time: ${compileTime}s`)
       const runEnd = process.hrtime(runStart);
       console.log(`Runtime: ${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}s`)
@@ -68,7 +87,7 @@ switch(output) {
   }
   case 'benchmark': {
     const runStart = process.hrtime();
-    steppable.run(() => {
+    stoppable.run(() => {
       const runEnd = process.hrtime(runStart);
       process.stdout.write(`${(runEnd[0] * 1e9 + runEnd[1]) * 1e-9}`)
     })
@@ -76,7 +95,7 @@ switch(output) {
   }
   default:
     console.log(`Unknown output format: ${output}`)
-    console.log(steppable.transformed)
+    console.log(stoppable.transformed)
     console.log(`// Compilation time: ${compileTime}s`)
     break;
 }

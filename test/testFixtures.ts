@@ -42,7 +42,7 @@ export function retainValueTest(org: string, plugs: any[][]) {
 
 export function stopifyTest(srcFile: string, transform: string) {
   const runner = spawnSync(
-    './built/bin/stopify.js',
+    './bin/stopify',
     ['-i', srcFile, '-t', transform, '-o', 'eval', '-y', '500', '--notime'],
     { timeout: 5000 }
   )

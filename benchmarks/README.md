@@ -1,5 +1,5 @@
 ### Benchmarks
-===
+
 To add a new source language to the benchmarking framework, do the following:
 
 1. Create a folder with the languages name.
@@ -12,7 +12,7 @@ filename as the first column and the time in seconds as the second column.
 4. Add a `clean` rule to the makefile that cleans up the language directory.
 
 #### File format
-===
+
 The Benchmarking harness produces individual files
 `<language-name>-<transform>.csv` with the first column as the name of the
 testfile and the second column as time in seconds.

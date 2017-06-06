@@ -114,6 +114,7 @@ class TrampolinedCPSStopify implements Stoppable {
               return $runTrampolined(f)
             }
           }, 0)
+          break;
         } else {
           f = f.f()
         }

@@ -17,6 +17,7 @@ import * as makeBlockStmt from '../makeBlockStmt';
 import * as addKArg from '../addContinuationArg';
 import * as cps from '../cpsSyntax';
 import * as applyStop from '../stoppableApply';
+import * as cpsRuntime from '../cpsRuntime';
 
 import * as transformMarked from '../transformMarked';
 
@@ -85,7 +86,7 @@ class TrampolinedCPSStopify implements Stoppable {
         [noArrows, desugarLoop, desugarLabel, desugarFunctionDecl, desugarNew],
         [desugarSwitch, desugarWhileToFunc],
         [makeBlockStmt, addKArg],
-        [cps, applyStop, trampolineApply, transformMarked, ],
+        [cps, applyStop, trampolineApply, transformMarked, cpsRuntime],
       ];
       this.transformed = transform(code, plugins);
 

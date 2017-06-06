@@ -5,6 +5,7 @@ import * as desugarAndOr from '../desugarAndOr';
 import * as desugarNew from '../desugarNew';
 import * as makeBlockStmt from '../makeBlockStmt';
 import * as yieldPass from '../yield';
+import * as yieldRuntime from '../yieldRuntime';
 import * as transformMarked from '../transformMarked';
 import { transform } from '../helpers';
 import * as markKnown from '../markKnownFunctions'
@@ -22,7 +23,7 @@ class YieldStopify implements Stoppable {
     this.original = code;
     const plugins = [
       [noArrows, desugarNew, renameC], [makeBlockStmt], [markKnown], [yieldPass],
-      [transformMarked]
+      [transformMarked, yieldRuntime]
     ];
     this.transformed = transform(code, plugins);
 

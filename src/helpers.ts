@@ -19,6 +19,9 @@ function tag<T, V>(tag: string, t: T, v: V) {
 // Used for marking known transformed functions
 export type Tag = 'Transformed' | 'Untransformed' | 'Unknown'
 
+export type Hoisted<T> = T & {
+  hoisted?: boolean
+}
 export type OptimizeMark<T> = T & {
   OptimizeMark: Tag
 }
@@ -47,6 +50,7 @@ export type Apply<T> = T & {
 export type Direct<T> = T & {
     isDirect?: boolean
 }
+const hoisted = <T>(t: T) => tag('hoisted', t, true);
 const breakLbl = <T>(t: T, v: t.Identifier) => tag('break_label', t, v);
 const continueLbl = <T>(t: T, v: t.Identifier) => tag('continue_label', t, v);
 const administrative = <T>(t: T) => tag('isAdmin', t, true);
@@ -159,6 +163,7 @@ function transformWithLines(src: string, plugs: any[][], breakPoints: number[]):
 }
 
 export {
+  hoisted,
   administrative,
   call,
   apply,

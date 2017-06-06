@@ -1,13 +1,16 @@
-const assert = require('assert');
 import * as babel from 'babel-core';
 import * as fs from 'fs';
 import * as path from 'path';
-const glob = require('glob');
 import { spawnSync } from 'child_process';
-const tmp = require('tmp');
 import {transform} from '../src/helpers';
+const assert = require('assert');
+const tmp = require('tmp');
+const glob = require('glob');
 
-export const testFiles = glob.sync('test/should-run/*.js', {})
+const simpleTests = glob.sync('test/should-run/*.js', {})
+const sourceLanguage = glob.sync('test/should-run/source-language/*.js', {})
+
+export const testFiles = simpleTests.concat(sourceLanguage)
 
 export function transformTest(original: string, plugs: any[][]): string {
   let errorMessage = '';
@@ -40,7 +43,7 @@ export function retainValueTest(org: string, plugs: any[][]) {
 export function stopifyTest(srcFile: string, transform: string) {
   const runner = spawnSync(
     './built/bin/stopify.js',
-    ['-i', srcFile, '-t', transform, '-o', 'eval', '--notime'],
+    ['-i', srcFile, '-t', transform, '-o', 'eval', '-y', '500', '--notime'],
     { timeout: 5000 }
   )
 

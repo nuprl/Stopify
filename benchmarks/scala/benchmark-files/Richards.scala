@@ -48,44 +48,46 @@ package org.scalajs.benchmark.richards
 /**
  * Richards simulates the task dispatcher of an operating system.
  */
-object Richards extends org.scalajs.benchmark.Benchmark {
 
-  override def prefix = "Richards"
+import scala.scalajs.js.JSApp
+object Richards extends JSApp {
 
-  def run() {
-    val scheduler = new Scheduler()
-    scheduler.addIdleTask(ID_IDLE, 0, null, COUNT)
+  def main(): Unit = {
+    List.range(0, 10000).foreach(_ => {
+      val scheduler = new Scheduler()
+      scheduler.addIdleTask(ID_IDLE, 0, null, COUNT)
 
-    var queue = new Packet(null, ID_WORKER, KIND_WORK)
-    queue = new Packet(queue, ID_WORKER, KIND_WORK)
-    scheduler.addWorkerTask(ID_WORKER, 1000, queue)
+      var queue = new Packet(null, ID_WORKER, KIND_WORK)
+      queue = new Packet(queue, ID_WORKER, KIND_WORK)
+      scheduler.addWorkerTask(ID_WORKER, 1000, queue)
 
-    queue = new Packet(null, ID_DEVICE_A, KIND_DEVICE)
-    queue = new Packet(queue, ID_DEVICE_A, KIND_DEVICE)
-    queue = new Packet(queue, ID_DEVICE_A, KIND_DEVICE)
-    scheduler.addHandlerTask(ID_HANDLER_A, 2000, queue)
+      queue = new Packet(null, ID_DEVICE_A, KIND_DEVICE)
+      queue = new Packet(queue, ID_DEVICE_A, KIND_DEVICE)
+      queue = new Packet(queue, ID_DEVICE_A, KIND_DEVICE)
+      scheduler.addHandlerTask(ID_HANDLER_A, 2000, queue)
 
-    queue = new Packet(null, ID_DEVICE_B, KIND_DEVICE)
-    queue = new Packet(queue, ID_DEVICE_B, KIND_DEVICE)
-    queue = new Packet(queue, ID_DEVICE_B, KIND_DEVICE)
-    scheduler.addHandlerTask(ID_HANDLER_B, 3000, queue)
+      queue = new Packet(null, ID_DEVICE_B, KIND_DEVICE)
+      queue = new Packet(queue, ID_DEVICE_B, KIND_DEVICE)
+      queue = new Packet(queue, ID_DEVICE_B, KIND_DEVICE)
+      scheduler.addHandlerTask(ID_HANDLER_B, 3000, queue)
 
-    scheduler.addDeviceTask(ID_DEVICE_A, 4000, null)
+      scheduler.addDeviceTask(ID_DEVICE_A, 4000, null)
 
-    scheduler.addDeviceTask(ID_DEVICE_B, 5000, null)
+      scheduler.addDeviceTask(ID_DEVICE_B, 5000, null)
 
-    scheduler.schedule()
+      scheduler.schedule()
 
-    if (scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
+      if (scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
         scheduler.holdCount != EXPECTED_HOLD_COUNT) {
-      print(s"Error during execution: queueCount = ${scheduler.queueCount}, holdCount = ${scheduler.holdCount}.")
-    }
-    if (EXPECTED_QUEUE_COUNT != scheduler.queueCount) {
-      throw new Exception("bad scheduler queue-count")
-    }
-    if (EXPECTED_HOLD_COUNT != scheduler.holdCount) {
-      throw new Exception("bad scheduler hold-count")
-    }
+          print(s"Error during execution: queueCount = ${scheduler.queueCount}, holdCount = ${scheduler.holdCount}.")
+        }
+        if (EXPECTED_QUEUE_COUNT != scheduler.queueCount) {
+          throw new Exception("bad scheduler queue-count")
+        }
+        if (EXPECTED_HOLD_COUNT != scheduler.holdCount) {
+          throw new Exception("bad scheduler hold-count")
+        }
+    })
   }
 
   final val DATA_SIZE = 4

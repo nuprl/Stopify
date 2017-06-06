@@ -36,17 +36,18 @@
  */
 
 package org.scalajs.benchmark.sha512
+import scala.scalajs.js.JSApp
 
 /**
  * SHA-512 hashing.
  */
-object SHA512 extends org.scalajs.benchmark.Benchmark {
+object SHA512 extends JSApp {
 
-  override def prefix = "SHA512"
-
-  def run(): Unit = {
-    if (!Test.selfTest(verbose = false))
-      throw new AssertionError("Tests failed")
+  def main(): Unit = {
+    List.range(0, 20).foreach(_ => {
+      if (!Test.selfTest(verbose = false))
+        throw new AssertionError("Tests failed")
+    })
   }
 }
 

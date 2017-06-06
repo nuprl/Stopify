@@ -11,18 +11,19 @@
 package org.scalajs.benchmark.sudoku
 
 import scala.language.implicitConversions
+import scala.scalajs.js.JSApp
 
-object Sudoku extends org.scalajs.benchmark.Benchmark {
+object Sudoku extends JSApp {
 
-  override def prefix = "Sudoku"
-
-  def run {
-    solve(grid1) match {
-      case Some(values) =>
-        if (!grid1Solutions.contains(asString(values)))
-          println("Invalid solution found: " + asString(values))
-      case _ => println("No solution found")
-    }
+  def main(): Unit = {
+    List.range(0, 1000).foreach(_ => {
+      solve(grid1) match {
+        case Some(values) =>
+          if (!grid1Solutions.contains(asString(values)))
+            println("Invalid solution found: " + asString(values))
+        case _ => println("No solution found")
+      }
+    })
   }
 
   def cross(as: String, bs: String) =

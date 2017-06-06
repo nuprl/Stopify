@@ -286,9 +286,9 @@ type CExpr = CLet | ITE | CApp | CCallApp | CApplyApp | CAdminApp;
 const undefExpr: AExpr = t.identifier("undefined");
 
 function cpsExprList(exprs: (t.Expression | t.SpreadElement)[],
-  k: (args: (AExpr | t.SpreadElement)[]) => CExpr,
-  ek: (arg: AExpr) => CExpr,
-  path: NodePath<t.Node>): CExpr {
+  k: (args: (AExpr | t.SpreadElement)[]) => CPS<CExpr,CExpr>,
+  ek: (arg: AExpr) => CPS<CExpr,CExpr>,
+  path: NodePath<t.Node>): CPS<CExpr,CExpr> {
     if (exprs.length === 0) {
       return k([]);
     }
@@ -310,9 +310,9 @@ function cpsExprList(exprs: (t.Expression | t.SpreadElement)[],
   }
 
 function cpsObjMembers(mems: t.ObjectMember[],
-  k: (args: AExpr[][]) => CExpr,
-  ek: (arg: AExpr) => CExpr,
-  path: NodePath<t.Node>): CExpr {
+  k: (args: AExpr[][]) => CPS<CExpr,CExpr>,
+  ek: (arg: AExpr) => CPS<CExpr,CExpr>,
+  path: NodePath<t.Node>): CPS<CExpr,CExpr> {
     if (mems.length === 0) {
       return k([]);
     }
@@ -328,9 +328,9 @@ function cpsObjMembers(mems: t.ObjectMember[],
   }
 
 function cpsExpr(expr: t.Expression,
-  k: (arg: AExpr) => CExpr,
-  ek: (arg: AExpr) => CExpr,
-  path: NodePath<t.Node>): CExpr {
+  k: (arg: AExpr) => CPS<CExpr,CExpr>,
+  ek: (arg: AExpr) => CPS<CExpr,CExpr>,
+  path: NodePath<t.Node>): CPS<CExpr,CExpr> {
     if (expr === null) {
       return k(t.nullLiteral());
     }
@@ -347,103 +347,115 @@ function cpsExpr(expr: t.Expression,
       case 'ArrayExpression':
         return cpsExprList(expr.elements, (args: AExpr[]) => {
           const arr = path.scope.generateUidIdentifier('arr');
-          return new CLet('const', arr, new BArrayLit(args), k(arr));
+          return k(arr).map(c => new CLet('const', arr, new BArrayLit(args), c));
         }, ek, path);
       case "AssignmentExpression":
         return cpsExpr(expr.right, r => {
           const assign = path.scope.generateUidIdentifier('assign');
-          return new CLet('const', assign,
-            new BAssign(expr.operator, expr.left, r), k(r));
+          return k(r).map(c => new CLet('const', assign,
+            new BAssign(expr.operator, expr.left, r), c));
         }, ek, path);
       case 'BinaryExpression':
         return cpsExpr(expr.left, l =>
           cpsExpr(expr.right, r => {
             let bop = path.scope.generateUidIdentifier('bop');
-            return new CLet('const', bop, new BOp2(expr.operator, l, r), k(bop));
+            return k(bop).map(c => new CLet('const', bop, new BOp2(expr.operator, l, r), c));
           }, ek, path), ek, path);
       case 'LogicalExpression':
         if (expr.operator === '&&') {
           return cpsExpr(expr.left, l => {
             const cont = path.scope.generateUidIdentifier('if_cont');
-            return new CLet('const', cont, new BFun(undefined, [cont], k(cont)),
-              new ITE(l, cpsExpr(expr.right, r => {
+            return k(cont).bind(c =>
+              cpsExpr(expr.right, r => {
                 let lop = path.scope.generateUidIdentifier('lop');
-                return new CLet('const', lop, new BLOp(expr.operator, l, r),
-                  new CAdminApp(cont, [lop]));
-              }, ek, path),
-                new CAdminApp(cont, [t.booleanLiteral(false)])));
+                return ret<CExpr,CExpr>(new CLet('const', lop, new BLOp(expr.operator,
+                  l, r), new CAdminApp(cont, [lop])));
+              }, ek, path).map(r =>
+                new CLet('const', cont, new BFun(undefined, [cont], c),
+                  new ITE(l, r, new CAdminApp(cont, [t.booleanLiteral(false)])))));
           }, ek, path);
         } else {
           return cpsExpr(expr.left, l => {
             const cont = path.scope.generateUidIdentifier('if_cont');
-            return new CLet('const', cont, new BFun(undefined, [cont], k(cont)),
-              new ITE(l, new CAdminApp(cont, [t.booleanLiteral(true)]),
-                cpsExpr(expr.right, r => {
-                  let lop = path.scope.generateUidIdentifier('lop');
-                  return new CLet('const', lop, new BLOp(expr.operator, l, r),
-                    new CAdminApp(cont, [lop]));
-                }, ek, path)));
+            return k(cont).bind(c =>
+              cpsExpr(expr.right, r => {
+                let lop = path.scope.generateUidIdentifier('lop');
+                return ret<CExpr,CExpr>(new CLet('const', lop, new BLOp(expr.operator,
+                  l, r), new CAdminApp(cont, [lop])));
+              }, ek, path).map(r =>
+                new CLet('const', cont, new BFun(undefined, [cont], c),
+                  new ITE(l, new CAdminApp(cont, [t.booleanLiteral(true)]), r))));
           }, ek, path);
         }
       case 'ConditionalExpression':
         return cpsExpr(expr.test, tst => {
-          const cont = path.scope.generateUidIdentifier('if_cont');
-          return new CLet('const', cont, new BFun(undefined, [cont], k(cont)),
-            new ITE(tst, cpsExpr(expr.consequent, v => new CAdminApp(cont, [v]), ek, path),
-              cpsExpr(expr.alternate, v => new CAdminApp(cont, [v]), ek, path)));
+          const cont = path.scope.generateUidIdentifier('cond_cont');
+          return k(cont).bind(cond_cont =>
+            cpsExpr(expr.consequent, v => ret<CExpr,CExpr>(new CAdminApp(cont, [v])), ek, path)
+            .bind(consequent =>
+              cpsExpr(expr.alternate, v => ret<CExpr,CExpr>(new CAdminApp(cont, [v])), ek, path)
+              .map(alternate =>
+                new CLet('const', cont, new BAdminFun(undefined, [cont], cond_cont),
+                  new ITE(tst, consequent, alternate)))));
         }, ek, path);
       case 'UnaryExpression':
         return cpsExpr(expr.argument, v => {
           let unop = path.scope.generateUidIdentifier('unop');
-          return new CLet('const', unop, new BOp1(expr.operator, v), k(unop));
+          return k(unop).map(c => new CLet('const', unop, new BOp1(expr.operator, v), c));
         }, ek, path);
       case "FunctionExpression":
         let func = path.scope.generateUidIdentifier('func');
-        return new CLet('const', func,
-          new BFun(expr.id, <t.Identifier[]>(expr.params),
-            cpsStmt(expr.body,
-              r => new CAdminApp(<t.Identifier>(expr.params[0]), [r]),
-              r => new CAdminApp(<t.Identifier>(expr.params[1]), [r]),
-              path)), k(func));
+        return k(func).bind(c =>
+          cpsStmt(expr.body,
+            r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(expr.params[0]), [r])),
+            r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(expr.params[1]), [r])),
+            path).map(body =>
+              new CLet('const', func,
+                new BFun(expr.id, <t.Identifier[]>expr.params, body), c)));
       case "CallExpression":
         const callee = expr.callee;
         if (t.isMemberExpression(callee) &&
           t.isIdentifier(callee.property)) {
           const bnd = path.scope.generateUidIdentifier('bind');
           return cpsExpr(callee.object, f =>
-            new CLet('const', bnd, bind(f, <t.Identifier>callee.property),
-              cpsExprList(expr.arguments, args => {
-                const kFun = path.scope.generateUidIdentifier('kFun');
-                const kErr = path.scope.generateUidIdentifier('kErr');
-                const r = path.scope.generateUidIdentifier('r');
-                return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
-                  new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
-                    (<t.Identifier>callee.property).name === 'apply' ?
-                    new CApplyApp(f, [kFun, kErr, ...args]) :
-                    (<t.Identifier>callee.property).name === 'call' ?
-                    new CCallApp(f, [kFun, kErr, ...args]) :
-                    new CCallApp(bnd, [kFun, kErr, f, ...args])));
-              }, ek, path)), ek, path);
+            cpsExprList(expr.arguments, args => {
+              const kFun = path.scope.generateUidIdentifier('kFun');
+              const kErr = path.scope.generateUidIdentifier('kErr');
+              const r = path.scope.generateUidIdentifier('r');
+              return k(r).bind(kn =>
+                ek(r).map(ekn =>
+                  new CLet('const', bnd,
+                    bind(f, <t.Identifier>callee.property),
+                    new CLet('const', kFun, new BAdminFun(undefined, [r], kn),
+                      new CLet('const', kErr, new BAdminFun(undefined, [r], ekn),
+                        (<t.Identifier>callee.property).name === 'apply' ?
+                        new CApplyApp(f, [kFun, kErr, ...args]) :
+                        (<t.Identifier>callee.property).name === 'call' ?
+                        new CCallApp(f, [kFun, kErr, ...args]) :
+                        new CCallApp(bnd, [kFun, kErr, f, ...args]))))));
+            }, ek, path), ek, path);
         } else {
           return cpsExpr(callee, f =>
             cpsExprList(expr.arguments, args => {
               const kFun = path.scope.generateUidIdentifier('kFun');
               const kErr = path.scope.generateUidIdentifier('kErr');
               const r = path.scope.generateUidIdentifier('r');
-              return new CLet('const', kFun, new BAdminFun(undefined, [r], k(r)),
-                new CLet('const', kErr, new BAdminFun(undefined, [r], ek(r)),
-                  new CApp(f, [kFun, kErr, ...args])));
+              return k(r).bind(kn =>
+                ek(r).map(ekn =>
+                  new CLet('const', kFun, new BAdminFun(undefined, [r], kn),
+                    new CLet('const', kErr, new BAdminFun(undefined, [r], ekn),
+                      new CApp(f, [kFun, kErr, ...args])))));
             }, ek, path), ek, path);
         }
       case 'MemberExpression':
         return cpsExpr(expr.object, o =>
           cpsExpr(expr.property, p => {
             const obj = path.scope.generateUidIdentifier('obj');
-            return new CLet('const', obj, new BGet(o, p, expr.computed), k(obj));
+            return k(obj).map(c => new CLet('const', obj, new BGet(o, p, expr.computed), c));
           }, ek, path), ek, path);
       case 'NewExpression':
         const tmp = path.scope.generateUidIdentifier('new');
-        return new CLet('const', tmp, expr, k(tmp));
+        return k(tmp).map(c => new CLet('const', tmp, expr, c));
       case 'ObjectExpression':
         return cpsObjMembers(<t.ObjectMember[]>expr.properties,
           (mems: AExpr[][]) => {
@@ -453,32 +465,32 @@ function cpsExpr(expr: t.Expression,
               const [id, v] = item;
               fields.set(id, v);
             });
-            return new CLet('const', obj, new BObj(fields), k(obj));
+            return k(obj).map(c => new CLet('const', obj, new BObj(fields), c));
           },
           ek,
           path);
       case 'SequenceExpression':
         return cpsExprList(expr.expressions, (vs: AExpr[]) => {
           const seq = path.scope.generateUidIdentifier('seq');
-          return new CLet('const', seq, new BSeq(vs), k(seq));
+          return k(seq).map(c => new CLet('const', seq, new BSeq(vs), c));
         }, ek, path);
       case 'ThisExpression':
         const ths = path.scope.generateUidIdentifier('this');
-        return new CLet('const', ths, new BThis(), k(ths));
+        return k(ths).map(c => new CLet('const', ths, new BThis(), c));
       case 'UpdateExpression':
         return cpsExpr(expr.argument, (v: AExpr) => {
           const tmp = path.scope.generateUidIdentifier('update');
-          return new CLet('const', tmp,
-            new BIncrDecr(expr.operator, v, expr.prefix), k(tmp));
+          return k(tmp).map(c => new CLet('const', tmp,
+            new BIncrDecr(expr.operator, v, expr.prefix), c));
         }, ek, path);
     }
     throw new Error(`${expr.type} not yet implemented`);
   }
 
 function cpsStmt(stmt: t.Statement,
-  k: (arg: AExpr) => CExpr,
-  ek: (arg: AExpr) => CExpr,
-  path: NodePath<t.Node>): CExpr {
+  k: (arg: AExpr) => CPS<CExpr,CExpr>,
+  ek: (arg: AExpr) => CPS<CExpr,CExpr>,
+  path: NodePath<t.Node>): CPS<CExpr,CExpr> {
     switch (stmt.type) {
       case "BlockStatement": {
         let [head, ...tail] = stmt.body;
@@ -493,7 +505,7 @@ function cpsStmt(stmt: t.Statement,
       }
       case "BreakStatement":
         return cpsExpr(stmt.label, label =>
-          new CAdminApp(label, [undefExpr]), ek, path);
+          ret<CExpr,CExpr>(new CAdminApp(label, [undefExpr])), ek, path);
       case "EmptyStatement":
         return k(undefExpr);
       case "ExpressionStatement":
@@ -502,10 +514,13 @@ function cpsStmt(stmt: t.Statement,
       case "IfStatement":
         return cpsExpr(stmt.test, tst => {
           const cont = path.scope.generateUidIdentifier('if_cont');
-          return new CLet('const', cont, new BAdminFun(undefined, [cont],
-            k(cont)), new ITE(tst,
-              cpsStmt(stmt.consequent, v => new CAdminApp(cont, [v]), ek, path),
-              cpsStmt(stmt.alternate, v => new CAdminApp(cont, [v]), ek, path)));
+          return k(cont).bind(if_cont =>
+            cpsStmt(stmt.consequent, v => ret<CExpr,CExpr>(new CAdminApp(cont, [v])), ek, path)
+            .bind(consequent =>
+              cpsStmt(stmt.alternate, v => ret<CExpr,CExpr>(new CAdminApp(cont, [v])), ek, path)
+              .map(alternate =>
+                new CLet('const', cont, new BAdminFun(undefined, [cont], if_cont),
+                  new ITE(tst, consequent, alternate)))));
         }, ek, path);
       case "LabeledStatement": {
         const kErr = path.scope.generateUidIdentifier('kErr');
@@ -516,12 +531,11 @@ function cpsStmt(stmt: t.Statement,
       }
       case "ReturnStatement":
         let returnK = (r: AExpr) =>
-          new CAdminApp(<t.Identifier>(<ReturnStatement>stmt).kArg, [r]);
-        return cpsExpr(stmt.argument, r =>
-          returnK(r), ek, path);
+          ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(<ReturnStatement>stmt).kArg, [r]));
+        return cpsExpr(stmt.argument, returnK, ek, path);
       case 'ThrowStatement':
         return cpsExpr(stmt.argument, ek, v =>
-          new CAdminApp(v, [undefExpr]), path);
+          ret<CExpr,CExpr>(new CAdminApp(v, [undefExpr])), path);
       case 'TryStatement':
         const kFun = path.scope.generateUidIdentifier('kFun');
         const kErr = path.scope.generateUidIdentifier('kErr');
@@ -529,8 +543,8 @@ function cpsStmt(stmt: t.Statement,
           k : (v: AExpr) => cpsStmt(stmt.finalizer, k, ek, path);
         const err = stmt.handler === null ?
           ek : (e: AExpr) =>
-          new CLet('const', stmt.handler.param, new BAtom(e),
-            cpsStmt(stmt.handler.body, fin, ek, path));
+          cpsStmt(stmt.handler.body, fin, ek, path).map(c =>
+            new CLet('const', stmt.handler.param, new BAtom(e), c));
         return cpsExpr(t.callExpression(t.functionExpression(undefined,
           [kFun, kErr],
           stmt.block), []), fin, err, path);
@@ -541,12 +555,12 @@ function cpsStmt(stmt: t.Statement,
           return k(undefExpr);
         } else if (tail === []) {
           return cpsExpr(head.init, v =>
-            new CLet(stmt.kind, <t.Identifier>head.id, new BAtom(v), k(undefExpr)),
+            k(undefExpr).map(c => new CLet(stmt.kind, <t.Identifier>head.id, new BAtom(v), c)),
             ek, path);
         } else {
           return cpsExpr(head.init, v =>
-            new CLet(stmt.kind, <t.Identifier>head.id, new BAtom(v),
-              cpsStmt(t.variableDeclaration(stmt.kind, tail), k, ek, path)),
+            cpsStmt(t.variableDeclaration(stmt.kind, tail), k, ek, path).map(c =>
+              new CLet(stmt.kind, <t.Identifier>head.id, new BAtom(v), c)),
             ek, path);
         }
       }
@@ -624,8 +638,8 @@ const cpsExpression : Visitor = {
     enter(path: NodePath<t.Program>): void {
       const { body } = path.node;
       const cexpr = cpsStmt(t.blockStatement(body),
-        v => new CAdminApp(t.identifier('onDone'), [v]),
-        v => new CAdminApp(t.identifier('onError'), [v]), path);
+        v => ret<CExpr,CExpr>(new CAdminApp(t.identifier('onDone'), [v])),
+        v => ret<CExpr,CExpr>(new CAdminApp(t.identifier('onError'), [v])), path).apply(x => x);
 
       const onDone = t.identifier('onDone');
       const onError = t.identifier('onError');

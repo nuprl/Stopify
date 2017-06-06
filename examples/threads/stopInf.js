@@ -1,7 +1,8 @@
 // Move this file to the root of the project to make it run properly.
 
 const yieldStopify = require('../built/src/stopifyYield').yieldStopify;
-const cpsStopify = require('../built/src/stopifyCPSEval.js').cpsStopify;
+const cpsStopify = require('../built/src/stopifyCPSEval').cpsStopify;
+const tcpsStopify = require('../built/src/stopifyCPSTrampoline').trampolinedCpsStopify;
 const StopWrapper = require('../built/src/helpers').StopWrapper;
 const process = require('process')
 
@@ -14,7 +15,7 @@ while(true) {
 
 const sw = new StopWrapper();
 
-const stoppable = yieldStopify(code, sw.isStop, sw.stop);
+const stoppable = tcpsStopify(code, sw.isStop, sw.stop);
 
 stoppable.run(x => console.log(x))
 const startTime = process.hrtime()

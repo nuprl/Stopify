@@ -4,14 +4,14 @@
 // before it has been stopified and (2) a message directing execution to stop.
 'use strict';
 
-import { yieldStopify } from '../../src/stopifyYield';
-import { yieldSteppify } from '../../src/steppifyYield';
-import { cpsStopify } from '../../src/stopifyCPSEval';
-import { trampolinedCpsStopify } from '../../src/stopifyCPSTrampoline';
-import { shamStopify } from '../../src/stopifySham';
-import { regeneratorStopify } from '../../src/stopifyRegenerator';
-import { Stoppable, stopify, isStopify } from '../../src/stopifyInterface';
-import { Steppable, steppify, isSteppable } from '../../src/steppifyInterface';
+import { yieldStopify } from '../../src/stopifyImplementation/stopifyYield';
+import { yieldSteppify } from '../../src/stepifyImplementation/steppifyYield';
+import { cpsStopify } from '../../src/stopifyImplementation/stopifyCPSEval';
+import { trampolinedCpsStopify } from '../../src/stopifyImplementation/stopifyCPSTrampoline';
+import { shamStopify } from '../../src/stopifyImplementation/stopifySham';
+import { regeneratorStopify } from '../../src/stopifyImplementation/stopifyRegenerator';
+import { Stoppable, stopify, isStopify } from '../../src/stopifyImplementation/stopifyInterface';
+import { Steppable, steppify, isSteppable } from '../../src/stepifyImplementation/steppifyInterface';
 let stopped = false;
 
 let running: Stoppable | Steppable;
@@ -32,7 +32,7 @@ function transform(f: stopify | steppify, code: string): Stoppable | Steppable {
   } else {
     // TODO(rachit): Implement breakpoints
       return f(code, [], () => stopped, () => stopped = true,
-               (lin) => {
+               (lin: number) => {
                    window.parent.postMessage(lin, '*');
                })
   }

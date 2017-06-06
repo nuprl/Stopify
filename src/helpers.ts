@@ -1,6 +1,6 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
-import * as b from './steppifyInterface';
+import * as b from './stepifyImplementation/steppifyInterface';
 import { SourceMapConsumer } from 'source-map';
 import * as smc from 'convert-source-map';
 
@@ -129,7 +129,7 @@ function parseMapping(code: string) {
   // No match
   if (mapConverter === null) {
     console.log('// No mapping found, using one-to-one map')
-    return new b.LineMapping((line, column) => line);
+    return new b.LineMapping((line: number, column: number) => line);
   } else {
     console.log('// Mapping found')
     const map = new SourceMapConsumer(mapConverter.toObject())

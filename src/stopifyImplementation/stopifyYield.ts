@@ -1,14 +1,14 @@
 import { Stoppable, stopify } from './stopifyInterface';
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 
-import * as desugarAndOr from './desugarAndOr';
-import * as desugarNew from './desugarNew';
-import * as makeBlockStmt from './makeBlockStmt';
-import * as yieldPass from './yield';
-import * as transformMarked from './transformMarked';
-import { transform } from './helpers';
-import * as markKnown from './markKnownFunctions'
-import * as renameC from './renameConstructor'
+import * as desugarAndOr from '../desugarAndOr';
+import * as desugarNew from '../desugarNew';
+import * as makeBlockStmt from '../makeBlockStmt';
+import * as yieldPass from '../yield';
+import * as transformMarked from '../transformMarked';
+import { transform } from '../helpers';
+import * as markKnown from '../markKnownFunctions'
+import * as renameC from '../renameConstructor'
 
 class YieldStopify implements Stoppable {
   private original: string;

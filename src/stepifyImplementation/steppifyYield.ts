@@ -1,14 +1,14 @@
 import { Steppable, steppify } from './steppifyInterface';
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 
-import * as desugarAndOr from './desugarAndOr';
-import * as desugarNew from './desugarNew';
-import * as makeBlockStmt from './makeBlockStmt';
-import * as yieldDebug from './yieldDebug';
-import * as transformMarked from './transformMarked';
-import { transformWithLines } from './helpers';
-import * as markKnown from './markKnownFunctions'
-import * as renameC from './renameConstructor'
+import * as desugarAndOr from '../desugarAndOr';
+import * as desugarNew from '../desugarNew';
+import * as makeBlockStmt from '../makeBlockStmt';
+import * as yieldDebug from '../yieldDebug';
+import * as transformMarked from '../transformMarked';
+import { transformWithLines } from '../helpers';
+import * as markKnown from '../markKnownFunctions'
+import * as renameC from '../renameConstructor'
 
 class YieldSteppify implements Steppable {
   private original: string;

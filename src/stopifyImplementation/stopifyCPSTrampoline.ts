@@ -2,27 +2,26 @@ import {Stoppable, stopify} from './stopifyInterface';
 
 // Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
-import * as desugarLoop from './desugarLoop';
-import * as desugarFunctionDecl from './desugarFunctionDecl';
-import * as desugarNew from './desugarNew';
-import * as desugarSwitch from './desugarSwitch';
-import * as desugarWhileToFunc from './desugarLoopToFunc';
-import * as desugarLabel from './desugarLabel';
-import * as liftVar from './liftVar';
-import * as trampolineApply from './trampolineApply';
+import * as desugarLoop from '../desugarLoop';
+import * as desugarFunctionDecl from '../desugarFunctionDecl';
+import * as desugarNew from '../desugarNew';
+import * as desugarSwitch from '../desugarSwitch';
+import * as desugarWhileToFunc from '../desugarLoopToFunc';
+import * as desugarLabel from '../desugarLabel';
+import * as trampolineApply from '../trampolineApply';
 
 // Call Expression naming transform.
-import * as makeBlockStmt from './makeBlockStmt';
+import * as makeBlockStmt from '../makeBlockStmt';
 
 // CPS transforms.
-import * as addKArg from './addContinuationArg';
-import * as cps from './cpsSyntax';
-import * as applyStop from './stoppableApply';
+import * as addKArg from '../addContinuationArg';
+import * as cps from '../cpsSyntax';
+import * as applyStop from '../stoppableApply';
 
-import * as transformMarked from './transformMarked';
+import * as transformMarked from '../transformMarked';
 
 // Helpers
-import {transform} from './helpers';
+import {transform} from '../helpers';
 
 type MaybeBound = {
   (...args: any[]): any,
@@ -70,7 +69,7 @@ function apply_applyWithK(f: MaybeBound, k: any, ek: any, thisArg: any, args: an
   }
 };
 
-class CPSStopify implements Stoppable {
+class TrampolinedCPSStopify implements Stoppable {
   private original: string;
   transformed: string;
   private isStop: () => boolean;
@@ -83,10 +82,10 @@ class CPSStopify implements Stoppable {
     stop: () => void) {
       this.original = code;
       const plugins = [
-        [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
+        [noArrows, desugarLoop, desugarLabel, desugarFunctionDecl, desugarNew],
         [desugarSwitch, desugarWhileToFunc],
         [makeBlockStmt, addKArg],
-        [cps, applyStop, transformMarked],
+        [cps, applyStop, trampolineApply, transformMarked, ],
       ];
       this.transformed = transform(code, plugins);
 
@@ -103,20 +102,28 @@ class CPSStopify implements Stoppable {
     'use strict';
     const that = this;
     let counter = that.interval;
-    let apply_helper = function (how: any) {
-      return function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
-        if (counter-- === 0) {
-          counter = that.interval;
+
+    function $runTrampolined(f: any) {
+      while(f && f.tramp) {
+        if(counter-- === 0) {
+          counter = that.interval
           setTimeout(_ => {
-            if (that.isStop()) {
+            if(that.isStop()) {
               that.onStop();
             } else {
-              return how(f, k, ek, ...args);
+              return $runTrampolined(f)
             }
-          }, 0);
+          }, 0)
+          break;
         } else {
-          return how(f, k, ek, ...args);
+          f = f.f()
         }
+      }
+    }
+
+    let apply_helper = function (how: any) {
+      return function (f: MaybeBound, k: any, ek: any, ...args: any[]) {
+        return how(f, k, ek, ...args);
       };
     };
     let admin_apply = apply_helper(function (f: MaybeBound, ...args: any[]) {
@@ -149,14 +156,14 @@ class CPSStopify implements Stoppable {
   };
 };
 
-const cpsStopify : stopify = function (code: string,
+const trampolinedCpsStopify : stopify = function (code: string,
   isStop: () => boolean,
-  stop: () => void): CPSStopify {
-    return new CPSStopify(code, isStop, stop);
+  stop: () => void): TrampolinedCPSStopify {
+    return new TrampolinedCPSStopify(code, isStop, stop);
 };
 
-(<any>cpsStopify).isStopify = true;
+(<any>trampolinedCpsStopify).isStopify = true;
 
 export {
-    cpsStopify,
+    trampolinedCpsStopify,
 };

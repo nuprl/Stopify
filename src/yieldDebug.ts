@@ -4,7 +4,7 @@ import { parseExpression } from 'babylon';
 import {
   Transformed, transformed, Tag, OptimizeMark, LineMappingMark
 } from './helpers'
-import { LineMapping } from './steppifyInterface';
+import { LineMapping } from './stepifyImplementation/steppifyInterface';
 
 let lineMapping: LineMapping;
 

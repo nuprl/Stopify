@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-import { yieldStopify } from './src/stopifyYield'
-import { cpsStopify } from './src/stopifyCPSEval'
-import { trampolinedCpsStopify } from './src/stopifyCPSTrampoline'
-import { regeneratorStopify } from './src/stopifyRegenerator'
+import { yieldStopify } from './src/stopifyImplementation/stopifyYield'
+import { cpsStopify } from './src/stopifyImplementation/stopifyCPSEval'
+import { trampolinedCpsStopify } from './src/stopifyImplementation/stopifyCPSTrampoline'
+import { regeneratorStopify } from './src/stopifyImplementation/stopifyRegenerator'
 import { StopWrapper } from './src/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 
 function showUsage() {
-  console.log('Usage: stopify.js -i <filename> -t [cps|yield|regen] [options]');
-  console.log('       stopify.js -s <string> -t [cps|yield|regen] [options]\n');
+  console.log('Usage: stopify.js -i <filename> -t [cps|tcps|yield|regen] [options]');
+  console.log('       stopify.js -s <string> -t [cps|tcps|yield|regen] [options]\n');
   console.log('Options:')
   console.log('  -y, --interval     Set yield interval')
   console.log('  -o, --output       Can be print, eval, benchmark')

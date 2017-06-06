@@ -32,8 +32,6 @@ const noEvalVerifier = require('./src/verifiers/noEvalVerifier');
 
 // Helpers
 import * as h from './src/helpers';
-import {Stoppable} from './src/stopifyInterface';
-import {cpsStopify} from './src/stopifyCPSEval';
 
 function transform(src: string, plugs: any[]) {
     return h.transform(src, plugs);

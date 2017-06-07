@@ -6,7 +6,8 @@ const functionDecl: Visitor = {
   FunctionDeclaration: {
     exit(path: NodePath<t.FunctionDeclaration>) {
       const { id, params, body } = path.node;
-      path.replaceWith(letExpression(id, t.functionExpression(id, params, body)));
+      path.replaceWith(letExpression(id,
+        t.functionExpression(id, params, body), 'var'));
     }
   }
 };

@@ -1,0 +1,14 @@
+# ASSUMPTION: Each folder represents a set of benchmarks to be run.
+DIRS = $(shell find . -maxdepth 1 -mindepth 1 -type d)
+LOGS = $(DIRS:%=%-times.csv)
+ENGINE=/usr/local/bin/node
+RUNNER = "./runner.sh"
+
+time: $(LOGS)
+
+# NOTE(rachit): This will always run.
+%-times.csv: %
+	$(RUNNER) $(ENGINE) "node" $<
+
+# Rule to debug variables.
+print-%  : ; @echo $* = $($*)

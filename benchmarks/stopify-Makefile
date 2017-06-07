@@ -1,27 +1,43 @@
 # Get all javascript files in the directory
+# NOTE(rachit): Any new directory added here should end with `-stopify`
+# to be considered as a benchmarking directory.
 FILES = $(wildcard *.js)
-CPS = $(FILES:%.js=cps/%-cps.js)
-TCPS = $(FILES:%.js=tcps/%-tcps.js)
-YIELD = $(FILES:%.js=yield/%-yield.js)
+CPS = $(FILES:%.js=cps-stopify/%.js)
+TCPS = $(FILES:%.js=tcps-stopify/%.js)
+YIELD = $(FILES:%.js=yield-stopify/%.js)
 
-all: make-base
+all: move-to-base
+
+base-stopify:
+	mkdir -p base-stopify;
 
 # Move all files into base directory
-make-base: $(CPS) $(YIELD) $(TCPS)
-	mkdir -p base;
-	mv $(FILES) base
+move-to-base: $(CPS) $(YIELD) $(TCPS) base-stopify
+ifneq "$(FILES)" ""
+	mv $(FILES) 'base-stopify/'
+endif
 
-make-stopify-dirs:
-	mkdir -p cps yield tcps
+make-stopify-dirs: cps yield tcps
 
-cps/%-cps.js: %.js make-stopify-dirs
+cps:
+	mkdir -p cps-stopify
+
+yield:
+	mkdir -p yield-stopify
+
+tcps:
+	mkdir -p tcps-stopify
+
+cps-stopify/%.js: %.js make-stopify-dirs
 	stopify -i $< -t cps > $@
 
-tcps/%-tcps.js: %.js make-stopify-dirs
+tcps-stopify/%.js: %.js make-stopify-dirs
 	stopify -i $< -t tcps > $@
 
-yield/%-yield.js: %.js make-stopify-dirs
+yield-stopify/%.js: %.js make-stopify-dirs
 	stopify -i $< -t yield > $@
 
 # Rule to debug variables.
 print-%  : ; @echo $* = $($*)
+
+.PHONY: move-to-base all base

@@ -350,11 +350,11 @@ function cpsExpr(expr: t.Expression,
           return k(arr).map(c => new CLet('const', arr, new BArrayLit(args), c));
         }, ek, path);
       case "AssignmentExpression":
-        return cpsExpr(expr.right, r => {
-          const assign = path.scope.generateUidIdentifier('assign');
-          return k(r).map(c => new CLet('const', assign,
-            new BAssign(expr.operator, expr.left, r), c));
-        }, ek, path);
+        const assign = path.scope.generateUidIdentifier('assign');
+        return k(assign).bind(c =>
+          cpsExpr(expr.right, r =>
+            ret<CExpr,CExpr>(new CLet('const', assign,
+              new BAssign(expr.operator, expr.left, r), c)), ek, path));
       case 'BinaryExpression':
         return cpsExpr(expr.left, l =>
           cpsExpr(expr.right, r => {
@@ -407,13 +407,14 @@ function cpsExpr(expr: t.Expression,
         }, ek, path);
       case "FunctionExpression":
         let func = path.scope.generateUidIdentifier('func');
-        return k(func).bind(c =>
-          cpsStmt(expr.body,
-            r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(expr.params[0]), [r])),
-            r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(expr.params[1]), [r])),
-            path).map(body =>
+        return cpsStmt(expr.body,
+          r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(expr.params[0]), [r])),
+          r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(expr.params[1]), [r])),
+          path).bind(body =>
+            k(func).map(e =>
               new CLet('const', func,
-                new BFun(expr.id, <t.Identifier[]>expr.params, body), c)));
+                new BFun(expr.id, <t.Identifier[]>expr.params, body),
+                e)));
       case "CallExpression":
         const callee = expr.callee;
         if (t.isMemberExpression(callee) &&

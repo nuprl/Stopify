@@ -4,18 +4,23 @@ CPS = $(FILES:%.js=cps/%-cps.js)
 TCPS = $(FILES:%.js=tcps/%-tcps.js)
 YIELD = $(FILES:%.js=yield/%-yield.js)
 
-all: make-cps-dirs $(CPS) $(YIELD) $(TCPS)
+all: make-base
 
-make-cps-dirs:
+# Move all files into base directory
+make-base: $(CPS) $(YIELD) $(TCPS)
+	mkdir -p base;
+	mv $(FILES) base
+
+make-stopify-dirs:
 	mkdir -p cps yield tcps
 
-cps/%-cps.js: %.js
+cps/%-cps.js: %.js make-stopify-dirs
 	stopify -i $< -t cps > $@
 
-tcps/%-tcps.js: %.js
+tcps/%-tcps.js: %.js make-stopify-dirs
 	stopify -i $< -t tcps > $@
 
-yield/%-yield.js: %.js
+yield/%-yield.js: %.js make-stopify-dirs
 	stopify -i $< -t yield > $@
 
 # Rule to debug variables.

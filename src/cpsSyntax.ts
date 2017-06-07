@@ -363,29 +363,31 @@ function cpsExpr(expr: t.Expression,
           }, ek, path), ek, path);
       case 'LogicalExpression':
         if (expr.operator === '&&') {
-          return cpsExpr(expr.left, l => {
-            const cont = path.scope.generateUidIdentifier('if_cont');
-            return k(cont).bind(c =>
-              cpsExpr(expr.right, r => {
-                let lop = path.scope.generateUidIdentifier('lop');
-                return ret<CExpr,CExpr>(new CLet('const', lop, new BLOp(expr.operator,
-                  l, r), new CAdminApp(cont, [lop])));
-              }, ek, path).map(r =>
-                new CLet('const', cont, new BFun(undefined, [cont], c),
-                  new ITE(l, r, new CAdminApp(cont, [l])))));
-          }, ek, path);
+          const if_cont = path.scope.generateUidIdentifier('if_cont');
+          return k(if_cont).bind(c =>
+            cpsExpr(expr.left, l =>
+              cpsExpr(expr.right, r =>
+                ret<CExpr,CExpr>(new CAdminApp(if_cont, [r])),
+                ek, path).map(r =>
+                  new CLet('const', if_cont,
+                    new BAdminFun(undefined, [if_cont], c),
+                    new ITE(l,
+                      r,
+                      new CAdminApp(if_cont, [t.booleanLiteral(false)])))),
+              ek, path));
         } else {
-          return cpsExpr(expr.left, l => {
-            const cont = path.scope.generateUidIdentifier('if_cont');
-            return k(cont).bind(c =>
-              cpsExpr(expr.right, r => {
-                let lop = path.scope.generateUidIdentifier('lop');
-                return ret<CExpr,CExpr>(new CLet('const', lop, new BLOp(expr.operator,
-                  l, r), new CAdminApp(cont, [lop])));
-              }, ek, path).map(r =>
-                new CLet('const', cont, new BFun(undefined, [cont], c),
-                  new ITE(l, new CAdminApp(cont, [l]), r))));
-          }, ek, path);
+          const if_cont = path.scope.generateUidIdentifier('if_cont');
+          return k(if_cont).bind(c =>
+            cpsExpr(expr.left, l =>
+              cpsExpr(expr.right, r =>
+                ret<CExpr,CExpr>(new CAdminApp(if_cont, [r])),
+                ek, path).map(r =>
+                  new CLet('const', if_cont,
+                    new BAdminFun(undefined, [if_cont], c),
+                    new ITE(l,
+                      new CAdminApp(if_cont, [l]),
+                      r))),
+              ek, path));
         }
       case 'ConditionalExpression':
         return cpsExpr(expr.test, tst => {

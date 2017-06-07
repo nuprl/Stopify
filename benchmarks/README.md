@@ -28,5 +28,5 @@ The Benchmarking harness produces individual files
 testfile and the second column as time in seconds.
 
 ### Running benchmarking harness
-To run the harness: `make -k`
-To reset all directories `make clean -k`
+To run the harness: `make -k j4`
+To reset all directories `make clean -k j4`

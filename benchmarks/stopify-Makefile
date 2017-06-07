@@ -1,0 +1,22 @@
+# Get all javascript files in the directory
+FILES = $(wildcard *.js)
+CPS = $(FILES:%.js=cps/%-cps.js)
+TCPS = $(FILES:%.js=tcps/%-tcps.js)
+YIELD = $(FILES:%.js=yield/%-yield.js)
+
+all: make-cps-dirs $(CPS) $(YIELD) $(TCPS)
+
+make-cps-dirs:
+	mkdir -p cps yield tcps
+
+cps/%-cps.js: %.js
+	stopify -i $< -t cps > $@
+
+tcps/%-tcps.js: %.js
+	stopify -i $< -t tcps > $@
+
+yield/%-yield.js: %.js
+	stopify -i $< -t yield > $@
+
+# Rule to debug variables.
+print-%  : ; @echo $* = $($*)

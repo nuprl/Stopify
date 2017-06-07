@@ -43,8 +43,7 @@ export function retainValueTest(org: string, plugs: any[][]) {
 export function stopifyTest(srcFile: string, transform: string) {
   const runner = spawnSync(
     './bin/stopify',
-    ['-i', srcFile, '-t', transform, '-o', 'eval', '-y', '500', '--notime'],
-    { timeout: 5000 }
+    ['-i', srcFile, '-t', transform, '-o', 'eval', '-y', '500', '--notime']
   )
 
   assert.equal(runner.status, 0, (runner.stderr || "").toString());

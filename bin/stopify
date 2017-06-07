@@ -1,5 +1,3 @@
 #!/bin/bash
 
-WD=$(pwd)
-
-node --harmony_tailcalls "$WD/built/src/stopify.js" $@
+node --harmony_tailcalls "`npm root -g`/Stopify/built/src/stopify.js" $@

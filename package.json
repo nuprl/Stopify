@@ -1,5 +1,5 @@
 {
-  "name": "babel-anf-transform",
+  "name": "Stopify",
   "version": "0.0.1",
   "description": "babel plugin to transform javascript into A Normal Form",
   "main": "index.js",

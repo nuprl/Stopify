@@ -1,0 +1,16 @@
+# Get all javascript files in the directory
+# TODO(rachit): Implement this.
+FILES = $(wildcard *.js)
+COMPILED = $(FILES:%.js=%-cps.js)
+CC=wc -l
+
+all: make-cps-dir $(COMPILED)
+
+make-cps-dir:
+	mkdir -p cps
+
+%-cps.js: %.js
+	$(CC) $^
+
+# Rule to debug variables.
+print-%  : ; @echo $* = $($*)

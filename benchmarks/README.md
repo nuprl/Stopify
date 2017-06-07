@@ -23,3 +23,7 @@ In case you have to modify the benchmark files, create a folder called
 The Benchmarking harness produces individual files
 `<language-name>-<transform>.csv` with the first column as the name of the
 testfile and the second column as time in seconds.
+
+### Running benchmarking harness
+To run the harness: `make -k`
+To reset all directories `make clean -k`

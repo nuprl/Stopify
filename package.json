@@ -34,7 +34,7 @@
     "typescript": "^2.2.2"
   },
   "scripts": {
-    "build": "./node_modules/.bin/tsc || true",
+    "build": "./node_modules/.bin/tsc || true && npm link",
     "build-webpage": "npm run build && ./node_modules/.bin/browserify built/demo-webpage/paws-client/container.js -o demo-webpage/html/container.js && ./node_modules/.bin/browserify built/demo-webpage/paws-client/runner.js -o demo-webpage/html/runner.js && cp -R ./demo-webpage/html built/demo-webpage/",
     "test": "npm run build && ./node_modules/.bin/mocha built/test/ || true"
   },
@@ -48,5 +48,8 @@
     "fs-extra": "^3.0.0",
     "stream-to-string": "^1.1.0",
     "tmp": "0.0.31"
+  },
+  "bin": {
+    "stopify": "bin/stopify"
   }
 }

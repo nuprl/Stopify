@@ -1,3 +1,6 @@
+### Requirements
+Run `npm run build` and `npm link`. Make sure that `stopify` is linked correctly.
+
 ### Benchmarks
 
 To add a new source language to the benchmarking framework, do the following:

@@ -477,12 +477,13 @@ function cpsExpr(expr: t.Expression,
       case 'ThisExpression':
         const ths = path.scope.generateUidIdentifier('this');
         return k(ths).map(c => new CLet('const', ths, new BThis(), c));
-      case 'UpdateExpression':
-        return cpsExpr(expr.argument, (v: AExpr) => {
-          const tmp = path.scope.generateUidIdentifier('update');
-          return k(tmp).map(c => new CLet('const', tmp,
-            new BIncrDecr(expr.operator, v, expr.prefix), c));
-        }, ek, path);
+      case 'UpdateExpression': {
+        const tmp = path.scope.generateUidIdentifier('update');
+        return k(tmp).bind(c =>
+          cpsExpr(expr.argument, (v: AExpr) =>
+            ret<CExpr,CExpr>(new CLet('const', tmp,
+              new BIncrDecr(expr.operator, v, expr.prefix), c)), ek, path));
+      }
     }
     throw new Error(`${expr.type} not yet implemented`);
   }

@@ -19,6 +19,7 @@ build: $(BUILD) $(BUILD:%=%/cps-makefile)
 # Compile all source languages using cps
 cps: $(BUILD:%=%/cps)
 
+# Run cps-Makefile.
 %/js-build/cps:  %/js-build/cps-makefile
 	$(MAKE) -C $(patsubst %/cps, %, $@) -f cps-Makefile
 

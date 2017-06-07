@@ -1,4 +1,3 @@
-Makefile
 _build
 *.native
 *.byte

@@ -7,6 +7,7 @@ STOPIFYMK = "./stopify-Makefile"
 RUNNER = "./runner.sh"
 RUNNERMK = "./runner-Makefile"
 
+.PHONY: all build stopify clean run
 all: build stopify
 
 # Compile all source language programs to javascript.

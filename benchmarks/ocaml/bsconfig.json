@@ -4,8 +4,7 @@
   {
     "dir": ".",
     "subdirs": [
-        "almabench",
-        "boyer"
+      "./benchmark-files"
     ],
     "files": [
       "fixture.ml"

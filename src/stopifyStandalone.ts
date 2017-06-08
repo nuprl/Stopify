@@ -1,4 +1,6 @@
-import { yieldStopify } from './stopifyStandaloneImpl/stopifyYield'
+import {
+  yieldStopify, yieldStopifyPrint
+} from './stopifyStandaloneImpl/stopifyYield'
 import { StopWrapper } from './helpers'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -36,40 +38,72 @@ if (transform === undefined) {
   showUsage();
 }
 
-let stopifyFunc;
-const sw: StopWrapper = new StopWrapper();
-switch(transform) {
-  case 'yield':
-    stopifyFunc = yieldStopify
-    break;
-  default:
-    throw new Error(`Unknown transform: ${transform}`)
+
+let interval = argv.y || argv.yieldInterval
+if (interval !== undefined) {
+  let interval = parseInt(argv.y || argv.yieldInterval)
+  if (isNaN(interval)) {
+    console.log(`// Unknown interval: ${interval}, using 10.`)
+    interval = 10;
+  }
 }
 
-const compileStart = process.hrtime();
-const stoppable = stopifyFunc(code, sw.isStop, sw.stop)
-const compileEnd = process.hrtime(compileStart);
-const compileTime = (compileEnd[0] * 1e9 + compileEnd[1]) * 1e-9
-
-const yieldInterval = argv.y || argv.yieldInterval
-if (yieldInterval !== undefined) {
-  let interval = parseInt(argv.y || argv.yieldInterval)
-  if (isNaN(interval)) throw new Error(`Unknown interval: ${yieldInterval}`)
-  stoppable.setInterval(interval);
+function timeInSecs(time: number[]): string {
+  return `${time[0] + time[1] * 1e-9}`
 }
 
 switch(output) {
   case 'print': {
-    console.log(stoppable.transformed)
-    console.log(`// Compilation time: ${compileTime}s`)
+    let stopifyFunc;
+    switch(transform) {
+      case 'yield':
+        stopifyFunc = yieldStopifyPrint
+        break;
+      default:
+        throw new Error(`Unknown transform: ${transform}`)
+    }
+    let time = "";
+    let prog;
+    if (process) {
+      const stime = process.hrtime()
+      prog = stopifyFunc(code)
+      time = timeInSecs(process.hrtime(stime))
+    } else {
+      prog = stopifyFunc(code)
+    }
+    console.log(prog)
+    console.log(`// Compilation time: ${time}s`)
     break;
   }
   case 'eval': {
+    let stopifyFunc;
+    switch(transform) {
+      case 'yield':
+        stopifyFunc = yieldStopify
+        break;
+      default:
+        throw new Error(`Unknown transform: ${transform}`)
+    }
+    let ctime = "";
+    let prog;
+    if (process) {
+      const stime = process.hrtime()
+      prog = stopifyFunc(code)
+      ctime = timeInSecs(process.hrtime(stime))
+      console.log(`// Compilation time: ${ctime}`)
+    } else {
+      prog = stopifyFunc(code)
+    }
+    const sw: StopWrapper = new StopWrapper();
+    let rtime = "";
+    if (process) {
+      const stime = process.hrtime()
+      prog(sw.isStop, sw.onStop, () => {}, interval)
+      const rtime = process.hrtime(stime)
+      console.log(`// Runtime : ${timeInSecs(rtime)}`)
+    }
     break;
   }
   default:
-    console.log(`Unknown output format: ${output}`)
-    console.log(stoppable.transformed)
-    console.log(`// Compilation time: ${compileTime}s`)
     break;
 }

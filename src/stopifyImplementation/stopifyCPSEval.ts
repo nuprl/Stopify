@@ -18,7 +18,6 @@ import * as makeBlockStmt from '../makeBlockStmt';
 import * as addKArg from '../addContinuationArg';
 import * as cps from '../cpsSyntax';
 import * as applyStop from '../stoppableApply';
-import * as cpsRuntime from '../cpsRuntime';
 
 import * as transformMarked from '../transformMarked';
 

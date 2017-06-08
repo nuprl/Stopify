@@ -235,7 +235,7 @@ export class CLet extends Node {
   type: 'let';
 
   constructor(public kind: kind,
-    public x: t.LVal,
+    public x: t.Identifier,
     public named: BExpr,
     public body: CExpr) {
     super();

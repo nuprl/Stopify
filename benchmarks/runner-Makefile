@@ -1,14 +1,51 @@
+# NOTE(rachit): This makefile is copied into the js-builds directory AFTER
+# the stopify-Makefile is done running. Therefore, it assumes that the
+# directory only contains sub-directories containing javascript files to
+# be benchmarked with all its engines.
+
 # ASSUMPTION: Each folder represents a set of benchmarks to be run.
-DIRS = $(shell find . -maxdepth 1 -mindepth 1 -type d)
+# For example if js-build/ contains `cps, yield, and tcps`, the rules
+# cps-times.csv, yield-times.csv, tcps-times.csv will be triggered.
+DIRNAMES = $(shell find . -maxdepth 1 -mindepth 1 -type d)
+DIRS = $(DIRNAMES:./%=%)
 LOGS = $(DIRS:%=%-times.csv)
-ENGINE=/usr/local/bin/node
 RUNNER = "./runner.sh"
 
-time: $(LOGS)
+# Add new JavaScript engines HERE.
+# Add the absolute path to the JS-Engine here:
+ENGINEPATH = /usr/local/bin/node
+# Add the name of the JS-engine here (shoud not contain ':'):
+# Note that the index must coorespond to the engine path.
+ENGINENAME = node
+# ============================================================================
+ENGINEDATA = $(join $(addsuffix :, $(ENGINEPATH)), $(ENGINENAME))
 
-# NOTE(rachit): This will always run.
-%-times.csv: %
-	$(RUNNER) $(ENGINE) "node" $<
+# GETTERS
+GET_EPATH = $(word 1,$(subst :, ,$1))
+GET_ENAME = $(word 2,$(subst :, ,$1))
+# ============================================================================
+
+# $(1) is the path of the javascript engine
+# $(2) is the name of the javascript engine.
+# $(3) is the name of the transform.
+define RUNNER_template =
+$(2)-$(3)-times.csv:
+	echo $$(RUNNER) $$(1) $$(2)
+endef
+
+$(foreach dir, $(DIRS), \
+	$(foreach edata, $(ENGINEDATA), \
+		$(eval $(call RUNNER_template, \
+							 $(call GET_EPATH,$(edata)), \
+							 $(call GET_ENAME,$(edata)), \
+							 $dir))))
+
+time: \
+	$(foreach dir, $(DIRS), \
+		$(foreach edata, $(ENGINEDATA), \
+			$(call GET_ENAME,$(edata))-$(dir)-times.csv))
+	echo $^
 
 # Rule to debug variables.
 print-%  : ; @echo $* = $($*)
+

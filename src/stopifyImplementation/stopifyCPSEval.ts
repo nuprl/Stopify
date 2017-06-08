@@ -43,8 +43,7 @@ class CPSStopify implements Stoppable {
         [makeBlockStmt, addKArg],
         [cps, applyStop, transformMarked],
       ];
-    const cpsHelpers = `
-"use strict";
+    const cpsHelpers = `"use strict";
 
 let that = this;
 let counter = that.interval;
@@ -115,7 +114,7 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
   return apply_applyWithK(f, k, ek, thisArg, args);
 });
 
-    `;
+`;
       this.transformed = cpsHelpers + transform(code, plugins);
 
       if(this.transformed.length < code.length) {

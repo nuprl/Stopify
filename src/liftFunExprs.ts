@@ -6,6 +6,7 @@ import {
   CCallApp, CApplyApp, CAdminApp, ITE, CLet
 } from './cexpr';
 import {CPS, ret} from './cpsMonad';
+import {diff, intersect} from './helpers';
 
 type T = {
   body: CExpr,
@@ -21,16 +22,15 @@ function bindFuns(x: T): CExpr {
 }
 
 export function raiseFuns(expr: CExpr): CExpr {
-  function crec(locals: t.Identifier[], cexpr: CExpr): T {
+  function crec(locals: Set<t.Identifier>, cexpr: CExpr): T {
     switch (cexpr.type) {
       case 'let': {
         const named = cexpr.named;
         switch (named.type) { 
           case 'BFun': {
-            const { body, funs: funsF } = crec([...named.args, cexpr.x], named.body);
-            const { body: c, funs: funsL } = crec([...locals, cexpr.x], cexpr.body);
-            function foo() { return false; }
-            if (foo()) {
+            const { body, funs: funsF } = crec(new Set(named.args).add(cexpr.x), named.body);
+            const { body: c, funs: funsL } = crec(new Set(locals).add(cexpr.x), cexpr.body);
+            if (intersect(diff(body.freeVars, new Set(named.args).add(cexpr.x)), locals).size === 0) {
               return {
                 body: c,
                 funs: [
@@ -52,7 +52,7 @@ export function raiseFuns(expr: CExpr): CExpr {
             }
           }
           default:
-            const { body, funs } = crec([...locals, cexpr.x], cexpr.body);
+            const { body, funs } = crec(new Set(locals).add(cexpr.x), cexpr.body);
             return {
               body: new CLet(cexpr.kind, cexpr.x, cexpr.named, cexpr.body),
               funs: funs
@@ -75,5 +75,5 @@ export function raiseFuns(expr: CExpr): CExpr {
     }
   }
   
-  return bindFuns(crec([], expr));
+  return bindFuns(crec(new Set(), expr));
 }

@@ -162,6 +162,18 @@ function transformWithLines(src: string, plugs: any[][], breakPoints: number[]):
   return code === undefined ? "" : code;
 }
 
+function union<A>(a: Set<A>, b: Set<A>): Set<A> {
+  return new Set([...a].reduce((s, x) => s.add(x), new Set()));
+}
+
+function diff<A>(a: Set<A>, b: Set<A>): Set<A> {
+  return new Set([...a].filter(x => !b.has(x)));
+}
+
+function intersect<A>(a: Set<A>, b: Set<A>): Set<A> {
+  return new Set([...a].filter(x => b.has(x)));
+}
+
 export {
   hoisted,
   administrative,
@@ -176,5 +188,8 @@ export {
   transform,
   transformWithLines,
   StopWrapper,
+  union,
+  diff,
+  intersect,
 };
 

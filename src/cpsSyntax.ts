@@ -21,16 +21,6 @@ import {raiseFuns} from './liftFunExprs';
 
 const undefExpr: AExpr = t.identifier("undefined");
 
-function bind(obj: AExpr, prop: AExpr): FreeVars<t.ConditionalExpression> {
-  const cond : any = t.conditionalExpression(t.memberExpression(t.memberExpression(obj, prop),
-    t.identifier('$isTransformed')),
-    t.memberExpression(obj, prop),
-    directApply(t.callExpression(t.memberExpression(t.memberExpression(obj, prop),
-      t.identifier('bind')), [obj])));
-  cond.freeVars = union(fvs(obj), fvs(prop));
-  return cond;
-}
-
 function cpsExprList(exprs: (t.Expression | t.SpreadElement)[],
   k: (args: (AExpr | t.SpreadElement)[]) => CPS<CExpr,CExpr>,
   ek: (arg: AExpr) => CPS<CExpr,CExpr>,
@@ -163,6 +153,24 @@ function cpsExpr(expr: t.Expression,
       case "CallExpression":
         const callee = expr.callee;
         if (t.isMemberExpression(callee) &&
+          t.isIdentifier(callee.property) &&
+          (callee.property.name === 'apply' ||
+            callee.property.name === 'call')) {
+          const bnd = path.scope.generateUidIdentifier('bind');
+          return cpsExpr(callee.object, f =>
+            cpsExprList(expr.arguments, args => {
+              const kFun = path.scope.generateUidIdentifier('kFun');
+              const kErr = path.scope.generateUidIdentifier('kErr');
+              const r = path.scope.generateUidIdentifier('r');
+              return k(r).bind(kn =>
+                ek(r).map(ekn =>
+                    new CLet('const', kFun, new BAdminFun(undefined, [r], kn),
+                      new CLet('const', kErr, new BAdminFun(undefined, [r], ekn),
+                        (<t.Identifier>callee.property).name === 'apply' ?
+                        new CApplyApp(f, [kFun, kErr, ...args]) :
+                        new CCallApp(f, [kFun, kErr, ...args])))));
+            }, ek, path), ek, path);
+        } else if (t.isMemberExpression(callee) &&
           t.isIdentifier(callee.property)) {
           const bnd = path.scope.generateUidIdentifier('bind');
           return cpsExpr(callee.object, f =>
@@ -172,14 +180,9 @@ function cpsExpr(expr: t.Expression,
               const r = path.scope.generateUidIdentifier('r');
               return k(r).bind(kn =>
                 ek(r).map(ekn =>
-                  new CLet('const', bnd,
-                    bind(f, <t.Identifier>callee.property),
+                  new CLet('const', bnd, new BGet(f, <t.Identifier>callee.property, false),
                     new CLet('const', kFun, new BAdminFun(undefined, [r], kn),
                       new CLet('const', kErr, new BAdminFun(undefined, [r], ekn),
-                        (<t.Identifier>callee.property).name === 'apply' ?
-                        new CApplyApp(f, [kFun, kErr, ...args]) :
-                        (<t.Identifier>callee.property).name === 'call' ?
-                        new CCallApp(f, [kFun, kErr, ...args]) :
                         new CCallApp(bnd, [kFun, kErr, f, ...args]))))));
             }, ek, path), ek, path);
         } else {
@@ -332,8 +335,6 @@ function generateBExpr(bexpr: BExpr): t.Expression {
     case 'BAdminFun':
       return t.arrowFunctionExpression(bexpr.args,
         flatBodyStatement(generateJS(bexpr.body)));
-    case 'ConditionalExpression':
-      return bexpr;
     case 'op2':
       return t.binaryExpression(bexpr.oper, bexpr.l, bexpr.r);
     case 'op1':
@@ -398,7 +399,7 @@ const cpsExpression : Visitor = {
 
       const kont =
         t.functionExpression(undefined, [onDone, onError],
-          t.blockStatement(generateJS(raiseFuns(cexpr))));
+          t.blockStatement(generateJS(/*raiseFuns*/(cexpr))));
       const kontCall = administrative(t.callExpression(kont, [onDone, onError]));
 
       path.node.body = [t.expressionStatement(kontCall)];

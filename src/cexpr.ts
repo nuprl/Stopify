@@ -414,8 +414,7 @@ export class BCond extends Node {
 
 export type BExpr =
   BFun | BAdminFun | BAtom | BOp2 | BOp1 | BLOp | BAssign | BGet | BObj |
-  BArrayLit | BIncrDecr | BUpdate | BSeq | BThis | BNew |
-  FreeVars<t.ConditionalExpression>
+  BArrayLit | BIncrDecr | BUpdate | BSeq | BThis | BNew
 
 export class CApp extends Node {
   type: 'app';

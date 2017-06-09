@@ -12,7 +12,7 @@ time: $(TIMES)
 # $(3) is the name of the transform.
 define RUNNER_template
 $(strip $(2))-$(strip $(3))-times.csv:
-	@echo $$(RUNNER) $(1) $(2) $(3)
+	$$(RUNNER) $(1) $(2) $(3)
 endef
 
 # This creates a target for each combination of the JS engine and

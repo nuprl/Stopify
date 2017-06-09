@@ -6,7 +6,7 @@ import {diff, intersect} from './helpers';
 
 type T = {
   body: CExpr,
-  funs: { id: t.Identifier, f: BFun }[],
+  funs: { id: t.Identifier, f: BFun | BAdminFun }[],
 }
 
 function bindFuns(x: T): CExpr {
@@ -19,38 +19,46 @@ function bindFuns(x: T): CExpr {
 
 export function raiseFuns(expr: CExpr): CExpr {
   function crec(locals: Set<t.Identifier>, cexpr: CExpr): T {
+    function crecFun(locals: Set<t.Identifier>,
+      ctor: any,
+      named: BFun | BAdminFun,
+      cexpr: CLet): T {
+        const { body, funs: funsF } = crec(new Set(named.args).add(cexpr.x), named.body);
+        const { body: c, funs: funsL } = crec(new Set(locals).add(cexpr.x), cexpr.body);
+        if (intersect(diff(named.body.freeVars, new Set(named.args).add(cexpr.x)),
+          locals).size === 0) {
+          return {
+            body: c,
+            funs: [
+              {
+                id: cexpr.x,
+                f: new ctor(named.id, named.args, body)
+              },
+              ...funsF,
+              ...funsL
+            ]
+          };
+        } else {
+          return {
+            body: new CLet(cexpr.kind, cexpr.x,
+              new ctor(named.id, named.args, bindFuns({ body, funs: funsF })),
+              c),
+            funs: funsL
+          };
+        }
+      }
     switch (cexpr.type) {
       case 'let': {
         const named = cexpr.named;
         switch (named.type) { 
-          case 'BFun': {
-            const { body, funs: funsF } = crec(new Set(named.args).add(cexpr.x), named.body);
-            const { body: c, funs: funsL } = crec(new Set(locals).add(cexpr.x), cexpr.body);
-            if (intersect(diff(body.freeVars, new Set(named.args).add(cexpr.x)), locals).size === 0) {
-              return {
-                body: c,
-                funs: [
-                  {
-                    id: cexpr.x,
-                    f: new BFun(named.id, named.args, body)
-                  },
-                  ...funsF,
-                  ...funsL
-                ]
-              };
-            } else {
-              return {
-                body: new CLet(cexpr.kind, cexpr.x,
-                  new BFun(named.id, named.args, bindFuns({ body: body, funs: funsF })),
-                  c),
-                funs: funsL
-              };
-            }
-          }
+          case 'BFun':
+            return crecFun(locals, BFun, named, cexpr);
+          case 'BAdminFun':
+            return crecFun(locals, BAdminFun, named, cexpr);
           default:
             const { body, funs } = crec(new Set(locals).add(cexpr.x), cexpr.body);
             return {
-              body: new CLet(cexpr.kind, cexpr.x, cexpr.named, cexpr.body),
+              body: new CLet(cexpr.kind, cexpr.x, cexpr.named, body),
               funs: funs
             };
         }
@@ -70,6 +78,6 @@ export function raiseFuns(expr: CExpr): CExpr {
         };
     }
   }
-  
+
   return bindFuns(crec(new Set(), expr));
 }

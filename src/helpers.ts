@@ -163,7 +163,7 @@ function transformWithLines(src: string, plugs: any[][], breakPoints: number[]):
 }
 
 function union<A>(a: Set<A>, b: Set<A>): Set<A> {
-  return new Set([...a].reduce((s, x) => s.add(x), new Set()));
+  return new Set([...a].reduce((s, x) => s.add(x), b));
 }
 
 function diff<A>(a: Set<A>, b: Set<A>): Set<A> {

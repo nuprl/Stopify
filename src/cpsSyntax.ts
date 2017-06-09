@@ -7,13 +7,14 @@ import {administrative,
   flatBodyStatement,
   letExpression,
   transformed,
-  ReturnStatement
+  ReturnStatement,
+  union
 } from './helpers';
 
 import {
   AExpr, BExpr, CExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1, BLOp,
   BAssign, BObj, BArrayLit, BGet, BIncrDecr, BUpdate, BSeq, BThis, BNew,
-  CApp, CCallApp, CApplyApp, CAdminApp, ITE, CLet, FreeVars
+  CApp, CCallApp, CApplyApp, CAdminApp, ITE, CLet, FreeVars, fvs, withFVs
 } from './cexpr';
 import {CPS, ret} from './cpsMonad';
 import {raiseFuns} from './liftFunExprs';
@@ -26,7 +27,7 @@ function bind(obj: AExpr, prop: AExpr): FreeVars<t.ConditionalExpression> {
     t.memberExpression(obj, prop),
     directApply(t.callExpression(t.memberExpression(t.memberExpression(obj, prop),
       t.identifier('bind')), [obj])));
-  cond.freeVars = new Set();
+  cond.freeVars = union(fvs(obj), fvs(prop));
   return cond;
 }
 
@@ -97,7 +98,7 @@ function cpsExpr(expr: t.Expression,
         const assign = path.scope.generateUidIdentifier('assign');
         return cpsExpr(expr.right, r =>
           k(assign).map(c =>
-            new CLet('const', assign, new BAssign(expr.operator, expr.left, r),
+            new CLet('const', assign, new BAssign(expr.operator, withFVs(expr.left), r),
               c)), ek, path);
       case 'BinaryExpression':
         let bop = path.scope.generateUidIdentifier('bop');
@@ -397,7 +398,7 @@ const cpsExpression : Visitor = {
 
       const kont =
         t.functionExpression(undefined, [onDone, onError],
-          t.blockStatement(generateJS(/*raiseFuns*/(cexpr))));
+          t.blockStatement(generateJS(raiseFuns(cexpr))));
       const kontCall = administrative(t.callExpression(kont, [onDone, onError]));
 
       path.node.body = [t.expressionStatement(kontCall)];

@@ -44,13 +44,13 @@ export abstract class Node {
 
 export type AExpr = t.Identifier | t.Literal;
 
-function fvs(a: AExpr | t.SpreadElement): Set<t.Identifier> {
+export function fvs(a: AExpr | t.SpreadElement): Set<t.Identifier> {
   if (t.isIdentifier(a)) {
     return new Set([a]);
   } else if (t.isLiteral(a)) {
     return new Set();
   } else if (t.isSpreadElement(a)) {
-    if (t.isIdentifier(a) || t.isLiteral(a)) {
+    if (t.isIdentifier(a.argument) || t.isLiteral(a.argument)) {
       return fvs(a);
     } else {
       return new Set();
@@ -59,6 +59,18 @@ function fvs(a: AExpr | t.SpreadElement): Set<t.Identifier> {
 
   // unreachable
   return new Set();
+}
+
+export function withFVs(l: t.LVal): FreeVars<t.LVal> {
+  if (t.isIdentifier(l)) {
+    const r : any = l;
+    r.freeVars = new Set([l]);
+    return r;
+  } else {
+    const r : any = l;
+    r.freeVars = new Set();
+    return r;
+  }
 }
 
 export class BFun extends Node {
@@ -192,22 +204,22 @@ export class BLOp extends Node {
 export class BAssign extends Node {
   type: 'assign';
   operator: string;
-  x: t.LVal;
+  x: FreeVars<t.LVal>;
   v: AExpr;
 
-  constructor(operator: string, x: t.LVal, v: AExpr) {
+  constructor(operator: string, x: FreeVars<t.LVal>, v: AExpr) {
     super(operator, x, v);
     this.type = 'assign';
   }
 
-  init(operator: string, x: t.LVal, v: AExpr): void {
+  init(operator: string, x: FreeVars<t.LVal>, v: AExpr): void {
     this.operator = operator;
     this.x = x;
     this.v = v;
   }
   
   fvs(): void {
-    this.freeVars = new Set(fvs(this.v));
+    this.freeVars = union(this.x.freeVars, fvs(this.v));
   }
 }
 
@@ -272,8 +284,8 @@ export class BArrayLit extends Node {
   }
 
   fvs(): void {
-    this.freeVars = new Set();
-    this.arrayItems.forEach((x: AExpr) => this.freeVars = union(this.freeVars, fvs(x)));
+    this.freeVars = this.arrayItems.map(x => fvs(x))
+    .reduce((a, b) => union(a, b), new Set());
   }
 }
 
@@ -335,8 +347,8 @@ export class BSeq extends Node {
   }
 
   fvs(): void {
-    this.freeVars = new Set();
-    this.elements.forEach((x: AExpr) => union(this.freeVars, fvs(x)));
+    this.freeVars = this.elements.map(x => fvs(x))
+    .reduce((a, b) => union(a, b), new Set());
   }
 }
 
@@ -421,53 +433,50 @@ export class CApp extends Node {
   }
 
   fvs(): void {
-    this.freeVars = new Set();
-    this.args.forEach((x: AExpr) => union(this.freeVars, fvs(x)));
-    this.freeVars = union(this.freeVars, fvs(this.f));
+    this.freeVars = union(this.args.map(x => fvs(x))
+      .reduce((a, b) => union(a, b), new Set()), fvs(this.f));
   }
 }
 
 export class CCallApp extends Node {
   type: 'callapp';
-  f: t.Expression;
+  f: AExpr;
   args: (AExpr | t.SpreadElement)[];
 
-  constructor(f: t.Expression, args: (AExpr | t.SpreadElement)[]) {
+  constructor(f: AExpr, args: (AExpr | t.SpreadElement)[]) {
     super(f, args);
     this.type = 'callapp';
   }
 
-  init(f: t.Expression, args: (AExpr | t.SpreadElement)[]): void {
+  init(f: AExpr, args: (AExpr | t.SpreadElement)[]): void {
     this.f = f;
     this.args = args;
   }
   
   fvs(): void {
-    this.freeVars = new Set();
-    this.args.forEach((x: AExpr) => union(this.freeVars, fvs(x)));
-    //TODO: this.freeVars = union(this.freeVars, fvs(this.f));
+    this.freeVars = union(this.args.map(x => fvs(x))
+      .reduce((a, b) => union(a, b), new Set()), fvs(this.f));
   }
 }
 
 export class CApplyApp extends Node {
   type: 'applyapp';
-  f: t.Expression;
+  f: AExpr;
   args: (AExpr | t.SpreadElement)[];
 
-  constructor(f: t.Expression, args: (AExpr | t.SpreadElement)[]) {
+  constructor(f: AExpr, args: (AExpr | t.SpreadElement)[]) {
     super(f, args);
     this.type = 'applyapp';
   }
   
-  init(f: t.Expression, args: (AExpr | t.SpreadElement)[]): void {
+  init(f: AExpr, args: (AExpr | t.SpreadElement)[]): void {
     this.f = f;
     this.args = args;
   }
 
   fvs(): void {
-    this.freeVars = new Set();
-    this.args.forEach((x: AExpr) => union(this.freeVars, fvs(x)));
-    //TODO: this.freeVars = union(this.freeVars, fvs(this.f));
+    this.freeVars = union(this.args.map(x => fvs(x))
+      .reduce((a, b) => union(a, b), new Set()), fvs(this.f));
   }
 }
 
@@ -487,9 +496,8 @@ export class CAdminApp extends Node {
   }
 
   fvs(): void {
-    this.freeVars = new Set();
-    this.args.forEach((x: AExpr | t.SpreadElement) => union(this.freeVars, fvs(x)));
-    this.freeVars = union(this.freeVars, fvs(this.f));
+    this.freeVars = union(this.args.map(x => fvs(x))
+      .reduce((a, b) => union(a, b), new Set()), fvs(this.f));
   }
 }
 

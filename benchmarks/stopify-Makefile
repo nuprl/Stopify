@@ -1,43 +1,45 @@
-# Get all javascript files in the directory
-# NOTE(rachit): Any new directory added here should end with `-stopify`
-# to be considered as a benchmarking directory.
-FILES = $(wildcard *.js)
-CPS = $(FILES:%.js=cps-stopify/%.js)
-TCPS = $(FILES:%.js=tcps-stopify/%.js)
-YIELD = $(FILES:%.js=yield-stopify/%.js)
+# Add a new stopify transform here. The name should correspond to the flag
+# used by the stopify binary.
+TRANSFORMS = yield cps
 
+# Get all the javascript files for benchmarking here.
+FILES = $(wildcard *.js)
+
+# All the files that will be generated.
+OBJS = $(foreach tr, $(TRANSFORMS), \
+			   $(foreach file, $(FILES), $(tr)/$(file)))
+
+BASE = './base'
+
+# $(1) is the name of the transform
+define dir_TEMPLATE
+$(1):
+	mkdir -p $(1)
+endef
+
+# $(1) is the name of the transform
+define stopify_TEMPLATE
+$(1)/%.js: %.js | $(1)
+	stopify -i $$< -t $(1) > $$@
+endef
+
+.PHONY: all move-to-base
 all: move-to-base
 
-base-stopify:
-	mkdir -p base-stopify;
-
 # Move all files into base directory
-move-to-base: $(CPS) $(YIELD) $(TCPS) base-stopify
+move-to-base: | base
 ifneq "$(FILES)" ""
-	mv $(FILES) 'base-stopify/'
+	mv $(FILES) $(BASE)
 endif
 
-make-stopify-dirs: cps yield tcps
+base: $(OBJS)
+	mkdir -p $(BASE)
 
-cps:
-	mkdir -p cps-stopify
+# Build rules to create directory for each transform
+$(foreach tr,$(TRANSFORMS), $(eval $(call dir_TEMPLATE,$(tr))))
 
-yield:
-	mkdir -p yield-stopify
-
-tcps:
-	mkdir -p tcps-stopify
-
-cps-stopify/%.js: %.js make-stopify-dirs
-	stopify -i $< -t cps > $@
-
-tcps-stopify/%.js: %.js make-stopify-dirs
-	stopify -i $< -t tcps > $@
-
-yield-stopify/%.js: %.js make-stopify-dirs
-	stopify -i $< -t yield > $@
+# Build stopify runner rules for each transform.
+$(foreach tr,$(TRANSFORMS), $(eval $(call stopify_TEMPLATE,$(tr))))
 
 # Rule to debug variables.
 print-%  : ; @echo $* = $($*)
-
-.PHONY: move-to-base all base

@@ -1,10 +1,6 @@
 import * as t from 'babel-types';
 
-import {
-  AExpr, BExpr, CExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1, BLOp,
-  BAssign, BObj, BArrayLit, BGet, BIncrDecr, BUpdate, BSeq, BThis, CApp,
-  CCallApp, CApplyApp, CAdminApp, ITE, CLet
-} from './cexpr';
+import { CExpr, BFun, BAdminFun, ITE, CLet } from './cexpr';
 import {CPS, ret} from './cpsMonad';
 import {diff, intersect} from './helpers';
 

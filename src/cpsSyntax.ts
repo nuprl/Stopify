@@ -12,19 +12,22 @@ import {administrative,
 
 import {
   AExpr, BExpr, CExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1, BLOp,
-  BAssign, BObj, BArrayLit, BGet, BIncrDecr, BUpdate, BSeq, BThis, CApp,
-  CCallApp, CApplyApp, CAdminApp, ITE, CLet
+  BAssign, BObj, BArrayLit, BGet, BIncrDecr, BUpdate, BSeq, BThis, BNew,
+  CApp, CCallApp, CApplyApp, CAdminApp, ITE, CLet, FreeVars
 } from './cexpr';
 import {CPS, ret} from './cpsMonad';
+import {raiseFuns} from './liftFunExprs';
 
 const undefExpr: AExpr = t.identifier("undefined");
 
-function bind(obj: t.Expression, prop: t.Expression): t.ConditionalExpression {
-  return t.conditionalExpression(t.memberExpression(t.memberExpression(obj, prop),
+function bind(obj: AExpr, prop: AExpr): FreeVars<t.ConditionalExpression> {
+  const cond : any = t.conditionalExpression(t.memberExpression(t.memberExpression(obj, prop),
     t.identifier('$isTransformed')),
     t.memberExpression(obj, prop),
     directApply(t.callExpression(t.memberExpression(t.memberExpression(obj, prop),
       t.identifier('bind')), [obj])));
+  cond.freeVars = new Set();
+  return cond;
 }
 
 function cpsExprList(exprs: (t.Expression | t.SpreadElement)[],
@@ -78,7 +81,6 @@ function cpsExpr(expr: t.Expression,
     }
     switch (expr.type) {
       case 'Identifier':
-        return k(expr);
       case 'BooleanLiteral':
       case 'NumericLiteral':
       case 'StringLiteral':
@@ -93,16 +95,16 @@ function cpsExpr(expr: t.Expression,
         }, ek, path);
       case "AssignmentExpression":
         const assign = path.scope.generateUidIdentifier('assign');
-        return k(assign).bind(c =>
-          cpsExpr(expr.right, r =>
-            ret<CExpr,CExpr>(new CLet('const', assign,
-              new BAssign(expr.operator, expr.left, r), c)), ek, path));
+        return cpsExpr(expr.right, r =>
+          k(assign).map(c =>
+            new CLet('const', assign, new BAssign(expr.operator, expr.left, r),
+              c)), ek, path);
       case 'BinaryExpression':
+        let bop = path.scope.generateUidIdentifier('bop');
         return cpsExpr(expr.left, l =>
-          cpsExpr(expr.right, r => {
-            let bop = path.scope.generateUidIdentifier('bop');
-            return k(bop).map(c => new CLet('const', bop, new BOp2(expr.operator, l, r), c));
-          }, ek, path), ek, path);
+          cpsExpr(expr.right, r =>
+            k(bop).map(c => new CLet('const', bop, new BOp2(expr.operator, l, r), c)),
+            ek, path), ek, path);
       case 'LogicalExpression':
         if (expr.operator === '&&') {
           const if_cont = path.scope.generateUidIdentifier('if_cont');
@@ -150,8 +152,8 @@ function cpsExpr(expr: t.Expression,
       case "FunctionExpression":
         let func = path.scope.generateUidIdentifier('func');
         return cpsStmt(expr.body,
-          r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(expr.params[0]), [r])),
-          r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(expr.params[1]), [r])),
+          r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[0], [r])),
+          r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[1], [r])),
           path).bind(body =>
             k(func).map(e =>
               new CLet('const', func,
@@ -200,7 +202,10 @@ function cpsExpr(expr: t.Expression,
           }, ek, path), ek, path);
       case 'NewExpression':
         const tmp = path.scope.generateUidIdentifier('new');
-        return k(tmp).map(c => new CLet('const', tmp, expr, c));
+        return cpsExpr(expr.callee, f =>
+          cpsExprList(expr.arguments, args =>
+            k(tmp).map(c =>
+              new CLet('const', tmp, new BNew(f, args), c)), ek, path), ek, path);
       case 'ObjectExpression':
         return cpsObjMembers(<t.ObjectMember[]>expr.properties,
           (mems: AExpr[][]) => {
@@ -329,13 +334,13 @@ function generateBExpr(bexpr: BExpr): t.Expression {
     case 'ConditionalExpression':
       return bexpr;
     case 'op2':
-      return t.binaryExpression(bexpr.name, bexpr.l, bexpr.r);
+      return t.binaryExpression(bexpr.oper, bexpr.l, bexpr.r);
     case 'op1':
-      return t.unaryExpression(bexpr.name, bexpr.v);
+      return t.unaryExpression(bexpr.oper, bexpr.v);
     case 'lop':
-      return t.logicalExpression(bexpr.name, bexpr.l, bexpr.r);
+      return t.logicalExpression(bexpr.oper, bexpr.l, bexpr.r);
     case 'assign':
-      return t.assignmentExpression(bexpr.operator, bexpr.x, bexpr.v);
+      return t.assignmentExpression(bexpr.operator, <t.LVal>bexpr.x, bexpr.v);
     case 'obj':
       const properties : t.ObjectProperty[] = [];
       bexpr.fields.forEach((value, key) =>
@@ -343,8 +348,6 @@ function generateBExpr(bexpr: BExpr): t.Expression {
       return t.objectExpression(properties);
     case 'get':
       return t.memberExpression(bexpr.object, bexpr.property, bexpr.computed);
-    case 'NewExpression':
-      return bexpr;
     case 'incr/decr':
       return t.updateExpression(bexpr.operator, bexpr.argument, bexpr.prefix);
     case 'arraylit':
@@ -353,6 +356,8 @@ function generateBExpr(bexpr: BExpr): t.Expression {
       return t.sequenceExpression(bexpr.elements);
     case 'this':
       return t.thisExpression();
+    case 'new':
+      return t.newExpression(bexpr.f, bexpr.args);
     case 'update':
       throw new Error(`${bexpr.type} generation is not yet implemented`);
   }
@@ -383,14 +388,16 @@ const cpsExpression : Visitor = {
   Program: {
     enter(path: NodePath<t.Program>): void {
       const { body } = path.node;
-      const cexpr = cpsStmt(t.blockStatement(body),
-        v => ret<CExpr,CExpr>(new CAdminApp(t.identifier('onDone'), [v])),
-        v => ret<CExpr,CExpr>(new CAdminApp(t.identifier('onError'), [v])), path).apply(x => x);
-
       const onDone = t.identifier('onDone');
       const onError = t.identifier('onError');
+
+      const cexpr = cpsStmt(t.blockStatement(body),
+        v => ret<CExpr,CExpr>(new CAdminApp(onDone, [v])),
+        v => ret<CExpr,CExpr>(new CAdminApp(onError, [v])), path).apply(x => x);
+
       const kont =
-        t.functionExpression(undefined, [onDone, onError], t.blockStatement(generateJS(cexpr)));
+        t.functionExpression(undefined, [onDone, onError],
+          t.blockStatement(generateJS(/*raiseFuns*/(cexpr))));
       const kontCall = administrative(t.callExpression(kont, [onDone, onError]));
 
       path.node.body = [t.expressionStatement(kontCall)];

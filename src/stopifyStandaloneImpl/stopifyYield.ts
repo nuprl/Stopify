@@ -68,7 +68,7 @@ export const yieldStopifyPrint: stopifyPrint = (code) => {
 export const yieldStopify: stopifyFunction = (code) => {
   return eval(`
     (function() {
-      return ${yieldStopifyPrint(code)}
-    })
+      return (${yieldStopifyPrint(code)});
+    })()
   `)
 }

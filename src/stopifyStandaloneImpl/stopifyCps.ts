@@ -1,4 +1,4 @@
-import {Stoppable, stopify} from './stopifyInterface';
+import { stopifyFunction, stopifyPrint } from './stopifyStandaloneInterface'
 
 // Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
@@ -9,7 +9,6 @@ import * as desugarSwitch from '../desugarSwitch';
 import * as desugarWhileToFunc from '../desugarLoopToFunc';
 import * as desugarLabel from '../desugarLabel';
 import * as liftVar from '../liftVar';
-import * as trampolineApply from '../trampolineApply';
 
 // Call Expression naming transform.
 import * as makeBlockStmt from '../makeBlockStmt';
@@ -24,28 +23,14 @@ import * as transformMarked from '../transformMarked';
 // Helpers
 import {transform} from '../helpers';
 
-class CPSStopify implements Stoppable {
-  private original: string;
-  transformed: string;
-  private isStop: () => boolean;
-  private onStop: () => any;
-  private stopTarget: () => void
-  private interval: number;
+const cpsRuntime = `/*
+ * The runtime is wrapped in a function:
+ * function($isStop, $onStop, $onDone, $interval).
+ * The output of the cps transform expects \`$counter\` to be defined.
+ */
+"use strict";
 
-  constructor (code: string,
-    isStop: () => boolean,
-    stop: () => void) {
-      this.original = code;
-      const plugins = [
-        [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
-        [desugarSwitch, desugarWhileToFunc],
-        [makeBlockStmt, addKArg],
-        [cps, applyStop, transformMarked],
-      ];
-    const cpsHelpers = `"use strict";
-
-let that = this;
-let counter = that.interval;
+let $counter = $interval;
 
 function $mark_func(f) {
   f.$isTransformed = true;
@@ -91,10 +76,10 @@ function apply_applyWithK(f, k, ek, thisArg, args) {
 
 function apply_helper(how) {
   return function (f, k, ek, ...args) {
-    if (counter-- === 0) {
-      counter = that.interval;
+    if ($counter-- === 0) {
+      $counter = $interval;
       setTimeout(_ => {
-        if (that.isStop()) that.onStop();else return how(f, k, ek, ...args);
+        if ($isStop()) $onStop();else return how(f, k, ek, ...args);
       }, 0);
     } else return how(f, k, ek, ...args);
   };
@@ -114,39 +99,32 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
 });
 
 `;
-      this.transformed = cpsHelpers + transform(code, plugins);
 
-      if(this.transformed.length < code.length) {
-        throw new Error('Transformed code is smaller than original code')
-      }
+export const cpsStopifyPrint: stopifyPrint = (code) => {
+  const plugins = [
+    [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
+    [desugarSwitch, desugarWhileToFunc],
+    [makeBlockStmt, addKArg],
+    [cps, applyStop, transformMarked],
+  ];
+  const transformed = transform(code, plugins);
 
-      this.isStop = isStop;
-      this.stopTarget = stop;
-      this.interval = 10;
-    };
+  if(transformed.length < code.length) {
+    throw new Error('Transformed code is smaller than original code')
+  }
 
-  run($onDone: (arg?: any) => any): void {
-    eval(this.transformed);
-  };
+  return `
+function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
+  ${cpsRuntime}
+  ${transformed}
+}
+`
+}
 
-  stop(onStop: () => any): void {
-    this.onStop = onStop;
-    return this.stopTarget();
-  };
-
-  setInterval(n: number): void {
-    this.interval = n;
-  };
-};
-
-const cpsStopify : stopify = function (code: string,
-  isStop: () => boolean,
-  stop: () => void): CPSStopify {
-    return new CPSStopify(code, isStop, stop);
-};
-
-(<any>cpsStopify).isStopify = true;
-
-export {
-    cpsStopify,
-};
+export const cpsStopify: stopifyFunction = (code) => {
+  return eval(`
+(function () {
+  return (${cpsStopifyPrint(code)});
+})()
+`)
+}

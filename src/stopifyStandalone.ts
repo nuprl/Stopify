@@ -1,6 +1,11 @@
+'use strict';
+
 import {
   yieldStopify, yieldStopifyPrint
 } from './stopifyStandaloneImpl/stopifyYield'
+import {
+  cpsStopify, cpsStopifyPrint
+} from './stopifyStandaloneImpl/stopifyCps'
 import { StopWrapper } from './helpers'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -59,6 +64,9 @@ switch(output) {
       case 'yield':
         stopifyFunc = yieldStopifyPrint
         break;
+      case 'cps':
+        stopifyFunc = cpsStopifyPrint
+        break;
       default:
         throw new Error(`Unknown transform: ${transform}`)
     }
@@ -80,6 +88,9 @@ switch(output) {
     switch(transform) {
       case 'yield':
         stopifyFunc = yieldStopify
+        break;
+      case 'cps':
+        stopifyFunc = cpsStopify
         break;
       default:
         throw new Error(`Unknown transform: ${transform}`)

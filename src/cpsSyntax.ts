@@ -390,8 +390,8 @@ const cpsExpression : Visitor = {
   Program: {
     enter(path: NodePath<t.Program>): void {
       const { body } = path.node;
-      const onDone = t.identifier('onDone');
-      const onError = t.identifier('onError');
+      const onDone = t.identifier('$onDone');
+      const onError = t.identifier('$onError');
 
       const cexpr = cpsStmt(t.blockStatement(body),
         v => ret<CExpr,CExpr>(new CAdminApp(onDone, [v])),

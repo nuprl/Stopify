@@ -51,7 +51,7 @@ export function fvs(a: AExpr | t.SpreadElement): Set<t.Identifier> {
     return new Set();
   } else if (t.isSpreadElement(a)) {
     if (t.isIdentifier(a.argument) || t.isLiteral(a.argument)) {
-      return fvs(a);
+      return fvs(a.argument);
     } else {
       return new Set();
     }
@@ -383,7 +383,8 @@ export class BNew extends Node {
   }
 
   fvs(): void {
-    this.freeVars = new Set();
+    this.freeVars = this.args.map(x => fvs(x))
+    .reduce((a, b) => union(a, b), fvs(this.f));
   }
 }
 
@@ -453,8 +454,8 @@ export class CCallApp extends Node {
   }
   
   fvs(): void {
-    this.freeVars = union(this.args.map(x => fvs(x))
-      .reduce((a, b) => union(a, b), new Set()), fvs(this.f));
+    this.freeVars = this.args.map(x => fvs(x))
+    .reduce((a, b) => union(a, b), fvs(this.f));
   }
 }
 
@@ -474,8 +475,8 @@ export class CApplyApp extends Node {
   }
 
   fvs(): void {
-    this.freeVars = union(this.args.map(x => fvs(x))
-      .reduce((a, b) => union(a, b), new Set()), fvs(this.f));
+    this.freeVars = this.args.map(x => fvs(x))
+    .reduce((a, b) => union(a, b), fvs(this.f));
   }
 }
 
@@ -495,8 +496,8 @@ export class CAdminApp extends Node {
   }
 
   fvs(): void {
-    this.freeVars = union(this.args.map(x => fvs(x))
-      .reduce((a, b) => union(a, b), new Set()), fvs(this.f));
+    this.freeVars = this.args.map(x => fvs(x))
+    .reduce((a, b) => union(a, b), fvs(this.f));
   }
 }
 

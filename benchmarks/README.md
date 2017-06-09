@@ -1,32 +1,40 @@
-### Requirements
-Run `npm run build` and `npm link`. Make sure that `stopify` is linked correctly.
+# Stopify Benchmarking Harness
+---------
+The stopify benchmarking is a work of art, which means that you must be insane to
+want to hack on it. The system relies on a lot of `make` hackery to work and
+is claimed to "just" work when you add a new language. If this doesn't turn
+out to be the case, complain to [@rachitnigam](https://github.com/rachitnigam).
 
-### Benchmarks
+## Dependencies
+1. Install [GNU make](https://www.gnu.org/software/make/). The system was built
+with version 3.81.
+2. Install the language compilers as specified [here](https://github.com/plasma-umass/stopify#optional-server-dependencies).
+3. Run `npm run build` and `npm link`. Make sure that the `stopify` executable 
+is linked correctly and is available on the path.
 
-To add a new source language to the benchmarking framework, do the following:
+## Running the harness
+In `<project-root>/benchmarks $`, run:
+```
+make -j8
+make run -j8
+```
 
-1. Create a folder with the language's name. Add all the benchmarks to a folder
-called `benchmark-files`. Note the modification rule below before modifying the
-the files.
-2. Add a makefile that generates a folder called `js-builds/` that contains
-all the JavaScript files to run. Note that each file should be runnable
-individually and should handle its own failure logic.
-3. (optional) Add a `benchmark` rule to the makefile that runs the benchmarks with the
-source language and produces the file `<language-name>-native.csv` with the
+## Adding a language
+In `<project-root>/benchmarks`, add a new folder with the name of the new
+language. Everything should be added INSIDE this new folder.
+
+Since we want to build a credible benchmarks, we should keep original and
+modifies benchmarks together. To this end, make a folder called 
+`<project-root>/original` before modifying them. 
+
+1. Add all the benchmarks to a folder called `benchmark-files` with the source
+language benchmarks.
+
+2. Add a Makefile that can compiles the source language benchmarks into JS files in
+the `js-builds/`. Each generated file should be standalone runnable.
+
+3. Add a `clean` rule to the makefile that cleans up the language directory.
+
+4. (optional) Add a `benchmark` rule to the makefile that runs the benchmarks with the
+source language and produces the file `js-builds/native-base-times.csv` with the
 filename as the first column and the time in seconds as the second column.
-4. Add a `clean` rule to the makefile that cleans up the language directory.
-
-#### Modifying benchmark files
-
-In case you have to modify the benchmark files, create a folder called
-`original` that contains the original version of the benchmarks.
-
-#### File format
-
-The Benchmarking harness produces individual files
-`<language-name>-<transform>.csv` with the first column as the name of the
-testfile and the second column as time in seconds.
-
-### Running benchmarking harness
-To run the harness: `make -k j4`
-To reset all directories `make clean -k j4`

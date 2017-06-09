@@ -2,11 +2,11 @@ include transform.mk
 
 # Add new JavaScript engines HERE.
 # Add the absolute path to the JS-Engine here:
-ENGINEPATH := /usr/local/bin/node /path/to/js
+ENGINEPATH := $(shell which node)
 
 # Add the name of the JS-engine here (shoud not contain ':'):
 # Note that the index must coorespond to the engine path.
-ENGINENAME := node spidermoneky
+ENGINENAME := node
 
 # Join the data about the engines.
 ENGINEDATA := $(join $(addsuffix :, $(ENGINEPATH)), $(ENGINENAME))

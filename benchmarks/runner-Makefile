@@ -3,16 +3,16 @@ include transform.mk
 
 # Name of the runner
 RUNNER = "./runner.sh"
+RUNNABLE := $(TRANSFORMS) base
 
 time: $(TIMES)
-	@echo $^
 
 # $(1) is the path of the javascript engine
 # $(2) is the name of the javascript engine.
 # $(3) is the name of the transform.
 define RUNNER_template
 $(strip $(2))-$(strip $(3))-times.csv:
-	$$(RUNNER) $(1) $(2) $(3)
+	@echo $$(RUNNER) $(1) $(2) $(3)
 endef
 
 # This creates a target for each combination of the JS engine and
@@ -20,7 +20,7 @@ endef
 # For example, if the directory contains `cps` and `yield` and engines `node`
 # and `js`, targets node-cps-times.csv, node-yield-times.csv,
 # js-yield-times.csv, and js-cps-times.csv will be created.
-$(foreach tr, $(TRANSFORMS), \
+$(foreach tr, $(RUNNABLE), \
 	$(foreach edata, $(ENGINEDATA), \
 		$(eval $(call RUNNER_template, \
 							 $(call GET_EPATH,$(edata)), \

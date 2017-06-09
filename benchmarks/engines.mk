@@ -15,8 +15,10 @@ ENGINEDATA := $(join $(addsuffix :, $(ENGINEPATH)), $(ENGINENAME))
 GET_EPATH = $(word 1,$(subst :, ,$1))
 GET_ENAME = $(word 2,$(subst :, ,$1))
 
+RUNNABLE := base $(TRANSFORMS)
+
 # Name of the times.csv to be generated.
 TIMES =  \
-	$(foreach tr, $(TRANSFORMS), \
+	$(foreach tr, $(RUNNABLE), \
 		$(foreach edata, $(ENGINEDATA), \
 			$(call GET_ENAME,$(edata))-$(tr)-times.csv))

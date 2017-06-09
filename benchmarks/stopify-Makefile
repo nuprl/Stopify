@@ -1,7 +1,4 @@
-# Add a new stopify transform here. The name should correspond to the flag
-# used by the stopify binary.
-TRANSFORMS = yield cps
-
+include transform.mk
 # Get all the javascript files for benchmarking here.
 FILES = $(wildcard *.js)
 
@@ -11,16 +8,19 @@ OBJS = $(foreach tr, $(TRANSFORMS), \
 
 BASE = './base'
 
+# Template to generate the directory for the transform
 # $(1) is the name of the transform
 define dir_TEMPLATE
 $(1):
 	mkdir -p $(1)
 endef
 
+# Template for defining the stopify runner
 # $(1) is the name of the transform
 define stopify_TEMPLATE
 $(1)/%.js: %.js | $(1)
-	stopify -i $$< -t $(1) > $$@
+	( stopify -i $$< -t $(1) > $$@ ) 2> /dev/null || \
+		( printf "failed to stopify \033[0;31m$$@ \033[0m\n" )
 endef
 
 .PHONY: all move-to-base

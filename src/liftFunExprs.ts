@@ -18,14 +18,17 @@ function bindFuns(x: T): CExpr {
 }
 
 export function raiseFuns(expr: CExpr): CExpr {
-  function crec(locals: Set<t.Identifier>, cexpr: CExpr): T {
-    function crecFun(locals: Set<t.Identifier>,
+  function crec(locals: Set<string>, cexpr: CExpr): T {
+    function crecFun(locals: Set<string>,
       ctor: any,
       named: BFun | BAdminFun,
       cexpr: CLet): T {
-        const { body, funs: funsF } = crec(new Set(named.args).add(cexpr.x), named.body);
-        const { body: c, funs: funsL } = crec(new Set(locals).add(cexpr.x), cexpr.body);
-        if (intersect(diff(named.body.freeVars, new Set(named.args).add(cexpr.x)),
+        const { body, funs: funsF } =
+          crec(new Set(named.args.map(x => x.name)).add(cexpr.x.name), named.body);
+        const { body: c, funs: funsL } =
+          crec(new Set(locals).add(cexpr.x.name), cexpr.body);
+        if (intersect(diff(named.body.freeVars,
+          new Set(named.args.map(x => x.name)).add(cexpr.x.name)),
           locals).size === 0) {
           return {
             body: c,
@@ -56,7 +59,7 @@ export function raiseFuns(expr: CExpr): CExpr {
           case 'BAdminFun':
             return crecFun(locals, BAdminFun, named, cexpr);
           default:
-            const { body, funs } = crec(new Set(locals).add(cexpr.x), cexpr.body);
+            const { body, funs } = crec(new Set(locals).add(cexpr.x.name), cexpr.body);
             return {
               body: new CLet(cexpr.kind, cexpr.x, cexpr.named, body),
               funs: funs

@@ -399,7 +399,7 @@ const cpsExpression : Visitor = {
 
       const kont =
         t.functionExpression(undefined, [onDone, onError],
-          t.blockStatement(generateJS(/*raiseFuns*/(cexpr))));
+          t.blockStatement(generateJS(raiseFuns(cexpr))));
       const kontCall = administrative(t.callExpression(kont, [onDone, onError]));
 
       path.node.body = [t.expressionStatement(kontCall)];

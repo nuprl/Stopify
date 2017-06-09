@@ -10,7 +10,7 @@ export type unop = "-" | "+" | "!" | "~" | "typeof" | "void" | "delete";
 export type kind = 'const' | 'var' | 'let' | undefined;
 
 export type FreeVars<T> = T & {
-  freeVars: Set<t.Identifier>;
+  freeVars: Set<string>;
 }
 
 export const nullLoc : any  = {
@@ -28,7 +28,7 @@ export abstract class Node {
   start: number;
   end: number;
   loc: t.SourceLocation;
-  freeVars: Set<t.Identifier>;
+  freeVars: Set<string>;
 
   abstract init(...args: any[]): void;
   abstract fvs(): void;
@@ -44,9 +44,9 @@ export abstract class Node {
 
 export type AExpr = t.Identifier | t.Literal;
 
-export function fvs(a: AExpr | t.SpreadElement): Set<t.Identifier> {
+export function fvs(a: AExpr | t.SpreadElement): Set<string> {
   if (t.isIdentifier(a)) {
-    return new Set([a]);
+    return new Set([a.name]);
   } else if (t.isLiteral(a)) {
     return new Set();
   } else if (t.isSpreadElement(a)) {
@@ -64,7 +64,7 @@ export function fvs(a: AExpr | t.SpreadElement): Set<t.Identifier> {
 export function withFVs(l: t.LVal): FreeVars<t.LVal> {
   if (t.isIdentifier(l)) {
     const r : any = l;
-    r.freeVars = new Set([l]);
+    r.freeVars = new Set([l.name]);
     return r;
   } else {
     const r : any = l;
@@ -91,8 +91,8 @@ export class BFun extends Node {
   }
 
   fvs(): void {
-    this.freeVars = diff(this.body.freeVars, new Set(this.args));
-    this.freeVars.delete(t.identifier('arguments'));
+    this.freeVars = diff(this.body.freeVars, new Set(this.args.map(x => x.name)));
+    this.freeVars.delete('arguments');
   }
 }
 
@@ -114,8 +114,8 @@ export class BAdminFun extends Node {
   }
 
   fvs(): void {
-    this.freeVars = diff(this.body.freeVars, new Set(this.args));
-    this.freeVars.delete(t.identifier('arguments'));
+    this.freeVars = diff(this.body.freeVars, new Set(this.args.map(x => x.name)));
+    this.freeVars.delete('arguments');
   }
 }
 
@@ -544,7 +544,7 @@ export class CLet extends Node {
   }
 
   fvs(): void {
-    this.freeVars = union(this.named.freeVars, diff(this.body.freeVars, new Set([this.x])));
+    this.freeVars = union(this.named.freeVars, diff(this.body.freeVars, new Set([this.x.name])));
   }
 }
 

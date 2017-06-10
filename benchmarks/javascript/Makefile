@@ -3,13 +3,13 @@ BDIR=./benchmark-files
 SRCS = $(wildcard $(BDIR)/*.js)
 OBJS = $(patsubst $(BDIR)/%,js-build/%,$(SRCS))
 
-all: dir $(OBJS)
+all: $(OBJS)
 
 # Compile all scala programs to JS.
-js-build/%.js: $(BDIR)/%.js
+js-build/%.js: $(BDIR)/%.js | js-build
 	$(CC) $^ $@
 
-dir:
+js-build:
 	mkdir -p js-build
 
 .PHONY: clean

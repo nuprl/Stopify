@@ -3,7 +3,7 @@ BDIR=./benchmark-files
 SRCS = $(wildcard $(BDIR)/*.scala)
 OBJS = $(patsubst $(BDIR)/%.scala,js-build/%.js,$(SRCS))
 
-all: dir $(OBJS)
+all: $(OBJS)
 
 # Compile all scala programs to JS.
 js-build/%.js: $(BDIR)/%.scala | dir

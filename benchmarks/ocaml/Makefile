@@ -9,7 +9,7 @@ lib/js/benchmark-files/%.js: benchmark-files/%.ml
 js-build:
 	mkdir -p js-build/
 
-js-build/%.js: lib/js/benchmark-files/%.js js-build
+js-build/%.js: lib/js/benchmark-files/%.js js-build | js-build
 	browserify $< -o $@
 
 clean:

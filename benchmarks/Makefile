@@ -2,7 +2,7 @@
 include transform.mk
 
 # Get all source language directories.
-DIRS := $(shell find . -type d -maxdepth 1 -mindepth 1)
+DIRS := $(shell find . -maxdepth 1 -mindepth 1 -type d )
 
 RUNNER = runner.sh
 STOPIFYMK = stopify-Makefile

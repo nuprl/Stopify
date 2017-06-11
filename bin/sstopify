@@ -1,3 +1,0 @@
-#!/bin/bash
-
-node --harmony_tailcalls "`npm root -g`/Stopify/built/src/stopifyStandalone.js" $@

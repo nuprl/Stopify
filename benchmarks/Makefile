@@ -10,20 +10,18 @@ RUNNERMK = runner-Makefile
 TRANSFORMMK = transform.mk
 ENGINEMK = engines.mk
 
-.PHONY: all build stopify clean run
-all: build stopify
-
-# Compile all source language programs to javascript.
-BUILD := $(DIRS:%=%/js-build)
-build: $(BUILD)
-%/js-build: %
-	$(MAKE) --ignore-errors -C $<
-
 # Compile all JS source files with stopify
 # Name of all the stopify directories
 STOPIFY_DIRS := $(foreach tr,$(TRANSFORMS), \
 							   $(foreach d, $(DIRS), $d/js-build/$(tr)))
-stopify: $(STOPIFY_DIRS)
+
+.PHONY: all build stopify clean run
+all: $(STOPIFY_DIRS)
+
+# Compile all source language programs to javascript.
+BUILD := $(DIRS:%=%/js-build)
+%/js-build/: %
+	$(MAKE) -C $<
 
 # Name of all directories to be built wiht %
 TRDIR := $(foreach tr, $(TRANSFORMS), %/js-build/$(tr))

@@ -1,14 +1,13 @@
 import { yieldStopify } from './stopifyImplementation/stopifyYield'
 import { cpsStopify } from './stopifyImplementation/stopifyCPSEval'
-import { trampolinedCpsStopify } from './stopifyImplementation/stopifyCPSTrampoline'
 import { regeneratorStopify } from './stopifyImplementation/stopifyRegenerator'
 import { StopWrapper } from './helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 
 function showUsage() {
-  console.log('Usage: stopify.js -i <filename> -t [cps|tcps|yield|regen] [options]');
-  console.log('       stopify.js -s <string> -t [cps|tcps|yield|regen] [options]\n');
+  console.log('Usage: stopify.js -i <filename> -t [cps|yield|regen] [options]');
+  console.log('       stopify.js -s <string> -t [cps|yield|regen] [options]\n');
   console.log('Options:')
   console.log('  -y, --interval     Set yield interval')
   console.log('  -o, --output       Can be print, eval, benchmark')
@@ -47,9 +46,6 @@ switch(transform) {
     break;
   case 'cps':
     stopifyFunc = cpsStopify
-    break;
-  case 'tcps':
-    stopifyFunc = trampolinedCpsStopify
     break;
   case 'regen':
     stopifyFunc = regeneratorStopify

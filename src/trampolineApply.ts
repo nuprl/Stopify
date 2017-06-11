@@ -23,8 +23,13 @@ const trampolineApplyVisitor : Visitor = {
     const runProg = t.expressionStatement(administrative(t.callExpression(
       t.identifier('$runTrampolined'), [t.identifier('$runProg')]
     )))
-    path.node.body = [letExpression(t.identifier('$runProg'),
-      (<t.ExpressionStatement>path.node.body[0]).expression), runProg]
+    const twrap = t.objectExpression([
+      t.objectProperty(t.identifier('tramp'), t.booleanLiteral(true)),
+      t.objectProperty(t.identifier('f'),
+        t.arrowFunctionExpression([],
+        (<t.ExpressionStatement>path.node.body[0]).expression))])
+
+    path.node.body = [letExpression(t.identifier('$runProg'), twrap), runProg]
   },
 
   ReturnStatement(path: NodePath<isTrampolined<t.ReturnStatement>>): void {

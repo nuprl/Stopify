@@ -110,7 +110,7 @@ switch(output) {
       const stime = process.hrtime()
       prog = stopifyFunc(code)
       ctime = timeInSecs(process.hrtime(stime))
-      console.log(`// Compilation time: ${ctime}`)
+      console.log(`// Compilation time: ${ctime}s`)
     } else {
       prog = stopifyFunc(code)
     }
@@ -120,7 +120,7 @@ switch(output) {
       const stime = process.hrtime()
       prog(sw.isStop.bind(sw), sw.onStop.bind(sw), () => {
         const rtime = process.hrtime(stime)
-        console.log(`// Runtime : ${timeInSecs(rtime)}`)
+        console.log(`// Runtime : ${timeInSecs(rtime)}s`)
       }, interval)
     }
     break;

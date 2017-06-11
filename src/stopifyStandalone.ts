@@ -109,7 +109,7 @@ switch(output) {
     let rtime = "";
     if (process) {
       const stime = process.hrtime()
-      prog(sw.isStop, sw.onStop, () => {
+      prog(sw.isStop.bind(sw), sw.onStop.bind(sw), () => {
         const rtime = process.hrtime(stime)
         console.log(`// Runtime : ${timeInSecs(rtime)}`)
       }, interval)

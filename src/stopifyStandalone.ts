@@ -6,6 +6,9 @@ import {
 import {
   cpsStopify, cpsStopifyPrint
 } from './stopifyStandaloneImpl/stopifyCps'
+import {
+  tcpsStopify, tcpsStopifyPrint
+} from './stopifyStandaloneImpl/stopifyTCps'
 import { StopWrapper } from './helpers'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -67,6 +70,9 @@ switch(output) {
       case 'cps':
         stopifyFunc = cpsStopifyPrint
         break;
+      case 'tcps':
+        stopifyFunc = tcpsStopifyPrint
+        break;
       default:
         throw new Error(`Unknown transform: ${transform}`)
     }
@@ -88,10 +94,13 @@ switch(output) {
     let stopifyFunc;
     switch(transform) {
       case 'yield':
-        stopifyFunc = yieldStopify
+        stopifyFunc = yieldStopify;
         break;
       case 'cps':
-        stopifyFunc = cpsStopify
+        stopifyFunc = cpsStopify;
+        break;
+      case 'tcps':
+        stopifyFunc = tcpsStopify;
         break;
       default:
         throw new Error(`Unknown transform: ${transform}`)

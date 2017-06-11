@@ -79,7 +79,8 @@ switch(output) {
     } else {
       prog = stopifyFunc(code)
     }
-    console.log(prog)
+    const runnableProg = `(${prog})(_ => false, () => 0, x => x, ${interval})`
+    console.log(runnableProg)
     console.log(`// Compilation time: ${time}s`)
     break;
   }

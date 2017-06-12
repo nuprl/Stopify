@@ -15,7 +15,7 @@ ENGINEMK = engines.mk
 STOPIFY_DIRS := $(foreach tr,$(TRANSFORMS), \
 							   $(foreach d, $(DIRS), $d/js-build/$(tr)))
 
-.PHONY: all build stopify clean run
+.PHONY: all build clean run
 all: $(STOPIFY_DIRS)
 
 # Compile all source language programs to javascript.

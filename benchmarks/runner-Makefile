@@ -3,16 +3,62 @@ include transform.mk
 
 # Name of the runner
 RUNNER = "./runner.sh"
-RUNNABLE := $(TRANSFORMS) base
+BASEFILES := $(wildcard base/*.js)
+FILES := $(BASEFILES:base/%=%)
+TIMES := $(foreach t, $(TRANSFORMS), \
+							  $(foreach i, $(INTERVALS), \
+								  $(foreach e, $(ENGINENAME), $e-$t-$i-times.csv))) \
+				 $(foreach e, $(ENGINENAME), $e-base-times.csv)
+#TIMER := $(shell \
+#if [ "$$(uname)" == "Darwin" ]; then \
+	#TIME=`which gtime` \
+#elif  [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then \
+	#TIME="/usr/bin/time" \
+#fi)
+
+UNAME := $(shell uname)
+ifeq ($(UNAME),Darwin)
+	TIMER := $(shell which gtime)
+else
+	TIMER := '/usr/bin/time'
+endif
+
+TIMEFLAGS=--append --format "%E"
 
 time: $(TIMES)
+
+
+# $(1) is the engine name.
+# $(2) is the engine path.
+define BASERUNNER_template
+$(1)-base-times.csv: $(foreach f, $(FILES), base/$(strip $(1))/0/$f)
+
+.PHONY: base/$(strip $(1))/0/%
+base/$(strip $(1))/0/%:
+	@echo 'Baseline $$* with $(strip $(1))'
+	@(echo "$$*,\c" >> $(1)-base-times.csv)
+	@( cat base/$$* | ( $(TIMER) --output=$(strip $(1))-base-times.csv $(TIMEFLAGS) $(2) ) )
+endef
+
+$(foreach e, $(ENGINEDATA), $(eval $(call BASERUNNER_template, \
+															        $(call GET_ENAME,$(e)), \
+														          $(call GET_EPATH,$(e)))))
 
 # $(1) is the path of the javascript engine
 # $(2) is the name of the javascript engine.
 # $(3) is the name of the transform.
+# $(4) is the yield interval
 define RUNNER_template
-$(strip $(2))-$(strip $(3))-times.csv:
-	$$(RUNNER) $(1) $(2) $(3)
+$(strip $(2))-$(strip $(3))-$(strip $(4))-times.csv: \
+	$(foreach f, $(FILES), $(strip $(3))/$(strip $(2))/$(strip $(4))/$f)
+
+$(strip $(3))/$(strip $2)/$(strip $(4))/%:
+	@echo 'Running $(3)/$$* with $(strip $(2))'
+	@(echo "$$*,\c" >> $(strip $(2))-$(strip $(3))-$(strip $(4))-times.csv)
+	@(cat $(3)/$$* | \
+		sed 's/\/\/|INTERVAL|/$(strip $(4)) || /g' $(3)/$$* | \
+		( $(TIMER) --output=$(strip $(2))-$(strip $(3))-$(strip $(4))-times.csv \
+		  $(TIMEFLAGS) $(1)))
 endef
 
 # This creates a target for each combination of the JS engine and
@@ -20,9 +66,14 @@ endef
 # For example, if the directory contains `cps` and `yield` and engines `node`
 # and `js`, targets node-cps-times.csv, node-yield-times.csv,
 # js-yield-times.csv, and js-cps-times.csv will be created.
-$(foreach tr, $(RUNNABLE), \
+$(foreach tr, $(TRANSFORMS), \
 	$(foreach edata, $(ENGINEDATA), \
-		$(eval $(call RUNNER_template, \
-							 $(call GET_EPATH,$(edata)), \
-							 $(call GET_ENAME,$(edata)), \
-							 $(tr)))))
+	  $(foreach interval, $(INTERVALS), \
+			$(eval $(call RUNNER_template, \
+								 $(strip $(call GET_EPATH,$(edata))), \
+								 $(strip $(call GET_ENAME,$(edata))), \
+								 $(tr), \
+								 $(interval))))))
+
+# Rule to debug variables.
+print-%  : ; @echo $* = $($*)

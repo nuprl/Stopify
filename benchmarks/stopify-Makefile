@@ -19,8 +19,9 @@ endef
 # $(1) is the name of the transform
 define stopify_TEMPLATE
 $(1)/%.js: %.js | $(1)
-	( stopify -i $$< -t $(1) > $$@ ) 2> /dev/null || \
-		( printf "failed to stopify \033[0;31m$$@ \033[0m\n" )
+	@echo 'stopify $$* with $(1)'
+	@( stopify -i $$< -t $(1) > $$@ ) 2> /dev/null || \
+		( printf "\033[0;31mFailed to stopify $$@ \033[0m\n" )
 endef
 
 .PHONY: all move-to-base

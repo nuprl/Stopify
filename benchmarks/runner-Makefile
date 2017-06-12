@@ -55,7 +55,7 @@ $(strip $(2))-$(strip $(3))-$(strip $(4))-times.csv: \
 	$(foreach f, $(FILES), $(strip $(3))/$(strip $(2))/$(strip $(4))/$f)
 
 $(strip $(3))/$(strip $2)/$(strip $(4))/%:
-	@echo 'Running $(3)/$$* with $(strip $(2))'
+	@echo 'Running $(3)/$$* with $(strip $(2)), yielding $(4)'
 	@(d=$$$$(mktemp) && echo "$$*,\c" >> $$$$d && \
 		cat $(3)/$$* | \
 		sed 's/\/\/|INTERVAL|/$(strip $(4)) || /g' $(3)/$$* | \

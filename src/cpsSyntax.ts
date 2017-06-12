@@ -12,9 +12,9 @@ import {administrative,
 } from './helpers';
 
 import {
-  AExpr, BExpr, CExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1, BLOp,
-  BAssign, BObj, BArrayLit, BGet, BIncrDecr, BUpdate, BSeq, BThis, BNew,
-  CApp, CCallApp, CApplyApp, CAdminApp, ITE, CLet, FreeVars, fvs, withFVs
+  AExpr, BExpr, CExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1, BLOp, LVal,
+  LValMember, BAssign, BObj, BArrayLit, BGet, BIncrDecr, BUpdate, BSeq, BThis,
+  BNew, CApp, CCallApp, CApplyApp, CAdminApp, ITE, CLet, FreeVars, fvs, withFVs
 } from './cexpr';
 import {CPS, ret} from './cpsMonad';
 import {raiseFuns} from './liftFunExprs';
@@ -63,6 +63,23 @@ function cpsObjMembers(mems: t.ObjectMember[],
     }
   }
 
+function cpsLVal(lval: t.LVal,
+  k: (arg: LVal) => CPS<CExpr,CExpr>,
+  ek: (arg: AExpr) => CPS<CExpr,CExpr>,
+  path: NodePath<t.Node>): CPS<CExpr,CExpr> {
+    switch(lval.type) {
+      case 'Identifier':
+        return k(lval);
+      case 'MemberExpression':
+        return cpsExpr(lval.object, l =>
+          cpsExpr(lval.property, r =>
+              k(new LValMember(l, r, lval.computed)), ek, path),
+          ek, path);
+      default:
+        throw new Error(`Unexpected error: LVal of type ${lval.type} not yet implemented`);
+    }
+  }
+
 function cpsExpr(expr: t.Expression,
   k: (arg: AExpr) => CPS<CExpr,CExpr>,
   ek: (arg: AExpr) => CPS<CExpr,CExpr>,
@@ -86,10 +103,11 @@ function cpsExpr(expr: t.Expression,
         }, ek, path);
       case "AssignmentExpression":
         const assign = path.scope.generateUidIdentifier('assign');
-        return cpsExpr(expr.right, r =>
+        return cpsLVal(expr.left, l =>
+          cpsExpr(expr.right, r =>
           k(assign).map(c =>
-            new CLet('const', assign, new BAssign(expr.operator, withFVs(expr.left), r),
-              c)), ek, path);
+            new CLet('const', assign, new BAssign(expr.operator, l, r),
+              c)), ek, path), ek, path);
       case 'BinaryExpression':
         let bop = path.scope.generateUidIdentifier('bop');
         return cpsExpr(expr.left, l =>
@@ -330,6 +348,18 @@ function cpsStmt(stmt: t.Statement,
     }
   }
 
+function generateLVal(lval: LVal): t.LVal {
+  switch (lval.type) {
+    case 'Identifier':
+      return lval;
+    case 'lval_member':
+      return t.memberExpression(lval.object, lval.property, lval.computed);
+    default:
+      throw new Error(
+        `Unexpected error: JS generation for LVal of typ ${lval.type} not yet implemented`);
+  }
+}
+
 function generateBExpr(bexpr: BExpr): t.Expression {
   switch (bexpr.type) {
     case 'atom':
@@ -348,7 +378,7 @@ function generateBExpr(bexpr: BExpr): t.Expression {
     case 'lop':
       return t.logicalExpression(bexpr.oper, bexpr.l, bexpr.r);
     case 'assign':
-      return t.assignmentExpression(bexpr.operator, <t.LVal>bexpr.x, bexpr.v);
+      return t.assignmentExpression(bexpr.operator, generateLVal(bexpr.x), bexpr.v);
     case 'obj':
       const properties : t.ObjectProperty[] = [];
       bexpr.fields.forEach((value, key) =>

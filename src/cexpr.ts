@@ -44,7 +44,31 @@ export abstract class Node {
 
 export type AExpr = t.Identifier | t.Literal;
 
-export function fvs(a: AExpr | t.SpreadElement): Set<string> {
+export class LValMember extends Node {
+  type: 'lval_member';
+  object: AExpr;
+  property: AExpr;
+  computed: boolean;
+
+  constructor(object: AExpr,  property: AExpr, computed: boolean) {
+    super(object, property, computed);
+    this.type = 'lval_member';
+  }
+
+  init(object: AExpr,  property: AExpr, computed: boolean): void {
+    this.object = object;
+    this.property = property;
+    this.computed = computed;
+  }
+
+  fvs(): void {
+    this.freeVars = union(fvs(this.object), fvs(this.property));
+  }
+}
+
+export type LVal = AExpr | LValMember
+
+export function fvs(a: LVal | t.SpreadElement): Set<string> {
   if (t.isIdentifier(a)) {
     return new Set([a.name]);
   } else if (t.isLiteral(a)) {
@@ -55,6 +79,8 @@ export function fvs(a: AExpr | t.SpreadElement): Set<string> {
     } else {
       return new Set();
     }
+  } else if (a.type === 'lval_member') {
+    return a.freeVars;
   }
 
   // unreachable
@@ -131,7 +157,7 @@ export class BAtom extends Node {
   init(atom: AExpr): void {
     this.atom = atom;
   }
-  
+
   fvs(): void {
     this.freeVars = fvs(this.atom);
   }
@@ -168,7 +194,7 @@ export class BOp1 extends Node {
     super(oper, v);
     this.type = 'op1';
   }
-  
+
   init(oper: unop, v: AExpr) {
     this.oper = oper;
     this.v = v;
@@ -189,7 +215,7 @@ export class BLOp extends Node {
     super(oper, l, r);
     this.type = 'lop';
   }
-  
+
   init(oper: '||' | '&&', l: AExpr, r: AExpr): void {
     this.oper = oper;
     this.l = l;
@@ -204,22 +230,22 @@ export class BLOp extends Node {
 export class BAssign extends Node {
   type: 'assign';
   operator: string;
-  x: FreeVars<t.LVal>;
+  x: LVal;
   v: AExpr;
 
-  constructor(operator: string, x: FreeVars<t.LVal>, v: AExpr) {
+  constructor(operator: string, x: LVal, v: AExpr) {
     super(operator, x, v);
     this.type = 'assign';
   }
 
-  init(operator: string, x: FreeVars<t.LVal>, v: AExpr): void {
+  init(operator: string, x: AExpr, v: AExpr): void {
     this.operator = operator;
     this.x = x;
     this.v = v;
   }
-  
+
   fvs(): void {
-    this.freeVars = union(this.x.freeVars, fvs(this.v));
+    this.freeVars = union(fvs(this.x), fvs(this.v));
   }
 }
 
@@ -233,7 +259,7 @@ export class BGet extends Node {
     super(object, property, computed);
     this.type = 'get';
   }
-  
+
   init(object: AExpr,  property: AExpr, computed: boolean): void {
     this.object = object;
     this.property = property;
@@ -259,7 +285,7 @@ export class BObj extends Node {
     super(fields);
     this.type = 'obj';
   }
-  
+
   init(fields: Map<AExpr, AExpr>): void {
     this.fields = fields;
   }
@@ -278,7 +304,7 @@ export class BArrayLit extends Node {
     super(arrayItems);
     this.type = 'arraylit';
   }
-  
+
   init(arrayItems: AExpr[]): void {
     this.arrayItems = arrayItems;
   }
@@ -299,7 +325,7 @@ export class BIncrDecr extends Node {
     super(operator, argument, prefix);
     this.type = 'incr/decr';
   }
-  
+
   init(operator: '++' | '--', argument: AExpr, prefix: boolean): void {
     this.operator = operator;
     this.argument = argument;
@@ -321,7 +347,7 @@ export class BUpdate extends Node {
     super(obj, key, e);
     this.type = 'update';
   }
-  
+
   init(obj: AExpr, key: AExpr, e: AExpr): void {
     this.obj = obj;
     this.key = key;
@@ -341,7 +367,7 @@ export class BSeq extends Node {
     super(elements);
     this.type = 'seq';
   }
-  
+
   init(elements: AExpr[]): void {
     this.elements = elements;
   }
@@ -359,7 +385,7 @@ export class BThis extends Node {
     super();
     this.type = 'this';
   }
-  
+
   init(): void {}
 
   fvs(): void {
@@ -376,7 +402,7 @@ export class BNew extends Node {
     super(f, args);
     this.type = 'new';
   }
-  
+
   init(f: AExpr, args: (AExpr | t.SpreadElement)[]): void {
     this.f = f;
     this.args = args;
@@ -387,31 +413,6 @@ export class BNew extends Node {
     .reduce((a, b) => union(a, b), fvs(this.f));
   }
 }
-
-/*
-export class BCond extends Node {
-  type: 'conditional';
-  test: BExpr;
-  consequent: BExpr;
-  alternate: BExpr;
-  
-  constructor(test: BExpr, consequent: BExpr, alternate: BExpr) {
-    super(test, consequent, alternate);
-    this.type = 'conditional';
-  }
-
-  init(test: BExpr, consequent: BExpr, alternate: BExpr): void {
-    this.test = test;
-    this.consequent = consequent;
-    this.alternate = alternate;
-  }
-  
-  fvs(): void {
-    this.freeVars = union(this.test.freeVars,
-      union(this.consequent.freeVars, this.alternate.freeVars));
-  }
-}
-*/
 
 export type BExpr =
   BFun | BAdminFun | BAtom | BOp2 | BOp1 | BLOp | BAssign | BGet | BObj |
@@ -426,7 +427,7 @@ export class CApp extends Node {
     super(f, args);
     this.type = 'app';
   }
-  
+
   init(f: AExpr, args: (AExpr | t.SpreadElement)[]): void {
     this.f = f;
     this.args = args;
@@ -452,7 +453,7 @@ export class CCallApp extends Node {
     this.f = f;
     this.args = args;
   }
-  
+
   fvs(): void {
     this.freeVars = this.args.map(x => fvs(x))
     .reduce((a, b) => union(a, b), fvs(this.f));
@@ -468,7 +469,7 @@ export class CApplyApp extends Node {
     super(f, args);
     this.type = 'applyapp';
   }
-  
+
   init(f: AExpr, args: (AExpr | t.SpreadElement)[]): void {
     this.f = f;
     this.args = args;
@@ -511,11 +512,11 @@ export class ITE extends Node {
     super(e1, e2, e3);
     this.type = 'ITE';
   }
-  
+
   init(e1: AExpr, e2: CExpr, e3: CExpr): void {
-    this.e1 = e1;  
-    this.e2 = e2;  
-    this.e3 = e3;  
+    this.e1 = e1;
+    this.e2 = e2;
+    this.e3 = e3;
   }
 
   fvs(): void {
@@ -527,7 +528,7 @@ export class ITE extends Node {
 export class CLet extends Node {
   type: 'let';
   kind: kind;
-  x: t.Identifier; 
+  x: t.Identifier;
   named: BExpr;
   body: CExpr;
 
@@ -535,7 +536,7 @@ export class CLet extends Node {
     super(kind, x, named, body);
     this.type = 'let';
   }
-  
+
   init(kind: kind, x: t.Identifier, named: BExpr, body: CExpr): void {
     this.kind = kind;
     this.x = x;

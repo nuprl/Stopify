@@ -9,7 +9,7 @@ const funcd: VisitNode<h.Transformed<t.FunctionDeclaration>> = {
     if(path.node.isTransformed) {
       const markCall = h.directApply(
         t.callExpression(markFuncName, [path.node.id]));
-      path.insertAfter(markCall)
+      path.insertAfter(t.expressionStatement(markCall))
     }
   }
 }

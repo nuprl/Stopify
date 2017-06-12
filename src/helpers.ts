@@ -50,6 +50,9 @@ export type Apply<T> = T & {
 export type Direct<T> = T & {
     isDirect?: boolean
 }
+export type KArg<T> = T & {
+  kArg: t.Expression;
+}
 const hoisted = <T>(t: T) => tag('hoisted', t, true);
 const breakLbl = <T>(t: T, v: t.Identifier) => tag('break_label', t, v);
 const continueLbl = <T>(t: T, v: t.Identifier) => tag('continue_label', t, v);
@@ -58,10 +61,7 @@ const call = <T>(t: T) => tag('isCall', t, true);
 const apply = <T>(t: T) => tag('isApply', t, true);
 const directApply = <T>(t: T) => tag('isDirect', t, true);
 const transformed = <T>(t: T) => tag('isTransformed', t, true);
-
-export interface ReturnStatement extends t.ReturnStatement {
-  kArg: t.Expression;
-};
+const kArg = <T>(t: T, v: t.Identifier) => tag('kArg', t, v);
 
 // Object to wrap the state of the stop, onStop, isStop functions
 class StopWrapper {
@@ -183,6 +183,7 @@ export {
   transformed,
   breakLbl,
   continueLbl,
+  kArg,
   letExpression,
   flatBodyStatement,
   transform,

@@ -9,6 +9,7 @@ import * as desugarSwitch from '../desugarSwitch';
 import * as desugarWhileToFunc from '../desugarLoopToFunc';
 import * as desugarLabel from '../desugarLabel';
 import * as trampolineApply from '../trampolineApply';
+import * as liftVar from '../liftVar';
 
 // Call Expression naming transform.
 import * as makeBlockStmt from '../makeBlockStmt';
@@ -114,7 +115,7 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
 
 export const tcpsStopifyPrint: stopifyPrint = (code) => {
   const plugins = [
-    [noArrows, desugarLoop, desugarLabel, desugarFunctionDecl, desugarNew],
+    [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
     [desugarSwitch, desugarWhileToFunc],
     [makeBlockStmt, addKArg],
     [cps, applyStop, trampolineApply, transformMarked],

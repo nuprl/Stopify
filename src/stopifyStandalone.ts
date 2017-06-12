@@ -47,11 +47,11 @@ if (transform === undefined) {
 }
 
 
-let interval = argv.y || argv.yieldInterval || 10
+let interval = argv.y || argv.yieldInterval || 100
 if (interval !== undefined) {
   let interval = parseInt(argv.y || argv.yieldInterval)
   if (isNaN(interval)) {
-    interval = 10;
+    interval = 100;
   }
 }
 

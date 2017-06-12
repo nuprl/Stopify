@@ -153,9 +153,13 @@ function cpsExpr(expr: t.Expression,
       case "CallExpression":
         const callee = expr.callee;
         if (t.isMemberExpression(callee) &&
-          t.isIdentifier(callee.property) &&
-          (callee.property.name === 'apply' ||
-            callee.property.name === 'call')) {
+          ((t.isIdentifier(callee.property) &&
+            (callee.property.name === 'apply' ||
+              callee.property.name === 'call')) ||
+            ((callee.computed &&
+              t.isStringLiteral(callee.property) &&
+              (callee.property.value === 'apply' ||
+                callee.property.value === 'call'))))) {
           const bnd = path.scope.generateUidIdentifier('bind');
           return cpsExpr(callee.object, f =>
             cpsExprList(expr.arguments, args => {

@@ -37,7 +37,8 @@ $(1)-base-times.csv: $(foreach f, $(FILES), base/$(strip $(1))/0/$f)
 base/$(strip $(1))/0/%:
 	@echo 'Baseline $$* with $(strip $(1))'
 	@(echo "$$*,\c" >> $(1)-base-times.csv)
-	@( cat base/$$* | ( $(TIMER) --output=$(strip $(1))-base-times.csv $(TIMEFLAGS) $(2) ) )
+	@( cat base/$$* | \
+		( $(TIMER) --output=$(strip $(1))-base-times.csv $(TIMEFLAGS) $(2) ) )
 endef
 
 $(foreach e, $(ENGINEDATA), $(eval $(call BASERUNNER_template, \
@@ -54,11 +55,11 @@ $(strip $(2))-$(strip $(3))-$(strip $(4))-times.csv: \
 
 $(strip $(3))/$(strip $2)/$(strip $(4))/%:
 	@echo 'Running $(3)/$$* with $(strip $(2))'
-	@(echo "$$*,\c" >> $(strip $(2))-$(strip $(3))-$(strip $(4))-times.csv)
-	@(cat $(3)/$$* | \
+	@(d=$$$$(mktemp) && echo "$$*,\c" >> $$$$d && \
+		cat $(3)/$$* | \
 		sed 's/\/\/|INTERVAL|/$(strip $(4)) || /g' $(3)/$$* | \
-		( $(TIMER) --output=$(strip $(2))-$(strip $(3))-$(strip $(4))-times.csv \
-		  $(TIMEFLAGS) $(1)))
+		( $(TIMER) --output=$$$$d $(TIMEFLAGS) $(1)) && \
+		cat $$$$d >> $(strip $(2))-$(strip $(3))-$(strip $(4))-times.csv)
 endef
 
 # This creates a target for each combination of the JS engine and

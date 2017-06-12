@@ -4,13 +4,18 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {FunctionNode, KArg, kArg} from './helpers';
+import {FunctionNode, KArg, kArg, Transformed, transformed} from './helpers';
 
 const func : VisitNode<FunctionNode> =
-  function (path: NodePath<FunctionNode>): void {
+  function (path: NodePath<Transformed<t.FunctionExpression>>): void {
+    if (path.node.isTransformed) {
+      path.skip();
+      return;
+    }
     const k = path.scope.generateUidIdentifier('k');
     const ek = path.scope.generateUidIdentifier('ek');
     path.node.params = [k, ek, ...path.node.params];
+    transformed(path.node);
   };
 
 const returnVisit : VisitNode<KArg<t.ReturnStatement>> =

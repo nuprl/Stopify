@@ -18,11 +18,14 @@ const func : VisitNode<FunctionNode> =
     transformed(path.node);
   };
 
-const returnVisit : VisitNode<KArg<t.ReturnStatement>> =
-  function (path: NodePath<KArg<t.ReturnStatement>>): void {
+const returnVisit : VisitNode<Transformed<KArg<t.ReturnStatement>>> =
+  function (path: NodePath<Transformed<KArg<t.ReturnStatement>>>): void {
+    if (path.node.isTransformed) {
+      return;
+    }
     const functionParent =
       <NodePath<FunctionNode>>path.findParent(x => x.isFunction());
-    kArg(path.node, <t.Identifier>functionParent.node.params[0]);
+    transformed(kArg(path.node, <t.Identifier>functionParent.node.params[0]));
 
     if (path.node.argument === null) {
       path.node.argument = t.unaryExpression('void', t.numericLiteral(0));

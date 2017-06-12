@@ -116,8 +116,8 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
 export const tcpsStopifyPrint: stopifyPrint = (code) => {
   const plugins = [
     [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
-    [desugarSwitch, desugarWhileToFunc],
-    [makeBlockStmt, addKArg],
+    [desugarSwitch, addKArg, desugarWhileToFunc],
+    [makeBlockStmt],
     [cps, applyStop, trampolineApply, transformMarked],
   ];
 

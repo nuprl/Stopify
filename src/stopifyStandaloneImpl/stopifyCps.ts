@@ -103,8 +103,8 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
 export const cpsStopifyPrint: stopifyPrint = (code) => {
   const plugins = [
     [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
-    [desugarSwitch, desugarWhileToFunc],
-    [makeBlockStmt, addKArg],
+    [desugarSwitch, addKArg, desugarWhileToFunc],
+    [makeBlockStmt],
     [cps, applyStop, transformMarked],
   ];
   const transformed = transform(code, plugins);

@@ -51,7 +51,7 @@ export type Direct<T> = T & {
     isDirect?: boolean
 }
 export type KArg<T> = T & {
-  kArg: t.Expression;
+  kArg: t.Identifier;
 }
 const hoisted = <T>(t: T) => tag('hoisted', t, true);
 const breakLbl = <T>(t: T, v: t.Identifier) => tag('break_label', t, v);

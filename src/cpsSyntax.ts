@@ -310,7 +310,7 @@ function cpsStmt(stmt: t.Statement,
       }
       case "ReturnStatement":
         let returnK = (r: AExpr) =>
-          ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>(<KArg<t.ReturnStatement>>stmt).kArg, [r]));
+          ret<CExpr,CExpr>(new CAdminApp((<KArg<t.ReturnStatement>>stmt).kArg, [r]));
         return cpsExpr(stmt.argument, returnK, ek, path);
       case 'ThrowStatement':
         return cpsExpr(stmt.argument, ek, v =>

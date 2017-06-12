@@ -50,6 +50,7 @@ echo "" > $LOG
 
 # Log time taken to run each file.
 for i in `ls $BENCHDIR`; do
+  echo "running $BENCHDIR/$i"
   echo -n "$i," >> $LOG
   $TIME --output=$LOG $TIMEFLAGS  "$ENGINE" $BENCHDIR/$i
 done

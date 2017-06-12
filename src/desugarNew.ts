@@ -6,7 +6,8 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import { letExpression, transformed, OptimizeMark } from './helpers';
+import { letExpression, transformed, OptimizeMark, NewTag, newTag }
+from './helpers';
 
 const newFuncName: t.Identifier = t.identifier('$handleNew');
 const knownsId: t.Identifier = t.identifier('$knownBuiltIns');
@@ -60,7 +61,7 @@ const handleNewFunc = letExpression(newFuncName, t.functionExpression(
     t.ifStatement(
       t.callExpression(t.memberExpression(knownsId, t.identifier('includes')),
         [constr]),
-      t.blockStatement([t.returnStatement(t.newExpression(constr, [spreadArgs]))]),
+      t.blockStatement([t.returnStatement(newTag(t.newExpression(constr, [spreadArgs])))]),
       t.blockStatement([
         letExpression(t.identifier('a'),
           t.callExpression(t.memberExpression(t.identifier('Object'),
@@ -75,21 +76,21 @@ const handleNewFunc = letExpression(newFuncName, t.functionExpression(
 
 const program: VisitNode<t.Program> = {
   exit(path: NodePath<t.Program>) {
-    path.node.body.unshift(handleNewFunc);
-    path.node.body.unshift(knowns);
+    (<any>path).unshiftContainer('body', handleNewFunc);
+    (<any>path).unshiftContainer('body', knowns);
   }
 }
 
-const newVisit: VisitNode<OptimizeMark<t.NewExpression>> =
-  function (path: NodePath<OptimizeMark<t.NewExpression>>): void {
+const newVisit: VisitNode<OptimizeMark<NewTag<t.NewExpression>>> =
+  function (path: NodePath<OptimizeMark<NewTag<t.NewExpression>>>): void {
     if (path.node.OptimizeMark === 'Untransformed') {
       return;
     }
+    if (path.node.new) {
+      return;
+    }
     const { callee, arguments: args } = path.node;
-    path.replaceWith(t.callExpression(
-      t.identifier('$handleNew'),
-      [callee, ...args]
-    ))
+    path.replaceWith(t.callExpression(newFuncName, [callee, ...args]));
 };
 
 module.exports = function () {

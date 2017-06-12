@@ -175,7 +175,9 @@ function cpsExpr(expr: t.Expression,
                         new CCallApp(f, [kFun, kErr, ...args])))));
             }, ek, path), ek, path);
         } else if (t.isMemberExpression(callee) &&
-          t.isIdentifier(callee.property)) {
+          (t.isIdentifier(callee.property) ||
+            ((callee.computed &&
+              t.isStringLiteral(callee.property))))) {
           const bnd = path.scope.generateUidIdentifier('bind');
           return cpsExpr(callee.object, f =>
             cpsExprList(expr.arguments, args => {
@@ -184,7 +186,7 @@ function cpsExpr(expr: t.Expression,
               const r = path.scope.generateUidIdentifier('r');
               return k(r).bind(kn =>
                 ek(r).map(ekn =>
-                  new CLet('const', bnd, new BGet(f, <t.Identifier>callee.property, false),
+                  new CLet('const', bnd, new BGet(f, <AExpr>callee.property, callee.computed),
                     new CLet('const', kFun, new BAdminFun(undefined, [r], kn),
                       new CLet('const', kErr, new BAdminFun(undefined, [r], ekn),
                         new CCallApp(bnd, [kFun, kErr, f, ...args]))))));

@@ -110,11 +110,10 @@ function cpsExpr(expr: t.Expression,
               new CLet('const', assign, new BAssign(expr.operator, l, r),
                 c)), ek, path), ek, path);
       case 'BinaryExpression':
-        let bop = path.scope.generateUidIdentifier('bop');
         return cpsExpr(expr.left, l =>
           cpsExpr(expr.right, r =>
-            k(bop).map(c => new CLet('const', bop, new BOp2(expr.operator, l, r), c)),
-            ek, path), ek, path);
+            k(new AtomicBExpr(new BOp2(expr.operator, l, r))), ek, path),
+          ek, path);
       case 'LogicalExpression':
         if (expr.operator === '&&') {
           const if_cont = path.scope.generateUidIdentifier('if_cont');
@@ -155,10 +154,8 @@ function cpsExpr(expr: t.Expression,
                   new ITE(tst, consequent, alternate)))));
         }, ek, path);
       case 'UnaryExpression':
-        return cpsExpr(expr.argument, v => {
-          let unop = path.scope.generateUidIdentifier('unop');
-          return k(unop).map(c => new CLet('const', unop, new BOp1(expr.operator, v), c));
-        }, ek, path);
+        return cpsExpr(expr.argument, v =>
+          k(new AtomicBExpr(new BOp1(expr.operator, v))), ek, path);
       case "FunctionExpression":
         let func = path.scope.generateUidIdentifier('func');
         return cpsStmt(expr.body,

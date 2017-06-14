@@ -2,6 +2,12 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {Hoisted, hoisted, letExpression} from './helpers';
 
+function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression {
+  return decl.init === null ?
+    t.assignmentExpression('=', decl.id, t.nullLiteral()) :
+    t.assignmentExpression('=', decl.id, decl.init)
+}
+
 const lift: Visitor = {
   VariableDeclaration:
   function (path: NodePath<Hoisted<t.VariableDeclaration>>): void {
@@ -20,11 +26,10 @@ const lift: Visitor = {
           (<any>topScope.get('body')).unshiftContainer('body',
             hoisted(t.variableDeclaration('var',
             ids.map(id => t.variableDeclarator(id, undefined)))));
-          path.replaceWith(t.expressionStatement(t.sequenceExpression(
-            declarations.map(decl =>
-              decl.init === null ?
-              t.assignmentExpression('=', decl.id, t.nullLiteral()) :
-              t.assignmentExpression('=', decl.id, decl.init)))));
+          const exp = declarations.length === 1 ?
+            declToAssign(declarations[0]):
+            t.sequenceExpression(declarations.map(decl => declToAssign(decl)));
+          path.replaceWith(exp);
           break;
         }
         case 'Program':
@@ -34,11 +39,10 @@ const lift: Visitor = {
           (<any>topScope).unshiftContainer('body',
             hoisted(t.variableDeclaration('var',
             ids.map(id => t.variableDeclarator(id, undefined)))));
-          path.replaceWith(t.expressionStatement(t.sequenceExpression(
-            declarations.map(decl =>
-              decl.init === null ?
-              t.assignmentExpression('=', decl.id, t.nullLiteral()) :
-              t.assignmentExpression('=', decl.id, decl.init)))));
+          const exp = declarations.length === 1 ?
+            declToAssign(declarations[0]):
+            t.sequenceExpression(declarations.map(decl => declToAssign(decl)));
+          path.replaceWith(t.expressionStatement(exp));
           break;
         default:
           throw new Error(

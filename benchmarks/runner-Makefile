@@ -6,15 +6,9 @@ RUNNER = "./runner.sh"
 BASEFILES := $(wildcard base/*.js)
 FILES := $(BASEFILES:base/%=%)
 TIMES := $(foreach t, $(TRANSFORMS), \
-							  $(foreach i, $(INTERVALS), \
-								  $(foreach e, $(ENGINENAME), $e-$t-$i-times.csv))) \
+				   $(foreach i, $(INTERVALS), \
+					   $(foreach e, $(ENGINENAME), $e-$t-$i-times.csv))) \
 				 $(foreach e, $(ENGINENAME), $e-base-times.csv)
-#TIMER := $(shell \
-#if [ "$$(uname)" == "Darwin" ]; then \
-	#TIME=`which gtime` \
-#elif  [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then \
-	#TIME="/usr/bin/time" \
-#fi)
 
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
@@ -26,7 +20,6 @@ endif
 TIMEFLAGS=--append --format "%E"
 
 time: $(TIMES)
-
 
 # $(1) is the engine name.
 # $(2) is the engine path.

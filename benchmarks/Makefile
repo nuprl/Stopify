@@ -6,8 +6,6 @@ DIRS := $(shell find . -maxdepth 1 -mindepth 1 -type d )
 
 STOPIFYMK = stopify-Makefile
 RUNNERMK = runner-Makefile
-TRANSFORMMK = transform.mk
-ENGINEMK = engines.mk
 
 # Compile all JS source files with stopify
 # Name of all the stopify directories
@@ -35,22 +33,17 @@ RUNDEP := $(foreach b, $(BUILD), $(foreach r, $(RUNFILES), $b/$r))
 run: all $(RUNDEP)
 	$(foreach b, $(BUILD), $(MAKE) -C $b -f $(RUNNERMK); )
 
-define cp_TEMPLATE
-$(1)/js-build/stopify-Makefile : ./stopify-Makefile $(1)/js-build/transform.mk | $(1)/js-build
-	cp $(STOPIFYMK) $$@;
+%/js-build/stopify-Makefile : ./stopify-Makefile %/js-build/transform.mk | %/js-build
+	cp $(STOPIFYMK) $@;
 
-$(1)/js-build/transform.mk: ./transform.mk | $(1)/js-build
-	cp $(TRANSFORMMK) $$@
+%/js-build/transform.mk: ./transform.mk | %/js-build
+	cp ./transform.mk $@
 
-$(1)/js-build/engines.mk: ./engines.mk | $(1)/js-build
-	cp ./engines.mk $$@
+%/js-build/engines.mk: ./engines.mk | %/js-build
+	cp ./engines.mk $@
 
-$(1)/js-build/runner-Makefile: runner-Makefile $(1)/js-build/engines.mk $(1)/js-build transform.mk | $(1)/js-build
-	cp $(RUNNERMK) $$@;
-endef
-
-# Build cp rules for each soure language
-$(foreach d, $(DIRS), $(eval $(call cp_TEMPLATE,$d)))
+%/js-build/runner-Makefile: runner-Makefile %/js-build/engines.mk %/js-build transform.mk | %/js-build
+	cp $(RUNNERMK) $@;
 
 # Rules for cleanup
 clean:

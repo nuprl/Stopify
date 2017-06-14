@@ -222,10 +222,9 @@ function cpsExpr(expr: t.Expression,
         }
       case 'MemberExpression':
         return cpsExpr(expr.object, o =>
-          cpsExpr(expr.property, p => {
-            const obj = path.scope.generateUidIdentifier('obj');
-            return k(obj).map(c => new CLet('const', obj, new BGet(o, p, expr.computed), c));
-          }, ek, path), ek, path);
+          cpsExpr(expr.property, p =>
+            k(new AtomicBExpr(new BGet(o, p, expr.computed))), ek, path),
+          ek, path);
       case 'NewExpression':
         const tmp = path.scope.generateUidIdentifier('new');
         return cpsExpr(expr.callee, f =>

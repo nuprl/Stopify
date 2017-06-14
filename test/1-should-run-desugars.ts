@@ -23,6 +23,7 @@ const desugarPlugs: any[][] = [
 
 // NOTE(rachit): Don't use arrow functions, otherwise timeout doesn't work.
 describe('Desugaring tests', function () {
+  this.timeout(0)
   f.testFiles.forEach(function(filename: string) {
     const prog = fs.readFileSync(filename, 'utf-8').toString();
     it(filename, function () {

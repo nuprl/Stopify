@@ -98,8 +98,10 @@ function cpsExpr(expr: t.Expression,
       case 'TemplateLiteral':
         return k(expr);
       case 'ArrayExpression':
-        return cpsExprList(expr.elements, (args: AExpr[]) =>
-          k(new AtomicBExpr(new BArrayLit(args))), ek, path);
+        return cpsExprList(expr.elements, (args: AExpr[]) => {
+          const arr = path.scope.generateUidIdentifier('arr');
+          return k(arr).map(c => new CLet('const', arr, new BArrayLit(args), c));
+        }, ek, path);
       case "AssignmentExpression":
         const assign = path.scope.generateUidIdentifier('assign');
         return cpsLVal(expr.left, l =>

@@ -106,9 +106,9 @@ function cpsExpr(expr: t.Expression,
         const assign = path.scope.generateUidIdentifier('assign');
         return cpsLVal(expr.left, l =>
           cpsExpr(expr.right, r =>
-          k(assign).map(c =>
-            new CLet('const', assign, new BAssign(expr.operator, l, r),
-              c)), ek, path), ek, path);
+            k(assign).map(c =>
+              new CLet('const', assign, new BAssign(expr.operator, l, r),
+                c)), ek, path), ek, path);
       case 'BinaryExpression':
         let bop = path.scope.generateUidIdentifier('bop');
         return cpsExpr(expr.left, l =>
@@ -251,8 +251,7 @@ function cpsExpr(expr: t.Expression,
           return k(seq).map(c => new CLet('const', seq, new BSeq(vs), c));
         }, ek, path);
       case 'ThisExpression':
-        const ths = path.scope.generateUidIdentifier('this');
-        return k(ths).map(c => new CLet('const', ths, new BThis(), c));
+        return k(new AtomicBExpr(new BThis()));
       case 'UpdateExpression': {
         const tmp = path.scope.generateUidIdentifier('update');
         return k(tmp).bind(c =>

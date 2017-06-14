@@ -176,7 +176,6 @@ function cpsExpr(expr: t.Expression,
               t.isStringLiteral(callee.property) &&
               (callee.property.value === 'apply' ||
                 callee.property.value === 'call'))))) {
-          const bnd = path.scope.generateUidIdentifier('bind');
           return cpsExpr(callee.object, f =>
             cpsExprList(expr.arguments, args => {
               const kFun = path.scope.generateUidIdentifier('kFun');
@@ -194,7 +193,6 @@ function cpsExpr(expr: t.Expression,
           (t.isIdentifier(callee.property) ||
             ((callee.computed &&
               t.isStringLiteral(callee.property))))) {
-          const bnd = path.scope.generateUidIdentifier('bind');
           return cpsExpr(callee.object, f =>
             cpsExprList(expr.arguments, args => {
               const kFun = path.scope.generateUidIdentifier('kFun');
@@ -202,10 +200,11 @@ function cpsExpr(expr: t.Expression,
               const r = path.scope.generateUidIdentifier('r');
               return k(r).bind(kn =>
                 ek(r).map(ekn =>
-                  new CLet('const', bnd, new BGet(f, <AExpr>callee.property, callee.computed),
-                    new CLet('const', kFun, new BAdminFun(undefined, [r], kn),
-                      new CLet('const', kErr, new BAdminFun(undefined, [r], ekn),
-                        new CCallApp(bnd, [kFun, kErr, f, ...args]))))));
+                  new CLet('const', kFun, new BAdminFun(undefined, [r], kn),
+                    new CLet('const', kErr, new BAdminFun(undefined, [r], ekn),
+                      new CCallApp(new AtomicBExpr(new BGet(f,
+                        <AExpr>callee.property, callee.computed)),
+                        [kFun, kErr, f, ...args])))));
             }, ek, path), ek, path);
         } else {
           return cpsExpr(callee, f =>

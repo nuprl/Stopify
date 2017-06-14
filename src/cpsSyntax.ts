@@ -165,10 +165,7 @@ function cpsExpr(expr: t.Expression,
           r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[0], [r])),
           r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[1], [r])),
           path).bind(body =>
-            k(func).map(e =>
-              new CLet('const', func,
-                new BFun(expr.id, <t.Identifier[]>expr.params, body),
-                e)));
+            k(new AtomicBExpr(new BFun(expr.id, <t.Identifier[]>expr.params, body))));
       case "CallExpression":
         const callee = expr.callee;
         if (t.isMemberExpression(callee) &&
@@ -372,9 +369,8 @@ function generateAExpr(aexpr: AExpr): t.Expression {
     case 'RegExpLiteral':
     case 'TemplateLiteral':
       return aexpr;
-    default:
-      throw new Error(
-        `Unexpected error: JS generation for AExpr of typ ${aexpr.type} not yet implemented`);
+    case 'atomic_bexpr':
+      return generateBExpr(aexpr.bexpr);
   }
 }
 

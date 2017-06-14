@@ -1,12 +1,12 @@
 import * as t from 'babel-types';
 
-import { CExpr, BFun, BAdminFun, ITE, CLet } from './cexpr';
+import { CExpr, AtomicBExpr, BAtom, BFun, BAdminFun, ITE, CLet } from './cexpr';
 import {CPS, ret} from './cpsMonad';
 import {diff, intersect} from './helpers';
 
 type T = {
   body: CExpr,
-  funs: { id: t.Identifier, f: BFun | BAdminFun }[],
+  funs: { id: t.Identifier, f: BAtom | BFun | BAdminFun }[],
 }
 
 function bindFuns(x: T): CExpr {
@@ -52,6 +52,16 @@ export function raiseFuns(expr: CExpr): CExpr {
           }));
       }
 
+    function crecDefault(locals: Set<string>, cexpr: CLet): CPS<T,CExpr> {
+      return crec(new Set(locals).add(cexpr.x.name), cexpr.body).map(a => {
+        const { body, funs } = a;
+        return {
+          body: new CLet(cexpr.kind, cexpr.x, cexpr.named, body),
+          funs: funs
+        };
+      });
+    }
+
     switch (cexpr.type) {
       case 'let': {
         const named = cexpr.named;
@@ -60,14 +70,23 @@ export function raiseFuns(expr: CExpr): CExpr {
             return crecFun(locals, BFun, named, cexpr);
           case 'BAdminFun':
             return crecFun(locals, BAdminFun, named, cexpr);
+          case 'atom': {
+            switch (named.atom.type) {
+              case 'atomic_bexpr':
+                switch (named.atom.bexpr.type) {
+                  case 'BFun':
+                    return crecFun(locals, BFun, named.atom.bexpr, cexpr);
+                  case 'BAdminFun':
+                    return crecFun(locals, BAdminFun, named.atom.bexpr, cexpr);
+                  default:
+                    return crecDefault(locals, cexpr);
+                }
+              default:
+                return crecDefault(locals, cexpr);
+            }
+          }
           default:
-            return crec(new Set(locals).add(cexpr.x.name), cexpr.body).map(a => {
-              const { body, funs } = a;
-              return {
-                body: new CLet(cexpr.kind, cexpr.x, cexpr.named, body),
-                funs: funs
-              };
-            });
+            return crecDefault(locals, cexpr);
         }        
       }
       case 'ITE': {

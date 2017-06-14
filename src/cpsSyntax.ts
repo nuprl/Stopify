@@ -155,7 +155,6 @@ function cpsExpr(expr: t.Expression,
         return cpsExpr(expr.argument, v =>
           k(new AtomicBExpr(new BOp1(expr.operator, v))), ek, path);
       case "FunctionExpression":
-        let func = path.scope.generateUidIdentifier('func');
         return cpsStmt(expr.body,
           r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[0], [r])),
           r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[1], [r])),

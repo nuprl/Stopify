@@ -12,9 +12,10 @@ import {administrative,
 } from './helpers';
 
 import {
-  AExpr, BExpr, CExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1, BLOp, LVal,
-  LValMember, BAssign, BObj, BArrayLit, BGet, BIncrDecr, BUpdate, BSeq, BThis,
-  BNew, CApp, CCallApp, CApplyApp, CAdminApp, ITE, CLet, FreeVars, fvs, withFVs
+  AExpr, BExpr, CExpr, AtomicBExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1,
+  BLOp, LVal, LValMember, BAssign, BObj, BArrayLit, BGet, BIncrDecr, BUpdate,
+  BSeq, BThis, BNew, CApp, CCallApp, CApplyApp, CAdminApp, ITE, CLet, FreeVars,
+  fvs, withFVs
 } from './cexpr';
 import {CPS, ret} from './cpsMonad';
 import {raiseFuns} from './liftFunExprs';
@@ -353,17 +354,43 @@ function generateLVal(lval: LVal): t.LVal {
     case 'Identifier':
       return lval;
     case 'lval_member':
-      return t.memberExpression(lval.object, lval.property, lval.computed);
+      return t.memberExpression(generateAExpr(lval.object),
+        generateAExpr(lval.property), lval.computed);
     default:
       throw new Error(
         `Unexpected error: JS generation for LVal of typ ${lval.type} not yet implemented`);
   }
 }
 
+function generateAExpr(aexpr: AExpr): t.Expression {
+  switch (aexpr.type) {
+    case 'Identifier':
+    case 'BooleanLiteral':
+    case 'NumericLiteral':
+    case 'StringLiteral':
+    case 'NullLiteral':
+    case 'RegExpLiteral':
+    case 'TemplateLiteral':
+      return aexpr;
+    default:
+      throw new Error(
+        `Unexpected error: JS generation for AExpr of typ ${aexpr.type} not yet implemented`);
+  }
+}
+
+function generateAExprSpread(aexpr: AExpr | t.SpreadElement): t.Expression | t.SpreadElement{
+  switch (aexpr.type) {
+    case 'SpreadElement':
+      return aexpr;
+    default:
+      return generateAExpr(aexpr);
+  }
+}
+
 function generateBExpr(bexpr: BExpr): t.Expression {
   switch (bexpr.type) {
     case 'atom':
-      return bexpr.atom;
+      return generateAExpr(bexpr.atom);
     case 'BFun':
       return transformed(t.functionExpression(bexpr.id,
         bexpr.args,
@@ -372,30 +399,36 @@ function generateBExpr(bexpr: BExpr): t.Expression {
       return t.arrowFunctionExpression(bexpr.args,
         flatBodyStatement(generateJS(bexpr.body)));
     case 'op2':
-      return t.binaryExpression(bexpr.oper, bexpr.l, bexpr.r);
+      return t.binaryExpression(bexpr.oper,
+        generateAExpr(bexpr.l), generateAExpr(bexpr.r));
     case 'op1':
-      return t.unaryExpression(bexpr.oper, bexpr.v);
+      return t.unaryExpression(bexpr.oper, generateAExpr(bexpr.v));
     case 'lop':
-      return t.logicalExpression(bexpr.oper, bexpr.l, bexpr.r);
+      return t.logicalExpression(bexpr.oper,
+        generateAExpr(bexpr.l), generateAExpr(bexpr.r));
     case 'assign':
-      return t.assignmentExpression(bexpr.operator, generateLVal(bexpr.x), bexpr.v);
+      return t.assignmentExpression(bexpr.operator,
+        generateLVal(bexpr.x), generateAExpr(bexpr.v));
     case 'obj':
       const properties : t.ObjectProperty[] = [];
       bexpr.fields.forEach((value, key) =>
-        properties.push(t.objectProperty(key, value)));
+        properties.push(t.objectProperty(key, generateAExpr(value))));
       return t.objectExpression(properties);
     case 'get':
-      return t.memberExpression(bexpr.object, bexpr.property, bexpr.computed);
+      return t.memberExpression(generateAExpr(bexpr.object),
+        generateAExpr(bexpr.property), bexpr.computed);
     case 'incr/decr':
-      return t.updateExpression(bexpr.operator, bexpr.argument, bexpr.prefix);
+      return t.updateExpression(bexpr.operator,
+        generateAExpr(bexpr.argument), bexpr.prefix);
     case 'arraylit':
-      return t.arrayExpression(bexpr.arrayItems);
+      return t.arrayExpression(bexpr.arrayItems.map(x => generateAExpr(x)));
     case 'seq':
-      return t.sequenceExpression(bexpr.elements);
+      return t.sequenceExpression(bexpr.elements.map(x => generateAExpr(x)));
     case 'this':
       return t.thisExpression();
     case 'new':
-      return t.newExpression(bexpr.f, bexpr.args);
+      return t.newExpression(generateAExpr(bexpr.f),
+        bexpr.args.map(x => generateAExprSpread(x)));
     case 'update':
       throw new Error(`${bexpr.type} generation is not yet implemented`);
   }
@@ -404,15 +437,19 @@ function generateBExpr(bexpr: BExpr): t.Expression {
 function generateJS(cexpr: CExpr): t.Statement[] {
   switch (cexpr.type) {
     case 'app':
-      return [t.returnStatement(t.callExpression(cexpr.f, cexpr.args))];
+      return [t.returnStatement(t.callExpression(generateAExpr(cexpr.f),
+        cexpr.args.map(x => generateAExprSpread(x))))];
     case 'callapp':
-      return [t.returnStatement(call(t.callExpression(cexpr.f, cexpr.args)))];
+      return [t.returnStatement(call(t.callExpression(generateAExpr(cexpr.f),
+        cexpr.args.map(x => generateAExprSpread(x)))))];
     case 'applyapp':
-      return [t.returnStatement(apply(t.callExpression(cexpr.f, cexpr.args)))];
+      return [t.returnStatement(apply(t.callExpression(generateAExpr(cexpr.f),
+        cexpr.args.map(x => generateAExprSpread(x)))))];
     case 'adminapp':
-      return [t.returnStatement(administrative(t.callExpression(cexpr.f, cexpr.args)))];
+      return [t.returnStatement(administrative(t.callExpression(generateAExpr(cexpr.f),
+        cexpr.args.map(x => generateAExprSpread(x)))))];
     case 'ITE':
-      return [t.ifStatement(cexpr.e1,
+      return [t.ifStatement(generateAExpr(cexpr.e1),
         flatBodyStatement(generateJS(cexpr.e2)),
         flatBodyStatement(generateJS(cexpr.e3)))];
     case 'let':

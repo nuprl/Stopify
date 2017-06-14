@@ -42,7 +42,25 @@ export abstract class Node {
   }
 }
 
-export type AExpr = t.Identifier | t.Literal;
+export class AtomicBExpr extends Node {
+  type: 'atomic_bexpr';
+  bexpr: BExpr;
+
+  constructor(bexpr: BExpr) {
+    super(bexpr);
+    this.type = 'atomic_bexpr';
+  }
+
+  init(bexpr: BExpr): void {
+    this.bexpr = bexpr;
+  }
+
+  fvs(): void {
+    this.freeVars = this.bexpr.freeVars;
+  }
+}
+
+export type AExpr = t.Identifier | t.Literal | AtomicBExpr;
 
 export class LValMember extends Node {
   type: 'lval_member';
@@ -66,9 +84,9 @@ export class LValMember extends Node {
   }
 }
 
-export type LVal = AExpr | LValMember
+export type LVal = t.Identifier | t.Literal | LValMember
 
-export function fvs(a: LVal | t.SpreadElement): Set<string> {
+export function fvs(a: AExpr | LValMember | t.SpreadElement): Set<string> {
   if (t.isIdentifier(a)) {
     return new Set([a.name]);
   } else if (t.isLiteral(a)) {
@@ -238,7 +256,7 @@ export class BAssign extends Node {
     this.type = 'assign';
   }
 
-  init(operator: string, x: AExpr, v: AExpr): void {
+  init(operator: string, x: LVal, v: AExpr): void {
     this.operator = operator;
     this.x = x;
     this.v = v;
@@ -279,14 +297,14 @@ export class BGet extends Node {
 // }
 export class BObj extends Node {
   type: 'obj';
-  fields: Map<AExpr, AExpr>;
+  fields: Map<t.Identifier | t.Literal, AExpr>;
 
-  constructor(fields: Map<AExpr, AExpr>) {
+  constructor(fields: Map<t.Identifier | t.Literal, AExpr>) {
     super(fields);
     this.type = 'obj';
   }
 
-  init(fields: Map<AExpr, AExpr>): void {
+  init(fields: Map<t.Identifier | t.Literal, AExpr>): void {
     this.fields = fields;
   }
 

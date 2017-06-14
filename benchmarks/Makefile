@@ -4,7 +4,6 @@ include transform.mk
 # Get all source language directories.
 DIRS := $(shell find . -maxdepth 1 -mindepth 1 -type d )
 
-RUNNER = runner.sh
 STOPIFYMK = stopify-Makefile
 RUNNERMK = runner-Makefile
 TRANSFORMMK = transform.mk
@@ -30,7 +29,7 @@ $(TRDIR): %/js-build/stopify-Makefile %/js-build/transform.mk
 	$(MAKE) -C $*/js-build -f $(STOPIFYMK)
 
 # Rules for running the benchmarking harness.
-RUNFILES := runner.sh runner-Makefile engines.mk transform.mk
+RUNFILES := runner-Makefile engines.mk transform.mk
 RUNDEP := $(foreach b, $(BUILD), $(foreach r, $(RUNFILES), $b/$r))
 
 run: all $(RUNDEP)
@@ -42,9 +41,6 @@ $(1)/js-build/stopify-Makefile : ./stopify-Makefile $(1)/js-build/transform.mk |
 
 $(1)/js-build/transform.mk: ./transform.mk | $(1)/js-build
 	cp $(TRANSFORMMK) $$@
-
-$(1)/js-build/runner.sh: ./runner.sh | $(1)/js-build
-	cp $(RUNNER) $$@
 
 $(1)/js-build/engines.mk: ./engines.mk | $(1)/js-build
 	cp ./engines.mk $$@

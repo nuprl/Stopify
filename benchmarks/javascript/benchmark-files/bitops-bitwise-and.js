@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-const bitwiseAndValue = 4294967296;
+let bitwiseAndValue = 4294967296;
 for (var i = 0; i < 600000; i++)
     bitwiseAndValue = bitwiseAndValue & i;
 

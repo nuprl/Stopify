@@ -2,7 +2,6 @@
 
 (require plot/no-gui)
 (require slideshow/pict)
-(require file/convertible)
 
 (require "plot-helpers.rkt")
 
@@ -29,22 +28,11 @@
            #:legend-anchor 'top-right
            #:title title) 15))
 
-;; Draw picture to the specified PDF file.
-(define (draw-plot filename pict)
-  (define to-write (convert pict 'pdf-bytes))
-
-  (define out-file (open-output-file filename
-                                     #:mode 'binary
-                                     #:exists 'replace))
-  (write-bytes to-write out-file)
-  (close-output-port out-file))
-
 (define (make-plots files)
   (let ([ plots (map (lambda (f)
                        (compare-latency-tranform f (get-name f)))
                      files)])
-    (foldr (lambda (x y) (vc-append 30 x y)) (car plots) (cdr plots))))
-
+    (join-plots plots)))
 
 (let ([ args (vector->list (current-command-line-arguments)) ])
   (if (< (length args) 2)

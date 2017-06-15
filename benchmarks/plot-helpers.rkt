@@ -2,8 +2,10 @@
 
 (require racket/list)
 (require csv-reading)
+(require file/convertible)
+(require slideshow/pict)
 
-(provide handle-time-output csvfile->list/proc get-name)
+(provide handle-time-output csvfile->list/proc get-name draw-plot join-plots)
 
 ;; Interpret the output from unix time with --format %E.  MM:SS
 ;; Result in seconds
@@ -32,3 +34,17 @@
     (if (not res)
       (raise (format "~a is not in the required format" f))
       (cadr res))))
+
+;; Draw picture to the specified PDF file.
+(define (draw-plot filename pict)
+  (define to-write (convert pict 'pdf-bytes))
+
+  (define out-file (open-output-file filename
+                                     #:mode 'binary
+                                     #:exists 'replace))
+  (write-bytes to-write out-file)
+  (close-output-port out-file))
+
+;; Join plots together
+(define (join-plots plots)
+    (foldr (lambda (x y) (vc-append 30 x y)) (car plots) (cdr plots)))

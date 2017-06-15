@@ -24,8 +24,8 @@ const loopVisitor : Visitor = {
     const keys = path.scope.generateUidIdentifier('keys');
     const idx = path.scope.generateUidIdentifier('idx');
     const prop = t.isVariableDeclaration(left) ?
-      left.declarations[0].id :
-      t.identifier('');
+    left.declarations[0].id:
+    left;
 
     path.insertBefore(h.letExpression(it_obj, right));
     const newBody = h.flatBodyStatement([

@@ -7,6 +7,9 @@ import {
   cpsStopify, cpsStopifyPrint
 } from './stopifyStandaloneImpl/stopifyCps'
 import {
+  stackStopify, stackStopifyPrint
+} from './stopifyStandaloneImpl/stopifyStack'
+import {
   tcpsStopify, tcpsStopifyPrint
 } from './stopifyStandaloneImpl/stopifyTCps'
 import { StopWrapper } from './helpers'
@@ -14,8 +17,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 function showUsage() {
-  console.log('Usage: stopify.js -i <filename> -t [cps|tcps|yield|regen] [options]');
-  console.log('       stopify.js -s <string> -t [cps|tcps|yield|regen] [options]\n');
+  console.log('Usage: stopify.js -i <filename> -t [cps|tcps|stack|yield|regen] [options]');
+  console.log('       stopify.js -s <string> -t [cps|tcps|stack|yield|regen] [options]\n');
   console.log('Options:')
   console.log('  -y, --interval     Set yield interval')
   console.log('  -o, --output       Can be print, eval, benchmark')
@@ -72,6 +75,9 @@ switch(output) {
       case 'tcps':
         stopifyFunc = tcpsStopifyPrint
         break;
+      case 'stack':
+        stopifyFunc = stackStopifyPrint
+        break;
       default:
         throw new Error(`Unknown transform: ${transform}`)
     }
@@ -101,6 +107,9 @@ switch(output) {
         break;
       case 'tcps':
         stopifyFunc = tcpsStopify;
+        break;
+      case 'stack':
+        stopifyFunc = stackStopify;
         break;
       default:
         throw new Error(`Unknown transform: ${transform}`)

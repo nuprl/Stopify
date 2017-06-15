@@ -5,10 +5,18 @@ include transform.mk
 RUNNER = "./runner.sh"
 BASEFILES := $(wildcard base/*.js)
 FILES := $(BASEFILES:base/%=%)
+
 TIMES := $(foreach t, $(TRANSFORMS), \
 				   $(foreach i, $(INTERVALS), \
 					   $(foreach e, $(ENGINENAME), $e-$t-$i-times.csv))) \
 				 $(foreach e, $(ENGINENAME), $e-base-times.csv)
+
+PLOTS := $(foreach t, $(TRANSFORMS), \
+				   $(foreach e, $(ENGINENAME), $e-$t-plot.pdf))
+
+				 #$(foreach t, $(TRANSFORMS), \
+					 #$(foreach f, $(FILES), \
+						 #$(foreach e, $(ENGINENAME), $e-$t-$f-times.csv))) \
 
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
@@ -19,12 +27,48 @@ endif
 
 TIMEFLAGS=--append --format "%E"
 
+.PHONY: time plot clean
+plot: $(PLOTS)
+
 time: $(TIMES)
+
+clean:
+	rm -f *csv *pdf
+
+# $(1) is the engine name
+# $(2) is the transform name
+# $(3) is the file name
+# NOTE(rachit): This cannot be a pattern target because it conflicts with other
+# rules.
+define TRANSFORM_PLOT_FILE_template
+$(strip $(1))-$(strip $(2))-$(strip $(3))-times.csv: \
+		$(foreach i, $(INTERVALS), $(strip $(1))-$(strip $(2))-$i-times.csv) \
+		$(strip $(1))-base-times.csv
+	grep $(strip $(3)) $(strip $(1))-base-times.csv \
+		$(foreach i, $(INTERVALS), $(strip $(1))-$(strip $(2))-$i-times.csv) \
+		| sed 's/:$(strip $(3))//g' > $$@
+endef
+
+# $(1) is the engine name
+# $(2) is the transform name
+define PLOT_TRANSFORM_template
+$(strip $(1))-$(strip $(2))-plot.pdf: \
+	$(foreach f, $(FILES), $(strip $(1))-$(strip $(2))-$f-times.csv)
+	racket plot-transform.rkt $$@ \
+		$(foreach f, $(FILES), $(strip $(1))-$(strip $(2))-$f-times.csv)
+
+$(foreach f, $(FILES), \
+	$(eval $(call TRANSFORM_PLOT_FILE_template,$(strip $(1)),$(strip $(2)),$f)))
+endef
+
+$(foreach t, $(TRANSFORMS), \
+	$(foreach e, $(ENGINENAME), \
+		$(eval $(call PLOT_TRANSFORM_template,$e,$t))))
 
 # $(1) is the engine name.
 # $(2) is the engine path.
 define BASERUNNER_template
-$(1)-base-times.csv: $(foreach f, $(FILES), base/$(strip $(1))/0/$f)
+$(strip $(1))-base-times.csv: $(foreach f, $(FILES), base/$(strip $(1))/0/$f)
 
 .PHONY: base/$(strip $(1))/0/%
 base/$(strip $(1))/0/%:

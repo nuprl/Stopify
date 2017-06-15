@@ -4,6 +4,9 @@ import {
   yieldStopify, yieldStopifyPrint
 } from './stopifyStandaloneImpl/stopifyYield'
 import {
+  regenStopify, regenStopifyPrint
+} from './stopifyStandaloneImpl/stopifyRegen'
+import {
   cpsStopify, cpsStopifyPrint
 } from './stopifyStandaloneImpl/stopifyCps'
 import {
@@ -69,6 +72,9 @@ switch(output) {
       case 'yield':
         stopifyFunc = yieldStopifyPrint
         break;
+      case 'regen':
+        stopifyFunc = regenStopifyPrint
+        break;
       case 'cps':
         stopifyFunc = cpsStopifyPrint
         break;
@@ -101,6 +107,9 @@ switch(output) {
     switch(transform) {
       case 'yield':
         stopifyFunc = yieldStopify;
+        break;
+      case 'regen':
+        stopifyFunc = regenStopify;
         break;
       case 'cps':
         stopifyFunc = cpsStopify;

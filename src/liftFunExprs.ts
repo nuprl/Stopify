@@ -1,12 +1,19 @@
 import * as t from 'babel-types';
 
-import { CExpr, AtomicBExpr, BAtom, BFun, BAdminFun, ITE, CLet } from './cexpr';
+import { AExpr, BExpr, CExpr, AtomicBExpr, BAtom, BFun, BAdminFun, CApp,
+  CAdminApp, CCallApp, CApplyApp, ITE, CLet }
+from './cexpr';
 import {CPS, ret} from './cpsMonad';
 import {diff, intersect} from './helpers';
 
 type T = {
   body: CExpr,
   funs: { id: t.Identifier, f: BAtom | BFun | BAdminFun }[],
+}
+
+type I = {
+  c: CExpr,
+  m: Map<string, string>,
 }
 
 function bindFuns(x: T): CExpr {
@@ -19,7 +26,7 @@ function bindFuns(x: T): CExpr {
 
 export function raiseFuns(expr: CExpr): CExpr {
   function crec(locals: Set<string>, cexpr: CExpr): CPS<T,CExpr> {
-    function crecFun(locals: Set<string>,
+    function brecFun(locals: Set<string>,
       ctor: any,
       named: BFun | BAdminFun,
       cexpr: CLet): CPS<T,CExpr> {
@@ -65,19 +72,19 @@ export function raiseFuns(expr: CExpr): CExpr {
     switch (cexpr.type) {
       case 'let': {
         const named = cexpr.named;
-        switch (named.type) { 
+        switch (named.type) {
           case 'BFun':
-            return crecFun(locals, BFun, named, cexpr);
+            return brecFun(locals, BFun, named, cexpr);
           case 'BAdminFun':
-            return crecFun(locals, BAdminFun, named, cexpr);
+            return brecFun(locals, BAdminFun, named, cexpr);
           case 'atom': {
             switch (named.atom.type) {
               case 'atomic_bexpr':
                 switch (named.atom.bexpr.type) {
                   case 'BFun':
-                    return crecFun(locals, BFun, named.atom.bexpr, cexpr);
+                    return brecFun(locals, BFun, named.atom.bexpr, cexpr);
                   case 'BAdminFun':
-                    return crecFun(locals, BAdminFun, named.atom.bexpr, cexpr);
+                    return brecFun(locals, BAdminFun, named.atom.bexpr, cexpr);
                   default:
                     return crecDefault(locals, cexpr);
                 }
@@ -87,7 +94,7 @@ export function raiseFuns(expr: CExpr): CExpr {
           }
           default:
             return crecDefault(locals, cexpr);
-        }        
+        }
       }
       case 'ITE': {
         return crec(locals, cexpr.e2).bind(a =>
@@ -109,4 +116,51 @@ export function raiseFuns(expr: CExpr): CExpr {
   }
 
   return crec(new Set(), expr).map((c: T) => bindFuns(c)).apply(x => x);
+}
+
+
+export function inlineApplications(expr: CExpr): I {
+  const indirectToDirect: Map<string, string> = new Map();
+
+  function brecFun(f: BAdminFun, cexpr: CLet): CExpr {
+    const funBody = f.body;
+    switch (funBody.type) {
+      case 'adminapp':
+        const { f: fApp, args: argsApp } = funBody;
+        if (argsApp.length === 1 &&
+          t.isIdentifier(argsApp[0]) &&
+          (<t.Identifier>argsApp[0]).name === f.args[0].name) {
+          indirectToDirect.set(cexpr.x.name, (<t.Identifier>fApp).name);
+          return crec(cexpr.body);
+        }
+        return new CLet(cexpr.kind, cexpr.x,
+          new BAdminFun(f.id, f.args, crec(f.body)), crec(cexpr.body));
+      default:
+        return new CLet(cexpr.kind, cexpr.x,
+          new BAdminFun(f.id, f.args, crec(f.body)), crec(cexpr.body));
+    }
+  }
+
+  function crec(cexpr: CExpr): CExpr {
+    switch (cexpr.type) {
+      case 'let':
+        const named = cexpr.named;
+        switch (named.type) {
+          case 'BAdminFun':
+            return brecFun(named, cexpr);
+          case 'BFun':
+            return new CLet(cexpr.kind, cexpr.x, new BFun(named.id, named.args,
+              crec(named.body)), crec(cexpr.body));
+          default:
+            return new CLet(cexpr.kind, cexpr.x, named, crec(cexpr.body));
+        }
+      case 'ITE':
+        return new ITE(cexpr.e1, crec(cexpr.e2), crec(cexpr.e3));
+      default:
+        return cexpr;
+    }
+  }
+
+  const c = crec(expr);
+  return { c, m: indirectToDirect };
 }

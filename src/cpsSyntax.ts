@@ -18,7 +18,7 @@ import {
   fvs, withFVs
 } from './cexpr';
 import {CPS, ret} from './cpsMonad';
-import {raiseFuns} from './liftFunExprs';
+import {inlineApplications, raiseFuns} from './liftFunExprs';
 
 const undefExpr: AExpr = t.identifier("undefined");
 
@@ -339,22 +339,32 @@ function cpsStmt(stmt: t.Statement,
     }
   }
 
-function generateLVal(lval: LVal): t.LVal {
+function generateLVal(lval: LVal, m: Map<string, string>): t.LVal {
   switch (lval.type) {
     case 'Identifier':
       return lval;
     case 'lval_member':
-      return t.memberExpression(generateAExpr(lval.object),
-        generateAExpr(lval.property), lval.computed);
+      return t.memberExpression(generateAExpr(lval.object, m),
+        generateAExpr(lval.property, m), lval.computed);
     default:
       throw new Error(
         `Unexpected error: JS generation for LVal of typ ${lval.type} not yet implemented`);
   }
 }
 
-function generateAExpr(aexpr: AExpr): t.Expression {
+function renameId(x: t.Identifier, m: Map<string, string>): t.Identifier {
+  const newX = m.get(x.name);
+  if (newX !== undefined) {
+    return renameId(t.identifier(newX), m);
+  } else {
+    return x;
+  }
+}
+
+function generateAExpr(aexpr: AExpr, m: Map<string, string>): t.Expression {
   switch (aexpr.type) {
     case 'Identifier':
+      return renameId(aexpr, m);
     case 'BooleanLiteral':
     case 'NumericLiteral':
     case 'StringLiteral':
@@ -363,88 +373,89 @@ function generateAExpr(aexpr: AExpr): t.Expression {
     case 'TemplateLiteral':
       return aexpr;
     case 'atomic_bexpr':
-      return generateBExpr(aexpr.bexpr);
+      return generateBExpr(aexpr.bexpr, m);
   }
 }
 
-function generateAExprSpread(aexpr: AExpr | t.SpreadElement): t.Expression | t.SpreadElement{
-  switch (aexpr.type) {
-    case 'SpreadElement':
-      return aexpr;
-    default:
-      return generateAExpr(aexpr);
+function generateAExprSpread(aexpr: AExpr | t.SpreadElement,
+  m: Map<string, string>): t.Expression | t.SpreadElement {
+    switch (aexpr.type) {
+      case 'SpreadElement':
+        return aexpr;
+      default:
+        return generateAExpr(aexpr, m);
+    }
   }
-}
 
-function generateBExpr(bexpr: BExpr): t.Expression {
+function generateBExpr(bexpr: BExpr, m: Map<string, string>): t.Expression {
   switch (bexpr.type) {
     case 'atom':
-      return generateAExpr(bexpr.atom);
+      return generateAExpr(bexpr.atom, m);
     case 'BFun':
       return transformed(t.functionExpression(bexpr.id,
         bexpr.args,
-        flatBodyStatement(generateJS(bexpr.body))));
+        flatBodyStatement(generateJS(bexpr.body, m))));
     case 'BAdminFun':
       return t.arrowFunctionExpression(bexpr.args,
-        flatBodyStatement(generateJS(bexpr.body)));
+        flatBodyStatement(generateJS(bexpr.body, m)));
     case 'op2':
       return t.binaryExpression(bexpr.oper,
-        generateAExpr(bexpr.l), generateAExpr(bexpr.r));
+        generateAExpr(bexpr.l, m), generateAExpr(bexpr.r, m));
     case 'op1':
-      return t.unaryExpression(bexpr.oper, generateAExpr(bexpr.v));
+      return t.unaryExpression(bexpr.oper, generateAExpr(bexpr.v, m));
     case 'lop':
       return t.logicalExpression(bexpr.oper,
-        generateAExpr(bexpr.l), generateAExpr(bexpr.r));
+        generateAExpr(bexpr.l, m), generateAExpr(bexpr.r, m));
     case 'assign':
       return t.assignmentExpression(bexpr.operator,
-        generateLVal(bexpr.x), generateAExpr(bexpr.v));
+        generateLVal(bexpr.x, m), generateAExpr(bexpr.v, m));
     case 'obj':
       const properties : t.ObjectProperty[] = [];
       bexpr.fields.forEach((value, key) =>
-        properties.push(t.objectProperty(key, generateAExpr(value))));
+        properties.push(t.objectProperty(key, generateAExpr(value, m))));
       return t.objectExpression(properties);
     case 'get':
-      return t.memberExpression(generateAExpr(bexpr.object),
-        generateAExpr(bexpr.property), bexpr.computed);
+      return t.memberExpression(generateAExpr(bexpr.object, m),
+        generateAExpr(bexpr.property, m), bexpr.computed);
     case 'incr/decr':
       return t.updateExpression(bexpr.operator,
-        generateAExpr(bexpr.argument), bexpr.prefix);
+        generateAExpr(bexpr.argument, m), bexpr.prefix);
     case 'arraylit':
-      return t.arrayExpression(bexpr.arrayItems.map(x => generateAExpr(x)));
+      return t.arrayExpression(bexpr.arrayItems.map(x => generateAExpr(x, m)));
     case 'seq':
-      return t.sequenceExpression(bexpr.elements.map(x => generateAExpr(x)));
+      return t.sequenceExpression(bexpr.elements.map(x => generateAExpr(x, m)));
     case 'this':
       return t.thisExpression();
     case 'new':
-      return t.newExpression(generateAExpr(bexpr.f),
-        bexpr.args.map(x => generateAExprSpread(x)));
+      return t.newExpression(generateAExpr(bexpr.f, m),
+        bexpr.args.map(x => generateAExprSpread(x, m)));
     case 'update':
       throw new Error(`${bexpr.type} generation is not yet implemented`);
   }
 }
 
-function generateJS(cexpr: CExpr): t.Statement[] {
+function generateJS(cexpr: CExpr, m: Map<string, string>): t.Statement[] {
   switch (cexpr.type) {
     case 'app':
-      return [t.returnStatement(t.callExpression(generateAExpr(cexpr.f),
-        cexpr.args.map(x => generateAExprSpread(x))))];
+      return [t.returnStatement(t.callExpression(generateAExpr(cexpr.f, m),
+        cexpr.args.map(x => generateAExprSpread(x, m))))];
     case 'callapp':
-      return [t.returnStatement(call(t.callExpression(generateAExpr(cexpr.f),
-        cexpr.args.map(x => generateAExprSpread(x)))))];
+      return [t.returnStatement(call(t.callExpression(generateAExpr(cexpr.f, m),
+        cexpr.args.map(x => generateAExprSpread(x, m)))))];
     case 'applyapp':
-      return [t.returnStatement(apply(t.callExpression(generateAExpr(cexpr.f),
-        cexpr.args.map(x => generateAExprSpread(x)))))];
+      return [t.returnStatement(apply(t.callExpression(generateAExpr(cexpr.f, m),
+        cexpr.args.map(x => generateAExprSpread(x, m)))))];
     case 'adminapp':
-      return [t.returnStatement(administrative(t.callExpression(generateAExpr(cexpr.f),
-        cexpr.args.map(x => generateAExprSpread(x)))))];
+      return [t.returnStatement(administrative(t.callExpression(generateAExpr(cexpr.f, m),
+        cexpr.args.map(x => generateAExprSpread(x, m)))))];
     case 'ITE':
-      return [t.ifStatement(generateAExpr(cexpr.e1),
-        flatBodyStatement(generateJS(cexpr.e2)),
-        flatBodyStatement(generateJS(cexpr.e3)))];
+      return [t.ifStatement(generateAExpr(cexpr.e1, m),
+        flatBodyStatement(generateJS(cexpr.e2, m)),
+        flatBodyStatement(generateJS(cexpr.e3, m)))];
     case 'let':
-      const decl = letExpression(cexpr.x, generateBExpr(cexpr.named), cexpr.kind);
+      const decl = letExpression(cexpr.x, generateBExpr(cexpr.named, m), cexpr.kind);
       return [decl,
-        ...generateJS(cexpr.body)];
+        ...generateJS(cexpr.body, m)];
   }
 }
 
@@ -459,9 +470,11 @@ const cpsExpression : Visitor = {
         v => ret<CExpr,CExpr>(new CAdminApp(onDone, [v])),
         v => ret<CExpr,CExpr>(new CAdminApp(onError, [v])), path).apply(x => x);
 
+      const { c, m } = inlineApplications(raiseFuns(cexpr));
+
       const kont =
         t.functionExpression(undefined, [onDone, onError],
-          t.blockStatement(generateJS(raiseFuns(cexpr))));
+          t.blockStatement(generateJS(c, m)));
       const kontCall = administrative(t.callExpression(kont, [onDone, onError]));
 
       path.node.body = [t.expressionStatement(kontCall)];

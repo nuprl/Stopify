@@ -1,18 +1,18 @@
 import { stopifyFunction, stopifyPrint } from './stopifyStandaloneInterface';
 
+import * as makeBlockStmt from '../makeBlockStmt';
+import * as fsm from '../fsm';
+
 import { transform } from '../helpers';
 
 export const stackStopifyPrint: stopifyPrint = (code) => {
-  const plugins : any[] = [];
+  const plugins : any[] = [[fsm]];
   const transformed = transform(code, plugins);
-
-  if(transformed.length < code.length) {
-    throw new Error('Transformed code is smaller than original code');
-  }
 
   return `
 function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
   ${transformed}
+  $onDone();
 }
 `
 }

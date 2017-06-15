@@ -19,14 +19,16 @@
 
 ;; Generate a plot picture from the data in the file.
 (define (compare-latency-tranform file title)
-  (inset (plot-pict
-           (discrete-histogram
-             (csvfile->list/proc file handle-row))
-           #:y-label "Runtime (in seconds)"
-           #:x-label "Yield interval (in function applications)"
-           #:width 600 #:height 600
-           #:legend-anchor 'top-right
-           #:title title) 15))
+  (parameterize ([plot-x-tick-label-anchor 'top-right]
+                 [plot-x-tick-label-angle 30])
+    (inset (plot-pict
+             (discrete-histogram
+               (csvfile->list/proc file handle-row))
+             #:y-label "Runtime (in seconds)"
+             #:x-label "Yield interval (in function applications)"
+             #:width 600 #:height 600
+             #:legend-anchor 'top-right
+             #:title title) 15)))
 
 (define (make-plots files)
   (let ([ plots (map (lambda (f)

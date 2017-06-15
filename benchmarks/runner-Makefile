@@ -12,11 +12,8 @@ TIMES := $(foreach t, $(TRANSFORMS), \
 				 $(foreach e, $(ENGINENAME), $e-base-times.csv)
 
 PLOTS := $(foreach t, $(TRANSFORMS), \
-				   $(foreach e, $(ENGINENAME), $e-$t-plot.pdf))
-
-				 #$(foreach t, $(TRANSFORMS), \
-					 #$(foreach f, $(FILES), \
-						 #$(foreach e, $(ENGINENAME), $e-$t-$f-times.csv))) \
+				   $(foreach e, $(ENGINENAME), $e-$t-plot.pdf)) \
+				 $(foreach e, $(ENGINENAME), $e-compare-plot.pdf)
 
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
@@ -34,6 +31,11 @@ time: $(TIMES)
 
 clean:
 	rm -f *csv *pdf
+
+
+%-compare-plot.pdf: $(foreach t, $(TRANSFORMS), \
+								 $(foreach i, $(INTERVALS), %-$t-$i-times.csv)) %-base-times.csv
+	racket ./compare-transforms.rkt $@ $^
 
 # $(1) is the engine name
 # $(2) is the transform name

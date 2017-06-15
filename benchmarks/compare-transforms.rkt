@@ -3,6 +3,7 @@
 ;; This script assumes that programs given are from the same JS engine.
 (require racket/list)
 (require plot/no-gui)
+(require slideshow/pict)
 (require "plot-helpers.rkt")
 
 (define (v2-to-number c)
@@ -28,11 +29,11 @@
   (plot-jpeg-quality 100)
   (parameterize ([plot-x-tick-label-anchor 'top-right]
                  [plot-x-tick-label-angle 30])
-    (plot-pict (map make-hist files)
-               #:y-label "Runtime (in seconds)" #:x-label #f
-               #:width 600 #:height 600
-               #:legend-anchor 'top-right
-               #:title title)))
+    (inset (plot-pict (map make-hist files)
+                      #:y-label "Runtime (in seconds)" #:x-label #f
+                      #:width 600 #:height 600
+                      #:legend-anchor 'top-right
+                      #:title title) 15)))
 
 ;; Extract number from the benchmark name format
 (define (extract-num f)
@@ -46,12 +47,16 @@
 (let ([ args (vector->list (current-command-line-arguments)) ])
   (define (remove-base fss)
     (filter (lambda (fs) (> (extract-num (car fs)) 0)) fss))
+  (define (sort-with-interval fss)
+    (sort fss
+          (lambda (xs ys)
+            (< (extract-num (car xs)) (extract-num (car ys))))))
   (if (< (length args) 2)
     (raise
       (format "script requires at least 2 arguments, given: ~a" (length args)))
     (let* ([ output-file (car args) ]
            [ files (cdr args) ]
-           [ groups (remove-base (group-names files)) ]
+           [ groups (sort-with-interval (remove-base (group-names files))) ]
            [ base-file (findf (lambda (f) (regexp-match? #rx"base" f)) files) ]
            [ _tmp (if base-file #t (raise "No basefile found")) ]
            [ plots (map

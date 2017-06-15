@@ -47,4 +47,4 @@
 
 ;; Join plots together
 (define (join-plots plots)
-    (foldr (lambda (x y) (vc-append 30 x y)) (car plots) (cdr plots)))
+    (foldl (lambda (x y) (vc-append 30 x y)) (car plots) (cdr plots)))

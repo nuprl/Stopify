@@ -8,5 +8,8 @@ describe('Trampoline CPS transform tests', function () {
       f.stopifyTest(filename, 'tcps')
     })
   })
+  f.skipped.forEach((f: string) => {
+    it.skip(f, () => {})
+  })
 })
 

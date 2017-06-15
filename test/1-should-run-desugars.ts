@@ -30,5 +30,8 @@ describe('Desugaring tests', function () {
       f.retainValueTest(prog, desugarPlugs)
     })
   })
+  f.skipped.forEach((f: string) => {
+    it.skip(f, () => {})
+  })
 })
 

@@ -7,4 +7,7 @@ describe('Yield transformation tests', function () {
       f.stopifyTest(filename, 'yield');
     })
   })
+  f.skipped.forEach((f: string) => {
+    it.skip(f, () => {})
+  })
 })

@@ -8,4 +8,7 @@ describe('CPS transform tests', function () {
       f.stopifyTest(filename, 'cps')
     })
   })
+  f.skipped.forEach((f: string) => {
+    it.skip(f, () => {})
+  })
 })

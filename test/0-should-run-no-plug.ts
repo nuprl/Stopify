@@ -14,5 +14,8 @@ describe('Sanity check -- All tests pass without plugins', function () {
       f.retainValueTest(prog, [ [noEvalVerifier] ])
     })
   })
+  f.skipped.forEach((f: string) => {
+    it.skip(f, () => {})
+  })
 })
 

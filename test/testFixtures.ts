@@ -11,6 +11,7 @@ const simpleTests = glob.sync('test/should-run/*.js', {})
 const sourceLanguage = glob.sync('test/should-run/source-language/*.js', {})
 
 export const testFiles = simpleTests.concat(sourceLanguage)
+export const skipped = glob.sync('test/should-run/skip/*.js')
 
 export function transformTest(original: string, plugs: any[][]): string {
   let errorMessage = '';

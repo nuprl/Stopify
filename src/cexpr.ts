@@ -99,6 +99,8 @@ export function fvs(a: AExpr | LValMember | t.SpreadElement): Set<string> {
     }
   } else if (a.type === 'lval_member') {
     return a.freeVars;
+  } else if (a.type === 'atomic_bexpr') {
+    return a.freeVars;
   }
 
   // unreachable

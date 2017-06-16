@@ -35,7 +35,7 @@ clean:
 
 %-compare-plot.pdf: $(foreach t, $(TRANSFORMS), \
 								 $(foreach i, $(INTERVALS), %-$t-$i-times.csv)) %-base-times.csv
-	racket ./compare-transforms.rkt $@ $^
+	racket ./compare-transform.rkt $@ $^
 
 # $(1) is the engine name
 # $(2) is the transform name

@@ -5,8 +5,13 @@
 (require file/convertible)
 (require slideshow/pict)
 
-(provide handle-time-output csvfile->list/proc get-name draw-plot join-plots)
+(provide
+  handle-time-output csvfile->list/proc get-name draw-plot join-plots
+  v2-to-number pr)
 
+(define (pr v)
+    (printf "~a\n" v)
+      v)
 ;; Interpret the output from unix time with --format %E.  MM:SS
 ;; Result in seconds
 (define (time->number t)
@@ -18,14 +23,14 @@
 ;; In addition to the format specified in time->number, the output can be
 ;; -1 for programs that failed to run.
 (define (handle-time-output t)
-  (if (string->number t) (string->number t)
-    (time->number t)))
+  (if (string->number t) (string->number t) (time->number t)))
 
-;; Convert a CSV file into form usable by plot and apply proc on each field.
-;; String (representing path of CSV)
+;; Convert a CSV file into form usable by plot while processing each row using
+;; `proc`. The resulting list is sorted according to column 1
 ;; (ListOf String -> ListOf String) -> ListOf #(String Number)
 (define (csvfile->list/proc filename proc)
-  (csv-map (compose list->vector proc) (open-input-file filename)))
+  (sort (csv-map (compose list->vector proc) (open-input-file filename))
+        (lambda (x y) (string<? (vector-ref x 0) (vector-ref y 0)))))
 
 ;; This relies on the name of the file being in the format specified by the
 ;; Makefile runner.
@@ -38,7 +43,6 @@
 ;; Draw picture to the specified PDF file.
 (define (draw-plot filename pict)
   (define to-write (convert pict 'pdf-bytes))
-
   (define out-file (open-output-file filename
                                      #:mode 'binary
                                      #:exists 'replace))
@@ -47,4 +51,7 @@
 
 ;; Join plots together
 (define (join-plots plots)
-    (foldl (lambda (x y) (vc-append 30 x y)) (car plots) (cdr plots)))
+  (foldl (lambda (x y) (vc-append 30 x y)) (car plots) (cdr plots)))
+
+(define (v2-to-number c)
+    (list (car c) (handle-time-output (cadr c))))

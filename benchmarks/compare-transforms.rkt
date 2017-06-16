@@ -6,23 +6,27 @@
 (require slideshow/pict)
 (require "plot-helpers.rkt")
 
-(define (v2-to-number c)
-  (list (car c) (handle-time-output (cadr c))))
+;; This assumes that the data in both the lists is sorted according to
+;; column 1.
+(define (make-normalization-function basefile)
+  (let ([ base-list (csvfile->list/proc basefile v2-to-number)])
+    (lambda (fs)
+      (for/list ( [data fs] [ base base-list ] )
+        (list (vector-ref data 0)
+              (/ (vector-ref data 1) (vector-ref base 1)))))))
 
 ;; Given a list of CSV names, plot a side-by-side graph.
 ;: ASSUMPTIONS:IN EACH FILE Column 1 is the name of files, Column 2 is the time.
 ;; Outputs a CSV with X-axis as names of files and Y-axis as time in seconds.
 ;; This is meant to compare the transforms.
-;; Listof String * String -> void
-(define (make-compare-plot files title)
+;; (Listof String) * String * (String * String -> String * String) -> void
+(define (make-compare-plot files title normalize)
   (define l (length files))
   (define x-min-val -1)
   (define (make-hist file)
     (set! x-min-val (+ x-min-val 1))
     (discrete-histogram
-      (sort
-        (csvfile->list/proc file v2-to-number)
-        (lambda (x y) (string<? (vector-ref x 0) (vector-ref y 0))))
+      (normalize (csvfile->list/proc file v2-to-number))
       #:skip (+ l 1) #:x-min x-min-val
       #:label (get-name file)
       #:color (+ x-min-val 1) #:line-color (+ x-min-val 1)))
@@ -59,9 +63,11 @@
            [ groups (sort-with-interval (remove-base (group-names files))) ]
            [ base-file (findf (lambda (f) (regexp-match? #rx"base" f)) files) ]
            [ _tmp (if base-file #t (raise "No basefile found")) ]
+           [ normalize (make-normalization-function base-file)]
            [ plots (map
                      (lambda (fs)
                        (make-compare-plot
                          (cons base-file fs)
-                         (number->string (extract-num (car fs))))) groups) ])
+                         (number->string (extract-num (car fs)))
+                         normalize)) groups) ])
       (draw-plot output-file (join-plots plots)))))

@@ -6,8 +6,8 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
-import { letExpression } from './helpers'
-import {Administrative, administrative} from './helpers';
+import { letExpression } from '../common/helpers'
+import {Administrative, administrative} from '../common/helpers';
 
 type isTrampolined<T> = T & {
   isTrampolined?: boolean

@@ -1,6 +1,6 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import * as h from './helpers';
+import * as h from '../common/helpers';
 
 module.exports = function() {
   return {

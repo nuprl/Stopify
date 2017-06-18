@@ -3,8 +3,8 @@ import * as t from 'babel-types';
 import { parseExpression } from 'babylon';
 import {
   Transformed, transformed, Tag, OptimizeMark, LineMappingMark
-} from './helpers'
-import { LineMapping } from './stepifyImplementation/steppifyInterface';
+} from '../common/helpers'
+import { LineMapping } from '../interfaces/steppifyInterface';
 
 let lineMapping: LineMapping;
 

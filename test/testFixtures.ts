@@ -2,7 +2,7 @@ import * as babel from 'babel-core';
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
-import {transform} from '../src/helpers';
+import {transform} from '../src/common/helpers';
 const assert = require('assert');
 const tmp = require('tmp');
 const glob = require('glob');

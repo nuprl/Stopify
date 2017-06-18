@@ -4,7 +4,9 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {FunctionNode, KArg, kArg, Transformed, transformed} from './helpers';
+import {
+  FunctionNode, KArg, kArg, Transformed, transformed
+} from '../common/helpers';
 
 const func : VisitNode<FunctionNode> =
   function (path: NodePath<Transformed<t.FunctionExpression>>): void {

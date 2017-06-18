@@ -8,7 +8,7 @@
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {While, Break, breakLbl, continueLbl} from './helpers';
+import {While, Break, breakLbl, continueLbl} from '../common/helpers';
 
 // Object containing the visitor functions
 const labelVisitor : Visitor = {

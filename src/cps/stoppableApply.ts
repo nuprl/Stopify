@@ -6,7 +6,7 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
-import {Administrative, Call, Apply, Direct} from './helpers';
+import {Administrative, Call, Apply, Direct} from '../common/helpers';
 
 const stopApplyVisitor : Visitor = {
     CallExpression: function (path: NodePath<t.CallExpression>): void {

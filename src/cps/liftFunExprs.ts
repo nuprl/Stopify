@@ -4,7 +4,7 @@ import { AExpr, BExpr, CExpr, AtomicBExpr, BAtom, BFun, BAdminFun, CApp,
   CAdminApp, CCallApp, CApplyApp, ITE, CLet }
 from './cexpr';
 import {CPS, ret} from './cpsMonad';
-import {diff, intersect} from './helpers';
+import {diff, intersect} from '../common/helpers';
 
 type T = {
   body: CExpr,

@@ -1,7 +1,7 @@
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { parseExpression } from 'babylon';
-import { Transformed, transformed, Tag, OptimizeMark } from './helpers'
+import { Transformed, transformed, Tag, OptimizeMark } from '../common/helpers'
 
 const runProg = t.expressionStatement(t.callExpression(
   t.identifier('$runYield'), [t.callExpression(t.identifier('$runProg'), [])]))

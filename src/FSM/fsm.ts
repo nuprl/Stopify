@@ -1,7 +1,7 @@
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 
-import { letExpression } from './helpers';
+import { letExpression } from '../common/helpers';
 
 const fsm : Visitor = {
   FunctionExpression: function(path: NodePath<t.FunctionExpression>): void {

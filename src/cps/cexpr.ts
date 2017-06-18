@@ -1,5 +1,5 @@
 import * as t from 'babel-types';
-import {diff, union} from './helpers';
+import {diff, union} from '../common/helpers';
 
 export type binop = "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" |
   "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" |

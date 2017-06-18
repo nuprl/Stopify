@@ -1,28 +1,28 @@
-import {stopifyFunction, stopifyPrint} from './stopifyStandaloneInterface';
+import {stopifyFunction, stopifyPrint} from '../interfaces/stopifyInterface';
 
 // Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
-import * as desugarLoop from '../desugarLoop';
-import * as desugarFunctionDecl from '../desugarFunctionDecl';
-import * as desugarNew from '../desugarNew';
-import * as desugarSwitch from '../desugarSwitch';
-import * as desugarWhileToFunc from '../desugarLoopToFunc';
-import * as desugarLabel from '../desugarLabel';
-import * as trampolineApply from '../trampolineApply';
-import * as liftVar from '../liftVar';
+import * as desugarLoop from './desugarLoop';
+import * as desugarFunctionDecl from './desugarFunctionDecl';
+import * as desugarNew from '../common/desugarNew';
+import * as desugarSwitch from './desugarSwitch';
+import * as desugarWhileToFunc from './desugarLoopToFunc';
+import * as desugarLabel from './desugarLabel';
+import * as trampolineApply from './trampolineApply';
+import * as liftVar from './liftVar';
 
 // Call Expression naming transform.
-import * as makeBlockStmt from '../makeBlockStmt';
+import * as makeBlockStmt from '../common/makeBlockStmt';
 
 // CPS transforms.
-import * as addKArg from '../addContinuationArg';
-import * as cps from '../cpsSyntax';
-import * as applyStop from '../stoppableApply';
+import * as addKArg from './addContinuationArg';
+import * as cps from './cpsSyntax';
+import * as applyStop from './stoppableApply';
 
-import * as transformMarked from '../transformMarked';
+import * as transformMarked from '../common/transformMarked';
 
 // Helpers
-import {transform} from '../helpers';
+import {transform} from '../common/helpers';
 
 const cpsRuntime = `"use strict";
 
@@ -113,7 +113,7 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
 
 `;
 
-export const tcpsStopifyPrint: stopifyPrint = (code) => {
+export const tcpsStopifyPrint: stopifyPrint = (code: string) => {
   const plugins = [
     [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
     [desugarSwitch, addKArg, desugarWhileToFunc],

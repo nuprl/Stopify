@@ -1,6 +1,6 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {Hoisted, hoisted, letExpression} from './helpers';
+import {Hoisted, hoisted, letExpression} from '../common/helpers';
 
 function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression {
   return decl.init === null ?

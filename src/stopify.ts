@@ -2,20 +2,20 @@
 
 import {
   yieldStopify, yieldStopifyPrint
-} from './stopifyStandaloneImpl/stopifyYield'
+} from './yield/stopifyYield'
 import {
   regenStopify, regenStopifyPrint
-} from './stopifyStandaloneImpl/stopifyRegen'
+} from './yield/stopifyRegen'
 import {
   cpsStopify, cpsStopifyPrint
-} from './stopifyStandaloneImpl/stopifyCps'
+} from './cps/stopifyCps'
 import {
   stackStopify, stackStopifyPrint
-} from './stopifyStandaloneImpl/stopifyStack'
+} from './FSM/stopifyStack'
 import {
   tcpsStopify, tcpsStopifyPrint
-} from './stopifyStandaloneImpl/stopifyTCps'
-import { StopWrapper } from './helpers'
+} from './cps/stopifyTCps'
+import { StopWrapper } from './common/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { yieldSteppify } from './stepifyImplementation/steppifyYield'
-import { StopWrapper } from './helpers'
+import { yieldSteppify } from './yieldDebug/steppifyYield'
+import { StopWrapper } from './common/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 

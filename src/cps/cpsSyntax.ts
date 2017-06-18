@@ -9,7 +9,7 @@ import {administrative,
   transformed,
   KArg,
   union
-} from './helpers';
+} from '../common/helpers';
 
 import {
   AExpr, BExpr, CExpr, AtomicBExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1,

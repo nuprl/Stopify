@@ -1,6 +1,6 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
-import * as b from './stepifyImplementation/steppifyInterface';
+import * as b from '../interfaces/steppifyInterface';
 import { SourceMapConsumer } from 'source-map';
 import * as smc from 'convert-source-map';
 

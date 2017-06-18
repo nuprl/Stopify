@@ -1,14 +1,13 @@
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 
-import { stopifyFunction, stopifyPrint } from './stopifyStandaloneInterface'
-import * as desugarAndOr from '../desugarAndOr';
-import * as desugarNew from '../desugarNew';
-import * as makeBlockStmt from '../makeBlockStmt';
-import * as yieldPass from '../yield';
-import * as transformMarked from '../transformMarked';
-import { transform } from '../helpers';
-import * as markKnown from '../markKnownFunctions'
-import * as renameC from '../renameConstructor'
+import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface'
+import * as desugarNew from '../common/desugarNew';
+import * as makeBlockStmt from '../common/makeBlockStmt';
+import * as yieldPass from './yield';
+import * as transformMarked from '../common/transformMarked';
+import { transform } from '../common/helpers';
+import * as markKnown from '../common/markKnownFunctions'
+import * as renameC from './renameConstructor'
 
 // The runtime needs to be stored as a string to allow for client-side
 // compilation.
@@ -46,16 +45,12 @@ function $runYield(gen, res = { done: false, value: undefined }) {
 };
 `
 
-export const regenStopifyPrint: stopifyPrint = (code) => {
+export const yieldStopifyPrint: stopifyPrint = (code) => {
   const plugins = [
     [noArrows, desugarNew, renameC], [makeBlockStmt], [markKnown], [yieldPass],
     [transformMarked]
   ];
-  const intermediate = transform(code, plugins);
-  const transformed = require('regenerator').compile(intermediate, {
-    includeRuntime: true
-  }).code;
-
+  const transformed = transform(code, plugins);
 
   if(transformed.length < code.length) {
     throw new Error('Transformed code is smaller than original code')
@@ -69,10 +64,10 @@ export const regenStopifyPrint: stopifyPrint = (code) => {
   `
 }
 
-export const regenStopify: stopifyFunction = (code) => {
+export const yieldStopify: stopifyFunction = (code) => {
   return eval(`
     (function() {
-      return (${regenStopifyPrint(code)});
+      return (${yieldStopifyPrint(code)});
     })()
   `)
 }

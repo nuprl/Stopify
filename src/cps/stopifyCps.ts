@@ -1,27 +1,27 @@
-import { stopifyFunction, stopifyPrint } from './stopifyStandaloneInterface'
+import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface'
 
 // Desugaring transforms.
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
-import * as desugarLoop from '../desugarLoop';
-import * as desugarFunctionDecl from '../desugarFunctionDecl';
-import * as desugarNew from '../desugarNew';
-import * as desugarSwitch from '../desugarSwitch';
-import * as desugarWhileToFunc from '../desugarLoopToFunc';
-import * as desugarLabel from '../desugarLabel';
-import * as liftVar from '../liftVar';
+import * as desugarLoop from './desugarLoop';
+import * as desugarFunctionDecl from './desugarFunctionDecl';
+import * as desugarNew from '../common/desugarNew';
+import * as desugarSwitch from './desugarSwitch';
+import * as desugarWhileToFunc from './desugarLoopToFunc';
+import * as desugarLabel from './desugarLabel';
+import * as liftVar from './liftVar';
 
 // Call Expression naming transform.
-import * as makeBlockStmt from '../makeBlockStmt';
+import * as makeBlockStmt from '../common/makeBlockStmt';
 
 // CPS transforms.
-import * as addKArg from '../addContinuationArg';
-import * as cps from '../cpsSyntax';
-import * as applyStop from '../stoppableApply';
+import * as addKArg from './addContinuationArg';
+import * as cps from './cpsSyntax';
+import * as applyStop from './stoppableApply';
 
-import * as transformMarked from '../transformMarked';
+import * as transformMarked from '../common/transformMarked';
 
 // Helpers
-import {transform} from '../helpers';
+import {transform} from '../common/helpers';
 
 const cpsRuntime = `/*
  * The runtime is wrapped in a function:
@@ -100,7 +100,7 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
 
 `;
 
-export const cpsStopifyPrint: stopifyPrint = (code) => {
+export const cpsStopifyPrint: stopifyPrint = (code: string) => {
   const plugins = [
     [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
     [desugarSwitch, addKArg, desugarWhileToFunc],
@@ -121,7 +121,7 @@ function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
 `
 }
 
-export const cpsStopify: stopifyFunction = (code) => {
+export const cpsStopify: stopifyFunction = (code: string) => {
   return eval(`
 (function () {
   return (${cpsStopifyPrint(code)});

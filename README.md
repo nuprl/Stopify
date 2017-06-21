@@ -17,7 +17,8 @@ resuming, stepping, and break-pointing at the source language level.
 ## Dependencies
 1. Install the latest version of node.
 2. To install the dependecies, run `npm install` in the root of the project.
-3. (optional) Run `npm install -g typescript` for a global installation of the
+3. Install [this](http://datalog.sourceforge.net/) implementation of Datalog.
+4. (optional) Run `npm install -g typescript` for a global installation of the
    typescript compiler.
 ### Optional Server Dependencies
 1. For OCaml support

@@ -87,17 +87,19 @@ const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
     }
   };
 
-const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {
+const loop: VisitNode<Transformed<t.Loop>> = function (path: NodePath<Transformed<t.Loop>>): void {
+  if (path.node.isTransformed) return
   if (t.isBlockStatement(path.node.body)) {
     path.node.body.body.unshift(ifYield);
+    transformed(path.node)
   } else {
     throw new Error('Body of loop is not a block statement')
   }
 }
 
-const funce: VisitNode<t.FunctionExpression|t.FunctionDeclaration> =
-  function (path: NodePath<t.FunctionExpression|t.FunctionDeclaration>): void {
-    // Set isGen property on the function.
+const funce: VisitNode<Transformed<t.FunctionExpression|t.FunctionDeclaration>> =
+  function (path: NodePath<Transformed<t.FunctionExpression|t.FunctionDeclaration>>): void {
+    if (path.node.isTransformed) return
     path.node.body.body.unshift(ifYield);
     path.node.generator = true;
     transformed(path.node)

@@ -21,7 +21,7 @@ class Env {
     [
       'WeakMap', 'Map', 'Set', 'WeakSet', 'String', 'Number', 'Function',
       'Object', 'Array', 'Date', 'RegExp', 'Error', 'Object.create',
-      'console.log', 'console.dir'
+      'console.log', 'console.dir', 'Object.assign'
     ].map(e => this.addBinding(e, 'Untransformed'))
   }
   findBinding(id: string): Tag {

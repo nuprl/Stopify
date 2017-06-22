@@ -7,9 +7,20 @@ const markFuncName = t.identifier('$mark_func')
 const funcd: VisitNode<h.Transformed<t.FunctionDeclaration>> = {
   exit(path: NodePath<h.Transformed<t.FunctionDeclaration>>) {
     if(path.node.isTransformed) {
-      const markCall = h.directApply(
-        t.callExpression(markFuncName, [path.node.id]));
-      path.insertAfter(t.expressionStatement(markCall))
+      const markCall = t.expressionStatement(h.directApply(
+        t.callExpression(markFuncName, [path.node.id])));
+      // Place the call to mark_func on the top of the nearest block.
+      // This is because a function might be called before reaching it's
+      // decl (hoisting).
+      const fParent: any = path.findParent(p => t.isFunctionDeclaration(p)
+        || t.isFunctionExpression(p))
+
+      if (fParent === undefined || fParent === null) {
+        const program: any = path.findParent(p => t.isProgram(p));
+        program.node.body.unshift(markCall)
+      } else {
+        fParent.node.body.body.unshift(markCall)
+      }
     }
   }
 }

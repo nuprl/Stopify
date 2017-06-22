@@ -30,13 +30,6 @@ const ifYield = t.ifStatement(
 
 const program : VisitNode<t.Program> = {
   enter: function (path: NodePath<t.Program>): void {
-    const lastLine = <t.Statement>path.node.body.pop();
-    if(t.isExpressionStatement(lastLine)) {
-      let result = t.returnStatement(lastLine.expression);
-      path.node.body.push(result);
-    } else {
-      path.node.body.push(lastLine)
-    }
     const prog = path.node.body;
     const func = t.functionDeclaration(
       t.identifier('$runProg'), [], t.blockStatement(prog))

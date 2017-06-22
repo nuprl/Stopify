@@ -1,9 +1,7 @@
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { parseExpression } from 'babylon';
-import {
-  Transformed, transformed, Tag, OptimizeMark, letExpression
-} from '../common/helpers'
+import { Transformed, transformed, Tag, OptimizeMark } from '../common/helpers'
 
 const runProg = t.expressionStatement(t.callExpression(
   t.identifier('$runYield'), [t.callExpression(t.identifier('$runProg'), [])]))
@@ -48,7 +46,6 @@ const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
     if(exp.isTransformed) return
     else exp.isTransformed = true;
 
-    let callee = path.node.callee;
     if (exp.OptimizeMark === 'Untransformed') {
       return;
     }
@@ -56,6 +53,7 @@ const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
       path.replaceWith(t.yieldExpression(exp, true))
     }
     else {
+      let callee = path.node.callee;
       if (t.isMemberExpression(path.node.callee)) {
         if (t.isIdentifier(path.node.callee.property)) {
           if(path.node.callee.property.name === 'call' ||
@@ -68,16 +66,6 @@ const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
             callee = path.node.callee.object;
           }
         }
-      }
-      // If the callee is a functionExpression, name it.
-      else if(t.isFunctionExpression(path.node.callee)) {
-        const name = path.scope.generateUidIdentifier('fexpr');
-        const stmtParent = path.findParent(p => t.isStatement(p))
-        stmtParent.insertBefore(letExpression(
-          name, path.node.callee
-        ))
-        path.get('callee').replaceWith(name)
-        callee = name
       }
       const cond = t.conditionalExpression(
         t.memberExpression(callee, t.identifier('$isTransformed')),
@@ -97,16 +85,30 @@ const loop: VisitNode<Transformed<t.Loop>> = function (path: NodePath<Transforme
   }
 }
 
-const funce: VisitNode<Transformed<t.FunctionExpression|t.FunctionDeclaration>> =
-  function (path: NodePath<Transformed<t.FunctionExpression|t.FunctionDeclaration>>): void {
+const funcd: VisitNode<Transformed<t.FunctionDeclaration>> =
+  function (path: NodePath<Transformed<t.FunctionDeclaration>>): void {
     if (path.node.isTransformed) return
     path.node.body.body.unshift(ifYield);
     path.node.generator = true;
     transformed(path.node)
 };
 
+const funce: VisitNode<t.FunctionExpression> =
+  function (path: NodePath<t.FunctionExpression>): void {
+    // Set isGen property on the function.
+    const decl = path.parent;
+    if (!t.isVariableDeclarator(decl)) {
+      throw new Error(
+        `Parent of function expression was ${decl.type} on line ${decl.loc.start.line}`)
+    } else {
+      path.node.body.body.unshift(ifYield);
+      path.node.generator = true;
+      transformed(path.node)
+    }
+};
+
 const yieldVisitor: Visitor = {
-  FunctionDeclaration: funce,
+  FunctionDeclaration: funcd,
   FunctionExpression: funce,
   CallExpression: callExpression,
   "Loop": loop,

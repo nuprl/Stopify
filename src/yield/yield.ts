@@ -60,8 +60,22 @@ const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
       path.replaceWith(t.yieldExpression(exp, true))
     }
     else {
+      let callee = path.node.callee;
+      if (t.isMemberExpression(path.node.callee)) {
+        if (t.isIdentifier(path.node.callee.property)) {
+          if(path.node.callee.property.name === 'call' ||
+            path.node.callee.property.name === 'apply') {
+            callee = path.node.callee.object;
+          }
+        } else if (t.isStringLiteral(path.node.callee.property)) {
+          if(path.node.callee.property.value === 'call' ||
+            path.node.callee.property.value === 'apply') {
+            callee = path.node.callee.object;
+          }
+        }
+      }
       const cond = t.conditionalExpression(
-        t.memberExpression(path.node.callee, t.identifier('$isTransformed')),
+        t.memberExpression(callee, t.identifier('$isTransformed')),
         t.yieldExpression(path.node, true),
         path.node)
       path.replaceWith(cond);

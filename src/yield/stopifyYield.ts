@@ -22,10 +22,6 @@ const $yieldCounter = $interval;
 let $counter = 0;
 function $mark_func(f) {
   f.$isTransformed = true;
-  f.call = f.call.bind(f);
-  f.call.$isTransformed = true
-  f.apply = f.apply.bind(f);
-  f.apply.$isTransformed = true;
   return f;
 };
 

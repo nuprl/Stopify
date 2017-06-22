@@ -74,6 +74,11 @@ function nodeToString(node: t.Expression): string | null {
 const markCallExpression: VisitNode<OptimizeMark<t.CallExpression>> =
   function (path: NodePath<OptimizeMark<t.CallExpression>>): void {
     const node = path.node
+    // Known for a fact that all function expression are transformed.
+    if (t.isFunctionExpression(node.callee)) {
+      node.OptimizeMark = 'Transformed'
+      return
+    }
     const name = nodeToString(node.callee)
     if (name) {
       const tag: Tag = globalEnv.findBinding(name)

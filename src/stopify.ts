@@ -53,12 +53,9 @@ if (transform === undefined) {
 }
 
 
-let interval = argv.y || argv.yieldInterval || 100
+let interval = argv.y || argv.yieldInterval || NaN
 if (interval !== undefined) {
-  let interval = parseInt(argv.y || argv.yieldInterval)
-  if (isNaN(interval)) {
-    interval = 100;
-  }
+  interval = parseInt(argv.y || argv.yieldInterval)
 }
 
 function timeInSecs(time: number[]): string {

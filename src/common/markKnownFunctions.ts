@@ -1,14 +1,19 @@
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { Tag, OptimizeMark } from './helpers';
+import generate from 'babel-generator'
+
+let debug = false;
 
 class Scope {
   bindings: Map<string, Tag>;
   constructor(init: Array<[string, Tag]> = []) {
     this.bindings = new Map(init)
   }
-  toString() {
-    return this.bindings.toString()
+  toString(): string {
+    let ret = "["
+    this.bindings.forEach((k, v) => ret += `${v} -> ${k}, `)
+    return ret + "]"
   }
 }
 
@@ -23,6 +28,9 @@ class Env {
       'Object', 'Array', 'Date', 'RegExp', 'Error', 'Object.create',
       'console.log', 'console.dir', 'Object.assign'
     ].map(e => this.addBinding(e, 'Untransformed'))
+  }
+  toString(): string {
+    return this.scopes.map(x => x.toString()).join("\n")
   }
   findBinding(id: string): Tag {
     for(let iter in this.scopes) {
@@ -82,7 +90,34 @@ const markCallExpression: VisitNode<OptimizeMark<t.CallExpression>> =
     const name = nodeToString(node.callee)
     if (name) {
       const tag: Tag = globalEnv.findBinding(name)
+      if (debug) {
+        process.stderr.write(`${name} -> ${tag} on line ${path.node.loc ?
+            path.node.loc.start.line : ""}\n`)
+      }
       node.OptimizeMark = tag
+    }
+  }
+
+const programMarkCallExpression: VisitNode<OptimizeMark<t.CallExpression>> =
+  function (path: NodePath<OptimizeMark<t.CallExpression>>): void {
+    const fParent = path.findParent(p => t.isFunctionDeclaration(p) ||
+      t.isFunctionExpression(p))
+    if (fParent === null || fParent === undefined) {
+      const node = path.node
+      // Known for a fact that all function expression are transformed.
+      if (t.isFunctionExpression(node.callee)) {
+        node.OptimizeMark = 'Transformed'
+        return
+      }
+      const name = nodeToString(node.callee)
+      if (name) {
+        const tag: Tag = globalEnv.findBinding(name)
+        if (debug) {
+          process.stderr.write(`${name} -> ${tag} on line ${path.node.loc ?
+              path.node.loc.start.line : ""}\n`)
+        }
+        node.OptimizeMark = tag
+      }
     }
   }
 
@@ -95,8 +130,8 @@ const markLetBoundFuncExpr: VisitNode<OptimizeMark<t.FunctionExpression>> = {
   }
 }
 
-const functionDeclaration: VisitNode<OptimizeMark<t.FunctionDeclaration>> = {
-  enter (path: NodePath<OptimizeMark<t.FunctionDeclaration>>): void {
+const func: VisitNode<OptimizeMark<t.FunctionDeclaration|t.FunctionExpression>> = {
+  enter (path: NodePath<OptimizeMark<t.FunctionDeclaration|t.FunctionExpression>>): void {
     if (path.node.id) {
       globalEnv.addBinding(path.node.id.name, 'Transformed');
       globalEnv.pushScope(new Scope([[path.node.id.name, 'Transformed']]))
@@ -105,7 +140,12 @@ const functionDeclaration: VisitNode<OptimizeMark<t.FunctionDeclaration>> = {
     }
   },
 
-  exit (path: NodePath<OptimizeMark<t.FunctionDeclaration>>): void {
+  exit (path: NodePath<OptimizeMark<t.FunctionDeclaration|t.FunctionExpression>>): void {
+    if(debug) {
+      process.stderr.write(`\n-------${path.node.id.name}----------\n`)
+      process.stderr.write(globalEnv.toString())
+      process.stderr.write(`\n-------------------------\n`)
+    }
     path.traverse(markingVisitor)
     globalEnv.popScope();
   }
@@ -113,8 +153,18 @@ const functionDeclaration: VisitNode<OptimizeMark<t.FunctionDeclaration>> = {
 
 const program: VisitNode<t.Program> = {
   exit(path) {
-    path.traverse(markingVisitor);
+    if (debug) {
+      process.stderr.write(`\n-------program----------\n`)
+      process.stderr.write(globalEnv.toString())
+      process.stderr.write(`\n-------------------------\n`)
+    }
+    path.traverse(programMarkingVisitor);
   }
+}
+
+// The Program visitor needs to ignore all function bodies
+const programMarkingVisitor = {
+  "CallExpression|NewExpression": programMarkCallExpression
 }
 
 const markingVisitor = {
@@ -123,7 +173,8 @@ const markingVisitor = {
 
 const visitor = {
   Program: program,
-  "FunctionDeclaration|FunctionExpression": functionDeclaration,
+  FunctionDeclaration: func,
+  FunctionExpression: func,
 }
 
 module.exports = function () {

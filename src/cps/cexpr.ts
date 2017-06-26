@@ -107,18 +107,6 @@ export function fvs(a: AExpr | LValMember | t.SpreadElement): Set<string> {
   return new Set();
 }
 
-export function withFVs(l: t.LVal): FreeVars<t.LVal> {
-  if (t.isIdentifier(l)) {
-    const r : any = l;
-    r.freeVars = new Set([l.name]);
-    return r;
-  } else {
-    const r : any = l;
-    r.freeVars = new Set();
-    return r;
-  }
-}
-
 export class BFun extends Node {
   type: 'BFun';
   id: t.Identifier | undefined;

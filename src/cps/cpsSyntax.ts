@@ -14,8 +14,7 @@ import {administrative,
 import {
   AExpr, BExpr, CExpr, AtomicBExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1,
   BLOp, LVal, LValMember, BAssign, BObj, BArrayLit, BGet, BIncrDecr, BUpdate,
-  BSeq, BThis, BNew, CApp, CCallApp, CApplyApp, CAdminApp, ITE, CLet, FreeVars,
-  fvs, withFVs
+  BSeq, BThis, BNew, CApp, CCallApp, CApplyApp, CAdminApp, ITE, CLet
 } from './cexpr';
 import {CPS, ret} from './cpsMonad';
 import {inlineApplications, raiseFuns} from './liftFunExprs';

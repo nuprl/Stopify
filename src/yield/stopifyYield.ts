@@ -9,6 +9,7 @@ import { transform } from '../common/helpers';
 import * as markKnown from '../common/markKnownFunctions'
 import * as renameC from './renameConstructor'
 import * as pAssign from './prototypeAssign'
+import * as nameMCall from './nameMethodCall'
 
 // The runtime needs to be stored as a string to allow for client-side
 // compilation.
@@ -44,7 +45,8 @@ function $runYield(gen, res = { done: false, value: undefined }) {
 
 export const yieldStopifyPrint: stopifyPrint = (code) => {
   const plugins = [
-    [noArrows, desugarNew, renameC, pAssign], [makeBlockStmt], [markKnown], [yieldPass],
+    [noArrows, desugarNew, renameC, pAssign, nameMCall],
+    [makeBlockStmt], [markKnown], [yieldPass],
     [transformMarked]
   ];
   const transformed = transform(code, plugins);

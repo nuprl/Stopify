@@ -13,7 +13,7 @@ function memExpr(path: NodePath<t.MemberExpression>) {
     const cassign = t.logicalExpression(
       '||', name, t.assignmentExpression('=', name, object))
 
-    path.replaceWith(t.memberExpression(cassign, property))
+    path.node.object = cassign;
   }
 }
 
@@ -28,7 +28,7 @@ function callExpr(path: NodePath<t.CallExpression>) {
     const cassign = t.logicalExpression(
       '||', name, t.assignmentExpression('=', name, callee))
 
-    path.replaceWith(t.callExpression(cassign, args))
+    path.node.callee = cassign
   }
 }
 

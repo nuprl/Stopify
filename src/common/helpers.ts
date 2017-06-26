@@ -4,7 +4,7 @@ import * as b from '../interfaces/steppifyInterface';
 import { SourceMapConsumer } from 'source-map';
 import * as smc from 'convert-source-map';
 
-export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression;
+export type FunctionNode = t.FunctionDeclaration | t.FunctionExpression | t.ObjectMethod;
 
 // Helper to generate tagging function for AST tags preserved between traversals.
 function tag<T, V>(tag: string, t: T, v: V) {

@@ -9,7 +9,7 @@ import {
 } from '../common/helpers';
 
 const func : VisitNode<FunctionNode> =
-  function (path: NodePath<Transformed<t.FunctionExpression>>): void {
+  function (path: NodePath<Transformed<FunctionNode>>): void {
     if (path.node.isTransformed) {
       path.skip();
       return;
@@ -37,6 +37,7 @@ const returnVisit : VisitNode<Transformed<KArg<t.ReturnStatement>>> =
 const addKArgVisitor : Visitor = {
   FunctionDeclaration: func,
   FunctionExpression: func,
+  ObjectMethod: func,
   ReturnStatement: returnVisit
 }
 

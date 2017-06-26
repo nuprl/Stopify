@@ -1,12 +1,25 @@
-import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface';
+import { stopifyFunction, stopifyPrint } from './stopifyStandaloneInterface';
 
-import * as makeBlockStmt from '../common/makeBlockStmt';
-import * as fsm from './fsm';
+const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
+import * as desugarLoop from '../desugarLoop';
+import * as desugarFunctionDecl from '../desugarFunctionDecl';
+import * as desugarNew from '../desugarNew';
+import * as desugarSwitch from '../desugarSwitch';
+import * as desugarWhileToFunc from '../desugarLoopToFunc';
+import * as desugarLabel from '../desugarLabel';
+import * as liftVar from '../liftVar';
 
-import { transform } from '../common/helpers';
+import * as makeBlockStmt from '../makeBlockStmt';
+import * as fsm from '../fsm';
 
-export const stackStopifyPrint: stopifyPrint = (code: string) => {
-  const plugins : any[] = [[fsm]];
+import { transform } from '../helpers';
+
+export const stackStopifyPrint: stopifyPrint = (code) => {
+  const plugins : any[] = [
+    [liftVar, noArrows, desugarLoop, desugarLabel],
+    [desugarSwitch],
+    [makeBlockStmt, fsm]
+  ];
   const transformed = transform(code, plugins);
 
   return `
@@ -17,7 +30,7 @@ function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
 `
 }
 
-export const stackStopify: stopifyFunction = (code: string) => {
+export const stackStopify: stopifyFunction = (code) => {
   return eval(`
 (function () {
   return (${stackStopifyPrint(code)});

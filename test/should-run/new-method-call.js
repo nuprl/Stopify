@@ -1,9 +1,15 @@
+const assert = require('assert');
+let c = 0;
+let n = 0;
 function Cat() {
-  console.log('cat')
+  c++;
 }
 
 Cat.prototype.noise = function () {
-  console.log('meow')
+  n++;
 }
 
 new Cat().noise()
+
+assert.equal(c, 1)
+assert.equal(n, 1)

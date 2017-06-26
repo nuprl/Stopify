@@ -4,7 +4,7 @@ import * as h from '../common/helpers';
 
 function memExpr(path: NodePath<t.MemberExpression>) {
   const { object, property } = path.node;
-  if(t.isCallExpression(object)) {
+  if(t.isCallExpression(object) || t.isNewExpression(object)) {
     // Insert the name of the method call.
     const name = path.scope.generateUidIdentifier('mcall');
     path.getStatementParent().insertBefore(h.letExpression(

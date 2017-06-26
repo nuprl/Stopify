@@ -85,7 +85,7 @@ function cpsExpr(expr: t.Expression,
   k: (arg: AExpr) => CPS<CExpr,CExpr>,
   ek: (arg: AExpr) => CPS<CExpr,CExpr>,
   path: NodePath<t.Node>): CPS<CExpr,CExpr> {
-    if (expr === null) {
+    if (expr === null || expr === undefined) {
       return k(t.nullLiteral());
     }
     switch (expr.type) {

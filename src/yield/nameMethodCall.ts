@@ -17,8 +17,24 @@ function memExpr(path: NodePath<t.MemberExpression>) {
   }
 }
 
+function callExpr(path: NodePath<t.CallExpression>) {
+  const { callee, arguments:args } = path.node;
+  if(t.isCallExpression(callee) || t.isNewExpression(callee)) {
+    // Insert the name of the method call.
+    const name = path.scope.generateUidIdentifier('mcall');
+    path.getStatementParent().insertBefore(h.letExpression(
+      name, t.unaryExpression('void', t.numericLiteral(0))))
+
+    const cassign = t.logicalExpression(
+      '||', name, t.assignmentExpression('=', name, callee))
+
+    path.replaceWith(t.callExpression(cassign, args))
+  }
+}
+
 const visitor = {
-  MemberExpression: memExpr
+  MemberExpression: memExpr,
+  CallExpression: callExpr
 }
 
 module.exports = function () {

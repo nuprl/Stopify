@@ -1,15 +1,17 @@
 const assert = require('assert')
 
 let x = 0;
+let y = 0;
 function foo() {
   x++;
   return {
     bar() {
-      x++;
+      y++;
     }
   }
 }
 
 false || foo().bar();
 
-assert.equal(x,2)
+assert.equal(x,1)
+assert.equal(y,1)

@@ -1,7 +1,6 @@
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { Tag, OptimizeMark } from './helpers';
-import generate from 'babel-generator'
 
 let debug = false;
 

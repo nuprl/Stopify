@@ -1,12 +1,15 @@
 import * as t from 'babel-types';
 import { NodePath } from 'babel-traverse'
 
-const visitor = {
-  Identifier(path: NodePath<t.Identifier>) {
-    if (t.isMemberExpression(path.parent) &&  path.node.name === 'constructor') {
-      path.node.name = '__constructor'
-    }
+function memExpr(path: NodePath<t.MemberExpression>) {
+  if(t.isIdentifier(path.node.property) &&
+    path.node.property.name === 'constructor') {
+    path.node.property.name = '__constructor'
   }
+}
+
+const visitor = {
+  MemberExpression: memExpr
 }
 
 module.exports = function () {

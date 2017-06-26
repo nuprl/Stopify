@@ -52,14 +52,22 @@ function cpsObjMembers(mems: t.ObjectMember[],
     if (mems.length === 0) {
       return k([]);
     }
-    else {
-      const [ hd, ...tl ] = mems;
-      return cpsExpr(hd.key,
-        (id: AExpr) => cpsExpr(hd.value,
-          (v: AExpr) => cpsObjMembers(tl,
-            (vs: AExpr[][]) => k([[id,v], ...vs]),
-            ek,
-            path), ek, path), ek, path);
+    const [ hd, ...tl ] = mems;
+    switch (hd.type) {
+      case 'ObjectProperty':
+        return cpsExpr(hd.key,
+          (id: AExpr) => cpsExpr(hd.value,
+            (v: AExpr) => cpsObjMembers(tl,
+              (vs: AExpr[][]) => k([[id,v], ...vs]),
+              ek,
+              path), ek, path), ek, path);
+      case 'ObjectMethod':
+        return cpsExpr(hd.key,
+          (id: AExpr) => cpsExpr(t.functionExpression(<t.Identifier>hd.key, hd.params, hd.body),
+            (v: AExpr) => cpsObjMembers(tl,
+              (vs: AExpr[][]) => k([[id,v], ...vs]),
+              ek,
+              path), ek, path), ek, path);
     }
   }
 

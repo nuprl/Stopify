@@ -10,8 +10,8 @@ function makeAdd(n) {
   }
 }
 
-const a = makeAdd(10)(1)
+const r = makeAdd(10)(1)
 
-assert.equal(a, 11)
+assert.equal(r, 11)
 assert.equal(m, 1)
 assert.equal(a, 1)

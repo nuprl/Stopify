@@ -1,0 +1,12 @@
+#!/bin/bash
+
+PROG="$1"
+
+tracejs $1 > ./trace.js
+
+node ./trace.js > log1 && echo 'done source' &
+
+stopify -i trace.js -t yield > yield.js
+node ./yield.js > log2
+
+echo 'done transform'

@@ -15,10 +15,10 @@ const visitor = {
         if(operator !== '=') {
           throw new Error(`Assignment to prototype using ${operator}`)
         }
-        path.replaceWith(t.callExpression(
-          t.memberExpression(t.identifier('Object'), t.identifier('assign')),
-          [left, right]
-        ))
+        path.node.right = t.callExpression(
+          t.identifier('$proto_assign'),
+          [right]
+        )
       }
     }
   }

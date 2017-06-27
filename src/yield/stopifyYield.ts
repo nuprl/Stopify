@@ -43,11 +43,22 @@ function $runYield(gen, res = { done: false, value: undefined }) {
     }
   }, 0)
 };
+
+const $generatorPrototype = (function*(){}).prototype;
+
+function $proto_assign(rhs) {
+  let proto = Object.create(rhs)
+  proto.next = $generatorPrototype.next;
+  proto.throw = $generatorPrototype.throw;
+  proto.return = $generatorPrototype.return;
+  proto[Symbol.iterator] = $generatorPrototype[Symbol.iterator]
+  return proto
+}
 `
 
 export const yieldStopifyPrint: stopifyPrint = (code) => {
   const plugins = [
-    [noArrows, desugarNew, /*pAssign,*/ nameMCall],
+    [noArrows, desugarNew, pAssign, nameMCall],
     [makeBlockStmt], [markKnown], [yieldPass],
     [transformMarked]
   ];

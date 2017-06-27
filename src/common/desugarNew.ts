@@ -54,7 +54,7 @@ const constr: t.Identifier = t.identifier('constr');
 const restArgs: t.RestElement = t.restElement(t.identifier('args'));
 const spreadArgs: t.SpreadElement = t.spreadElement(t.identifier('args'));
 
-const handleNewFunc = letExpression(newFuncName, t.functionExpression(
+const handleNewFunc = t.functionDeclaration(
   newFuncName,
   [constr, restArgs],
   t.blockStatement([
@@ -66,13 +66,13 @@ const handleNewFunc = letExpression(newFuncName, t.functionExpression(
         letExpression(t.identifier('a'),
           t.callExpression(t.memberExpression(t.identifier('Object'),
             t.identifier('create')),
-          [t.memberExpression(constr, t.identifier('prototype'))])),
+            [t.memberExpression(constr, t.identifier('prototype'))])),
         t.expressionStatement(t.callExpression(t.memberExpression(constr,
           t.identifier('apply')), [t.identifier('a'), t.identifier('args')])),
         t.returnStatement(t.identifier('a'))
       ]),
-  )]
-)));
+    )]
+  ));
 
 const program: VisitNode<t.Program> = {
   exit(path: NodePath<t.Program>) {
@@ -91,7 +91,7 @@ const newVisit: VisitNode<OptimizeMark<NewTag<t.NewExpression>>> =
     }
     const { callee, arguments: args } = path.node;
     path.replaceWith(t.callExpression(newFuncName, [callee, ...args]));
-};
+  };
 
 module.exports = function () {
   return {

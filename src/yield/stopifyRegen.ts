@@ -7,7 +7,6 @@ import * as yieldPass from './yield';
 import * as transformMarked from '../common/transformMarked';
 import { transform } from '../common/helpers';
 import * as markKnown from '../common/markKnownFunctions'
-import * as renameC from './renameConstructor'
 
 // The runtime needs to be stored as a string to allow for client-side
 // compilation.
@@ -22,10 +21,9 @@ const $yieldCounter = $interval;
 let $counter = 0;
 function $mark_func(f) {
   f.$isTransformed = true;
-  f.call = f.call.bind(f);
-  f.call.$isTransformed = true
-  f.apply = f.apply.bind(f);
-  f.apply.$isTransformed = true;
+  Object.defineProperty(f.prototype, "constructor", {
+    value: f.prototype.constructor, writable: true
+  })
   return f;
 };
 
@@ -47,7 +45,7 @@ function $runYield(gen, res = { done: false, value: undefined }) {
 
 export const regenStopifyPrint: stopifyPrint = (code) => {
   const plugins = [
-    [noArrows, desugarNew, renameC], [makeBlockStmt], [markKnown], [yieldPass],
+    [noArrows, desugarNew], [makeBlockStmt], [markKnown], [yieldPass],
     [transformMarked]
   ];
   const intermediate = transform(code, plugins);

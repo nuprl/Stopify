@@ -7,7 +7,6 @@ import * as yieldPass from './yield';
 import * as transformMarked from '../common/transformMarked';
 import { transform } from '../common/helpers';
 import * as markKnown from '../common/markKnownFunctions'
-import * as renameC from './renameConstructor'
 import * as pAssign from './prototypeAssign'
 import * as nameMCall from './nameMethodCall'
 
@@ -24,6 +23,9 @@ const $yieldCounter = $interval;
 let $counter = 0;
 function $mark_func(f) {
   f.$isTransformed = true;
+  Object.defineProperty(f.prototype, "constructor", {
+    value: f.prototype.constructor, writable: true
+  });
   return f;
 };
 
@@ -45,7 +47,7 @@ function $runYield(gen, res = { done: false, value: undefined }) {
 
 export const yieldStopifyPrint: stopifyPrint = (code) => {
   const plugins = [
-    [noArrows, desugarNew, renameC, pAssign, nameMCall],
+    [noArrows, desugarNew, /*pAssign,*/ nameMCall],
     [makeBlockStmt], [markKnown], [yieldPass],
     [transformMarked]
   ];

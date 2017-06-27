@@ -58,9 +58,9 @@ function $proto_assign(rhs) {
 
 export const yieldStopifyPrint: stopifyPrint = (code) => {
   const plugins = [
-    [noArrows, desugarNew, pAssign, nameMCall],
+    [noArrows, desugarNew, nameMCall],
     [makeBlockStmt], [markKnown], [yieldPass],
-    [transformMarked]
+    [transformMarked, pAssign, ]
   ];
   const transformed = transform(code, plugins);
 

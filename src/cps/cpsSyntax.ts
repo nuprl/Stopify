@@ -478,7 +478,7 @@ const cpsExpression : Visitor = {
       const { c, m } = inlineApplications(raiseFuns(cexpr));
 
       const kont =
-        t.functionExpression(undefined, [onDone, onError],
+        t.arrowFunctionExpression([onDone, onError],
           t.blockStatement(generateJS(c, m)));
       const kontCall = administrative(t.callExpression(kont, [onDone, onError]));
 

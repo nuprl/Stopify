@@ -50,27 +50,39 @@ function $onError(arg) {
 }
 
 function applyWithK(f, k, ek, ...args) {
-  if (f.$isTransformed) return f(k, ek, ...args);else try {
-    return k(f(...args));
-  } catch (e) {
-    return ek(e);
+  if (f.$isTransformed) {
+    return f(k, ek, ...args);
+  } else {
+    try {
+      return k(f(...args));
+    } catch (e) {
+      return ek(e);
+    }
   }
 }
 
 function call_applyWithK(f, k, ek, ...args) {
   const [hd, ...tail] = args;
-  if (f.$isTransformed) return f.call(hd, k, ek, ...tail);else try {
-    return k(f.call(hd, ...tail));
-  } catch (e) {
-    return ek(e);
+  if (f.$isTransformed) {
+    return f.call(hd, k, ek, ...tail);
+  } else {
+    try {
+      return k(f.call(hd, ...tail));
+    } catch (e) {
+      return ek(e);
+    }
   }
 }
 
 function apply_applyWithK(f, k, ek, thisArg, args) {
-  if (f.$isTransformed) return f.apply(thisArg, [k, ek, ...args]);else try {
-    return k(f.apply(thisArg, args));
-  } catch (e) {
-    return ek(e);
+  if (f.$isTransformed) {
+    return f.apply(thisArg, [k, ek, ...args]);
+  } else {
+    try {
+      return k(f.apply(thisArg, args));
+    } catch (e) {
+      return ek(e);
+    }
   }
 }
 
@@ -78,19 +90,23 @@ function apply_helper(how) {
   return function (f, k, ek, ...args) {
     if ($counter-- === 0) {
       $counter = $interval;
-      setTimeout(_ => {
-        if ($isStop()) $onStop();else return how(f, k, ek, ...args);
+      return setTimeout(_ => {
+        if ($isStop()) {
+          return $onStop();
+        } else {
+          return how(f, k, ek, ...args);
+        }
       }, 0);
-    } else return how(f, k, ek, ...args);
+    } else {
+      return how(f, k, ek, ...args);
+    }
   };
 }
 
-const admin_apply = apply_helper(function (f, ...args) {
-  return f(...args);
+const admin_apply = apply_helper(function (f, k, ek, ...args) {
+  return f(k, ek, ...args);
 });
-const apply = apply_helper(function (f, k, ek, ...args) {
-  return applyWithK(f, k, ek, ...args);
-});
+const apply = apply_helper(applyWithK);
 const call_apply = apply_helper(function (f, k, ek, ...args) {
   return call_applyWithK(f, k, ek, ...args);
 });

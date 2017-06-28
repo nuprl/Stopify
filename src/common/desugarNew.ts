@@ -54,7 +54,7 @@ const constr: t.Identifier = t.identifier('constr');
 const restArgs: t.RestElement = t.restElement(t.identifier('args'));
 const spreadArgs: t.SpreadElement = t.spreadElement(t.identifier('args'));
 
-const handleNewFunc = t.functionDeclaration(
+const handleNewFunc = letExpression(newFuncName, t.functionExpression(
   newFuncName,
   [constr, restArgs],
   t.blockStatement([
@@ -72,7 +72,7 @@ const handleNewFunc = t.functionDeclaration(
         t.returnStatement(t.identifier('a'))
       ]),
     )]
-  ));
+  )));
 
 const program: VisitNode<t.Program> = {
   exit(path: NodePath<t.Program>) {

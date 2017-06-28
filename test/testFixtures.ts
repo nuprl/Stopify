@@ -3,12 +3,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import {transform} from '../src/common/helpers';
+import * as h from '../src/common/helpers'
 const assert = require('assert');
 const tmp = require('tmp');
 const glob = require('glob');
 
 const simpleTests = glob.sync('test/should-run/*.js', {})
 const sourceLanguage = glob.sync('test/should-run/source-language/*.js', {})
+export const stopTests = glob.sync('test/should-stop/*.js', {})
 
 export const testFiles = simpleTests.concat(sourceLanguage)
 export const skipped = glob.sync('test/should-run/skip/*.js')
@@ -41,10 +43,19 @@ export function retainValueTest(org: string, plugs: any[][]) {
     `Failed: original evals to '${oe}' while transformed evals to '${te}'`);
 }
 
+export function stopProgramTest(srcFile: string, transform: string) {
+  const runner = spawnSync(
+    './bin/stopify',
+    ['-i', srcFile, '-t', transform, '-o', 'stop', '-y', '10']
+  )
+
+  assert.equal(runner.status, 0, (runner.stderr || "").toString());
+}
+
 export function stopifyTest(srcFile: string, transform: string) {
   const runner = spawnSync(
     './bin/stopify',
-    ['-i', srcFile, '-t', transform, '-o', 'eval', '-y', '500', '--notime']
+    ['-i', srcFile, '-t', transform, '-o', 'eval', '-y', '500']
   )
 
   assert.equal(runner.status, 0, (runner.stderr || "").toString());

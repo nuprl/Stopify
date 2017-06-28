@@ -24,7 +24,7 @@ function showUsage() {
   console.log('       stopify.js -s <string> -t [cps|tcps|stack|yield|regen] [options]\n');
   console.log('Options:')
   console.log('  -y, --interval     Set yield interval')
-  console.log('  -o, --output       Can be print, eval, benchmark')
+  console.log('  -o, --output       Can be print, eval, stop')
   process.exit(0);
 }
 
@@ -139,6 +139,53 @@ switch(output) {
         console.log(`// Runtime : ${timeInSecs(rtime)}s`)
       }, interval)
     }
+    break;
+  }
+  case 'stop': {
+    let stopifyFunc;
+    switch(transform) {
+      case 'yield':
+        stopifyFunc = yieldStopify;
+        break;
+      case 'regen':
+        stopifyFunc = regenStopify;
+        break;
+      case 'cps':
+        stopifyFunc = cpsStopify;
+        break;
+      case 'tcps':
+        stopifyFunc = tcpsStopify;
+        break;
+      case 'stack':
+        stopifyFunc = stackStopify;
+        break;
+      default:
+        throw new Error(`Unknown transform: ${transform}`)
+    }
+    let ctime = "";
+    let prog;
+    if (process) {
+      const stime = process.hrtime()
+      prog = stopifyFunc(code)
+      ctime = timeInSecs(process.hrtime(stime))
+      console.log(`// Compilation time: ${ctime}s`)
+    } else {
+      prog = stopifyFunc(code)
+    }
+    const sw: StopWrapper = new StopWrapper();
+    let rtime = "";
+    if (process) {
+      const stime = process.hrtime()
+      prog(sw.isStop.bind(sw), () =>{
+        const rtime = process.hrtime(stime)
+        console.log(`// Stop time: ${timeInSecs(rtime)}`)
+      }, () => {
+        const rtime = process.hrtime(stime)
+        console.log(`// Runtime : ${timeInSecs(rtime)}s`)
+      }, interval)
+      sw.stop()
+    }
+    break;
     break;
   }
   default:

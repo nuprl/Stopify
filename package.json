@@ -36,7 +36,7 @@
   "scripts": {
     "build": "./node_modules/.bin/tsc || true && npm link",
     "build-webpage": "npm run build && ./node_modules/.bin/browserify built/demo-webpage/paws-client/container.js -o demo-webpage/html/container.js && ./node_modules/.bin/browserify built/demo-webpage/paws-client/runner.js -o demo-webpage/html/runner.js && cp -R ./demo-webpage/html built/demo-webpage/",
-    "test": "./node_modules/.bin/tsc && ./node_modules/.bin/mocha built/test/0-should-run-no-plug.js && ./node_modules/.bin/mocha built/test/should-run-* || true"
+    "test": "./node_modules/.bin/tsc && ./node_modules/.bin/mocha built/test/0-should-run-no-plug.js && ./node_modules/.bin/mocha built/test/should-run-tests || true"
   },
   "author": "Rachit Nigam",
   "license": "ISC",

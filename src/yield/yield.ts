@@ -94,31 +94,18 @@ const loop: VisitNode<Transformed<t.Loop>> = function (path: NodePath<Transforme
   }
 }
 
-const funcd: VisitNode<Transformed<t.FunctionDeclaration>> =
-  function (path: NodePath<Transformed<t.FunctionDeclaration>>): void {
-    if (path.node.isTransformed) return
-    path.node.body.body.unshift(ifYield);
-    path.node.generator = true;
-    transformed(path.node)
-};
-
-const funce: VisitNode<t.FunctionExpression> =
-  function (path: NodePath<t.FunctionExpression>): void {
-    // Set isGen property on the function.
-    const decl = path.parent;
-    if (!t.isVariableDeclarator(decl)) {
-      throw new Error(
-        `Parent of function expression was ${decl.type} on line ${decl.loc.start.line}`)
-    } else {
-      path.node.body.body.unshift(ifYield);
-      path.node.generator = true;
+const func = {
+  enter(path: NodePath<t.Function>) {
+    if(path.node.generator === false) {
+      path.node.generator = true
       transformed(path.node)
     }
-};
+  }
+}
 
 const yieldVisitor: Visitor = {
-  FunctionDeclaration: funcd,
-  FunctionExpression: funce,
+  FunctionDeclaration: func,
+  FunctionExpression: func,
   CallExpression: callExpression,
   "Loop": loop,
   Program: program,

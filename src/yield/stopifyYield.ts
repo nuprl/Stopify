@@ -43,6 +43,12 @@ function $runYield(gen, res = { done: false, value: undefined }) {
 };
 
 function *$apply_wrapper(genOrFunc) {
+  if($counter >= $interval) {
+    $counter = 0;
+    yield 0;
+  } else {
+    $counter ++;
+  }
   return genOrFunc && genOrFunc.next ? yield* genOrFunc: genOrFunc
 }
 

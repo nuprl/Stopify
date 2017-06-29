@@ -179,13 +179,11 @@ switch(output) {
       prog(sw.isStop.bind(sw), () =>{
         const rtime = process.hrtime(stime)
         console.log(`// Stop time: ${timeInSecs(rtime)}`)
-      }, () => {
-        const rtime = process.hrtime(stime)
-        console.log(`// Runtime : ${timeInSecs(rtime)}s`)
-      }, interval)
-      sw.stop()
+      }, () => {}, interval)
+      setTimeout(_ => {
+        sw.stop()
+      }, 1000)
     }
-    break;
     break;
   }
   default:

@@ -46,10 +46,11 @@ export function retainValueTest(org: string, plugs: any[][]) {
 export function stopProgramTest(srcFile: string, transform: string) {
   const runner = spawnSync(
     './bin/stopify',
-    ['-i', srcFile, '-t', transform, '-o', 'stop', '-y', '10']
+    ['-i', srcFile, '-t', transform, '-o', 'stop', '-y', '10'],
+    { timeout: 2000 }
   )
 
-  assert.equal(runner.status, 0, (runner.stderr || "").toString());
+  assert.equal(runner.status, 0, `failed to stop ${srcFile} with ${transform}`)
 }
 
 export function stopifyTest(srcFile: string, transform: string) {

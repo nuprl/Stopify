@@ -10,6 +10,11 @@ import {Administrative, Call, Apply, Direct} from '../common/helpers';
 
 type Args = t.Expression | t.SpreadElement;
 type TApply = 'direct' | 'administrative' | 'call' | 'apply';
+type DirectResult = {
+  success: t.ConditionalExpression,
+  e: t.Identifier,
+  failure: t.CallExpression
+};
 
 const counter: t.Identifier = t.identifier('$counter');
 const interval: t.Identifier = t.identifier('$interval');
@@ -22,19 +27,20 @@ function isTransformed(f: t.Expression): t.MemberExpression {
 }
 
 function inlineDirect(callee: t.Expression,
-  args: Args[]): t.ConditionalExpression {
+  args: Args[]): DirectResult {
     const [k, ek, ...tl] = args;
-    return t.conditionalExpression(isTransformed(callee),
-      t.callExpression(callee, args),
-      t.callExpression(<t.Expression>k, [t.callExpression(callee, tl)]));
+    return {
+      success: t.conditionalExpression(isTransformed(callee),
+        t.callExpression(callee, args),
+        t.callExpression(<t.Expression>k, [t.callExpression(callee, tl)])),
+      e: t.identifier('e'),
+      failure: t.callExpression(<t.Expression>ek, [t.identifier('e')])
+    };
   }
 
 function inlineAdmin(callee: t.Expression,
-  args: Args[]): t.ConditionalExpression {
-    const [k, ek, ...tl] = args;
-    return t.conditionalExpression(isTransformed(callee),
-      t.callExpression(callee, args),
-      t.callExpression(<t.Expression>k, [t.callExpression(callee, tl)]));
+  args: Args[]): t.Expression {
+    return t.callExpression(callee, args);
   }
 
 function inlineCall(callee: t.Expression,
@@ -53,44 +59,21 @@ function inlineApply(callee: t.Expression,
       t.callExpression(<t.Expression>k, [t.callExpression(callee, tl)]));
   }
 
-function inline(applyType: TApply,
-  callee: t.Expression,
-  args: Args[]): t.Expression[] {
-    const [k, ek, ...tl] = args;
-
-    let inlineT;
-    switch (applyType) {
-      case 'direct':
-        inlineT = inlineDirect;
-        break;
-      case 'administrative':
-        inlineT = inlineAdmin;
-        break;
-      case 'call':
-        inlineT = inlineCall;
-        break;
-      case 'apply':
-        inlineT = inlineApply;
-        break;
-    }
-    return [
-      t.conditionalExpression(t.binaryExpression('===',
-        t.updateExpression('--', counter),
-        t.numericLiteral(0)),
-        t.sequenceExpression([
-          t.assignmentExpression('=', counter, interval),
-          t.callExpression(setTimeoutId, [
-            t.arrowFunctionExpression([t.identifier('_')],
-              t.conditionalExpression(t.callExpression(isStop, []),
-                t.callExpression(onStop, []),
-                inlineT!(callee, args))),
-            t.numericLiteral(0)
-          ])
-        ]),
-        inlineT!(callee, args)),
-      t.identifier('e'),
-      t.callExpression(<t.Expression>ek, [t.identifier('e')])
-    ]
+function inline(call: t.Expression): t.ConditionalExpression {
+    return t.conditionalExpression(t.binaryExpression('===',
+      t.updateExpression('--', counter),
+      t.numericLiteral(0)),
+      t.sequenceExpression([
+        t.assignmentExpression('=', counter, interval),
+        t.callExpression(setTimeoutId, [
+          t.arrowFunctionExpression([t.identifier('_')],
+            t.conditionalExpression(t.callExpression(isStop, []),
+              t.callExpression(onStop, []),
+              call)),
+          t.numericLiteral(0)
+        ])
+      ]),
+      call);
   }
 
 function tryCatch(success: t.Expression,
@@ -103,27 +86,31 @@ function tryCatch(success: t.Expression,
 
 const stopApplyVisitor : Visitor = {
     CallExpression: function (path: NodePath<t.CallExpression>): void {
+      const returnPath = <NodePath<t.ReturnStatement>>(path.getStatementParent());
+
       type C = t.CallExpression;
       let applyId = null;
-      if ((<Administrative<C>>path.node).isAdmin !== undefined) {
-        applyId = t.identifier('admin_apply');
-      } else if ((<Call<C>>path.node).isCall !== undefined) {
-        applyId = t.identifier('call_apply');
-      } else if ((<Apply<C>>path.node).isApply !== undefined) {
-        applyId = t.identifier('apply_apply');
-      } else if ((<Direct<C>>path.node).isDirect !== undefined) {
-        return;
-      } else {
-        const returnPath = <NodePath<t.ReturnStatement>>(path.getStatementParent());
-        if (!t.isReturnStatement(returnPath.node)) {
-          throw new Error(`CPS produced non-tailcall`);
-        }
+      tag: {
+        if ((<Administrative<C>>path.node).isAdmin !== undefined) {
+          applyId = t.identifier('admin_apply');
+        } else if ((<Call<C>>path.node).isCall !== undefined) {
+          applyId = t.identifier('call_apply');
+        } else if ((<Apply<C>>path.node).isApply !== undefined) {
+          applyId = t.identifier('apply_apply');
+        } else if ((<Direct<C>>path.node).isDirect !== undefined) {
+          return;
+        } else {
+          if (!t.isReturnStatement(returnPath.node)) {
+            applyId = t.identifier('apply');
+            break tag;
+          }
 
-        const [success, e, failure] =
-          inline('direct', path.node.callee, path.node.arguments);
-        returnPath.replaceWith(tryCatch(success, e, failure));
-        returnPath.skip();
-        return;
+          const { success, e, failure } =
+            inlineDirect(path.node.callee, path.node.arguments);
+          returnPath.replaceWith(tryCatch(inline(success), e, failure));
+          returnPath.skip();
+          return;
+        }
       }
       const applyArgs = [path.node.callee, ...path.node.arguments];
       path.node.callee = applyId;

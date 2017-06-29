@@ -49,9 +49,6 @@ const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
     if (exp.OptimizeMark === 'Untransformed') {
       return;
     }
-    else if (exp.OptimizeMark === 'Transformed') {
-      path.replaceWith(t.yieldExpression(exp, true))
-    }
     else {
       /*let callee = path.node.callee;
       if (t.isMemberExpression(path.node.callee)) {

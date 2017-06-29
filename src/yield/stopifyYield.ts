@@ -43,13 +43,17 @@ function $runYield(gen, res = { done: false, value: undefined }) {
 };
 
 function *$apply_wrapper(genOrFunc) {
-  if($counter >= $interval) {
-    $counter = 0;
-    yield 0;
+  if (genOrFunc && genOrFunc.next) {
+    if($counter >= $interval) {
+      $counter = 0;
+      yield 0;
+    } else {
+      $counter ++;
+    }
+    return yield* genOrFunc
   } else {
-    $counter ++;
+    return genOrFunc;
   }
-  return genOrFunc && genOrFunc.next ? yield* genOrFunc: genOrFunc
 }
 
 const $generatorPrototype = (function*(){}).prototype;

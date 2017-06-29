@@ -320,9 +320,11 @@ function cpsStmt(stmt: t.Statement,
           ek : (e: AExpr) =>
           cpsStmt(stmt.handler.body, fin, ek, path).map(c =>
             new CLet('const', stmt.handler.param, new BAtom(e), c));
-        return cpsExpr(t.callExpression(t.functionExpression(undefined,
-          [kFun, kErr],
-          stmt.block), []), fin, err, path);
+        return cpsExpr(t.callExpression(t.memberExpression(
+          t.functionExpression(undefined,
+            [kFun, kErr],
+            stmt.block), t.identifier('call')), [t.thisExpression()]),
+          fin, err, path);
       case "VariableDeclaration": {
         const { declarations } = stmt;
         const [head, ...tail] = declarations;

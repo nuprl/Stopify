@@ -121,7 +121,7 @@ export const cpsStopifyPrint: stopifyPrint = (code: string) => {
     [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
     [desugarSwitch, addKArg, desugarWhileToFunc],
     [makeBlockStmt],
-    [cps, applyStop, transformMarked],
+    [cps, transformMarked, applyStop],
   ];
   const transformed = transform(code, plugins);
 

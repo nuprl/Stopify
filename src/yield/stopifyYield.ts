@@ -1,7 +1,7 @@
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 
 import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface'
-import * as desugarNew from '../common/desugarNew';
+import * as handleNew from './handleNew';
 import * as makeBlockStmt from '../common/makeBlockStmt';
 import * as yieldPass from './yield';
 import * as transformMarked from '../common/transformMarked';
@@ -12,9 +12,40 @@ import * as evalHandler from './evalHandler';
 
 const plugins = [
   [noArrows, evalHandler],
-  [desugarNew, makeBlockStmt], [markKnown], [yieldPass],
+  [handleNew, makeBlockStmt], [markKnown], [yieldPass],
   [transformMarked, pAssign, ]
 ];
+
+const knowns = ['Object',
+  'Function',
+  'Boolean',
+  'Symbol',
+  'Error',
+  'EvalError',
+  'RangeError',
+  'ReferenceError',
+  'SyntaxError',
+  'TypeError',
+  'URIError',
+  'Number',
+  'Math',
+  'Date',
+  'String',
+  'RegExp',
+  'Array',
+  'Int8Array',
+  'Uint8Array',
+  'Uint8ClampedArray',
+  'Int16Array',
+  'Uint16Array',
+  'Int32Array',
+  'Uint32Array',
+  'Float32Array',
+  'Float64Array',
+  'Map',
+  'Set',
+  'WeakMap',
+  'WeakSet'];
 
 // The runtime needs to be stored as a string to allow for client-side
 // compilation.
@@ -63,7 +94,6 @@ function *$apply_wrapper(genOrFunc) {
 }
 
 const $generatorPrototype = (function*(){}).prototype;
-
 function $proto_assign(rhs) {
   let proto = Object.create(rhs)
   proto.next = $generatorPrototype.next;
@@ -73,7 +103,18 @@ function $proto_assign(rhs) {
   return proto
 }
 
-const GeneratorPrototype = Object.getPrototypeOf(function*(){}).constructor;
+const $GeneratorConstructor = $generatorPrototype.constructor;
+
+const $knownBuiltInts = [${knowns.toString()}]
+function *$handleNew(constr, ...args) {
+  if($knownBuiltInts.includes(constr)) {
+    return new constr(...args);
+  } else {
+    let a = Object.create(constr.prototype);
+    yield* $apply_wrapper(constr.apply(a, args))
+    return a;
+  }
+}
 `
 
 // This assumes that program has been wrapped in a function called $runProg.

@@ -318,6 +318,7 @@ function cpsStmt(stmt: t.Statement,
       case 'TryStatement':
         const kFun = path.scope.generateUidIdentifier('kFun');
         const kErr = path.scope.generateUidIdentifier('kErr');
+        const tryFunc = path.scope.generateUidIdentifier('try');
         const tlAssign = path.scope.generateUidIdentifier('tlEkAssign');
         const tlEVal = path.scope.generateUidIdentifier('e');
         const topLevel = t.identifier('$topLevelEk');
@@ -331,11 +332,10 @@ function cpsStmt(stmt: t.Statement,
                 new CLet('const', tlAssign, new BAssign('=', topLevel,
                   new AtomicBExpr(new BAdminFun(undefined, [tlEVal], eVal))),
                   new CLet('const', stmt.handler.param, new BAtom(e), c)))));
-        return cpsExpr(t.callExpression(t.memberExpression(
-          t.functionExpression(undefined,
-            [kFun, kErr],
-            stmt.block), t.identifier('call')), [t.thisExpression()]),
-          fin, err, path);
+        return cpsExpr(t.functionExpression(undefined, [kFun, kErr], stmt.block), f =>
+          cpsExpr(t.callExpression(t.memberExpression(tryFunc, t.identifier('call')),
+            [t.thisExpression()]), fin, err, path).map(c =>
+              new CLet('const', tryFunc, new BAtom(f), c)), ek, path);
       case "VariableDeclaration": {
         const { declarations } = stmt;
         const [head, ...tail] = declarations;

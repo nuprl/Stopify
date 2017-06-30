@@ -8,9 +8,10 @@ import * as transformMarked from '../common/transformMarked';
 import { transform } from '../common/helpers';
 import * as markKnown from '../common/markKnownFunctions'
 import * as pAssign from './prototypeAssign'
+import * as evalHandler from './evalHandler';
 
 const plugins = [
-  [noArrows, desugarNew, ],
+  [noArrows, desugarNew, evalHandler],
   [makeBlockStmt], [markKnown], [yieldPass],
   [transformMarked, pAssign, ]
 ];
@@ -96,16 +97,13 @@ export const yieldStopifyPrint: stopifyPrint = (code) => {
 
 export function yieldEvalString(code: string): string {
   const transformed = transform(code, plugins);
+  const wrapped = `(function*() { ${transformed} })()`
 
   if(transformed.length < code.length) {
     throw new Error('Transformed code is smaller than original code')
   }
 
-  return `
-    (function *$runProg() {
-      ${transformed}
-    })()
-  `
+  return wrapped
 }
 
 export const yieldStopify: stopifyFunction = (code) => {

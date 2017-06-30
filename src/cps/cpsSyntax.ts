@@ -493,9 +493,14 @@ const cpsExpression : Visitor = {
       const kont =
         t.arrowFunctionExpression([onDone, onError],
           t.blockStatement(generateJS(c, m)));
-      const kontCall = administrative(t.callExpression(kont, [onDone, onError]));
+      const kId = path.scope.generateUidIdentifier('k');
+      const kontBind = letExpression(kId, kont, 'const');
+      const kontCall = administrative(t.callExpression(kId, [onDone, onError]));
 
-      path.node.body = [t.returnStatement(kontCall)];
+      path.node.body = [
+        kontBind,
+        t.returnStatement(kontCall)
+      ];
     }
   }
 };

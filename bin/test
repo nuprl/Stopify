@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# Cleanup any remaining process from test/should-stop
+function cleanup {
+  pgrep -f 'test/should-stop' | xargs kill
+}
+
+trap cleanup EXIT
+
 npm run build
 
 ./node_modules/.bin/mocha ./built/test/0-should-run-no-plug.js && \
   ./node_modules/.bin/mocha ./built/test/should-*-tests.js
-
-# Cleanup any remaining process from test/should-stop
-pgrep -f 'test/should-stop' | xargs kill

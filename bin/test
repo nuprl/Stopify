@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pwd
+npm run build
 
 ./node_modules/.bin/mocha ./built/test/0-should-run-no-plug.js && \
   ./node_modules/.bin/mocha ./built/test/should-*-tests.js

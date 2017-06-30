@@ -324,9 +324,10 @@ function cpsStmt(stmt: t.Statement,
           fin(topLevel).bind(tl =>
             cpsStmt(stmt.handler.body, fin, ek, path).map(c =>
               new CLet('const', stmt.handler.param, new BAtom(e), c)));
-        return cpsExpr(t.callExpression(t.functionExpression(undefined,
-          [kFun, kErr],
-          stmt.block), []),
+        return cpsExpr(t.callExpression(t.memberExpression(
+          t.functionExpression(undefined,
+            [kFun, kErr],
+            stmt.block), t.identifier('call')), [t.thisExpression()]),
           fin, err, path);
       case "VariableDeclaration": {
         const { declarations } = stmt;

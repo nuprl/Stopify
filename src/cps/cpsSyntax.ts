@@ -316,14 +316,19 @@ function cpsStmt(stmt: t.Statement,
       case 'TryStatement':
         const kFun = path.scope.generateUidIdentifier('kFun');
         const kErr = path.scope.generateUidIdentifier('kErr');
+        const tlAssign = path.scope.generateUidIdentifier('tlEkAssign');
+        const tlEVal = path.scope.generateUidIdentifier('e');
         const topLevel = t.identifier('$topLevelEk');
         const fin = stmt.finalizer === null ?
           k : (v: AExpr) => cpsStmt(stmt.finalizer, k, ek, path);
         const err = stmt.handler === null ?
           ek : (e: AExpr) =>
           fin(topLevel).bind(tl =>
-            cpsStmt(stmt.handler.body, fin, ek, path).map(c =>
-              new CLet('const', stmt.handler.param, new BAtom(e), c)));
+            cpsStmt(stmt.handler.body, fin, ek, path).bind(c =>
+              ek(tlEVal).map(eVal =>
+                new CLet('const', tlAssign, new BAssign('=', topLevel,
+                  new AtomicBExpr(new BAdminFun(undefined, [tlEVal], eVal))),
+                  new CLet('const', stmt.handler.param, new BAtom(e), c)))));
         return cpsExpr(t.callExpression(t.memberExpression(
           t.functionExpression(undefined,
             [kFun, kErr],

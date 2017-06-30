@@ -107,6 +107,13 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
   return apply_applyWithK(f, k, ek, thisArg, args);
 });
 
+function $tryCatch(e) {
+  try {
+    return $topLevelEk(e);
+  } catch (e) {
+    return $topLevelEk(e);
+  }
+}
 `;
 
 export const cpsStopifyPrint: stopifyPrint = (code: string) => {
@@ -128,7 +135,7 @@ function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
   try {
     ${transformed}
   } catch (e) {
-    return $topLevelEk(e);
+    return $tryCatch(e);
   }
 }
 `

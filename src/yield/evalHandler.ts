@@ -38,9 +38,31 @@ const callExpr = {
   }
 }
 
+// Handle new Function
+const newExpr = {
+  enter(path: NodePath<t.NewExpression>) {
+    const { callee, arguments:args } = path.node;
+    if(t.isIdentifier(callee) && callee.name === 'Function') {
+      if(process) {
+        process.stderr.write(
+          '// Found `new Function` in code, requiring runtime\n')
+      }
+      addRuntime = true;
+      const last = path.node.arguments.pop()
+      if (last !== undefined) {
+        path.node.arguments.push(t.callExpression(
+          t.identifier('$compile_string'),
+          [last]))
+        path.node.callee = t.identifier('GeneratorPrototype')
+      }
+    }
+  }
+}
+
 const visitor = {
   Program: prog,
   CallExpression: callExpr,
+  NewExpression: newExpr
 }
 
 module.exports = function() {

@@ -11,8 +11,8 @@ import * as pAssign from './prototypeAssign'
 import * as evalHandler from './evalHandler';
 
 const plugins = [
-  [noArrows, desugarNew, evalHandler],
-  [makeBlockStmt], [markKnown], [yieldPass],
+  [noArrows, evalHandler],
+  [desugarNew, makeBlockStmt], [markKnown], [yieldPass],
   [transformMarked, pAssign, ]
 ];
 
@@ -72,6 +72,8 @@ function $proto_assign(rhs) {
   proto[Symbol.iterator] = $generatorPrototype[Symbol.iterator]
   return proto
 }
+
+const GeneratorPrototype = Object.getPrototypeOf(function*(){}).constructor;
 `
 
 // This assumes that program has been wrapped in a function called $runProg.

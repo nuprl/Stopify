@@ -12,6 +12,3 @@ mkdir -p runtimes
 
 # link the stopify executable
 npm link
-
-# Build the yield runtime for eval
-./node_modules/.bin/browserify ./built/src/yield/stopifyYield.js -o runtimes/yieldRuntime.js

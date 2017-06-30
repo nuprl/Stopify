@@ -300,11 +300,13 @@ function cpsStmt(stmt: t.Statement,
                   new ITE(tst, consequent, alternate)))));
         }, ek, path);
       case "LabeledStatement": {
+        const lblFunc = path.scope.generateUidIdentifier('lblFun');
         const kErr = path.scope.generateUidIdentifier('kErr');
-        return cpsExpr(t.callExpression(t.memberExpression(
-          t.functionExpression(undefined,
-          [stmt.label, kErr], flatBodyStatement([stmt.body])), t.identifier('call')),
-          [t.thisExpression()]), k, ek, path);
+        return cpsExpr(t.functionExpression(undefined, [stmt.label, kErr],
+          flatBodyStatement([stmt.body])), f =>
+          cpsExpr(t.callExpression(t.memberExpression(lblFunc, t.identifier('call')),
+            [t.thisExpression()]), k, ek, path).map(c =>
+              new CLet('const', lblFunc, new BAtom(f), c)), ek, path);
       }
       case "ReturnStatement":
         let returnK = (r: AExpr) =>

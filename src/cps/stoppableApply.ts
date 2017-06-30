@@ -10,9 +10,9 @@ import {Administrative, Call, Apply, Direct} from '../common/helpers';
 
 type Args = t.Expression | t.SpreadElement;
 type TApply = 'direct' | 'administrative' | 'call' | 'apply';
-type DirectResult = {
-  success: t.ConditionalExpression,
-  ek: t.Identifier
+type InlinedResult = {
+  inlined: t.Expression,
+  ek?: t.Identifier
 };
 
 const counter: t.Identifier = t.identifier('$counter');
@@ -27,10 +27,10 @@ function isTransformed(f: t.Expression): t.MemberExpression {
 }
 
 function inlineDirect(callee: t.Expression,
-  args: Args[]): DirectResult {
+  args: Args[]): InlinedResult {
     const [k, ek, ...tl] = args;
     return {
-      success: t.conditionalExpression(isTransformed(callee),
+      inlined: t.conditionalExpression(isTransformed(callee),
         t.callExpression(callee, args),
         t.callExpression(<t.Expression>k, [t.callExpression(callee, tl)])),
       ek: <t.Identifier>ek
@@ -38,8 +38,10 @@ function inlineDirect(callee: t.Expression,
   }
 
 function inlineAdmin(callee: t.Expression,
-  args: Args[]): t.Expression {
-    return t.callExpression(callee, args);
+  args: Args[]): InlinedResult {
+    return {
+      inlined: t.callExpression(callee, args)
+    }
   }
 
 function inlineCall(callee: t.Expression,
@@ -91,7 +93,15 @@ const stopApplyVisitor : Visitor = {
       let applyId = null;
       tag: {
         if ((<Administrative<C>>path.node).isAdmin !== undefined) {
-          applyId = t.identifier('admin_apply');
+          const { inlined } =
+            inlineAdmin(path.node.callee, path.node.arguments);
+          if (!t.isReturnStatement(returnPath.node)) {
+            returnPath.replaceWith(inline(inlined));
+          } else {
+            returnPath.replaceWith(t.returnStatement(inline(inlined)));
+          }
+          returnPath.skip();
+          return;
         } else if ((<Call<C>>path.node).isCall !== undefined) {
           applyId = t.identifier('call_apply');
         } else if ((<Apply<C>>path.node).isApply !== undefined) {
@@ -104,12 +114,12 @@ const stopApplyVisitor : Visitor = {
             break tag;
           }
 
-          const { success, ek } =
+          const { inlined, ek } =
             inlineDirect(path.node.callee, path.node.arguments);
           returnPath.replaceWith(t.returnStatement(t.sequenceExpression([
             t.assignmentExpression('=',
               topLevel, ek),
-            inline(success)
+            inline(inlined)
           ])));
           returnPath.skip();
           return;

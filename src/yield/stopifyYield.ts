@@ -161,14 +161,17 @@ export function yieldStopifyRegen(code: string): [string, boolean] {
 }
 
 export function yieldEvalString(code: string): string {
-  const transformed: string = transform(code, plugins)[0];
-  const wrapped = `(function*() { ${transformed} })()`
 
-  if(transformed.length < code.length) {
+  const wrapped = `(function (){ ${code} })()`
+  const intermediate: string = transform(wrapped, plugins)[0];
+  // NOTE(rachit): This assumes that the output starts with `yield*`
+  const transformed = intermediate.substring(6, intermediate.length)
+
+  if(transformed.length < wrapped.length) {
     throw new Error('Transformed code is smaller than original code')
   }
 
-  return wrapped
+  return transformed
 }
 
 export const yieldStopify: stopifyFunction = (code) => {

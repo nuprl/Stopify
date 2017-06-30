@@ -106,11 +106,11 @@ const stopApplyVisitor : Visitor = {
 
           const { success, ek } =
             inlineDirect(path.node.callee, path.node.arguments);
-          returnPath.replaceWith(t.sequenceExpression([
+          returnPath.replaceWith(t.returnStatement(t.sequenceExpression([
             t.assignmentExpression('=',
               topLevel, ek),
             inline(success)
-          ]));
+          ])));
           returnPath.skip();
           return;
         }

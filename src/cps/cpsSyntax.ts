@@ -316,16 +316,17 @@ function cpsStmt(stmt: t.Statement,
       case 'TryStatement':
         const kFun = path.scope.generateUidIdentifier('kFun');
         const kErr = path.scope.generateUidIdentifier('kErr');
+        const topLevel = t.identifier('$topLevelEk');
         const fin = stmt.finalizer === null ?
           k : (v: AExpr) => cpsStmt(stmt.finalizer, k, ek, path);
         const err = stmt.handler === null ?
           ek : (e: AExpr) =>
-          cpsStmt(stmt.handler.body, fin, ek, path).map(c =>
-            new CLet('const', stmt.handler.param, new BAtom(e), c));
-        return cpsExpr(t.callExpression(t.memberExpression(
-          t.functionExpression(undefined,
-            [kFun, kErr],
-            stmt.block), t.identifier('call')), [t.thisExpression()]),
+          fin(topLevel).bind(tl =>
+            cpsStmt(stmt.handler.body, fin, ek, path).map(c =>
+              new CLet('const', stmt.handler.param, new BAtom(e), c)));
+        return cpsExpr(t.callExpression(t.functionExpression(undefined,
+          [kFun, kErr],
+          stmt.block), []),
           fin, err, path);
       case "VariableDeclaration": {
         const { declarations } = stmt;
@@ -486,7 +487,7 @@ const cpsExpression : Visitor = {
           t.blockStatement(generateJS(c, m)));
       const kontCall = administrative(t.callExpression(kont, [onDone, onError]));
 
-      path.node.body = [t.expressionStatement(kontCall)];
+      path.node.body = [t.returnStatement(kontCall)];
     }
   }
 };

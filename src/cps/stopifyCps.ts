@@ -49,40 +49,33 @@ function $onError(arg) {
   throw new Error('Unexpected error: ' + arg);
 }
 
+let $topLevelEk = $onError;
+
 function applyWithK(f, k, ek, ...args) {
+  $topLevelEk = ek;
   if (f.$isTransformed) {
     return f(k, ek, ...args);
   } else {
-    try {
-      return k(f(...args));
-    } catch (e) {
-      return ek(e);
-    }
+    return k(f(...args));
   }
 }
 
 function call_applyWithK(f, k, ek, ...args) {
   const [hd, ...tail] = args;
+  $topLevelEk = ek;
   if (f.$isTransformed) {
     return f.call(hd, k, ek, ...tail);
   } else {
-    try {
-      return k(f.call(hd, ...tail));
-    } catch (e) {
-      return ek(e);
-    }
+    return k(f.call(hd, ...tail));
   }
 }
 
 function apply_applyWithK(f, k, ek, thisArg, args) {
+  $topLevelEk = ek;
   if (f.$isTransformed) {
     return f.apply(thisArg, [k, ek, ...args]);
   } else {
-    try {
-      return k(f.apply(thisArg, args));
-    } catch (e) {
-      return ek(e);
-    }
+    return k(f.apply(thisArg, args));
   }
 }
 
@@ -132,7 +125,11 @@ export const cpsStopifyPrint: stopifyPrint = (code: string) => {
   return `
 function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
   ${cpsRuntime}
-  ${transformed}
+  try {
+    ${transformed}
+  } catch (e) {
+    return $topLevelEk(e);
+  }
 }
 `
 }

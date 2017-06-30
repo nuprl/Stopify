@@ -1,7 +1,7 @@
 const assert = require('assert');
 let a = 0;
 try {
-  a = foo + 0;
+  foo + 0;
 } catch (e) {
   a = 7;
 }

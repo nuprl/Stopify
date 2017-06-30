@@ -19,6 +19,8 @@ const counter: t.Identifier = t.identifier('$counter');
 const interval: t.Identifier = t.identifier('$interval');
 const onStop: t.Identifier = t.identifier('$onStop');
 const isStop: t.Identifier = t.identifier('$isStop');
+const callId: t.Identifier = t.identifier('call');
+const applyId: t.Identifier = t.identifier('apply');
 const setTimeoutId: t.Identifier = t.identifier('setTimeout');
 const topLevel = t.identifier('$topLevelEk');
 
@@ -45,19 +47,29 @@ function inlineAdmin(callee: t.Expression,
   }
 
 function inlineCall(callee: t.Expression,
-  args: Args[]): t.ConditionalExpression {
-    const [k, ek, ...tl] = args;
-    return t.conditionalExpression(isTransformed(callee),
-      t.callExpression(callee, args),
-      t.callExpression(<t.Expression>k, [t.callExpression(callee, tl)]));
+  args: Args[]): InlinedResult {
+    const [k, ek, hd, ...tl] = args;
+    return {
+      inlined: t.conditionalExpression(isTransformed(callee),
+        t.callExpression(t.memberExpression(callee, callId), [hd, k, ek, ...tl]),
+        t.callExpression(<t.Expression>k,
+          [t.callExpression(t.memberExpression(callee, callId), [hd, ...tl])])),
+      ek: <t.Identifier>ek
+    };
   }
 
 function inlineApply(callee: t.Expression,
-  args: Args[]): t.ConditionalExpression {
-    const [k, ek, ...tl] = args;
-    return t.conditionalExpression(isTransformed(callee),
-      t.callExpression(callee, args),
-      t.callExpression(<t.Expression>k, [t.callExpression(callee, tl)]));
+  args: Args[]): InlinedResult {
+    const [k, ek, thisArg, tl] = args;
+    return {
+      inlined: t.conditionalExpression(isTransformed(callee),
+        t.callExpression(t.memberExpression(callee, applyId),
+          [thisArg, t.arrayExpression([k, ek, t.spreadElement(<t.Expression>tl)])]),
+        t.callExpression(<t.Expression>k,
+          [t.callExpression(t.memberExpression(callee, applyId),
+            [thisArg, tl])])),
+      ek: <t.Identifier>ek
+    };
   }
 
 function inline(call: t.Expression): t.ConditionalExpression {
@@ -90,44 +102,49 @@ const stopApplyVisitor : Visitor = {
       const returnPath = <NodePath<t.ReturnStatement>>(path.getStatementParent());
 
       type C = t.CallExpression;
-      let applyId = null;
-      tag: {
-        if ((<Administrative<C>>path.node).isAdmin !== undefined) {
-          const { inlined } =
-            inlineAdmin(path.node.callee, path.node.arguments);
-          if (!t.isReturnStatement(returnPath.node)) {
-            returnPath.replaceWith(inline(inlined));
-          } else {
-            returnPath.replaceWith(t.returnStatement(inline(inlined)));
-          }
-          returnPath.skip();
-          return;
-        } else if ((<Call<C>>path.node).isCall !== undefined) {
-          applyId = t.identifier('call_apply');
-        } else if ((<Apply<C>>path.node).isApply !== undefined) {
-          applyId = t.identifier('apply_apply');
-        } else if ((<Direct<C>>path.node).isDirect !== undefined) {
-          return;
+      if ((<Administrative<C>>path.node).isAdmin !== undefined) {
+        const { inlined } =
+          inlineAdmin(path.node.callee, path.node.arguments);
+        if (!t.isReturnStatement(returnPath.node)) {
+          returnPath.replaceWith(inline(inlined));
         } else {
-          if (!t.isReturnStatement(returnPath.node)) {
-            applyId = t.identifier('apply');
-            break tag;
-          }
-
-          const { inlined, ek } =
-            inlineDirect(path.node.callee, path.node.arguments);
-          returnPath.replaceWith(t.returnStatement(t.sequenceExpression([
-            t.assignmentExpression('=',
-              topLevel, ek),
-            inline(inlined)
-          ])));
-          returnPath.skip();
-          return;
+          returnPath.replaceWith(t.returnStatement(inline(inlined)));
         }
+        returnPath.skip();
+        return;
+      } else if ((<Call<C>>path.node).isCall !== undefined) {
+        const { inlined, ek } =
+          inlineCall(path.node.callee, path.node.arguments);
+        returnPath.replaceWith(t.returnStatement(t.sequenceExpression([
+          t.assignmentExpression('=',
+            topLevel, ek),
+          inline(inlined)
+        ])));
+        returnPath.skip();
+        return;
+      } else if ((<Apply<C>>path.node).isApply !== undefined) {
+        const { inlined, ek } =
+          inlineApply(path.node.callee, path.node.arguments);
+        returnPath.replaceWith(t.returnStatement(t.sequenceExpression([
+          t.assignmentExpression('=',
+            topLevel, ek),
+          inline(inlined)
+        ])));
+        returnPath.skip();
+        return;
+      } else if ((<Direct<C>>path.node).isDirect !== undefined) {
+        return;
+      } else {
+        const { inlined, ek } =
+          inlineDirect(path.node.callee, path.node.arguments);
+        returnPath.replaceWith(t.returnStatement(t.sequenceExpression([
+          t.assignmentExpression('=',
+            topLevel, ek),
+          inline(inlined)
+        ])));
+        returnPath.skip();
+        return;
       }
-      const applyArgs = [path.node.callee, ...path.node.arguments];
-      path.node.callee = applyId;
-      path.node.arguments = applyArgs;
     }
 }
 

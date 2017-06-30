@@ -51,62 +51,6 @@ function $onError(arg) {
 
 let $topLevelEk = $onError;
 
-function applyWithK(f, k, ek, ...args) {
-  $topLevelEk = ek;
-  if (f.$isTransformed) {
-    return f(k, ek, ...args);
-  } else {
-    return k(f(...args));
-  }
-}
-
-function call_applyWithK(f, k, ek, ...args) {
-  const [hd, ...tail] = args;
-  $topLevelEk = ek;
-  if (f.$isTransformed) {
-    return f.call(hd, k, ek, ...tail);
-  } else {
-    return k(f.call(hd, ...tail));
-  }
-}
-
-function apply_applyWithK(f, k, ek, thisArg, args) {
-  $topLevelEk = ek;
-  if (f.$isTransformed) {
-    return f.apply(thisArg, [k, ek, ...args]);
-  } else {
-    return k(f.apply(thisArg, args));
-  }
-}
-
-function apply_helper(how) {
-  return function (f, k, ek, ...args) {
-    if ($counter-- === 0) {
-      $counter = $interval;
-      return setTimeout(_ => {
-        if ($isStop()) {
-          return $onStop();
-        } else {
-          return how(f, k, ek, ...args);
-        }
-      }, 0);
-    } else {
-      return how(f, k, ek, ...args);
-    }
-  };
-}
-
-const admin_apply = apply_helper(function (f, k, ek, ...args) {
-  return f(k, ek, ...args);
-});
-const apply = apply_helper(applyWithK);
-const call_apply = apply_helper(function (f, k, ek, ...args) {
-  return call_applyWithK(f, k, ek, ...args);
-});
-const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
-  return apply_applyWithK(f, k, ek, thisArg, args);
-});
-
 function $tryCatch(e) {
   try {
     return $topLevelEk(e);

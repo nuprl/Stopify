@@ -26,18 +26,6 @@ const ifYield = t.ifStatement(
   ])
 )
 
-const program : VisitNode<t.Program> = {
-  enter: function (path: NodePath<t.Program>): void {
-    const prog = path.node.body;
-    const func = t.functionDeclaration(
-      t.identifier('$runProg'), [], t.blockStatement(prog))
-    path.node.body = [func]
-  },
-  exit: function (path: NodePath<t.Program>): void {
-    path.node.body = [...path.node.body, runProg]
-  },
-};
-
 // NOTE(rachit): Assumes that all functions in the call expression are
 // identifiers.
 const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
@@ -105,7 +93,6 @@ const yieldVisitor: Visitor = {
   FunctionExpression: func,
   CallExpression: callExpression,
   "Loop": loop,
-  Program: program,
 }
 
 module.exports = function() {

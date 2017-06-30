@@ -9,9 +9,14 @@ import { transform } from '../common/helpers';
 import * as markKnown from '../common/markKnownFunctions'
 import * as pAssign from './prototypeAssign'
 
+const plugins = [
+  [noArrows, desugarNew, ],
+  [makeBlockStmt], [markKnown], [yieldPass],
+  [transformMarked, pAssign, ]
+];
+
 // The runtime needs to be stored as a string to allow for client-side
 // compilation.
-
 const yieldRuntime = `
 /*
  * The runtime is wrapped in a funtion:
@@ -68,12 +73,10 @@ function $proto_assign(rhs) {
 }
 `
 
+// This assumes that program has been wrapped in a function called $runProg.
+const runProg = `$runYield($runProg())`
+
 export const yieldStopifyPrint: stopifyPrint = (code) => {
-  const plugins = [
-    [noArrows, desugarNew, ],
-    [makeBlockStmt], [markKnown], [yieldPass],
-    [transformMarked, pAssign, ]
-  ];
   const transformed = transform(code, plugins);
 
   if(transformed.length < code.length) {
@@ -83,8 +86,25 @@ export const yieldStopifyPrint: stopifyPrint = (code) => {
   return `
   function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
     ${yieldRuntime}
-    ${transformed}
+    function *$runProg() {
+      ${transformed}
+    }
+    $runYield($runProg())
   }
+  `
+}
+
+export function yieldEvalString(code: string): string {
+  const transformed = transform(code, plugins);
+
+  if(transformed.length < code.length) {
+    throw new Error('Transformed code is smaller than original code')
+  }
+
+  return `
+    (function *$runProg() {
+      ${transformed}
+    })()
   `
 }
 

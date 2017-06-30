@@ -12,8 +12,7 @@ type Args = t.Expression | t.SpreadElement;
 type TApply = 'direct' | 'administrative' | 'call' | 'apply';
 type DirectResult = {
   success: t.ConditionalExpression,
-  e: t.Identifier,
-  failure: t.CallExpression
+  ek: t.Identifier
 };
 
 const counter: t.Identifier = t.identifier('$counter');
@@ -21,6 +20,7 @@ const interval: t.Identifier = t.identifier('$interval');
 const onStop: t.Identifier = t.identifier('$onStop');
 const isStop: t.Identifier = t.identifier('$isStop');
 const setTimeoutId: t.Identifier = t.identifier('setTimeout');
+const topLevel = t.identifier('$topLevelEk');
 
 function isTransformed(f: t.Expression): t.MemberExpression {
   return t.memberExpression(f, t.identifier('$isTransformed'));
@@ -33,8 +33,7 @@ function inlineDirect(callee: t.Expression,
       success: t.conditionalExpression(isTransformed(callee),
         t.callExpression(callee, args),
         t.callExpression(<t.Expression>k, [t.callExpression(callee, tl)])),
-      e: t.identifier('e'),
-      failure: t.callExpression(<t.Expression>ek, [t.identifier('e')])
+      ek: <t.Identifier>ek
     };
   }
 
@@ -105,9 +104,13 @@ const stopApplyVisitor : Visitor = {
             break tag;
           }
 
-          const { success, e, failure } =
+          const { success, ek } =
             inlineDirect(path.node.callee, path.node.arguments);
-          returnPath.replaceWith(tryCatch(inline(success), e, failure));
+          returnPath.replaceWith(t.sequenceExpression([
+            t.assignmentExpression('=',
+              topLevel, ek),
+            inline(success)
+          ]));
           returnPath.skip();
           return;
         }

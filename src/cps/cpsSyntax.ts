@@ -284,8 +284,10 @@ function cpsStmt(stmt: t.Statement,
       case "EmptyStatement":
         return k(undefExpr);
       case "ExpressionStatement":
-        return cpsExpr(stmt.expression, _ =>
-          k(undefExpr), ek, path);
+        const exp = path.scope.generateUidIdentifier('exp');
+        return k(undefExpr).bind(e =>
+          cpsExpr(stmt.expression, v =>
+            ret<CExpr, CExpr>(new CLet('const', exp, new BAtom(v), e)), ek, path));
       case "IfStatement":
         return cpsExpr(stmt.test, tst => {
           const cont = path.scope.generateUidIdentifier('if_cont');

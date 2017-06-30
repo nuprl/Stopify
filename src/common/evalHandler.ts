@@ -5,21 +5,9 @@ import * as path from 'path';
 
 let addRuntime = false
 
-// Runtime path
-const runtimePath = path.join(__dirname, './stopifyYield')
-
 const prog = {
-  exit(path: NodePath<t.Program>) {
-    if (addRuntime) {
-      const runtimeImport = h.letExpression(
-        t.identifier('$compile_string'),
-        t.memberExpression(
-          t.callExpression(
-            t.identifier('require'),
-            [t.stringLiteral(runtimePath)]),
-          t.identifier('yieldEvalString')))
-      path.node.body.unshift(runtimeImport)
-    }
+  exit(path: NodePath<h.IsEval<t.Program>>) {
+    path.node.isEval = addRuntime
   }
 }
 

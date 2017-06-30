@@ -115,13 +115,14 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
 
 export const tcpsStopifyPrint: stopifyPrint = (code: string) => {
   const plugins = [
-    [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel, desugarNew],
+    [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel,
+      desugarNew],
     [desugarSwitch, addKArg, desugarWhileToFunc],
     [makeBlockStmt],
     [cps, applyStop, trampolineApply, transformMarked],
   ];
 
-  const transformed = transform(code, plugins);
+  const transformed: string = transform(code, plugins)[0]
 
   if(transformed.length < code.length) {
     throw new Error('Transformed code is smaller than original code')

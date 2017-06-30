@@ -8,7 +8,7 @@ import * as transformMarked from '../common/transformMarked';
 import { transform } from '../common/helpers';
 import * as markKnown from '../common/markKnownFunctions'
 import * as pAssign from './prototypeAssign'
-import * as evalHandler from './evalHandler';
+import * as evalHandler from '../common/evalHandler';
 
 const plugins = [
   [noArrows, evalHandler],
@@ -117,11 +117,14 @@ function *$handleNew(constr, ...args) {
 }
 `
 
+const includeRuntime = `const $compile_string = require('${__dirname}/stopifyYield').yieldEvalString`
+
 // This assumes that program has been wrapped in a function called $runProg.
 const runProg = `$runYield($runProg())`
 
 export const yieldStopifyPrint: stopifyPrint = (code) => {
-  const transformed = transform(code, plugins);
+  const transformedData = transform(code, plugins);
+  const transformed: string = transformedData[0]
 
   if(transformed.length < code.length) {
     throw new Error('Transformed code is smaller than original code')
@@ -130,6 +133,7 @@ export const yieldStopifyPrint: stopifyPrint = (code) => {
   return `
   function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
     ${yieldRuntime}
+    ${transformedData[1] ? includeRuntime.toString() : ""}
     function *$runProg() {
       ${transformed}
     }
@@ -138,8 +142,26 @@ export const yieldStopifyPrint: stopifyPrint = (code) => {
   `
 }
 
+// This function is used by the regenerator based transform.
+export function yieldStopifyRegen(code: string): [string, boolean] {
+  const transformedData = transform(code, plugins);
+  const transformed: string = transformedData[0]
+
+  if(transformed.length < code.length) {
+    throw new Error('Transformed code is smaller than original code')
+  }
+
+  return [`
+  ${yieldRuntime}
+  function *$runProg() {
+    ${transformed}
+  }
+  $runYield($runProg())
+  `, transformedData[1]]
+}
+
 export function yieldEvalString(code: string): string {
-  const transformed = transform(code, plugins);
+  const transformed: string = transform(code, plugins)[0];
   const wrapped = `(function*() { ${transformed} })()`
 
   if(transformed.length < code.length) {

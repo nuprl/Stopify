@@ -1,11 +1,11 @@
 import * as stopifyYield from './stopifyYield';
 import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface'
+
 export const regenStopifyPrint: stopifyPrint = (code: string) => {
+  const transformedData = stopifyYield.yieldStopifyRegen(code)
+  const intermediate = transformedData[0]
 
-  const inter = stopifyYield.yieldStopifyPrint(code)
-  const intermediate = `(${inter})($isStop, $onStop, $onDone, $interval)`
-
-  const transformed = require('regenerator').compile(intermediate, {
+  const transformed: string = require('regenerator').compile(intermediate, {
     includeRuntime: true
   }).code;
 

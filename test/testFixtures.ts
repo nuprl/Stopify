@@ -20,7 +20,7 @@ export function transformTest(original: string, plugs: any[][]): string {
   let transformed = '';
 
   try {
-    transformed = transform(original, plugs);
+    transformed = transform(original, plugs)[0]
   } catch (e) {
     errorMessage = e.message;
   }

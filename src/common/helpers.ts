@@ -36,19 +36,19 @@ export type LineMappingMark<T> = T & {
 }
 // Mark a node as transformed. Used by the transformMarked transform.
 export type Transformed<T> = T & {
-    isTransformed?: boolean
+  isTransformed?: boolean
 }
 export type Administrative<T> = T & {
-    isAdmin?: boolean
+  isAdmin?: boolean
 }
 export type Call<T> = T & {
-    isCall?: boolean
+  isCall?: boolean
 }
 export type Apply<T> = T & {
-    isApply?: boolean
+  isApply?: boolean
 }
 export type Direct<T> = T & {
-    isDirect?: boolean
+  isDirect?: boolean
 }
 export type KArg<T> = T & {
   kArg: t.Identifier;
@@ -56,6 +56,10 @@ export type KArg<T> = T & {
 export type NewTag<T> = T & {
   new: boolean
 }
+export type IsEval<T> = T & {
+  isEval: boolean
+}
+const isEval = <T>(t:T) => tag('isEval', t, true)
 const hoisted = <T>(t: T) => tag('hoisted', t, true);
 const breakLbl = <T>(t: T, v: t.Identifier) => tag('break_label', t, v);
 const continueLbl = <T>(t: T, v: t.Identifier) => tag('continue_label', t, v);
@@ -79,7 +83,7 @@ class StopWrapper {
     throw 'Execution stopped'
   }
   stop() {
-   this.hasStopped = true;
+    this.hasStopped = true;
   }
   isStop() {
     return this.hasStopped === true;
@@ -114,8 +118,12 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   return t.blockStatement(newBody);
 }
 
-function transform(src: string, plugs: any[][]): string {
-  let { code, ast } = babel.transform(src, { babelrc: false, sourceMaps: 'inline' });
+// Returns a tuple of string and a boolean. The string represents the
+// transformed program. The boolean is true iff the compiler runtime needs
+// to be included.
+function transform(src: string, plugs: any[][]): [string, boolean] {
+  let { code, ast } = babel.transform(src,
+    { babelrc: false, sourceMaps: 'inline' });
   plugs.forEach(trs => {
     const res = babel.transformFromAst(<t.Node>ast, code, {
       plugins: [...trs],
@@ -125,7 +133,11 @@ function transform(src: string, plugs: any[][]): string {
     ast = res.ast;
   });
 
-  return code === undefined ? "" : code;
+  if (code !== undefined && ast !== undefined) {
+    return [code, (<IsEval<t.Program>>(<t.File>ast).program).isEval]
+  } else {
+    throw new Error('Transform returned an empty string')
+  }
 }
 
 function parseMapping(code: string) {
@@ -148,8 +160,11 @@ function parseMapping(code: string) {
   }
 }
 
-function transformWithLines(src: string, plugs: any[][], breakPoints: number[]): string {
-  let { code, ast } = babel.transform(src, { babelrc: false, sourceMaps: 'inline' });
+function transformWithLines(src: string, plugs: any[][], breakPoints:
+  number[]): string {
+  let { code, ast } = babel.transform(src,
+    { babelrc: false, sourceMaps:
+    'inline' });
 
   let map = parseMapping(src);
   (<any>ast).program.lineMapping = map;

@@ -34,7 +34,7 @@
     "typescript": "^2.2.2"
   },
   "scripts": {
-    "build": "./node_modules/.bin/tsc || true && npm link",
+    "build": "./bin/build",
     "build-webpage": "npm run build && ./node_modules/.bin/browserify built/demo-webpage/paws-client/container.js -o demo-webpage/html/container.js && ./node_modules/.bin/browserify built/demo-webpage/paws-client/runner.js -o demo-webpage/html/runner.js && cp -R ./demo-webpage/html built/demo-webpage/",
     "test": "./bin/test"
   },

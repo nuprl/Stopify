@@ -1,0 +1,17 @@
+#!/bin/bash
+
+./node_modules/.bin/tsc
+
+if [[ $? -ne 0 ]]; then
+  echo 'Typescipt compilation failed!'
+  exit 0
+fi
+
+# Create the runtimes directory
+mkdir -p runtimes
+
+# link the stopify executable
+npm link
+
+# Build the yield runtime for eval
+./node_modules/.bin/browserify ./built/src/yield/stopifyYield.js -o runtimes/yieldRuntime.js

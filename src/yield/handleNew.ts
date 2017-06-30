@@ -40,7 +40,9 @@ const knowns = ['Object',
   'Map',
   'Set',
   'WeakMap',
-  'WeakSet'];
+  'WeakSet',
+  '$GeneratorConstructor'
+];
 
 const newVisit: VisitNode<OptimizeMark<t.NewExpression>> =
   function (path: NodePath<OptimizeMark<t.NewExpression>>): void {

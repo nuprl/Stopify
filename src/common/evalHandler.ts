@@ -41,7 +41,7 @@ const newExpr = {
         path.node.arguments.push(t.callExpression(
           t.identifier('$compile_string'),
           [last]))
-        path.node.callee = t.identifier('GeneratorPrototype')
+        path.node.callee = t.identifier('$GeneratorConstructor')
       }
     }
   }

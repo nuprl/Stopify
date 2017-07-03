@@ -100,6 +100,7 @@ function $proto_assign(rhs) {
   proto.throw = $generatorPrototype.throw;
   proto.return = $generatorPrototype.return;
   proto[Symbol.iterator] = $generatorPrototype[Symbol.iterator]
+  proto.toString = () => '[object Generator]'
   return proto
 }
 

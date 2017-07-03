@@ -11,7 +11,6 @@ import {
 } from '../common/helpers';
 
 const knowns = ['Object',
-  'Function',
   'Boolean',
   'Symbol',
   'Error',
@@ -47,6 +46,9 @@ const knowns = ['Object',
 const newVisit: VisitNode<OptimizeMark<t.NewExpression>> =
   function (path: NodePath<OptimizeMark<t.NewExpression>>): void {
     if (path.node.OptimizeMark === 'Untransformed') {
+      return;
+    }
+    if (t.isIdentifier(path.node.callee) && knowns.includes(path.node.callee.name)) {
       return;
     }
     const { callee, arguments: args } = path.node;

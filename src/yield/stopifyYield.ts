@@ -11,13 +11,18 @@ import * as pAssign from './prototypeAssign'
 import * as evalHandler from '../common/evalHandler';
 
 const plugins = [
-  [noArrows, /*evalHandler*/],
+  [noArrows, evalHandler],
+  [handleNew, makeBlockStmt], [markKnown], [yieldPass],
+  [transformMarked, pAssign, ]
+];
+
+const eplugins = [
+  [noArrows, evalHandler],
   [handleNew, makeBlockStmt], [markKnown], [yieldPass],
   [transformMarked, pAssign, ]
 ];
 
 const knowns = ['Object',
-  'Function',
   'Boolean',
   'Symbol',
   'Error',
@@ -95,13 +100,14 @@ function *$apply_wrapper(genOrFunc) {
 
 const $generatorPrototype = (function*(){}).prototype;
 function $proto_assign(rhs) {
-  let proto = Object.create(rhs)
+  let proto = Object.create(rhs.__proto__ || null)
   proto.next = $generatorPrototype.next;
   proto.throw = $generatorPrototype.throw;
   proto.return = $generatorPrototype.return;
   proto[Symbol.iterator] = $generatorPrototype[Symbol.iterator]
   proto.toString = () => '[object Generator]'
-  return proto
+  rhs.__proto__ = proto;
+  return rhs
 }
 
 const $GeneratorConstructor = Object.getPrototypeOf(function*(){}).constructor
@@ -185,8 +191,6 @@ export function yieldEvalFunction(
       throw new Error('Transformed code is smaller than original code')
     }
     const transformed = `(function () { return ${intermediate}})()`
-    console.log(transformed)
-    console.log('--------------------')
     return transformed;
   }
 

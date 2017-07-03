@@ -181,39 +181,55 @@ function transformWithLines(src: string, plugs: any[][], breakPoints:
   return code === undefined ? "" : code;
 }
 
-export type FVSet<A> = Set<A>;
+export type FVSet<A> = A[];
 
 function fvSetOfArray<A>(arr: A[]): FVSet<A> {
-  return new Set(arr);
+  return arr;
 }
 
 function copyFVSet<A>(fvs: FVSet<A>): FVSet<A> {
-  return new Set(fvs);
+  return fvs.map(x => x);
 }
 
-function empty<A>(): Set<A> {
-  return new Set();
+function empty<A>(): A[] {
+  return [];
 }
 
-function singleton<A>(a: A): Set<A> {
-  return new Set([a]);
+function singleton<A>(a: A): A[] {
+  return [a];
 }
 
-function add<A>(a: A, s: Set<A>): Set<A> {
-  s.add(a);
+function add<A>(a: A, s: A[]): A[] {
+  if (s.includes(a)) {
+    return s;
+  } else {
+    s.push(a);
+    return s;
+  }
+}
+
+function union<A>(a: A[], b: A[]): A[] {
+  return [...a].reduce((s, x) => add(x, s), b);
+}
+
+function diff<A>(a: A[], b: A[]): A[] {
+  return [...a].filter(x => !b.includes(x));
+}
+
+function intersect<A>(a: A[], b: A[]): A[] {
+  return [...a].filter(x => b.includes(x));
+}
+
+function size<A>(s: A[]): number {
+  return s.length;
+}
+
+function remove<A>(a: A, s: A[]): A[] {
+  const idx = s.indexOf(a);
+  if (idx !== -1) {
+    s.splice(idx, 1);
+  }
   return s;
-}
-
-function union<A>(a: Set<A>, b: Set<A>): Set<A> {
-  return new Set([...a].reduce((s, x) => s.add(x), b));
-}
-
-function diff<A>(a: Set<A>, b: Set<A>): Set<A> {
-  return new Set([...a].filter(x => !b.has(x)));
-}
-
-function intersect<A>(a: Set<A>, b: Set<A>): Set<A> {
-  return new Set([...a].filter(x => b.has(x)));
 }
 
 export {
@@ -240,5 +256,7 @@ export {
   union,
   diff,
   intersect,
+  size,
+  remove,
 };
 

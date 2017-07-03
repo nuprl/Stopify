@@ -4,7 +4,7 @@ import { AExpr, BExpr, CExpr, AtomicBExpr, BAtom, BFun, BAdminFun, CApp,
   CAdminApp, CCallApp, CApplyApp, ITE, CLet }
 from './cexpr';
 import {CPS, ret} from './cpsMonad';
-import {FVSet, fvSetOfArray, copyFVSet, add, diff, intersect, empty}
+import {FVSet, fvSetOfArray, copyFVSet, add, diff, intersect, empty, size}
 from '../common/helpers';
 
 type T = {
@@ -31,13 +31,14 @@ export function raiseFuns(expr: CExpr): CExpr {
       ctor: any,
       named: BFun | BAdminFun,
       cexpr: CLet): CPS<T,CExpr> {
-        return crec(add(cexpr.x.name, fvSetOfArray(named.args.map(x => x.name))), named.body).bind(a =>
-          crec(add(cexpr.x.name, copyFVSet(locals)), cexpr.body).map(b => {
-            const { body, funs: funsF } = a;
-            const { body: c, funs: funsL } = b;
-              if (intersect(diff(named.body.freeVars,
+        return crec(add(cexpr.x.name, fvSetOfArray(named.args.map(x => x.name))),
+          named.body).bind(a =>
+            crec(add(cexpr.x.name, copyFVSet(locals)), cexpr.body).map(b => {
+              const { body, funs: funsF } = a;
+              const { body: c, funs: funsL } = b;
+              if (size(intersect(diff(named.body.freeVars,
                 add(cexpr.x.name, fvSetOfArray(named.args.map(x => x.name)))),
-                locals).size === 0) {
+                locals)) === 0) {
                 return {
                   body: c,
                   funs: [
@@ -57,7 +58,7 @@ export function raiseFuns(expr: CExpr): CExpr {
                   funs: funsL
                 };
               }
-          }));
+            }));
       }
 
     function crecDefault(locals: FVSet<string>, cexpr: CLet): CPS<T,CExpr> {

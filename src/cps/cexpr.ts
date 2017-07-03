@@ -1,5 +1,5 @@
 import * as t from 'babel-types';
-import {FVSet, fvSetOfArray, diff, union, empty, singleton}
+import {FVSet, fvSetOfArray, diff, union, empty, singleton, remove}
 from '../common/helpers';
 
 export type binop = "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" |
@@ -127,7 +127,7 @@ export class BFun extends Node {
 
   fvs(): void {
     this.freeVars = diff(this.body.freeVars, fvSetOfArray(this.args.map(x => x.name)));
-    this.freeVars.delete('arguments');
+    remove('arguments', this.freeVars);
   }
 }
 
@@ -150,7 +150,7 @@ export class BAdminFun extends Node {
 
   fvs(): void {
     this.freeVars = diff(this.body.freeVars, fvSetOfArray(this.args.map(x => x.name)));
-    this.freeVars.delete('arguments');
+    remove('arguments', this.freeVars);
   }
 }
 

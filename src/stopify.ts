@@ -20,11 +20,11 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 function showUsage() {
-  console.log('Usage: stopify.js -i <filename> -t [cps|tcps|stack|yield|regen] [options]');
-  console.log('       stopify.js -s <string> -t [cps|tcps|stack|yield|regen] [options]\n');
-  console.log('Options:')
-  console.log('  -y, --interval     Set yield interval')
-  console.log('  -o, --output       Can be print, eval, stop')
+  console.error('Usage: stopify.js -i <filename> -t [cps|tcps|stack|yield|regen] [options]');
+  console.error('       stopify.js -s <string> -t [cps|tcps|stack|yield|regen] [options]\n');
+  console.error('Options:')
+  console.error('  -y, --interval     Set yield interval')
+  console.error('  -o, --output       Can be print, eval, stop')
   process.exit(0);
 }
 

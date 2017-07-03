@@ -11,7 +11,7 @@ import * as pAssign from './prototypeAssign'
 import * as evalHandler from '../common/evalHandler';
 
 const plugins = [
-  [noArrows, evalHandler],
+  [noArrows, /*evalHandler*/],
   [handleNew, makeBlockStmt], [markKnown], [yieldPass],
   [transformMarked, pAssign, ]
 ];
@@ -104,7 +104,7 @@ function $proto_assign(rhs) {
   return proto
 }
 
-const $GeneratorConstructor = $generatorPrototype.constructor;
+const $GeneratorConstructor = Object.getPrototypeOf(function*(){}).constructor
 
 const $knownBuiltInts = [${knowns.toString()}]
 function *$handleNew(constr, ...args) {
@@ -118,7 +118,10 @@ function *$handleNew(constr, ...args) {
 }
 `
 
-const includeRuntime = `const $compile_string = require('${__dirname}/stopifyYield').yieldEvalString`
+const includeRuntime =
+  `const $__yield__runtime__ = require('${__dirname}/stopifyYield');
+   const $compile_string = $__yield__runtime__.yieldEvalString;
+   const $compile_func = $__yield__runtime__.yieldEvalFunction;`
 
 // This assumes that program has been wrapped in a function called $runProg.
 const runProg = `$runYield($runProg())`
@@ -162,7 +165,6 @@ export function yieldStopifyRegen(code: string): [string, boolean] {
 }
 
 export function yieldEvalString(code: string): string {
-
   const wrapped = `(function (){ ${code} })()`
   const intermediate: string = transform(wrapped, plugins)[0];
   // NOTE(rachit): This assumes that the output starts with `yield*`
@@ -174,6 +176,19 @@ export function yieldEvalString(code: string): string {
 
   return transformed
 }
+
+export function yieldEvalFunction(
+  name: string, body: string, args: string[]): string {
+    const wrapped = `function ${name}(${args.join(',')}) { ${body} }`
+    const intermediate: string = transform(wrapped, plugins)[0];
+    if(intermediate.length < wrapped.length) {
+      throw new Error('Transformed code is smaller than original code')
+    }
+    const transformed = `(function () { return ${intermediate}})()`
+    console.log(transformed)
+    console.log('--------------------')
+    return transformed;
+  }
 
 export const yieldStopify: stopifyFunction = (code) => {
   return eval(`

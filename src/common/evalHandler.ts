@@ -5,6 +5,16 @@ import * as path from 'path';
 
 let addRuntime = false
 
+type Skip<T> = T & {
+  skip: boolean
+}
+
+function skip<T>(t: T): Skip<T> {
+  const sk = <Skip<T>>t
+  sk.skip = true;
+  return sk;
+}
+
 const prog = {
   exit(path: NodePath<h.IsEval<t.Program>>) {
     path.node.isEval = addRuntime
@@ -13,7 +23,8 @@ const prog = {
 
 // Handle `eval` occuring in function calls.
 const callExpr = {
-  enter(path: NodePath<t.CallExpression>) {
+  enter(path: NodePath<Skip<t.CallExpression>>) {
+    if(path.node.skip) return;
     const { callee, arguments:args } = path.node;
     if(t.isIdentifier(callee) && callee.name === 'eval') {
       if(process) {
@@ -35,13 +46,14 @@ const newExpr = {
         process.stderr.write(
           '// Found `new Function` in code, requiring runtime\n')
       }
+      const name = path.scope.generateUidIdentifier('evald_function')
       addRuntime = true;
-      const last = path.node.arguments.pop()
-      if (last !== undefined) {
-        path.node.arguments.push(t.callExpression(
-          t.identifier('$compile_string'),
-          [last]))
-        path.node.callee = t.identifier('$GeneratorConstructor')
+      const body = path.node.arguments.pop()
+        if (body !== undefined) {
+        path.replaceWith(skip(t.callExpression(
+          t.identifier('eval'),
+          [t.callExpression(t.identifier('$compile_func'),
+            [t.stringLiteral(name.name), body, t.arrayExpression([...path.node.arguments])])])))
       }
     }
   }

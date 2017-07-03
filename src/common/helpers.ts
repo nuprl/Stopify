@@ -199,6 +199,11 @@ function singleton<A>(a: A): Set<A> {
   return new Set([a]);
 }
 
+function add<A>(a: A, s: Set<A>): Set<A> {
+  s.add(a);
+  return s;
+}
+
 function union<A>(a: Set<A>, b: Set<A>): Set<A> {
   return new Set([...a].reduce((s, x) => s.add(x), b));
 }
@@ -231,6 +236,7 @@ export {
   copyFVSet,
   empty,
   singleton,
+  add,
   union,
   diff,
   intersect,

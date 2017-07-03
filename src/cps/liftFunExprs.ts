@@ -4,7 +4,8 @@ import { AExpr, BExpr, CExpr, AtomicBExpr, BAtom, BFun, BAdminFun, CApp,
   CAdminApp, CCallApp, CApplyApp, ITE, CLet }
 from './cexpr';
 import {CPS, ret} from './cpsMonad';
-import {diff, intersect} from '../common/helpers';
+import {FVSet, fvSetOfArray, copyFVSet, diff, intersect, empty}
+from '../common/helpers';
 
 type T = {
   body: CExpr,
@@ -25,17 +26,17 @@ function bindFuns(x: T): CExpr {
 }
 
 export function raiseFuns(expr: CExpr): CExpr {
-  function crec(locals: Set<string>, cexpr: CExpr): CPS<T,CExpr> {
-    function brecFun(locals: Set<string>,
+  function crec(locals: FVSet<string>, cexpr: CExpr): CPS<T,CExpr> {
+    function brecFun(locals: FVSet<string>,
       ctor: any,
       named: BFun | BAdminFun,
       cexpr: CLet): CPS<T,CExpr> {
-        return crec(new Set(named.args.map(x => x.name)).add(cexpr.x.name), named.body).bind(a =>
-          crec(new Set(locals).add(cexpr.x.name), cexpr.body).map(b => {
+        return crec(fvSetOfArray(named.args.map(x => x.name)).add(cexpr.x.name), named.body).bind(a =>
+          crec(copyFVSet(locals).add(cexpr.x.name), cexpr.body).map(b => {
             const { body, funs: funsF } = a;
             const { body: c, funs: funsL } = b;
               if (intersect(diff(named.body.freeVars,
-                new Set(named.args.map(x => x.name)).add(cexpr.x.name)),
+                fvSetOfArray(named.args.map(x => x.name)).add(cexpr.x.name)),
                 locals).size === 0) {
                 return {
                   body: c,
@@ -59,8 +60,8 @@ export function raiseFuns(expr: CExpr): CExpr {
           }));
       }
 
-    function crecDefault(locals: Set<string>, cexpr: CLet): CPS<T,CExpr> {
-      return crec(new Set(locals).add(cexpr.x.name), cexpr.body).map(a => {
+    function crecDefault(locals: FVSet<string>, cexpr: CLet): CPS<T,CExpr> {
+      return crec(copyFVSet(locals).add(cexpr.x.name), cexpr.body).map(a => {
         const { body, funs } = a;
         return {
           body: new CLet(cexpr.kind, cexpr.x, cexpr.named, body),
@@ -115,7 +116,7 @@ export function raiseFuns(expr: CExpr): CExpr {
     }
   }
 
-  return crec(new Set(), expr).map((c: T) => bindFuns(c)).apply(x => x);
+  return crec(empty<string>(), expr).map((c: T) => bindFuns(c)).apply(x => x);
 }
 
 

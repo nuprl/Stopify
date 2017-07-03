@@ -1,5 +1,6 @@
 import * as t from 'babel-types';
-import {diff, union} from '../common/helpers';
+import {FVSet, fvSetOfArray, diff, union, empty, singleton}
+from '../common/helpers';
 
 export type binop = "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" |
   "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" |
@@ -10,7 +11,7 @@ export type unop = "-" | "+" | "!" | "~" | "typeof" | "void" | "delete";
 export type kind = 'const' | 'var' | 'let' | undefined;
 
 export type FreeVars<T> = T & {
-  freeVars: Set<string>;
+  freeVars: FVSet<string>;
 }
 
 export const nullLoc : any  = {
@@ -28,7 +29,7 @@ export abstract class Node {
   start: number;
   end: number;
   loc: t.SourceLocation;
-  freeVars: Set<string>;
+  freeVars: FVSet<string>;
 
   abstract init(...args: any[]): void;
   abstract fvs(): void;
@@ -86,16 +87,16 @@ export class LValMember extends Node {
 
 export type LVal = t.Identifier | t.Literal | LValMember
 
-export function fvs(a: AExpr | LValMember | t.SpreadElement): Set<string> {
+export function fvs(a: AExpr | LValMember | t.SpreadElement): FVSet <string>{
   if (t.isIdentifier(a)) {
-    return new Set([a.name]);
+    return singleton(a.name);
   } else if (t.isLiteral(a)) {
-    return new Set();
+    return empty<string>();
   } else if (t.isSpreadElement(a)) {
     if (t.isIdentifier(a.argument) || t.isLiteral(a.argument)) {
       return fvs(a.argument);
     } else {
-      return new Set();
+      return empty<string>();
     }
   } else if (a.type === 'lval_member') {
     return a.freeVars;
@@ -104,7 +105,7 @@ export function fvs(a: AExpr | LValMember | t.SpreadElement): Set<string> {
   }
 
   // unreachable
-  return new Set();
+  return empty<string>();
 }
 
 export class BFun extends Node {
@@ -125,7 +126,7 @@ export class BFun extends Node {
   }
 
   fvs(): void {
-    this.freeVars = diff(this.body.freeVars, new Set(this.args.map(x => x.name)));
+    this.freeVars = diff(this.body.freeVars, fvSetOfArray(this.args.map(x => x.name)));
     this.freeVars.delete('arguments');
   }
 }
@@ -148,7 +149,7 @@ export class BAdminFun extends Node {
   }
 
   fvs(): void {
-    this.freeVars = diff(this.body.freeVars, new Set(this.args.map(x => x.name)));
+    this.freeVars = diff(this.body.freeVars, fvSetOfArray(this.args.map(x => x.name)));
     this.freeVars.delete('arguments');
   }
 }
@@ -299,7 +300,7 @@ export class BObj extends Node {
   }
 
   fvs(): void {
-    this.freeVars = new Set();
+    this.freeVars = empty<string>();
     this.fields.forEach((v: AExpr) => this.freeVars = union(this.freeVars, fvs(v)));
   }
 }
@@ -319,7 +320,7 @@ export class BArrayLit extends Node {
 
   fvs(): void {
     this.freeVars = this.arrayItems.map(x => fvs(x))
-    .reduce((a, b) => union(a, b), new Set());
+    .reduce((a, b) => union(a, b), empty<string>());
   }
 }
 
@@ -382,7 +383,7 @@ export class BSeq extends Node {
 
   fvs(): void {
     this.freeVars = this.elements.map(x => fvs(x))
-    .reduce((a, b) => union(a, b), new Set());
+    .reduce((a, b) => union(a, b), empty<string>());
   }
 }
 
@@ -397,7 +398,7 @@ export class BThis extends Node {
   init(): void {}
 
   fvs(): void {
-    this.freeVars = new Set();
+    this.freeVars = empty<string>();
   }
 }
 
@@ -443,7 +444,7 @@ export class CApp extends Node {
 
   fvs(): void {
     this.freeVars = union(this.args.map(x => fvs(x))
-      .reduce((a, b) => union(a, b), new Set()), fvs(this.f));
+      .reduce((a, b) => union(a, b), empty<string>()), fvs(this.f));
   }
 }
 
@@ -553,7 +554,7 @@ export class CLet extends Node {
   }
 
   fvs(): void {
-    this.freeVars = union(this.named.freeVars, diff(this.body.freeVars, new Set([this.x.name])));
+    this.freeVars = union(this.named.freeVars, diff(this.body.freeVars, singleton(this.x.name)));
   }
 }
 

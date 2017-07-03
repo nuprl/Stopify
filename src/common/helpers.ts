@@ -181,6 +181,24 @@ function transformWithLines(src: string, plugs: any[][], breakPoints:
   return code === undefined ? "" : code;
 }
 
+export type FVSet<A> = Set<A>;
+
+function fvSetOfArray<A>(arr: A[]): FVSet<A> {
+  return new Set(arr);
+}
+
+function copyFVSet<A>(fvs: FVSet<A>): FVSet<A> {
+  return new Set(fvs);
+}
+
+function empty<A>(): Set<A> {
+  return new Set();
+}
+
+function singleton<A>(a: A): Set<A> {
+  return new Set([a]);
+}
+
 function union<A>(a: Set<A>, b: Set<A>): Set<A> {
   return new Set([...a].reduce((s, x) => s.add(x), b));
 }
@@ -209,6 +227,10 @@ export {
   transform,
   transformWithLines,
   StopWrapper,
+  fvSetOfArray,
+  copyFVSet,
+  empty,
+  singleton,
   union,
   diff,
   intersect,

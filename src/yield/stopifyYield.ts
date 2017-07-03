@@ -80,7 +80,7 @@ function $runYield(gen, res = { done: false, value: undefined }) {
 };
 
 function *$apply_wrapper(genOrFunc) {
-  if (genOrFunc && genOrFunc.next) {
+  if (genOrFunc && genOrFunc.next && genOrFunc.toString() === '[object Generator]') {
     if($counter >= $interval) {
       $counter = 0;
       yield 0;

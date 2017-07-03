@@ -11,4 +11,6 @@ fi
 mkdir -p runtimes
 
 # link the stopify executable
-npm link
+if ! hash stopify; then
+  npm link
+fi

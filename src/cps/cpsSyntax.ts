@@ -162,11 +162,14 @@ function cpsExpr(expr: t.Expression,
         return cpsExpr(expr.argument, v =>
           k(new AtomicBExpr(new BOp1(expr.operator, v))), ek, path);
       case "FunctionExpression":
-        return cpsStmt(expr.body,
-          r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[0], [r])),
-          r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[1], [r])),
-          path).bind(body =>
-            k(new AtomicBExpr(new BFun(expr.id, <t.Identifier[]>expr.params, body))));
+        const func = path.scope.generateUidIdentifier('func');
+        return k(func).bind(c =>
+          cpsStmt(expr.body,
+            r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[0], [r])),
+            r => ret<CExpr,CExpr>(new CAdminApp(<t.Identifier>expr.params[1], [r])),
+            path).map(body =>
+              new CLet('const', func,
+                new BFun(expr.id, <t.Identifier[]>expr.params, body), c)));
       case "CallExpression":
         const callee = expr.callee;
         if (t.isMemberExpression(callee) &&

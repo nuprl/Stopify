@@ -16,6 +16,12 @@ const plugins = [
   [transformMarked, pAssign, ]
 ];
 
+const fplugins = [
+  [noArrows, evalHandler],
+  [handleNew, makeBlockStmt], [mCall], [yieldPass],
+  [transformMarked, /*pAssign,*/ ]
+];
+
 const knowns = ['Object',
   'Boolean',
   'Symbol',
@@ -81,14 +87,12 @@ function $runYield(gen, res = { done: false, value: undefined }) {
 
 const $generatorPrototype = (function*(){}).prototype;
 function $proto_assign(rhs) {
-  let proto = Object.create(rhs.__proto__ || null)
+  let proto = Object.create(rhs)
   proto.next = $generatorPrototype.next;
   proto.throw = $generatorPrototype.throw;
   proto.return = $generatorPrototype.return;
   proto[Symbol.iterator] = $generatorPrototype[Symbol.iterator]
-  proto.toString = () => '[object Generator]'
-  rhs.__proto__ = proto;
-  return rhs
+  return proto;
 }
 
 const $GeneratorConstructor = Object.getPrototypeOf(function*(){}).constructor
@@ -168,11 +172,12 @@ export function yieldEvalString(code: string): string {
 export function yieldEvalFunction(
   name: string, body: string, args: string[]): string {
     const wrapped = `function ${name}(${args.join(',')}) { ${body} }`
-    const intermediate: string = transform(wrapped, plugins)[0];
+    const intermediate: string = transform(wrapped, fplugins)[0];
     if(intermediate.length < wrapped.length) {
       throw new Error('Transformed code is smaller than original code')
     }
     const transformed = `(function *() { return ${intermediate}})()`
+    console.log(transformed)
     return transformed;
   }
 

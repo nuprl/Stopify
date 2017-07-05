@@ -21,7 +21,7 @@ import * as applyStop from './stoppableApply';
 import * as transformMarked from '../common/transformMarked';
 
 // Helpers
-import {transform} from '../common/helpers';
+import {transform, Options} from '../common/helpers';
 
 const cpsRuntime = `/*
  * The runtime is wrapped in a function:
@@ -60,7 +60,7 @@ function $tryCatch(e) {
 }
 `;
 
-export const cpsStopifyPrint: stopifyPrint = (code: string) => {
+export const cpsStopifyPrint: stopifyPrint = (code: string, opts: Options) => {
   const plugins = [
     [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel,
       desugarNew],
@@ -68,7 +68,7 @@ export const cpsStopifyPrint: stopifyPrint = (code: string) => {
     [makeBlockStmt],
     [cps, transformMarked, applyStop],
   ];
-  const transformed: string = transform(code, plugins)[0]
+  const transformed: string = transform(code, plugins, opts)[0]
 
   if(transformed.length < code.length) {
     throw new Error('Transformed code is smaller than original code')
@@ -86,10 +86,10 @@ function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
 `
 }
 
-export const cpsStopify: stopifyFunction = (code: string) => {
+export const cpsStopify: stopifyFunction = (code: string, opts: Options) => {
   return eval(`
 (function () {
-  return (${cpsStopifyPrint(code)});
+  return (${cpsStopifyPrint(code, opts)});
 })()
 `)
 }

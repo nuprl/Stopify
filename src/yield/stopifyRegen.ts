@@ -1,10 +1,11 @@
 import * as stopifyYield from './stopifyYield';
 import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface'
+import { Options } from '../common/helpers'
 
 const includeRuntime = `const $compile_string = require('${__dirname}/stopifyRegen').regenStopifyEval`
 
-export const regenStopifyPrint: stopifyPrint = (code: string) => {
-  const transformedData = stopifyYield.yieldStopifyRegen(code)
+export const regenStopifyPrint: stopifyPrint = (code: string, opts: Options) => {
+  const transformedData = stopifyYield.yieldStopifyRegen(code, opts)
   const intermediate = transformedData[0]
 
   const transformed: string = require('regenerator').compile(intermediate, {
@@ -25,10 +26,10 @@ export function regenStopifyEval(code: string): string {
   return transformed
 }
 
-export const regenStopify: stopifyFunction = (code) => {
+export const regenStopify: stopifyFunction = (code, opts) => {
   return eval(`
     (function() {
-      return (${regenStopifyPrint(code)});
+      return (${regenStopifyPrint(code, opts)});
     })()
   `)
 }

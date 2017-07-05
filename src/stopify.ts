@@ -15,16 +15,20 @@ import {
 import {
   tcpsStopify, tcpsStopifyPrint
 } from './cps/stopifyTCps'
-import { StopWrapper } from './common/helpers'
+import { StopWrapper, Options } from './common/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 
 function showUsage() {
-  console.error('Usage: stopify.js -i <filename> -t [cps|tcps|stack|yield|regen] [options]');
-  console.error('       stopify.js -s <string> -t [cps|tcps|stack|yield|regen] [options]\n');
-  console.error('Options:')
-  console.error('  -y, --interval     Set yield interval')
-  console.error('  -o, --output       Can be print, eval, stop')
+  console.error(
+    `
+Usage: stopify.js -i <filename> -t [cps|tcps|stack|yield|regen] [options]
+Options:
+       -y, --interval     Set yield interval
+       -o, --output       Can be print, eval, stop
+       -d, --debug        Print debugging info to stderr
+       --optimize         Enable optimization passes
+    `)
   process.exit(0);
 }
 
@@ -52,10 +56,14 @@ if (transform === undefined) {
   showUsage();
 }
 
-
 let interval = argv.y || argv.yieldInterval || NaN
 if (interval !== undefined) {
   interval = parseInt(argv.y || argv.yieldInterval)
+}
+
+let opts: Options = {
+  debug: argv.d || argv.debug || false,
+  optimize: argv.optimize || false
 }
 
 function timeInSecs(time: number[]): string {
@@ -86,14 +94,11 @@ switch(output) {
     }
     let time = "";
     let prog;
-    if (process) {
-      const stime = process.hrtime()
-      prog = stopifyFunc(code)
-      time = timeInSecs(process.hrtime(stime))
-    } else {
-      prog = stopifyFunc(code)
-    }
-    const runnableProg = `(${prog}).call(this, _ => false, () => 0, x => x, //|INTERVAL|
+    const stime = process.hrtime()
+    prog = stopifyFunc(code, opts)
+    time = timeInSecs(process.hrtime(stime))
+    const runnableProg =
+      `(${prog}).call(this, _ => false, () => 0, x => x, //|INTERVAL|
       ${interval})`
     console.log(runnableProg)
     console.log(`// Compilation time: ${time}s`)
@@ -122,14 +127,10 @@ switch(output) {
     }
     let ctime = "";
     let prog;
-    if (process) {
-      const stime = process.hrtime()
-      prog = stopifyFunc(code)
-      ctime = timeInSecs(process.hrtime(stime))
-      console.log(`// Compilation time: ${ctime}s`)
-    } else {
-      prog = stopifyFunc(code)
-    }
+    const stime = process.hrtime()
+    prog = stopifyFunc(code, opts)
+    ctime = timeInSecs(process.hrtime(stime))
+    console.log(`// Compilation time: ${ctime}s`)
     const sw: StopWrapper = new StopWrapper();
     let rtime = "";
     if (process) {
@@ -164,14 +165,10 @@ switch(output) {
     }
     let ctime = "";
     let prog;
-    if (process) {
-      const stime = process.hrtime()
-      prog = stopifyFunc(code)
-      ctime = timeInSecs(process.hrtime(stime))
-      console.log(`// Compilation time: ${ctime}s`)
-    } else {
-      prog = stopifyFunc(code)
-    }
+    const stime = process.hrtime()
+    prog = stopifyFunc(code, opts)
+    ctime = timeInSecs(process.hrtime(stime))
+    console.log(`// Compilation time: ${ctime}s`)
     const sw: StopWrapper = new StopWrapper();
     let rtime = "";
     if (process) {

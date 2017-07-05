@@ -14,13 +14,13 @@ import * as fsm from './fsm';
 
 import { transform } from '../common/helpers';
 
-export const stackStopifyPrint: stopifyPrint = (code) => {
+export const stackStopifyPrint: stopifyPrint = (code, opts) => {
   const plugins : any[] = [
     [liftVar, noArrows, desugarLoop, desugarLabel],
     [desugarSwitch],
     [makeBlockStmt, fsm]
   ];
-  const transformed = transform(code, plugins);
+  const transformed = transform(code, plugins, opts);
 
   return `
 function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
@@ -30,10 +30,10 @@ function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
 `
 }
 
-export const stackStopify: stopifyFunction = (code) => {
+export const stackStopify: stopifyFunction = (code, opts) => {
   return eval(`
 (function () {
-  return (${stackStopifyPrint(code)});
+  return (${stackStopifyPrint(code, opts)});
 })()
 `)
 }

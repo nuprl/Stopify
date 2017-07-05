@@ -5,7 +5,7 @@ import * as handleNew from './handleNew';
 import * as makeBlockStmt from '../common/makeBlockStmt';
 import * as yieldPass from './yield';
 import * as transformMarked from '../common/transformMarked';
-import { transform } from '../common/helpers';
+import { transform, Options } from '../common/helpers';
 import * as pAssign from './prototypeAssign'
 import * as evalHandler from '../common/evalHandler';
 import * as mCall from './nameMethodCall'
@@ -118,8 +118,8 @@ const includeRuntime =
 // This assumes that program has been wrapped in a function called $runProg.
 const runProg = `$runYield($runProg())`
 
-export const yieldStopifyPrint: stopifyPrint = (code) => {
-  const transformedData = transform(code, plugins);
+export const yieldStopifyPrint: stopifyPrint = (code, opts) => {
+  const transformedData = transform(code, plugins, opts);
   const transformed: string = transformedData[0]
 
   if(transformed.length < code.length) {
@@ -139,8 +139,8 @@ export const yieldStopifyPrint: stopifyPrint = (code) => {
 }
 
 // This function is used by the regenerator based transform.
-export function yieldStopifyRegen(code: string): [string, boolean] {
-  const transformedData = transform(code, plugins);
+export function yieldStopifyRegen(code: string, opts: Options): [string, boolean] {
+  const transformedData = transform(code, plugins, opts);
   const transformed: string = transformedData[0]
 
   if(transformed.length < code.length) {
@@ -156,9 +156,10 @@ export function yieldStopifyRegen(code: string): [string, boolean] {
   `, transformedData[1]]
 }
 
-export function yieldEvalString(code: string): string {
+export function yieldEvalString(
+  code: string, opts: Options = {debug: false, optimize: false}): string {
   const wrapped = `(function (){ ${code} })()`
-  const intermediate: string = transform(wrapped, plugins)[0];
+  const intermediate: string = transform(wrapped, plugins, opts)[0];
   // NOTE(rachit): This assumes that the output starts with `yield*`
   const transformed = intermediate.substring(6, intermediate.length)
 
@@ -170,9 +171,10 @@ export function yieldEvalString(code: string): string {
 }
 
 export function yieldEvalFunction(
-  name: string, body: string, args: string[]): string {
+  name: string, body: string, args: string[],
+  opts: Options = {debug: false, optimize: false}): string {
     const wrapped = `function ${name}(${args.join(',')}) { ${body} }`
-    const intermediate: string = transform(wrapped, fplugins)[0];
+    const intermediate: string = transform(wrapped, fplugins, opts)[0];
     if(intermediate.length < wrapped.length) {
       throw new Error('Transformed code is smaller than original code')
     }
@@ -181,10 +183,10 @@ export function yieldEvalFunction(
     return transformed;
   }
 
-export const yieldStopify: stopifyFunction = (code) => {
+export const yieldStopify: stopifyFunction = (code, opts) => {
   return eval(`
     (function() {
-      return (${yieldStopifyPrint(code)});
+      return (${yieldStopifyPrint(code, opts)});
     })()
   `)
 }

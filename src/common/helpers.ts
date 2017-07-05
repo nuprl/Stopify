@@ -108,7 +108,7 @@ export class Options {
 }
 
 export type OptionsAST<T> = T & {
-  options?: Options
+  options: Options
 }
 
 /**
@@ -116,7 +116,7 @@ export type OptionsAST<T> = T & {
  * transformed program. The boolean is true iff the compiler runtime needs
  * to be included.
  */
-function transform(src: string, plugs: any[][], opts?: Options):
+function transform(src: string, plugs: any[][], opts: Options):
 [string, boolean] {
   let { code, ast } = babel.transform(src,
     { babelrc: false, sourceMaps: 'inline' });

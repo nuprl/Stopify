@@ -113,7 +113,7 @@ const apply_apply = apply_helper(function (f, k, ek, thisArg, args) {
 
 `;
 
-export const tcpsStopifyPrint: stopifyPrint = (code: string) => {
+export const tcpsStopifyPrint: stopifyPrint = (code: string, opts) => {
   const plugins = [
     [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel,
       desugarNew],
@@ -122,7 +122,7 @@ export const tcpsStopifyPrint: stopifyPrint = (code: string) => {
     [cps, applyStop, trampolineApply, transformMarked],
   ];
 
-  const transformed: string = transform(code, plugins)[0]
+  const transformed: string = transform(code, plugins, opts)[0]
 
   if(transformed.length < code.length) {
     throw new Error('Transformed code is smaller than original code')
@@ -136,10 +136,10 @@ ${transformed}
   `
 }
 
-export const tcpsStopify: stopifyFunction = (code) => {
+export const tcpsStopify: stopifyFunction = (code, opts) => {
   return eval(`
 (function() {
-  return (${tcpsStopifyPrint(code)})
+  return (${tcpsStopifyPrint(code, opts)})
 })()
     `)
 }

@@ -6,19 +6,13 @@ import * as makeBlockStmt from '../common/makeBlockStmt';
 import * as yieldPass from './yield';
 import * as transformMarked from '../common/transformMarked';
 import { transform } from '../common/helpers';
-import * as markKnown from '../common/markKnownFunctions'
 import * as pAssign from './prototypeAssign'
 import * as evalHandler from '../common/evalHandler';
+import * as mCall from './nameMethodCall'
 
 const plugins = [
   [noArrows, evalHandler],
-  [handleNew, makeBlockStmt], [markKnown], [yieldPass],
-  [transformMarked, pAssign, ]
-];
-
-const eplugins = [
-  [noArrows, evalHandler],
-  [handleNew, makeBlockStmt], [markKnown], [yieldPass],
+  [handleNew, makeBlockStmt], [mCall], [yieldPass],
   [transformMarked, pAssign, ]
 ];
 
@@ -63,6 +57,7 @@ const yieldRuntime = `
 const $yieldCounter = $interval;
 let $counter = 0;
 function $mark_func(f) {
+  f.$isTransformed = true;
   Object.defineProperty(f.prototype, "constructor", {
     value: f.prototype.constructor, writable: true
   });
@@ -84,20 +79,6 @@ function $runYield(gen, res = { done: false, value: undefined }) {
   }, 0)
 };
 
-function *$apply_wrapper(genOrFunc) {
-  if (genOrFunc && genOrFunc.next && genOrFunc.toString() === '[object Generator]') {
-    if($counter >= $interval) {
-      $counter = 0;
-      yield 0;
-    } else {
-      $counter ++;
-    }
-    return yield* genOrFunc
-  } else {
-    return genOrFunc;
-  }
-}
-
 const $generatorPrototype = (function*(){}).prototype;
 function $proto_assign(rhs) {
   let proto = Object.create(rhs.__proto__ || null)
@@ -114,14 +95,15 @@ const $GeneratorConstructor = Object.getPrototypeOf(function*(){}).constructor
 
 const $knownBuiltInts = [${knowns.toString()}]
 function *$handleNew(constr, ...args) {
-  if($knownBuiltInts.includes(constr)) {
+  if($knownBuiltInts.includes(constr) || !constr.$isTransformed) {
     return new constr(...args);
   } else {
     let a = Object.create(constr.prototype);
-    yield* $apply_wrapper(constr.apply(a, args))
+    yield* constr.apply(a, args)
     return a;
   }
 }
+$mark_func($handleNew)
 `
 
 const includeRuntime =

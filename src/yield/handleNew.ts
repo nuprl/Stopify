@@ -11,6 +11,7 @@ import {
 } from '../common/helpers';
 
 const knowns = ['Object',
+  'Function',
   'Boolean',
   'Symbol',
   'Error',

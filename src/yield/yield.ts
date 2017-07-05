@@ -38,7 +38,17 @@ const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
       return;
     }
     else {
-      /*let callee = path.node.callee;
+      let callee = path.node.callee;
+      // Don't check the callee if a function expression since we they are
+      // always transformed.
+      if (t.isFunctionExpression(callee)) {
+        path.replaceWith(t.yieldExpression(path.node, true))
+        return;
+      }
+      // Don't transform `eval`
+      if (t.isIdentifier(callee) && callee.name === 'eval') {
+        path.replaceWith(t.yieldExpression(path.node, true))
+      }
       if (t.isMemberExpression(path.node.callee)) {
         if (t.isIdentifier(path.node.callee.property)) {
           if(path.node.callee.property.name === 'call' ||
@@ -56,16 +66,7 @@ const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
         t.memberExpression(callee, t.identifier('$isTransformed')),
         t.yieldExpression(path.node, true),
         path.node)
-      path.replaceWith(cond);*/
-      const applyArgs = [path.node.callee, ...path.node.arguments]
-      const yieldExpr = t.yieldExpression(
-        transformed(
-          t.callExpression(
-            t.identifier('$apply_wrapper'),
-            [transformed(path.node)])),
-        true)
-
-      path.replaceWith(yieldExpr)
+      path.replaceWith(cond);
     }
   };
 
@@ -80,9 +81,10 @@ const loop: VisitNode<Transformed<t.Loop>> = function (path: NodePath<Transforme
 }
 
 const func = {
-  enter(path: NodePath<t.Function>) {
+  enter(path: NodePath<t.FunctionDeclaration|t.FunctionExpression>) {
     if(path.node.generator === false) {
       path.node.generator = true
+      path.node.body.body.unshift(ifYield)
       transformed(path.node)
     }
   }

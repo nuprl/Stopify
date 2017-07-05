@@ -48,6 +48,7 @@ const callExpression: VisitNode<OptimizeMark<Transformed<t.CallExpression>>> =
       // Don't transform `eval`
       if (t.isIdentifier(callee) && callee.name === 'eval') {
         path.replaceWith(t.yieldExpression(path.node, true))
+        return;
       }
       if (t.isMemberExpression(path.node.callee)) {
         if (t.isIdentifier(path.node.callee.property)) {

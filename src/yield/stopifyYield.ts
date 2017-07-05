@@ -172,7 +172,7 @@ export function yieldEvalFunction(
     if(intermediate.length < wrapped.length) {
       throw new Error('Transformed code is smaller than original code')
     }
-    const transformed = `(function () { return ${intermediate}})()`
+    const transformed = `(function *() { return ${intermediate}})()`
     return transformed;
   }
 

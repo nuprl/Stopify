@@ -88,8 +88,10 @@ export class LValMember extends Node {
 
 export type LVal = t.Identifier | t.Literal | LValMember
 
-export function fvs(a: AExpr | LValMember | t.SpreadElement): FVSet <string>{
-  if (t.isIdentifier(a)) {
+export function fvs(a: AExpr | LValMember | t.SpreadElement | null): FVSet<string> {
+  if (a === null) {
+    return empty<string>();
+  } else if (t.isIdentifier(a)) {
     return singleton(a.name);
   } else if (t.isLiteral(a)) {
     return empty<string>();

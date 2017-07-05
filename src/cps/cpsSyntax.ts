@@ -414,6 +414,9 @@ function generateLVal(lval: LVal): t.LVal {
 }
 
 function generateAExpr(aexpr: AExpr): t.Expression {
+  if (aexpr === null) {
+    return t.nullLiteral();
+  }
   switch (aexpr.type) {
     case 'Identifier':
     case 'BooleanLiteral':

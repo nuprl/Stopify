@@ -1,6 +1,11 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {Hoisted, hoisted, letExpression} from '../common/helpers';
+import {tag, letExpression} from '../common/helpers';
+
+export type Hoisted<T> = T & {
+  hoisted?: boolean
+}
+const hoisted = <T>(t: T) => tag('hoisted', t, true);
 
 function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression {
   return decl.init === null ?

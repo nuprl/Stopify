@@ -6,11 +6,15 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
-import { letExpression } from '../common/helpers'
-import {Administrative, administrative} from '../common/helpers';
+import { tag, letExpression } from '../common/helpers'
+
+const administrative = <T>(t: T) => tag('isAdmin', t, true);
 
 type isTrampolined<T> = T & {
   isTrampolined?: boolean
+}
+type Administrative<T> = T & {
+  isAdmin?: boolean
 }
 
 function trampoline<T>(node: T): isTrampolined<T> {

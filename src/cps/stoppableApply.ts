@@ -6,7 +6,6 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as b from 'babylon';
-import {Administrative, Call, Apply, Direct} from '../common/helpers';
 
 type Args = t.Expression | t.SpreadElement;
 type TApply = 'direct' | 'administrative' | 'call' | 'apply';
@@ -14,6 +13,18 @@ type InlinedResult = {
   inlined: t.Expression,
   ek?: t.Identifier
 };
+type Administrative<T> = T & {
+  isAdmin?: boolean
+}
+type Call<T> = T & {
+  isCall?: boolean
+}
+type Apply<T> = T & {
+  isApply?: boolean
+}
+type Direct<T> = T & {
+  isDirect?: boolean
+}
 
 const counter: t.Identifier = t.identifier('$counter');
 const interval: t.Identifier = t.identifier('$interval');

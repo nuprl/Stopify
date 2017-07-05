@@ -1,15 +1,18 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {administrative,
-  call,
-  apply,
-  directApply,
+import {
+  tag,
   flatBodyStatement,
   letExpression,
   transformed,
   KArg,
-  union
 } from '../common/helpers';
+import { union } from './fvHelpers'
+
+const administrative = <T>(t: T) => tag('isAdmin', t, true);
+const call = <T>(t: T) => tag('isCall', t, true);
+const apply = <T>(t: T) => tag('isApply', t, true);
+const directApply = <T>(t: T) => tag('isDirect', t, true);
 
 import {
   AExpr, BExpr, CExpr, AtomicBExpr, Node, BFun, BAdminFun, BAtom, BOp2, BOp1,

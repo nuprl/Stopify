@@ -2,12 +2,14 @@ import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from './helpers';
 
+const directApply = <T>(t: T) => h.tag('isDirect', t, true);
+
 const markFuncName = t.identifier('$mark_func')
 
 const funcd: VisitNode<h.Transformed<t.FunctionDeclaration>> = {
   exit(path: NodePath<h.Transformed<t.FunctionDeclaration>>) {
     if(path.node.isTransformed) {
-      const markCall = t.expressionStatement(h.directApply(
+      const markCall = t.expressionStatement(directApply(
         t.callExpression(markFuncName, [path.node.id])));
       // Place the call to mark_func on the top of the nearest block.
       // This is because a function might be called before reaching it's
@@ -30,7 +32,7 @@ const funce: VisitNode<h.Transformed<t.FunctionExpression>> = {
     if(path.node.isTransformed) {
       path.node.isTransformed = false;
       path.replaceWith(
-        h.directApply(t.callExpression(markFuncName, [path.node])));
+        directApply(t.callExpression(markFuncName, [path.node])));
       path.skip();
     }
   }

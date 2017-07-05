@@ -5,7 +5,7 @@ import { AExpr, BExpr, CExpr, AtomicBExpr, BAtom, BFun, BAdminFun, CApp,
 from './cexpr';
 import {CPS, ret} from './cpsMonad';
 import {FVSet, fvSetOfArray, copyFVSet, add, diff, intersect, empty, size}
-from '../common/helpers';
+from './fvHelpers'
 
 type T = {
   body: CExpr,

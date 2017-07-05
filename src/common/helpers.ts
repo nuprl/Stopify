@@ -24,10 +24,10 @@ export type OptimizeMark<T> = T & {
   OptimizeMark: Tag
 }
 export type Break<T> = T & {
-      break_label?: t.Identifier;
+  break_label?: t.Identifier;
 }
 export type While<T> = T & {
-    continue_label?: t.Identifier;
+  continue_label?: t.Identifier;
 }
 export type LineMappingMark<T> = T & {
   lineMapping?: b.LineMapping
@@ -99,25 +99,45 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   return t.blockStatement(newBody);
 }
 
-// Returns a tuple of string and a boolean. The string represents the
-// transformed program. The boolean is true iff the compiler runtime needs
-// to be included.
-function transform(src: string, plugs: any[][]): [string, boolean] {
+export class Options {
+  // Print debugging information to stderr
+  debug: boolean;
+
+  // Add optimization data to the AST.
+  optimize: boolean;
+}
+
+export type OptionsAST<T> = T & {
+  options?: Options
+}
+
+/**
+ * Returns a tuple of string and a boolean. The string represents the
+ * transformed program. The boolean is true iff the compiler runtime needs
+ * to be included.
+ */
+function transform(src: string, plugs: any[][], opts?: Options):
+[string, boolean] {
   let { code, ast } = babel.transform(src,
     { babelrc: false, sourceMaps: 'inline' });
-  plugs.forEach(trs => {
-    const res = babel.transformFromAst(<t.Node>ast, code, {
-      plugins: [...trs],
-      babelrc: false,
-    });
-    code = res.code;
-    ast = res.ast;
-  });
-
-  if (code !== undefined && ast !== undefined) {
-    return [code, (<IsEval<t.Program>>(<t.File>ast).program).isEval]
+  if (ast === undefined) {
+    throw new Error('AST was undefined')
   } else {
-    throw new Error('Transform returned an empty string')
+    (<OptionsAST<t.Node>>ast).options = opts
+    plugs.forEach(trs => {
+      const res = babel.transformFromAst(<OptionsAST<t.Node>>ast, code, {
+        plugins: [...trs],
+        babelrc: false,
+      });
+      code = res.code;
+      ast = res.ast;
+    });
+
+    if (code !== undefined && ast !== undefined) {
+      return [code, (<IsEval<t.Program>>(<t.File>ast).program).isEval]
+    } else {
+      throw new Error('Transform returned an empty string')
+    }
   }
 }
 
@@ -132,7 +152,8 @@ function parseMapping(code: string) {
     const map = new SourceMapConsumer(mapConverter.toObject())
     return new b.LineMapping((line: number, column: number) => {
       const mapping = map.originalPositionFor({ line, column });
-      if (mapping.source === null || mapping.source.includes('node_modules') || mapping.line === null) {
+      if (mapping.source === null ||
+        mapping.source.includes('node_modules') || mapping.line === null) {
         return null;
       } else {
         return mapping.line
@@ -141,26 +162,26 @@ function parseMapping(code: string) {
   }
 }
 
-function transformWithLines(src: string, plugs: any[][], breakPoints:
-  number[]): string {
-  let { code, ast } = babel.transform(src,
-    { babelrc: false, sourceMaps:
-    'inline' });
+function transformWithLines(
+  src: string, plugs: any[][], breakPoints: number[]): string {
+    let { code, ast } = babel.transform(src,
+      { babelrc: false, sourceMaps:
+        'inline' });
 
-  let map = parseMapping(src);
-  (<any>ast).program.lineMapping = map;
+    let map = parseMapping(src);
+    (<any>ast).program.lineMapping = map;
 
-  plugs.forEach(trs => {
-    const res = babel.transformFromAst(<t.Node>ast, code, {
-      plugins: [...trs],
-      babelrc: false,
+    plugs.forEach(trs => {
+      const res = babel.transformFromAst(<t.Node>ast, code, {
+        plugins: [...trs],
+        babelrc: false,
+      });
+      code = res.code;
+      ast = res.ast;
     });
-    code = res.code;
-    ast = res.ast;
-  });
 
-  return code === undefined ? "" : code;
-}
+    return code === undefined ? "" : code;
+  }
 
 export {
   transformed,

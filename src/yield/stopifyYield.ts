@@ -1,14 +1,19 @@
 const noArrows = require('babel-plugin-transform-es2015-arrow-functions');
 
 import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface'
-import * as handleNew from './handleNew';
 import * as makeBlockStmt from '../common/makeBlockStmt';
-import * as yieldPass from './yield';
 import * as transformMarked from '../common/transformMarked';
 import { transform, Options } from '../common/helpers';
+import * as handleNew from './handleNew';
+import * as yieldPass from './yield';
 import * as pAssign from './prototypeAssign'
 import * as evalHandler from '../common/evalHandler';
 import * as mCall from './nameMethodCall'
+import * as fs from 'fs';
+import * as path from 'path'
+
+const hofImpl = fs.readFileSync(
+  path.join(__dirname, '../common/hofImplementations.js')).toString();
 
 const plugins = [
   [noArrows, evalHandler],
@@ -119,7 +124,8 @@ const includeRuntime =
 const runProg = `$runYield($runProg())`
 
 export const yieldStopifyPrint: stopifyPrint = (code, opts) => {
-  const transformedData = transform(code, plugins, opts);
+  const hofCode = `${hofImpl};\n${code}`
+  const transformedData = transform(hofCode, plugins, opts);
   const transformed: string = transformedData[0]
 
   if(transformed.length < code.length) {

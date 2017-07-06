@@ -17,6 +17,12 @@ export function tag<T, V>(tag: string, t: T, v: V) {
   return tagged;
 }
 
+export type FlatTag = 'NotFlat' | 'Flat'
+
+export type FlatnessMark<T> = T & {
+  mark: FlatTag
+}
+
 // Used for marking known transformed functions
 export type Tag = 'Transformed' | 'Untransformed' | 'Unknown'
 
@@ -123,7 +129,7 @@ function transform(src: string, plugs: any[][], opts: Options):
   if (ast === undefined) {
     throw new Error('AST was undefined')
   } else {
-    (<OptionsAST<t.Node>>ast).options = opts
+    (<any>ast).program.options = opts
     plugs.forEach(trs => {
       const res = babel.transformFromAst(<OptionsAST<t.Node>>ast, code, {
         plugins: [...trs],
@@ -131,6 +137,7 @@ function transform(src: string, plugs: any[][], opts: Options):
       });
       code = res.code;
       ast = res.ast;
+      (<any>ast).program.options = opts
     });
 
     if (code !== undefined && ast !== undefined) {

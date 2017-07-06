@@ -9,6 +9,7 @@ import * as yieldPass from './yield';
 import * as pAssign from './prototypeAssign'
 import * as evalHandler from '../common/evalHandler';
 import * as mCall from './nameMethodCall'
+import * as markFlat from '../common/markFlatFunctions'
 import * as fs from 'fs';
 import * as path from 'path'
 
@@ -16,7 +17,7 @@ const hofImpl = fs.readFileSync(
   path.join(__dirname, '../common/hofImplementations.js')).toString();
 
 const plugins = [
-  [noArrows, evalHandler],
+  [noArrows, evalHandler], [markFlat],
   [handleNew, makeBlockStmt], [mCall], [yieldPass],
   [transformMarked, pAssign, ]
 ];
@@ -124,7 +125,7 @@ const includeRuntime =
 const runProg = `$runYield($runProg())`
 
 export const yieldStopifyPrint: stopifyPrint = (code, opts) => {
-  const hofCode = `${hofImpl};\n${code}`
+  const hofCode = `${code}; ${hofImpl}`
   const transformedData = transform(hofCode, plugins, opts);
   const transformed: string = transformedData[0]
 

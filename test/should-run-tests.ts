@@ -13,7 +13,7 @@ describe('CPS transform tests', function () {
   })
 })
 
-describe('Regen transformation tests', function () {
+describe.skip('Regen transformation tests', function () {
   this.timeout(0)
   f.testFiles.forEach(function(filename: string) {
     it(filename, function () {
@@ -25,7 +25,7 @@ describe('Regen transformation tests', function () {
   })
 })
 
-describe('Trampoline CPS transform tests', function () {
+describe.skip('Trampoline CPS transform tests', function () {
   this.timeout(0)
   f.testFiles.forEach(function(filename: string) {
     it(filename, function () {

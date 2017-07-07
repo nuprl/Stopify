@@ -79,20 +79,26 @@ function $mark_func(f) {
   return f;
 };
 
-function $runYield(gen, res = { done: false, value: undefined }) {
+function $runYield(gen, k, res = { done: false, value: undefined }) {
   setTimeout(_ => {
-    if ($isStop()) {
+    if (res.done) {
+      return k(res.value)
+    }
+    else if($isStop()) {
       return $onStop();
     }
-    res = gen.next();
-    if (res.done) {
-      return $onDone(res.value);
-    }
     else {
-      return $runYield(gen, res);
+      const res = gen.next();
+      if(res.value && res.value.__isGen) {
+        return $runYield(
+          res.value.__gen, (v) => $runYield(gen, k, gen.next(v), res))
+      } else {
+        return $runYield(gen, k, res)
+      }
     }
   }, 0)
 };
+
 
 const $generatorPrototype = (function*(){}).prototype;
 function $proto_assign(rhs) {
@@ -145,7 +151,7 @@ export const yieldStopifyPrint: stopifyPrint = (code, opts) => {
     function *$runProg() {
       ${transformed}
     }
-    $runYield($runProg())
+    $runYield($runProg(), $onDone)
   }
   `
 }
@@ -160,7 +166,7 @@ export function yieldStopifyRegen(code: string, opts: Options): [string, boolean
   function *$runProg() {
     ${transformed}
   }
-  $runYield($runProg())
+  $runYield($runProg(), $onDone)
   `, transformedData[1]]
 }
 

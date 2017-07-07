@@ -76,11 +76,27 @@ const callExpression = {
         }
       }
     }
+
     const cond = t.conditionalExpression(
       t.memberExpression(callee, t.identifier('$isTransformed')),
       t.yieldExpression(path.node, true),
       path.node)
     path.replaceWith(cond);
+  }
+}
+
+// Tail calling optimization for callExpression within a return.
+const retStmt = {
+  enter(path: NodePath<Transformed<t.ReturnStatement>>) {
+    if(tail_calls) {
+      const { argument } = path.node
+      if(t.isCallExpression(argument)) {
+        const genObj = t.objectExpression([
+          t.objectProperty(t.identifier('__isGen'), t.booleanLiteral(true)),
+          t.objectProperty(t.identifier('__gen'), transformed(argument))])
+        path.node.argument = t.yieldExpression(genObj, false)
+      }
+    }
   }
 }
 
@@ -116,14 +132,15 @@ const funce = {
   }
 }
 
-const yieldVisitor: Visitor = {
+const visitor = {
   Program: program,
   FunctionDeclaration: funcd,
   FunctionExpression: funce,
   CallExpression: callExpression,
   "Loop": loop,
+  ReturnStatement: retStmt,
 }
 
 module.exports = function() {
-  return { visitor: yieldVisitor };
+  return { visitor };
 };

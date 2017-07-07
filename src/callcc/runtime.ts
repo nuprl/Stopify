@@ -81,3 +81,31 @@ function restore(stack: KFrame[]): any {
   };
   stack[0].f();
 }
+
+function runtime(body: () => any): any {
+  try {
+    body();
+  }
+  catch (exn) {
+    if (exn instanceof Capture) {
+      // Recursive call to runtime addresses nested continuations. The return
+      // statement ensures that the invocation is in tail position.
+      // At this point, exn.stack is the continuation of callCC, but doesn’t have
+      // a top-of-stack frame that actually restores the saved continuation. We
+      // need to apply the function passed to callCC to the stack here, because
+      // this is the only point where the whole stack is ready.
+      return runtime(() =>
+        restore([...exn.stack,
+          topK(() => exn.f(makeCont(exn.stack)))]));
+    }
+    else if (exn instanceof RestoreCont) {
+      // The current continuation has been discarded and we now restore the
+      // continuation in exn.
+      return runtime(() =>
+        restore([...exn.stack]));
+    }
+    else {
+      throw exn; // userland exception
+    }
+  }
+}

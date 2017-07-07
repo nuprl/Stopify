@@ -15,8 +15,7 @@
     },
     "include": [
       "src",
-      "test",
-      "examples"
+      "test"
     ],
     "exclude": [
       "demo-webpage/html",

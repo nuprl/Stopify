@@ -12,9 +12,8 @@ import * as mCall from './nameMethodCall'
 import * as markFlat from '../common/markFlatFunctions'
 import * as fs from 'fs';
 import * as path from 'path'
+import { hofImpl } from '../common/hofImplementations'
 
-const hofImpl = fs.readFileSync(
-  path.join(__dirname, '../common/hofImplementations.js')).toString();
 
 const plugins = [
   [noArrows, evalHandler], [markFlat],
@@ -125,7 +124,9 @@ const includeRuntime =
 const runProg = `$runYield($runProg())`
 
 export const yieldStopifyPrint: stopifyPrint = (code, opts) => {
-  const hofCode = `${code}; ${hofImpl}`
+  // The wrapping is done in order to get the proper line numbers from
+  // input JS.
+  const hofCode = `${code}`
   const transformedData = transform(hofCode, plugins, opts);
   const transformed: string = transformedData[0]
 
@@ -150,10 +151,6 @@ export function yieldStopifyRegen(code: string, opts: Options): [string, boolean
   const transformedData = transform(code, plugins, opts);
   const transformed: string = transformedData[0]
 
-  if(transformed.length < code.length) {
-    throw new Error('Transformed code is smaller than original code')
-  }
-
   return [`
   ${yieldRuntime}
   function *$runProg() {
@@ -170,10 +167,6 @@ export function yieldEvalString(
   // NOTE(rachit): This assumes that the output starts with `yield*`
   const transformed = intermediate.substring(6, intermediate.length)
 
-  if(transformed.length < wrapped.length) {
-    throw new Error('Transformed code is smaller than original code')
-  }
-
   return transformed
 }
 
@@ -182,11 +175,8 @@ export function yieldEvalFunction(
   opts: Options = {debug: false, optimize: false}): string {
     const wrapped = `function ${name}(${args.join(',')}) { ${body} }`
     const intermediate: string = transform(wrapped, fplugins, opts)[0];
-    if(intermediate.length < wrapped.length) {
-      throw new Error('Transformed code is smaller than original code')
-    }
+
     const transformed = `(function *() { return ${intermediate}})()`
-    console.log(transformed)
     return transformed;
   }
 

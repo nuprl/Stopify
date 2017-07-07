@@ -1,3 +1,4 @@
+export const hofImpl = `
 /**
  * Implementation shims from [[ https://developer.mozilla.org/en-US/ ]]
  */
@@ -410,3 +411,4 @@ Array.prototype.map = function(callback/*, thisArg*/) {
   // 9. return A
   return A;
 };
+`

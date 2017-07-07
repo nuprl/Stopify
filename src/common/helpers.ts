@@ -111,6 +111,13 @@ export class Options {
 
   // Add optimization data to the AST.
   optimize: boolean;
+
+  // Add tail calls.
+  tail_calls: boolean;
+
+  // Do not handle `eval` and `new Function`
+  no_eval: boolean;
+
 }
 
 export type OptionsAST<T> = T & {

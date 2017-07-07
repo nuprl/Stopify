@@ -6,10 +6,15 @@ import {
 } from '../common/helpers'
 
 let opt = false;
+let tail_calls = false
 
 const program = {
   enter(path: NodePath<OptionsAST<t.Program>>) {
-    opt = (path.node.options && path.node.options.optimize)
+    if(path.node.options) {
+      const options = path.node.options
+      opt = options.optimize
+      tail_calls = options.tail_calls
+    }
   }
 }
 

@@ -14,6 +14,9 @@ import * as fs from 'fs';
 import * as path from 'path'
 import { hofImpl } from '../common/hofImplementations'
 
+const eval_opts = {
+  debug: false, optimize: false, tail_calls: false, no_eval: false
+}
 
 const plugins = [
   [noArrows, evalHandler], [markFlat],
@@ -21,6 +24,7 @@ const plugins = [
   [transformMarked, pAssign, ]
 ];
 
+// Plugin for eval handler
 const fplugins = [
   [noArrows, evalHandler],
   [handleNew, makeBlockStmt], [mCall], [yieldPass],
@@ -161,7 +165,7 @@ export function yieldStopifyRegen(code: string, opts: Options): [string, boolean
 }
 
 export function yieldEvalString(
-  code: string, opts: Options = {debug: false, optimize: false}): string {
+  code: string, opts: Options = eval_opts): string {
   const wrapped = `(function (){ ${code} })()`
   const intermediate: string = transform(wrapped, plugins, opts)[0];
   // NOTE(rachit): This assumes that the output starts with `yield*`
@@ -172,7 +176,7 @@ export function yieldEvalString(
 
 export function yieldEvalFunction(
   name: string, body: string, args: string[],
-  opts: Options = {debug: false, optimize: false}): string {
+  opts: Options = eval_opts): string {
     const wrapped = `function ${name}(${args.join(',')}) { ${body} }`
     const intermediate: string = transform(wrapped, fplugins, opts)[0];
 

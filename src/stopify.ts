@@ -28,6 +28,9 @@ Options:
        -o, --output       Can be print, eval, stop
        -d, --debug        Print debugging info to stderr
        --optimize         Enable optimization passes
+       -tc, --tail-calls         Enable optimization passes
+       -ne, --;no-eval
+       --optimize         Enable optimization passes
     `)
   process.exit(0);
 }
@@ -63,7 +66,9 @@ if (interval !== undefined) {
 
 let opts: Options = {
   debug: argv.d || argv.debug || false,
-  optimize: argv.optimize || false
+  optimize: argv.optimize || false,
+  no_eval: argv.ne || argv['no-eval'] || false,
+  tail_calls: argv.tc || argv['tail-calls'] || false,
 }
 
 function timeInSecs(time: number[]): string {

@@ -15,12 +15,16 @@ export const stopTests = glob.sync('test/should-stop/*.js', {})
 export const testFiles = simpleTests.concat(sourceLanguage)
 export const skipped = glob.sync('test/should-run/skip/*.js')
 
+const opts = {
+  debug: false, optimize: false, tail_calls: false, no_eval: false
+}
+
 export function transformTest(original: string, plugs: any[][]): string {
   let errorMessage = '';
   let transformed = '';
 
   try {
-    transformed = transform(original, plugs, {debug: false, optimize: false})[0]
+    transformed = transform(original, plugs, opts)[0]
   } catch (e) {
     errorMessage = e.message;
   }

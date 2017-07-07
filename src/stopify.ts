@@ -10,8 +10,8 @@ import {
   cpsStopify, cpsStopifyPrint
 } from './cps/stopifyCps'
 import {
-  stackStopify, stackStopifyPrint
-} from './FSM/stopifyStack'
+  callCCStopify, callCCStopifyPrint
+} from './callcc/stopifyCallCC'
 import {
   tcpsStopify, tcpsStopifyPrint
 } from './cps/stopifyTCps'
@@ -22,7 +22,7 @@ import * as path from 'path'
 function showUsage() {
   console.error(
     `
-Usage: stopify.js -i <filename> -t [cps|tcps|stack|yield|regen] [options]
+Usage: stopify.js -i <filename> -t [cps|tcps|callcc|yield|regen] [options]
 Options:
        -y, --interval     Set yield interval
        -o, --output       Can be print, eval, stop
@@ -90,8 +90,8 @@ switch(output) {
       case 'tcps':
         stopifyFunc = tcpsStopifyPrint
         break;
-      case 'stack':
-        stopifyFunc = stackStopifyPrint
+      case 'callcc':
+        stopifyFunc = callCCStopifyPrint
         break;
       default:
         throw new Error(`Unknown transform: ${transform}`)
@@ -123,8 +123,8 @@ switch(output) {
       case 'tcps':
         stopifyFunc = tcpsStopify;
         break;
-      case 'stack':
-        stopifyFunc = stackStopify;
+      case 'callcc':
+        stopifyFunc = callCCStopify;
         break;
       default:
         throw new Error(`Unknown transform: ${transform}`)
@@ -161,8 +161,8 @@ switch(output) {
       case 'tcps':
         stopifyFunc = tcpsStopify;
         break;
-      case 'stack':
-        stopifyFunc = stackStopify;
+      case 'callcc':
+        stopifyFunc = callCCStopify;
         break;
       default:
         throw new Error(`Unknown transform: ${transform}`)

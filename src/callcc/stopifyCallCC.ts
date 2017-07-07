@@ -10,15 +10,14 @@ import * as desugarLabel from '../common/desugarLabel';
 import * as liftVar from '../common/liftVar';
 
 import * as makeBlockStmt from '../common/makeBlockStmt';
-import * as fsm from './fsm';
 
 import { transform } from '../common/helpers';
 
-export const stackStopifyPrint: stopifyPrint = (code, opts) => {
+export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
   const plugins : any[] = [
     [liftVar, noArrows, desugarLoop, desugarLabel],
     [desugarSwitch],
-    [makeBlockStmt, fsm]
+    [makeBlockStmt]
   ];
   const transformed = transform(code, plugins, opts);
 
@@ -30,10 +29,10 @@ function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
 `
 }
 
-export const stackStopify: stopifyFunction = (code, opts) => {
+export const callCCStopify: stopifyFunction = (code, opts) => {
   return eval(`
 (function () {
-  return (${stackStopifyPrint(code, opts)});
+  return (${callCCStopifyPrint(code, opts)});
 })()
 `)
 }

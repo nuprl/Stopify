@@ -86,46 +86,46 @@ function fsm_try_f() {
 
 function if_guard_f() {
   let a, b, c, d;
-  if (test()) {
+  if (tst()) {
       a = g();
   }
-  if (test()) {
+  if (tst()) {
       b = h();
   }
-  if (test()) {
+  if (tst()) {
       c = i();
   }
-  if (test()) {
+  if (tst()) {
       d = j();
   }
   return a + b + c + d;
 }
 
 function if_guard_try_f() {
-  let tst = test();
+  let test = tst();
   let a, b, c, d;
-  if (tst) {
+  if (test) {
     try {
       a = g();
     } catch (e) {
       // Some stack saving logic...
     }
   }
-  if (tst) {
+  if (test) {
     try {
       b = h();
     } catch (e) {
       // Some stack saving logic...
     }
   }
-  if (tst) {
+  if (test) {
     try {
       c = i();
     } catch (e) {
       // Some stack saving logic...
     }
   }
-  if (tst) {
+  if (test) {
     try {
       d = j();
     } catch (e) {
@@ -151,14 +151,14 @@ function j() {
   return b % 3;
 }
 
-function test() {
+function tst() {
   return true;
 }
 
-function runner(f, name) {
+function runner(name, f, ...args) {
   const begin = Date.now();
   for (let i = 0; i < n; i++) {
-    f();
+    f(...args);
   }
   a = n;
   b = 0;

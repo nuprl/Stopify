@@ -52,7 +52,7 @@ export function run(toRun: ActivationRecord): any {
         next.ans = $val;
         $val = next.fun(next);
       }
-      break;
+      return $val;
     } catch (exn) {
       if (isCont(exn)) {
         GAS = initialGas;
@@ -64,6 +64,5 @@ export function run(toRun: ActivationRecord): any {
         throw exn;
       }
     }
-    return $val;
   }
 }

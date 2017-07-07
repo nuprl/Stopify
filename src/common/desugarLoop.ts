@@ -1,5 +1,5 @@
 /**
- * Module to desugar loops into recursive functions. This requires
+ * Module to desugar all loops to while loops. This requires
  * the following transformations to be done:
  *
  * This plugin must enforce the following assumption about loops:

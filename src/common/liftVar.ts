@@ -1,3 +1,10 @@
+/**
+ * Moves var statements to the top of functions.
+ *
+ * When a var is moved, it is initialized to undefined. The
+ * transformation introduces assignment statements where the var statement
+ * originally occurred.
+ */
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {tag, letExpression} from '../common/helpers';

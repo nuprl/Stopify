@@ -1,3 +1,9 @@
+/**
+ * Transforms while loops into recursive functions.
+ *
+ * Use desugarLoop.ts to first transform all loops to while loops before
+ * using this transformation.
+ */
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from '../common/helpers';

@@ -1,12 +1,6 @@
 /**
- * Plugin to transform JS programs into ANF form.
- *
- * WARNING:
- * The plugin assumes that the assumptions stated in ./src/desugarLoop.js
- * hold. The resulting output is not guarenteed to be in ANF form if the
- * assumptions do not hold.
+ * Transforms loop bodies and conditional branches to block statements.
  */
-
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from './helpers';
@@ -35,11 +29,11 @@ const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {
   path.node.body = t.blockStatement([path.node.body])
 }
 
-const anfVisitor : Visitor = {
+const visitor : Visitor = {
   IfStatement: ifStatement,
   "Loop": loop,
 }
 
 module.exports = function() {
-  return { visitor: anfVisitor };
+  return { visitor: visitor };
 };

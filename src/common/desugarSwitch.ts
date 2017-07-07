@@ -1,3 +1,36 @@
+/**
+ * Desugars switch statements to if statements.
+ *
+ * switch(e1) {
+ *   case c1:
+ *     s1 ...
+ *   case c2:
+ *     s2 ...
+ *   default:
+ *     s3 ...
+ * }
+ *
+ * is transformed into:
+ *
+ * {
+ *   let fallthrough = false;
+ *   let test = e1;
+ *   if (test === c1 || fallthroug) {
+ *      s1 ...
+ *      fallthrough = true;
+ *   }
+ *   if (test === c1 || fallthrough) {
+ *      s1 ...
+ *      fallthrough = true;
+ *   }
+ *   if (test === c1 || fallthrough) {
+ *    s2 ...
+ *    fallthrough = true;
+ *   }
+ *   s3 ...
+ * } 
+
+ */
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {letExpression} from '../common/helpers';

@@ -61,12 +61,13 @@ function $tryCatch(e) {
 `;
 
 export const cpsStopifyPrint: stopifyPrint = (code: string, opts: Options) => {
-  const plugins = [
-    [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel,
+    const plugins = [
+        [desugarSwitch]
+  /*  [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel,
       desugarNew],
     [desugarSwitch, addKArg, desugarWhileToFunc],
     [makeBlockStmt],
-    [cps, transformMarked, applyStop],
+    [cps, transformMarked, applyStop], */
   ];
   const transformed: string = transform(code, plugins, opts)[0]
 

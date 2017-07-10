@@ -1,57 +1,57 @@
 const assert = require('assert');
 
 // The type of continuation frames
-type KFrame = KFrameTop | KFrameRest;
+export type KFrame = KFrameTop | KFrameRest;
 
-interface KFrameTop {
+export interface KFrameTop {
   kind: 'top';
   f: () => any;
 }
 
-interface KFrameRest {
+export interface KFrameRest {
   kind: 'rest';
   f: () => any;   // The function we are in
   locals: any[];  // All locals and parameters
   index: number;  // At this application index
 }
 
-type Stack = KFrame[];
+export type Stack = KFrame[];
 
 // The type of execution mode, whether normally computing or restoring state
 // from a captured `Stack`.
-type Mode = NormalMode | RestoringMode;
+export type Mode = NormalMode | RestoringMode;
 
-interface NormalMode {
+export interface NormalMode {
   kind: 'normal';
 }
 
-interface RestoringMode {
+export interface RestoringMode {
   kind: 'restoring';
   stack: Stack;
 }
 
-let mode: Mode = {
+export let mode: Mode = {
   kind: 'normal',
 };
 
 // We throw this exception when a continuation value is applied. i.e.,
 // callCC applies its argument to a function that throws this exception.
-class RestoreCont {
+export class Restore {
   constructor(public stack: Stack) {}
 }
 
 // We throw this exception to capture the current continuation. i.e.,
 // callCC throws this exception when it is applied.
-class Capture {
+export class Capture {
   constructor(public f: (k: any) => any, public stack: Stack) {}
 }
 
-function callCC(f: (k: any) => any) {
+export function callCC(f: (k: any) => any) {
   throw new Capture(f, []);
 }
 
 // Helper function that constructs a top-of-stack frame.
-function topK(f: () => any): KFrameTop {
+export function topK(f: () => any): KFrameTop {
   return {
     kind: 'top',
     f: () => {
@@ -66,14 +66,14 @@ function topK(f: () => any): KFrameTop {
 // Wraps a stack in a function that throws an exception to discard the current
 // continuation. The exception carries the provided stack with a final frame
 // that returns the supplied value.
-function makeCont(stack: Stack) {
+export function makeCont(stack: Stack) {
   return function (v: any) {
-    throw new RestoreCont([...stack,
+    throw new Restore([...stack,
       topK(() => v)]);
   }
 }
 
-function restore(stack: KFrame[]): any {
+export function restore(stack: KFrame[]): any {
   assert(stack.length > 0)
   mode = {
     kind: 'restoring',
@@ -82,7 +82,7 @@ function restore(stack: KFrame[]): any {
   stack[0].f();
 }
 
-function runtime(body: () => any): any {
+export function runtime(body: () => any): any {
   try {
     body();
   }
@@ -98,7 +98,7 @@ function runtime(body: () => any): any {
         restore([...exn.stack,
           topK(() => exn.f(makeCont(exn.stack)))]));
     }
-    else if (exn instanceof RestoreCont) {
+    else if (exn instanceof Restore) {
       // The current continuation has been discarded and we now restore the
       // continuation in exn.
       return runtime(() =>

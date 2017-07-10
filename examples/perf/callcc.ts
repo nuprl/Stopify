@@ -104,10 +104,32 @@ function f() {
 }
 
 function g() {
+  let target;
+  if (R.mode.kind === 'restoring') {
+    const frame = <R.KFrameRest>R.mode.stack[0];
+    assert(frame.kind === 'rest');
+    assert(frame.f === g);
+
+    let locals = frame.locals;
+
+    target = frame.index;
+    R.mode.stack.pop();
+  }
   return --a;
 }
 
 function h() {
+  let target;
+  if (R.mode.kind === 'restoring') {
+    const frame = <R.KFrameRest>R.mode.stack[0];
+    assert(frame.kind === 'rest');
+    assert(frame.f === h);
+
+    let locals = frame.locals;
+
+    target = frame.index;
+    R.mode.stack.pop();
+  }
   return ++b;
 }
 

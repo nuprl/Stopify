@@ -4,6 +4,10 @@ import * as callCC from './callCC';
 
 import { transform } from '../common/helpers';
 
+const runtime: string = `
+const R = require('${__dirname}/runtime');
+`;
+
 export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
   const plugins : any[] = [
     [callCC],
@@ -12,6 +16,7 @@ export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
 
   return `
 function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
+  ${runtime}
   ${transformed}
   $onDone();
 }

@@ -1,66 +1,70 @@
-import * as pyret from './pyret-runtime';
+import * as R from '../../src/callcc/runtime';
+
+const initialGas = 10000000;
+let GAS: number = 0;
+function decrGAS() { return 1; }
 
 const n = 100000000;
 let a = n;
 let b = 0;
 
-function loop(f: Function) {
+function loop(f: any) {
   let step = 0;
   let ans;
 
   let i = 0;
   try {
-    if (pyret.isActivationRecord(f)) {
-      var ar = f;
-      step = ar.step;
-      ans = ar.ans;
-      f = ar.args[0];
-      i = ar.vars[0];
+    if (R.mode.kind === 'restoring') {
+      const ar = <R.KFrameRest>R.mode.stack.pop();
+      step = ar.index;
+      ans = ar.locals[2];
+      f = ar.locals[0];
+      i = ar.locals[1];
     }
-    if (pyret.decrGAS() <= 0) {
-      throw pyret.makeCont();
+    if (decrGAS() <= 0) {
+      R.callCC(R.makeCont([]));
     }
     while (true) {
       switch (step) {
         case 0:
-          step = 1;
-          ans = f();
+          step = i++ < n ? 1 : 2;
           break;
         case 1:
-          i++;
-          step = i < n ? 0 : 2;
+          step = 0;
+          ans = f();
           break;
         case 2:
           return;
       }
     }
   } catch (exn) {
-    if (exn instanceof pyret.ContinuationExn) {
-      exn.stack.push(pyret.makeActivationRecord(
-        loop,
-        step,
-        [f],
-        [i]));
+    if (exn instanceof R.Capture) {
+      exn.stack.push({
+        kind: 'rest',
+        f: function () { return loop(f); },
+        locals: [f, i],
+        index: step,
+      });
     }
     throw exn;
   }
 }
 
-function f(frame?: pyret.ActivationRecord) {
+function f() {
   let step = 0;
   let ans;
 
   let s, t;
   try {
-    if (pyret.isActivationRecord(frame)) {
-      var ar = frame;
-      step = ar.step;
-      ans = ar.ans;
-      s = ar.vars[0];
-      t = ar.vars[1];
+    if (R.mode.kind === 'restoring') {
+      const ar = <R.KFrameRest>R.mode.stack.pop();
+      step = ar.index;
+      ans = ar.locals[2];
+      s = ar.locals[0];
+      t = ar.locals[1];
     }
-    if (pyret.decrGAS() <= 0) {
-      throw pyret.makeCont();
+    if (decrGAS() <= 0) {
+      R.callCC(R.makeCont([]));
     }
     while (true) {
       switch (step) {
@@ -83,29 +87,30 @@ function f(frame?: pyret.ActivationRecord) {
       }
     }
   } catch (exn) {
-    if (exn instanceof pyret.ContinuationExn) {
-      exn.stack.push(pyret.makeActivationRecord(
-        f,
-        step,
-        [],
-        [s, t]));
+    if (exn instanceof R.Capture) {
+      exn.stack.push({
+        kind: 'rest',
+        f: f,
+        index: step,
+        locals: [s, t, ans],
+      });
     }
     throw exn;
   }
 }
 
-function g(frame?: pyret.ActivationRecord) {
+function g() {
   let step = 0;
   let ans;
 
   try {
-    if (pyret.isActivationRecord(frame)) {
-      var ar = frame;
-      step = ar.step;
-      ans = ar.ans;
+    if (R.mode.kind === 'restoring') {
+      const ar = <R.KFrameRest>R.mode.stack.pop();
+      step = ar.index;
+      ans = ar.locals[0];
     }
-    if (pyret.decrGAS() <= 0) {
-      throw pyret.makeCont();
+    if (decrGAS() <= 0) {
+      R.callCC(R.makeCont([]));
     }
     while (true) {
       switch (step) {
@@ -114,29 +119,30 @@ function g(frame?: pyret.ActivationRecord) {
       }
     }
   } catch (exn) {
-    if ((exn instanceof pyret.ContinuationExn)) {
-      exn.stack.push(pyret.makeActivationRecord(
-        g,
-        step,
-        [],
-        []));
+    if ((exn instanceof R.Capture)) {
+      exn.stack.push({
+        kind: 'rest',
+        f: g,
+        index: step,
+        locals: [ans],
+      });
     }
     throw exn;
   }
 }
 
-function h(frame?: pyret.ActivationRecord) {
+function h() {
   let step = 0;
   let ans;
 
   try {
-    if (pyret.isActivationRecord(frame)) {
-      var ar = frame;
-      step = ar.step;
-      ans = ar.ans;
+    if (R.mode.kind === 'restoring') {
+      const ar = <R.KFrameRest>R.mode.stack.pop();
+      step = ar.index;
+      ans = ar.locals[0];
     }
-    if (pyret.decrGAS() <= 0) {
-      throw pyret.makeCont();
+    if (decrGAS() <= 0) {
+      R.callCC(R.makeCont([]));
     }
     while (true) {
       switch (step) {
@@ -145,19 +151,20 @@ function h(frame?: pyret.ActivationRecord) {
       }
     }
   } catch (exn) {
-    if (exn instanceof pyret.ContinuationExn) {
-      exn.stack.push(pyret.makeActivationRecord(
-        h,
-        step,
-        [],
-        []));
+    if ((exn instanceof R.Capture)) {
+      exn.stack.push({
+        kind: 'rest',
+        f: h,
+        index: step,
+        locals: [ans],
+      });
     }
     throw exn;
   }
 }
 
 console.log('Starting loop...');
-const beginVanilla = Date.now();
-pyret.run(pyret.makeActivationRecord(loop, 0, [f], [0]));
-const afterVanilla = (Date.now() - beginVanilla) / 1000;
-console.log('Loop:\t' + afterVanilla + 's');
+const begin = Date.now();
+R.runtime(function () { return loop(f); });
+const after = (Date.now() - begin) / 1000;
+console.log('Loop:\t' + after + 's');

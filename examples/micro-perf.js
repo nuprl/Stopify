@@ -155,10 +155,11 @@ function tst() {
   return true;
 }
 
-function runner(name, f, ...args) {
+function runner(name, f) {
   const begin = Date.now();
-  for (let i = 0; i < n; i++) {
-    f(...args);
+  let i = 0;
+  while (i++ < n) {
+    f();
   }
   a = n;
   b = 0;
@@ -166,8 +167,8 @@ function runner(name, f, ...args) {
   console.log(`${name} runtime:\t${after} s`);
 }
 
-runner(plain_f, 'Original');
-runner(fsm_f, 'Pyret-Style FSM');
-runner(if_guard_f, 'If-Guarded Statements');
-runner(fsm_try_f, 'Pyret-Style FSM w/ Try-Catch');
-runner(if_guard_try_f, 'If-Guarded Statements w/ Try-Catch');
+runner('Original', plain_f);
+runner('Pyret-Style FSM', fsm_f);
+runner('If-Guarded Statements', if_guard_f);
+runner('Pyret-Style FSM w/ Try-Catch', fsm_try_f);
+runner('If-Guarded Statements w/ Try-Catch', if_guard_try_f);

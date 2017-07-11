@@ -52,7 +52,7 @@ const func = function (path: NodePath<FunctionT>): void {
   body.body = [decls, ifRestoring, ...rest];
 };
 
-const callcc: Visitor = {
+const jumper: Visitor = {
   AssignmentExpression: function (path: NodePath<t.AssignmentExpression>): void {
     if (!t.isCallExpression(path.node.right)) {
       const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
@@ -113,5 +113,5 @@ const callcc: Visitor = {
 };
 
 module.exports = function () {
-  return { visitor: callcc };
+  return { visitor: jumper };
 }

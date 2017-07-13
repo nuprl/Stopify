@@ -81,18 +81,57 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
 }
 
 const jumper: Visitor = {
-  AssignmentExpression: function (path: NodePath<Labeled<t.AssignmentExpression>>): void {
+  AssignmentExpression:
+  function (path: NodePath<Labeled<t.AssignmentExpression>>): void {
     if (!t.isCallExpression(path.node.right)) {
       const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
       path.replaceWith(ifAssign);
       path.skip();
     } else {
-      const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node),
+      const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
+      const exn = t.identifier('exn');
+
+      const funParent = <NodePath<FunctionT>>path.findParent(p =>
+        p.isFunctionExpression() || p.isFunctionDeclaration());
+      const funId = funParent.node.id, funParams = funParent.node.params,
+        funBody = funParent.node.body;
+
+      const afterDecls = funBody.body.findIndex(e => !t.isVariableDeclaration(e));
+      const { pre, post } = split(funBody.body, afterDecls);
+
+      const locals: t.LVal[] = [];
+      pre.forEach(decls =>
+        (<t.VariableDeclaration>decls).declarations.forEach(x =>
+          locals.push(x.id)));
+
+      const ifAssign = t.ifStatement(isNormalMode,
+        t.expressionStatement(path.node),
         t.ifStatement(t.binaryExpression('===',
-          target, t.numericLiteral(getLabels(path.node)[0])),
+          target, applyLbl),
           t.expressionStatement(t.assignmentExpression(path.node.operator,
             path.node.left, stackFrameCall))));
-      path.replaceWith(ifAssign);
+      const tryAssign = t.tryStatement(t.blockStatement([ifAssign]),
+        t.catchClause(exn, t.blockStatement([
+          t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
+            t.blockStatement([
+              t.expressionStatement(t.callExpression(pushStack, [
+                t.objectExpression([
+                  t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+                  t.objectProperty(t.identifier('f'),
+                    t.functionExpression(undefined, [], t.blockStatement([
+                      t.returnStatement(t.callExpression(funId, <any>funParams)),
+                    ]))),
+                  t.objectProperty(t.identifier('locals'),
+                    t.arrayExpression(<any>locals)),
+                  t.objectProperty(t.identifier('index'), applyLbl),
+                ]),
+              ])),
+            ]),
+            t.throwStatement(exn)),
+        ])));
+      const tryApply = t.callExpression(t.arrowFunctionExpression([],
+        t.blockStatement([tryAssign])), []);
+      path.replaceWith(tryApply);
       path.skip();
     }
   },

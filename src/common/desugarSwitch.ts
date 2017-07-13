@@ -4,6 +4,7 @@
  * switch(e1) {
  *   case c1:
  *     s1 ...
+ *     break;
  *   case c2:
  *     s2 ...
  *   default:
@@ -12,12 +13,13 @@
  *
  * is transformed into:
  *
- * {
+  * _sw {
  *   let fallthrough = false;
  *   let test = e1;
  *   if (test === c1 || fallthroug) {
  *      s1 ...
  *      fallthrough = true;
+ *      break sw;
  *   }
  *   if (test === c1 || fallthrough) {
  *      s1 ...
@@ -28,12 +30,12 @@
  *    fallthrough = true;
  *   }
  *   s3 ...
- * } 
+ * }
 
  */
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {letExpression} from '../common/helpers';
+import {letExpression, Break, breakLbl} from '../common/helpers';
 
 function ifTest(e: t.Expression,
   discriminant: t.Identifier,
@@ -68,15 +70,40 @@ function desugarCases(cases: t.SwitchCase[],
   }
 
 const switchVisitor: Visitor = {
-  SwitchStatement: function (path: NodePath<t.SwitchStatement>): void {
-    const { discriminant, cases } = path.node;
-    const test = path.scope.generateUidIdentifier('test');
-    const fallthrough = path.scope.generateUidIdentifier('fallthrough');
-    let desugared : t.Statement[] = [];
-    desugared.unshift(...desugarCases(cases, test, fallthrough));
-    desugared.unshift(letExpression(fallthrough, t.booleanLiteral(false)));
-    desugared.unshift(letExpression(test, discriminant));
-    path.replaceWith(t.blockStatement(desugared));
+  BreakStatement: function (path: NodePath<Break<t.BreakStatement>>): void {
+    const label = path.node.label;
+    if (label === null) {
+      const labeledParent : NodePath<Break<t.Node>> =
+        path.findParent(p => p.isLoop() || p.isSwitchStatement());
+
+      if (labeledParent === null) {
+        return;
+      }
+
+      path.node.label = <t.Identifier>labeledParent.node.break_label;
+    }
+  },
+
+  SwitchStatement: {
+    enter(path: NodePath<Break<t.SwitchStatement>>): void {
+      if (t.isLabeledStatement(path.parent)) return;
+
+      const breakLabel = path.scope.generateUidIdentifier('switch');
+      path.node = breakLbl(path.node, breakLabel);
+      const labeledStatement = t.labeledStatement(breakLabel, path.node);
+      path.replaceWith(labeledStatement);
+    },
+
+    exit(path: NodePath<t.SwitchStatement>): void {
+      const { discriminant, cases } = path.node;
+      const test = path.scope.generateUidIdentifier('test');
+      const fallthrough = path.scope.generateUidIdentifier('fallthrough');
+      let desugared : t.Statement[] = [];
+      desugared.unshift(...desugarCases(cases, test, fallthrough));
+      desugared.unshift(letExpression(fallthrough, t.booleanLiteral(false)));
+      desugared.unshift(letExpression(test, discriminant));
+      path.replaceWith(t.blockStatement(desugared));
+    }
   }
 };
 

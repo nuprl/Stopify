@@ -63,8 +63,8 @@ function $tryCatch(e) {
 export const cpsStopifyPrint: stopifyPrint = (code: string, opts: Options) => {
   const plugins = [
     [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel,
-      desugarNew],
-    [desugarSwitch, addKArg, desugarWhileToFunc],
+      desugarSwitch, desugarNew],
+    [addKArg, desugarWhileToFunc],
     [makeBlockStmt],
     [cps, transformMarked, applyStop],
   ];

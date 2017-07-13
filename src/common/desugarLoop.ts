@@ -24,18 +24,19 @@ const loopVisitor : Visitor = {
     const keys = path.scope.generateUidIdentifier('keys');
     const idx = path.scope.generateUidIdentifier('idx');
     const prop = t.isVariableDeclaration(left) ?
-    left.declarations[0].id:
-    left;
+    t.variableDeclaration(left.kind, [
+      t.variableDeclarator(left.declarations[0].id, t.memberExpression(keys, idx, true))
+    ]) :
+    t.expressionStatement(t.assignmentExpression('=', left, t.memberExpression(keys, idx, true)));
 
     path.insertBefore(h.letExpression(it_obj, right));
     const newBody = h.flatBodyStatement([
       h.letExpression(keys, t.callExpression(t.memberExpression(t.identifier('Object'),
-        t.identifier('keys')), [it_obj])),
+        t.identifier('keys')), [it_obj]), 'const'),
       t.forStatement(h.letExpression(idx, t.numericLiteral(0)),
         t.binaryExpression('<', idx, t.memberExpression(keys, t.identifier('length'))),
         t.updateExpression('++', idx),
-        h.flatBodyStatement([h.letExpression(prop, t.memberExpression(keys, idx, true)),
-          body])),
+        h.flatBodyStatement([prop, body])),
       t.expressionStatement(t.assignmentExpression('=', it_obj,
         t.callExpression(t.memberExpression(t.identifier('Object'),
           t.identifier('getPrototypeOf')), [it_obj])))

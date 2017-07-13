@@ -15,6 +15,7 @@ function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
   };
 }
 
+const target = t.identifier('target');
 const runtime = t.identifier('R');
 const runtimeMode = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeModeKind = t.memberExpression(runtimeMode, t.identifier('kind'));
@@ -36,7 +37,6 @@ const func = function (path: NodePath<FunctionT>): void {
   const afterDecls = body.body.findIndex(e => !t.isVariableDeclaration(e));
   const { pre, post } = split(body.body, afterDecls);
 
-  const target = path.scope.generateUidIdentifier('target');
   const locals = path.scope.generateUidIdentifier('locals');
 
   const restoreLocals: t.ExpressionStatement[] = [];

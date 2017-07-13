@@ -32,8 +32,10 @@ const runtimeStack = t.memberExpression(runtimeMode, t.identifier('stack'));
 const topOfRuntimeStack = t.memberExpression(runtimeStack, t.numericLiteral(0), true);
 const popStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
+const pushStack = t.memberExpression(runtimeStack, t.identifier('push'));
 const normalMode = t.stringLiteral('normal');
 const restoringMode = t.stringLiteral('restoring');
+const captureExn = t.memberExpression(runtime, t.identifier('Capture'));
 
 const isNormalMode = t.binaryExpression('===', runtimeModeKind, normalMode);
 const isRestoringMode = t.binaryExpression('===', runtimeModeKind, restoringMode);

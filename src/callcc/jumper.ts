@@ -149,6 +149,11 @@ const jumper: Visitor = {
       path.replaceWith(ifReturn);
       path.skip();
     },
+  },
+
+  Program: function (path: NodePath<t.Program>): void {
+    path.node.body = [t.functionDeclaration(t.identifier('$program'),
+      [], t.blockStatement(path.node.body))];
   }
 };
 

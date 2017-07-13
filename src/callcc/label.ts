@@ -1,4 +1,4 @@
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import {NodePath, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 
 type Labeled<T> = T & {

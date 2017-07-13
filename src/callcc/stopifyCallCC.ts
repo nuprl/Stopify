@@ -7,6 +7,7 @@ import * as desugarSwitch from '../common/desugarSwitch';
 import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
+import * as nameExprs from './nameExprs';
 
 import { transform } from '../common/helpers';
 
@@ -16,7 +17,7 @@ const $__R = require('${__dirname}/runtime');
 
 export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
   const plugins : any[] = [
-    [desugarLoop, declVars, desugarSwitch],
+    [nameExprs, desugarLoop, declVars, desugarSwitch],
     [label],
     [jumper],
   ];
@@ -26,6 +27,7 @@ export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
 function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
   ${runtime}
   ${transformed}
+  $__R.runtime($program);
   $onDone();
 }
 `

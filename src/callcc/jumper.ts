@@ -4,9 +4,11 @@ import * as t from 'babel-types';
 import * as assert from 'assert';
 
 import { letExpression } from '../common/helpers';
-import * as R from './runtime';
 
 type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
+type Labeled<T> = T & {
+  labels?: number[];
+}
 
 function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
   return {
@@ -15,8 +17,15 @@ function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
   };
 }
 
+function getLabels(node: Labeled<t.Node>): number[] {
+  if (node === null) {
+    return [];
+  }
+  return node.labels === undefined ?  [] : node.labels;
+}
+
 const target = t.identifier('target');
-const runtime = t.identifier('R');
+const runtime = t.identifier('$__R');
 const runtimeMode = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeModeKind = t.memberExpression(runtimeMode, t.identifier('kind'));
 const runtimeStack = t.memberExpression(runtimeMode, t.identifier('stack'));
@@ -32,7 +41,7 @@ const isRestoringMode = t.binaryExpression('===', runtimeModeKind, restoringMode
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);
 
-const func = function (path: NodePath<FunctionT>): void {
+const func = function (path: NodePath<Labeled<FunctionT>>): void {
   const { body } = path.node;
   const afterDecls = body.body.findIndex(e => !t.isVariableDeclaration(e));
   const { pre, post } = split(body.body, afterDecls);
@@ -63,43 +72,61 @@ const func = function (path: NodePath<FunctionT>): void {
   ];
 };
 
+function labelsIncludeTarget(labels: number[]): t.Expression {
+  return labels.reduce((acc: t.Expression, lbl) =>
+    t.logicalExpression('||', t.binaryExpression('===',
+      target, t.numericLiteral(lbl)), acc), t.booleanLiteral(false));
+}
+
 const jumper: Visitor = {
-  AssignmentExpression: function (path: NodePath<t.AssignmentExpression>): void {
+  AssignmentExpression: function (path: NodePath<Labeled<t.AssignmentExpression>>): void {
     if (!t.isCallExpression(path.node.right)) {
       const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
+      path.replaceWith(ifAssign);
+      path.skip();
+    } else {
+      const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node),
+        t.ifStatement(t.binaryExpression('===',
+          target, t.numericLiteral(getLabels(path.node)[0])),
+          t.expressionStatement(t.assignmentExpression(path.node.operator,
+            path.node.left, stackFrameCall))));
       path.replaceWith(ifAssign);
       path.skip();
     }
   },
 
   FunctionExpression: {
-    exit(path: NodePath<t.FunctionExpression>): void {
+    exit(path: NodePath<Labeled<t.FunctionExpression>>): void {
       return func(path);
     }
   },
 
   FunctionDeclaration: {
-    exit(path: NodePath<t.FunctionDeclaration>): void {
+    exit(path: NodePath<Labeled<t.FunctionDeclaration>>): void {
       return func(path);
     }
   },
 
-  WhileStatement: function (path: NodePath<t.WhileStatement>): void {
+  WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
     path.node.test = t.logicalExpression('||',
-      t.logicalExpression('&&', isRestoringMode, t.booleanLiteral(true)),
-      t.logicalExpression('&&', isNormalMode, path.node.test));
+      t.logicalExpression('&&',
+        isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+      t.logicalExpression('&&',
+        isNormalMode, path.node.test));
   },
 
   IfStatement: {
-    exit(path: NodePath<t.IfStatement>): void {
+    exit(path: NodePath<Labeled<t.IfStatement>>): void {
       const { test, consequent, alternate } = path.node;
       const newAlt = alternate === null ? alternate :
       t.ifStatement(t.logicalExpression('||',
-        t.logicalExpression('&&', isRestoringMode, t.booleanLiteral(true)),
+        t.logicalExpression('&&',
+          isRestoringMode, labelsIncludeTarget(getLabels(consequent))),
         isNormalMode),
         alternate);
       const newIf = t.ifStatement(t.logicalExpression('||',
-        t.logicalExpression('&&', isRestoringMode, t.booleanLiteral(true)),
+        t.logicalExpression('&&',
+          isRestoringMode, labelsIncludeTarget(getLabels(newAlt))),
         t.logicalExpression('&&', isNormalMode, test)),
         consequent, newAlt);
       path.replaceWith(newIf);
@@ -108,14 +135,14 @@ const jumper: Visitor = {
   },
 
   ReturnStatement: {
-    exit(path: NodePath<t.ReturnStatement>): void {
+    exit(path: NodePath<Labeled<t.ReturnStatement>>): void {
       if (!t.isCallExpression(path.node.argument)) {
         return;
       }
 
       const ifReturn = t.ifStatement(isNormalMode,
         path.node, t.ifStatement(t.logicalExpression('&&',
-          isRestoringMode, t.booleanLiteral(true)),
+          isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
           t.returnStatement(stackFrameCall)));
       path.replaceWith(ifReturn);
       path.skip();

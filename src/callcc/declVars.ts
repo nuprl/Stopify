@@ -9,7 +9,7 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {tag, letExpression} from '../common/helpers';
 
-export type Lifted<T> = T & {
+type Lifted<T> = T & {
   lifted?: boolean
 }
 const lifted = <T>(t: T) => tag('lifted', t, true);

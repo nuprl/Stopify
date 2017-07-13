@@ -1,6 +1,8 @@
 import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface';
 
+import * as label from './label';
 import * as jumper from './jumper';
+import * as declVars from './declVars';
 
 import { transform } from '../common/helpers';
 
@@ -10,7 +12,8 @@ const R = require('${__dirname}/runtime');
 
 export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
   const plugins : any[] = [
-    [jumper],
+    [declVars],
+    [label, jumper],
   ];
   const transformed: string = transform(code, plugins, opts)[0];
 

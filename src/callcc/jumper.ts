@@ -8,6 +8,13 @@ import * as R from './runtime';
 
 type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
 
+function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
+  return {
+    pre: arr.slice(0, index),
+    post: arr.slice(index, arr.length),
+  };
+}
+
 const runtime = t.identifier('R');
 const runtimeMode = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeModeKind = t.memberExpression(runtimeMode, t.identifier('kind'));
@@ -26,30 +33,34 @@ const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
 
 const func = function (path: NodePath<FunctionT>): void {
   const { body } = path.node;
-  // First statement of function body is declaration of all locals.
-  assert(t.isVariableDeclaration(body.body[0]));
-  const [decls, ...rest] = body.body;
-  const declsPath = path.get('body').get('body.0');
+  const afterDecls = body.body.findIndex(e => !t.isVariableDeclaration(e));
+  const { pre, post } = split(body.body, afterDecls);
 
   const target = path.scope.generateUidIdentifier('target');
   const locals = path.scope.generateUidIdentifier('locals');
 
-  (<t.VariableDeclaration>decls).declarations.push(t.variableDeclarator(target));
-
+  const restoreLocals: t.ExpressionStatement[] = [];
+  // Flatten list of assignments restoring local variables
+  pre.forEach(decls =>
+    (<t.VariableDeclaration>decls).declarations.forEach((x, i) =>
+      restoreLocals.push(t.expressionStatement(t.assignmentExpression('=', x.id,
+        t.memberExpression(locals, t.numericLiteral(i), true))))));
   const restoreBlock = t.blockStatement([
     letExpression(locals,
       t.memberExpression(topOfRuntimeStack, t.identifier('locals')), 'const'),
-    // Flatten list of assignments restoring local variables
-    ...((<t.VariableDeclaration>decls).declarations.map((x, i) =>
-      t.expressionStatement(t.assignmentExpression('=', x.id,
-        t.memberExpression(locals, t.numericLiteral(i), true))))),
+    ...restoreLocals,
     t.expressionStatement(t.assignmentExpression('=', target,
       t.memberExpression(topOfRuntimeStack, t.identifier('index')))),
     t.expressionStatement(popStack)
   ]);
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
 
-  body.body = [decls, ifRestoring, ...rest];
+  body.body = [
+    letExpression(target, t.nullLiteral()),
+    ...pre,
+    ifRestoring,
+    ...post
+  ];
 };
 
 const jumper: Visitor = {

@@ -1,5 +1,7 @@
 import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface';
 
+import * as desugarLoop from '../common/desugarLoop';
+
 import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
@@ -12,7 +14,7 @@ const R = require('${__dirname}/runtime');
 
 export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
   const plugins : any[] = [
-    [declVars],
+    [desugarLoop, declVars],
     [label, jumper],
   ];
   const transformed: string = transform(code, plugins, opts)[0];

@@ -23,8 +23,7 @@ function treeLeafGen(tree) {
       console.log("At leaf", tree.val);
       _runtime.callCC(function(remainingLeaves) {
         console.log("Captured");
-        resume = function() { remaingLeaves(void 0); }
-        console.log(caller);
+        resume = function() { remainingLeaves(void 0); }
         caller(tree.val);
       });
     }

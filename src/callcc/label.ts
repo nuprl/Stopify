@@ -9,7 +9,7 @@ function getLabels(node: Labeled<t.Node>): number[] {
   if (node === null) {
     return [];
   }
-  return node.labels === undefined ?  [] : node.labels;
+  return node.labels === undefined ?  [] : [...node.labels];
 }
 
 function unionLabels(labelsResult: number[], node: Labeled<t.Node>): void {

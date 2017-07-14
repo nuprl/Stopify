@@ -165,12 +165,12 @@ const jumper: Visitor = {
       const newAlt = alternate === null ? alternate :
       t.ifStatement(t.logicalExpression('||',
         t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(getLabels(consequent))),
+          isRestoringMode, labelsIncludeTarget(getLabels(alternate))),
         isNormalMode),
         alternate);
       const newIf = t.ifStatement(t.logicalExpression('||',
         t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(getLabels(newAlt))),
+          isRestoringMode, labelsIncludeTarget(getLabels(consequent))),
         t.logicalExpression('&&', isNormalMode, test)),
         consequent, newAlt);
       path.replaceWith(newIf);

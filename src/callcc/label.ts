@@ -13,7 +13,7 @@ function getLabels(node: Labeled<t.Node>): number[] {
 }
 
 function unionLabels(labelsResult: number[], node: Labeled<t.Node>): void {
-  getLabels(node).filter(x => labelsResult.includes(x)).forEach(x =>
+  getLabels(node).filter(x => !labelsResult.includes(x)).forEach(x =>
     labelsResult.push(x));
 }
 

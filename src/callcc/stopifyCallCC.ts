@@ -20,8 +20,9 @@ const $__R = require('${__dirname}/runtime');
 
 export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
   const plugins : any[] = [
-    [makeBlocks, nameExprs, desugarLoop, desugarLabel, declVars, desugarSwitch, desugarLogical],
-    [anf],
+    [makeBlocks, nameExprs, desugarLoop, desugarLabel, desugarSwitch, desugarLogical],
+      [anf],
+      [declVars],
     [label],
     [jumper],
   ];

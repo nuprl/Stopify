@@ -114,7 +114,7 @@ const jumper: Visitor = {
         t.catchClause(exn, t.blockStatement([
           t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
             t.blockStatement([
-              t.expressionStatement(t.callExpression(pushStack, [
+                t.expressionStatement(t.callExpression(t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
                 t.objectExpression([
                   t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
                   t.objectProperty(t.identifier('f'),
@@ -125,7 +125,8 @@ const jumper: Visitor = {
                     t.arrayExpression(<any>locals)),
                   t.objectProperty(t.identifier('index'), applyLbl),
                 ]),
-              ])),
+                ])),
+                t.throwStatement(exn)
             ]),
             t.throwStatement(exn)),
         ])));

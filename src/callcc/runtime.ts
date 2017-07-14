@@ -78,7 +78,7 @@ export function restore(stack: KFrame[]): any {
     kind: 'restoring',
     stack: stack,
   };
-  stack[0].f();
+  stack[stack.length - 1].f();
 }
 
 export function runtime(body: () => any): any {

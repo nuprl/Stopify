@@ -29,7 +29,8 @@ const runtime = t.identifier('$__R');
 const runtimeMode = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeModeKind = t.memberExpression(runtimeMode, t.identifier('kind'));
 const runtimeStack = t.memberExpression(runtimeMode, t.identifier('stack'));
-const topOfRuntimeStack = t.memberExpression(runtimeStack, t.numericLiteral(0), true);
+const topOfRuntimeStack = t.memberExpression(runtimeStack,
+  t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
 const popStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
 const pushStack = t.memberExpression(runtimeStack, t.identifier('push'));
@@ -52,8 +53,8 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
 
   const restoreLocals: t.ExpressionStatement[] = [];
   // Flatten list of assignments restoring local variables
-  pre.forEach(decls =>
-    (<t.VariableDeclaration>decls).declarations.forEach((x, i) =>
+  pre.forEach((decls, i) =>
+    (<t.VariableDeclaration>decls).declarations.forEach((x, j) =>
       restoreLocals.push(t.expressionStatement(t.assignmentExpression('=', x.id,
         t.memberExpression(locals, t.numericLiteral(i), true))))));
   const restoreBlock = t.blockStatement([

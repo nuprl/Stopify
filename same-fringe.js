@@ -24,6 +24,7 @@ function treeLeafGen(tree) {
       _runtime.callCC(function(remainingLeaves) {
         console.log("Captured");
         resume = function() { remainingLeaves(void 0); }
+        console.log("Producing ", tree.val);
         caller(tree.val);
       });
     }
@@ -36,7 +37,7 @@ function treeLeafGen(tree) {
 
   return function() {
     console.log("Here 0");
-    _runtime.callCC(function(k) {
+    return _runtime.callCC(function(k) {
       console.log("Here 1");
 
       caller = k;
@@ -48,9 +49,9 @@ function treeLeafGen(tree) {
 let tree1 = node(leaf(1), leaf(2));
 let gen = treeLeafGen(tree1);
 console.log("Here") ;
-console.log(gen());
+console.log("AT", gen());
 console.log("Here 3");
-console.log(gen());
+console.log("BA", gen());
 
 /*
 (define tree1 (node (leaf 1) 

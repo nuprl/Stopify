@@ -3,11 +3,22 @@ import * as t from 'babel-types';
 import {letExpression} from '../common/helpers';
 
 export const visitor: Visitor = {
+
+    WhileStatement(path: NodePath<t.WhileStatement>) {
+        const test = path.node.test;
+        path.node.test = t.booleanLiteral(true);
+        path.node.body = t.blockStatement(
+            [t.ifStatement(test, path.node.body, t.breakStatement())]);
+
+    },
+    
     LogicalExpression(path: NodePath<t.LogicalExpression>) {
         const op = path.node.operator;
-        const r = path.scope.generateUidIdentifier(op === "&&" ? "and" : "or");
-        const lhs = path.scope.generateUidIdentifier("lhs");
         const stmt = path.getStatementParent();
+        const r = stmt.scope.generateUidIdentifier(op === "&&" ? "and" : "or");
+        const lhs = stmt.scope.generateUidIdentifier("lhs");
+
+
         stmt.insertBefore(letExpression(lhs, path.node.left));
         stmt.insertBefore(
             t.variableDeclaration("let", [t.variableDeclarator(r)]));

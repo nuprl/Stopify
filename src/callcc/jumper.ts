@@ -133,8 +133,9 @@ const jumper: Visitor = {
           ])));
         const tryApply = t.callExpression(t.arrowFunctionExpression([],
           t.blockStatement([tryAssign])), []);
-        path.replaceWith(tryApply);
-        path.skip();
+        t.isExpressionStatement(path.parent) ?
+          (path.getStatementParent().replaceWith(tryAssign), path.getStatementParent().skip()) :
+          path.replaceWith(tryApply), path.skip();
       }
     }
   },

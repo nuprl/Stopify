@@ -2,7 +2,6 @@ import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface';
 
 import * as desugarLoop from '../common/desugarLoop';
 import * as desugarLabel from '../common/desugarLabel';
-import * as desugarSequence from '../common/desugarSequence';
 import * as desugarSwitch from '../common/desugarSwitch';
 import * as desugarLogical from '../common/desugarLogical';
 import * as makeBlocks from '../common/makeBlockStmt';
@@ -21,8 +20,8 @@ const $__R = require('${__dirname}/runtime');
 
 export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
   const plugins : any[] = [
-    [makeBlocks, nameExprs, desugarLoop, desugarLabel, desugarSequence,
-      desugarSwitch, desugarLogical],
+    [makeBlocks, nameExprs, desugarLoop, desugarLabel, desugarSwitch,
+      desugarLogical],
     [anf],
     [declVars],
     [label],

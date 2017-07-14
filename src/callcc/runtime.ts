@@ -68,8 +68,7 @@ export function topK(f: () => any): KFrameTop {
 // that returns the supplied value.
 export function makeCont(stack: Stack) {
   return function (v: any) {
-    throw new Restore([...stack,
-      topK(() => v)]);
+    throw new Restore([topK(() => v), ...stack]);
   }
 }
 

@@ -24,7 +24,7 @@ function getLabels(node: Labeled<t.Node>): number[] {
   return node.labels === undefined ?  [] : node.labels;
 }
 
-const target = t.identifier('$_target');
+const target = t.identifier('target');
 const runtime = t.identifier('$__R');
 const runtimeMode = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeModeKind = t.memberExpression(runtimeMode, t.identifier('kind'));
@@ -144,12 +144,18 @@ const jumper: Visitor = {
 
   FunctionExpression: {
     exit(path: NodePath<Labeled<t.FunctionExpression>>): void {
+      if (path.scope.hasOwnBinding("target")) {
+        path.scope.rename("target");
+      }
       return func(path);
     }
   },
 
   FunctionDeclaration: {
     exit(path: NodePath<Labeled<t.FunctionDeclaration>>): void {
+      if (path.scope.hasOwnBinding("target")) {
+        path.scope.rename("target");
+      }
       return func(path);
     }
   },

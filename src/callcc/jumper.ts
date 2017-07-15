@@ -105,12 +105,15 @@ const jumper: Visitor = {
           (<t.VariableDeclaration>decls).declarations.forEach(x =>
             locals.push(x.id)));
 
-        const ifAssign = t.ifStatement(isNormalMode,
-          t.expressionStatement(path.node),
-          t.ifStatement(t.binaryExpression('===',
-            target, applyLbl),
-            t.expressionStatement(t.assignmentExpression(path.node.operator,
-              path.node.left, stackFrameCall))));
+        const ifAssign = t.ifStatement(
+          isNormalMode,
+          t.blockStatement([t.expressionStatement(path.node)]),
+          t.blockStatement(
+            [t.ifStatement(
+              t.binaryExpression('===', target, applyLbl),
+              t.blockStatement([t.expressionStatement(
+                t.assignmentExpression(path.node.operator,
+                                       path.node.left, stackFrameCall))]))]));
         const tryAssign = t.tryStatement(t.blockStatement([ifAssign]),
           t.catchClause(exn, t.blockStatement([
             t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
@@ -126,10 +129,9 @@ const jumper: Visitor = {
                       t.arrayExpression(<any>locals)),
                     t.objectProperty(t.identifier('index'), applyLbl),
                   ]),
-                ])),
-                t.throwStatement(exn)
-              ]),
-              t.throwStatement(exn)),
+                ]))
+              ])),
+            t.throwStatement(exn)
           ])));
         const tryApply = t.callExpression(t.arrowFunctionExpression([],
           t.blockStatement([tryAssign])), []);

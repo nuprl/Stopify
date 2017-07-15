@@ -24,7 +24,7 @@ function getLabels(node: Labeled<t.Node>): number[] {
   return node.labels === undefined ?  [] : node.labels;
 }
 
-const target = t.identifier('target');
+const target = t.identifier('$_target');
 const runtime = t.identifier('$__R');
 const runtimeMode = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeModeKind = t.memberExpression(runtimeMode, t.identifier('kind'));

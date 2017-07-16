@@ -7,7 +7,8 @@ function containsCall<T>(path: NodePath<T>) {
     let containsCall = false;
     const containsCallVisitor = {
         CallExpression(path: NodePath<t.LogicalExpression>) {
-            containsCall = true;
+          containsCall = true;
+          path.stop();
         }
     };
     path.traverse(containsCallVisitor);

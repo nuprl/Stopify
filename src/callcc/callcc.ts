@@ -22,7 +22,6 @@ import { NodePath, Visitor } from 'babel-traverse';
 import * as babylon from 'babylon';
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
-import * as fs from 'fs';
 
 function trans(path: NodePath<t.Node>, plugins: any[]) {
   const opts = { plugins: plugins, babelrc: false };

@@ -124,13 +124,14 @@ export type OptionsAST<T> = T & {
   options: Options
 }
 
-/**
- * Returns a tuple of string and a boolean. The string represents the
- * transformed program. The boolean is true iff the compiler runtime needs
- * to be included.
- */
-function transform(src: string, plugs: any[][], opts: Options):
-[string, boolean] {
+interface TransformResult {
+  code: string,
+  ast: t.Node,
+  usesEval: boolean
+}
+
+function transform(src: string, plugs: any[][],
+                   opts: Options): TransformResult {
   let { code, ast } = babel.transform(src,
     { babelrc: false, sourceMaps: 'inline' });
   if (ast === undefined) {
@@ -148,7 +149,11 @@ function transform(src: string, plugs: any[][], opts: Options):
     });
 
     if (code !== undefined && ast !== undefined) {
-      return [code, (<IsEval<t.Program>>(<t.File>ast).program).isEval]
+      return {
+        code: code,
+        ast: ast,
+        usesEval: (<IsEval<t.Program>>(<t.File>ast).program).isEval
+      };
     } else {
       throw new Error('Transform returned an empty string')
     }

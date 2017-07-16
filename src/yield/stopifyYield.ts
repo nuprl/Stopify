@@ -138,7 +138,7 @@ export const yieldStopifyPrint: stopifyPrint = (code, opts) => {
   // input JS.
   const hofCode = `${code}`
   const transformedData = transform(hofCode, plugins, opts);
-  const transformed: string = transformedData[0]
+  const transformed: string = transformedData.code;
 
   if(transformed.length < code.length) {
     throw new Error('Transformed code is smaller than original code')
@@ -147,7 +147,7 @@ export const yieldStopifyPrint: stopifyPrint = (code, opts) => {
   return `
   function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
     ${yieldRuntime}
-    ${transformedData[1] ? includeRuntime.toString() : ""}
+    ${transformedData.usesEval ? includeRuntime.toString() : ""}
     function *$runProg() {
       ${transformed}
     }
@@ -159,7 +159,7 @@ export const yieldStopifyPrint: stopifyPrint = (code, opts) => {
 // This function is used by the regenerator based transform.
 export function yieldStopifyRegen(code: string, opts: Options): [string, boolean] {
   const transformedData = transform(code, plugins, opts);
-  const transformed: string = transformedData[0]
+  const transformed: string = transformedData.code;
 
   return [`
   ${yieldRuntime}
@@ -167,13 +167,13 @@ export function yieldStopifyRegen(code: string, opts: Options): [string, boolean
     ${transformed}
   }
   $runYield($runProg(), $onDone)
-  `, transformedData[1]]
+  `, transformedData.usesEval]
 }
 
 export function yieldEvalString(
   code: string, opts: Options = eval_opts): string {
   const wrapped = `(function (){ ${code} })()`
-  const intermediate: string = transform(wrapped, plugins, opts)[0];
+  const intermediate: string = transform(wrapped, plugins, opts).code;
   // NOTE(rachit): This assumes that the output starts with `yield*`
   const transformed = intermediate.substring(6, intermediate.length)
 
@@ -184,7 +184,7 @@ export function yieldEvalFunction(
   name: string, body: string, args: string[],
   opts: Options = eval_opts): string {
     const wrapped = `function ${name}(${args.join(',')}) { ${body} }`
-    const intermediate: string = transform(wrapped, fplugins, opts)[0];
+    const intermediate: string = transform(wrapped, fplugins, opts).code;
 
     const transformed = `(function *() { return ${intermediate}})()`
     return transformed;

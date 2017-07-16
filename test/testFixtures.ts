@@ -24,7 +24,7 @@ export function transformTest(original: string, plugs: any[][]): string {
   let transformed = '';
 
   try {
-    transformed = transform(original, plugs, opts)[0]
+    transformed = transform(original, plugs, opts).code;
   } catch (e) {
     errorMessage = e.message;
   }

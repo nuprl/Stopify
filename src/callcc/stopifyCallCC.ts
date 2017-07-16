@@ -27,7 +27,7 @@ export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
     [label],
     [jumper],
   ];
-  const transformed: string = transform(code, plugins, opts)[0];
+  const transformed: string = transform(code, plugins, opts).code;
 
   return `
 function $stopifiedProg($isStop, $onStop, $onDone, $interval) {

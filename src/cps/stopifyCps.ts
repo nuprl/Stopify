@@ -68,7 +68,7 @@ export const cpsStopifyPrint: stopifyPrint = (code: string, opts: Options) => {
     [makeBlockStmt],
     [cps, transformMarked, applyStop],
   ];
-  const transformed: string = transform(code, plugins, opts)[0]
+  const transformed: string = transform(code, plugins, opts).code;
 
   if(transformed.length < code.length) {
     throw new Error('Transformed code is smaller than original code')

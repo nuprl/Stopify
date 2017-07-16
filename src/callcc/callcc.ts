@@ -29,7 +29,27 @@ function trans(path: NodePath<t.Node>, plugins: any[]) {
 }
 
 const visitor: Visitor = {
-  Program(path: NodePath<t.Program>) {
+  CallExpression(path: NodePath<t.CallExpression>) {
+    if (!(path.node.callee.type === "Identifier" &&
+          path.node.callee.name === "setTimeout")) {
+      return;
+    }
+    // Calls to setTimeout need to re-enter the runtime
+    path.node.arguments[0] =
+      t.functionExpression(
+        undefined, [],
+        t.blockStatement(
+          [t.expressionStatement(
+            t.callExpression(
+              t.memberExpression(t.identifier("$__R"), t.identifier("runtime")),
+              [path.node.arguments[0]]))]));
+  },
+  Program(path: NodePath<t.Program>, state) {
+    const finalStatement =
+      (state.opts.useReturn
+       ? (e: t.Expression) => t.returnStatement(e)
+       : (e: t.Expression) => t.expressionStatement(e));
+
     trans(path,
           [makeBlocks, nameExprs, desugarLoop, desugarLabel, desugarSwitch,
            desugarLogical]);
@@ -45,10 +65,22 @@ const visitor: Visitor = {
           [t.stringLiteral("stopify/built/src/callcc/runtime")]),
         "const"));
     path.node.body.push(
-      t.expressionStatement(
+      finalStatement(
         t.callExpression(
           t.memberExpression(t.identifier("$__R"), t.identifier("runtime")),
           [t.identifier("$program")])));
+
+    if (state.opts.useReturn) {
+      const isStop = t.identifier("$isStop");
+      const onStop = t.identifier("$onStop");
+      const onDone = t.identifier("$onDone");
+      const interval = t.identifier("$interval");
+
+      path.node.body = [t.expressionStatement(
+        t.functionExpression(
+          void 0,
+          [isStop, onStop, onDone, interval], t.blockStatement(path.node.body)))];
+    }
   }
 };
 

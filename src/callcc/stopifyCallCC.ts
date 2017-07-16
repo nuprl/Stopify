@@ -21,7 +21,11 @@ function appCallCC(receiver: t.Expression) {
 }
 
 function handleFunction(path: NodePath<t.Function>, body: t.BlockStatement) {
-  body.body.unshift(t.expressionStatement(appCallCC(top)));
+  body.body.unshift(t.expressionStatement(
+    t.callExpression(
+      t.memberExpression(t.identifier("$__R"), t.identifier("suspend")),
+      [interval, top])));
+
 }
 
 const bodyVisitor = {

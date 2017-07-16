@@ -154,3 +154,19 @@ export function handleNew(constr: any, ...args: any[]) {
   }
   return obj;
 }
+
+let countDown: number | undefined;
+
+export function suspend(interval: number, top: any) {
+  if (typeof interval !== "number") {
+    return;
+  }
+  if (countDown === undefined) {
+    countDown = interval;
+  }
+  if (--countDown === 0) {
+    console.log("Yielding");
+    countDown = interval;
+    return callCC(top);
+  }
+}

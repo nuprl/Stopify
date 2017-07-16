@@ -57,6 +57,12 @@ const label: Visitor = {
     }
   },
 
+  LabeledStatement: {
+    exit(path: NodePath<Labeled<t.LabeledStatement>>): void {
+      path.node.labels = getLabels(path.node.body);
+    }
+  },
+
   BlockStatement: {
     exit(path: NodePath<Labeled<t.BlockStatement>>): void {
       const { body } = path.node;

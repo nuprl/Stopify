@@ -11,6 +11,7 @@ import * as desugarLabel from '../common/desugarLabel';
 import * as desugarSwitch from '../common/desugarSwitch';
 import * as desugarLogical from '../common/desugarLogical';
 import * as makeBlocks from '../common/makeBlockStmt';
+import * as boxAssignables from './boxAssignables';
 import * as anf from '../common/anf';
 import * as label from './label';
 import * as jumper from './jumper';
@@ -51,8 +52,8 @@ const visitor: Visitor = {
        : (e: t.Expression) => t.expressionStatement(e));
 
     trans(path,
-          [makeBlocks, nameExprs, desugarLoop, desugarLabel, desugarSwitch,
-           desugarLogical]);
+          [boxAssignables, makeBlocks, nameExprs, desugarLoop, desugarLabel,
+           desugarSwitch, desugarLogical]);
     trans(path, [anf]);
     trans(path, [declVars]);
     trans(path, [label]);

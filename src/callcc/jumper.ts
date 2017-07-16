@@ -114,6 +114,23 @@ const jumper: Visitor = {
               t.blockStatement([t.expressionStatement(
                 t.assignmentExpression(path.node.operator,
                                        path.node.left, stackFrameCall))]))]));
+
+        const funParams0 = funParams.map(param => {
+          if (param.type === "RestElement") {
+            if (param.argument.type === "Identifier") {
+              return t.spreadElement(param.argument);
+            }
+            else {
+              throw "Unsupported";
+            }
+          }
+          else {
+            return param;
+          }
+        });
+
+        const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
+                                         [t.thisExpression(), ...(<any>funParams0)]);
         const tryAssign = t.tryStatement(t.blockStatement([ifAssign]),
           t.catchClause(exn, t.blockStatement([
             t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
@@ -121,10 +138,9 @@ const jumper: Visitor = {
                 t.expressionStatement(t.callExpression(t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
                   t.objectExpression([
                     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-                    t.objectProperty(t.identifier('f'),
-                      t.functionExpression(undefined, [], t.blockStatement([
-                        t.returnStatement(t.callExpression(funId, <any>funParams)),
-                      ]))),
+                    t.objectProperty(
+                      t.identifier('f'),
+                      t.arrowFunctionExpression([], reapply)),
                     t.objectProperty(t.identifier('locals'),
                       t.arrayExpression(<any>locals)),
                     t.objectProperty(t.identifier('index'), applyLbl),
@@ -133,6 +149,7 @@ const jumper: Visitor = {
               ])),
             t.throwStatement(exn)
           ])));
+
         const tryApply = t.callExpression(t.arrowFunctionExpression([],
           t.blockStatement([tryAssign])), []);
         t.isExpressionStatement(path.parent) ?

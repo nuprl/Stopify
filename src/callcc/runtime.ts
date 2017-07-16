@@ -109,3 +109,48 @@ export function runtime(body: () => any): any {
     }
   }
 }
+
+const knownBuiltIns = [Object, Function, Boolean, Symbol, Error, EvalError, RangeError, ReferenceError, SyntaxError, TypeError, URIError, Number, Math, Date, String, RegExp, Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, Map, Set, WeakMap, WeakSet];
+
+export function handleNew(constr: any, ...args: any[]) {
+  if (knownBuiltIns.includes(constr)) {
+    return new constr(...args);
+  }
+
+  let obj;
+  if (mode.kind === "normal") {
+
+    obj = Object.create(constr.prototype);
+  }
+  else {
+    const frame = mode.stack[mode.stack.length - 1];
+    if (frame.kind === "rest") {
+      [obj] = frame.locals;
+    }
+    else {
+      throw "bad";
+    }
+    mode.stack.pop();
+  }
+
+  try {
+    if (mode.kind === "normal") {
+      constr.apply(obj, args);
+    }
+    else {
+      mode.stack[mode.stack.length - 1].f.apply(obj, []);
+    }
+  }
+  catch (exn) {
+    if (exn instanceof Capture) {
+      exn.stack.push({
+        kind: "rest",
+        f: () => handleNew(constr, ...args) ,
+        locals: [obj],
+        index: 0
+      });
+    }
+    throw exn;
+  }
+  return obj;
+}

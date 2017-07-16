@@ -12,6 +12,7 @@ import * as desugarSwitch from '../common/desugarSwitch';
 import * as desugarLogical from '../common/desugarLogical';
 import * as makeBlocks from '../common/makeBlockStmt';
 import * as boxAssignables from './boxAssignables';
+import * as desugarNew from '../common/desugarNew';
 import * as anf from '../common/anf';
 import * as label from './label';
 import * as jumper from './jumper';
@@ -49,6 +50,22 @@ const visitor: Visitor = {
       (state.opts.useReturn
        ? (e: t.Expression) => t.returnStatement(e)
        : (e: t.Expression) => t.expressionStatement(e));
+
+    trans(path, [desugarNew]);
+
+    // This is a little hack to swap out the implementation of handleNew
+    // that the transform has baked in.  It only works with yield.
+    path.traverse({
+      FunctionExpression(path: NodePath<t.FunctionExpression>) {
+        if (path.node.id !== null && path.node.id.name === "$handleNew") {
+          path.replaceWith(t.memberExpression(t.identifier("$__R"), t.identifier("handleNew")));
+          path.stop();
+        }
+        else {
+          path.skip();
+        }
+      }
+    });
 
     trans(path,
           [boxAssignables, makeBlocks, nameExprs, desugarLoop, desugarLabel,

@@ -4,7 +4,7 @@
 
 if [[ $? -ne 0 ]]; then
   echo 'Typescipt compilation failed!'
-  exit 0
+  exit 1
 fi
 
 # Create the runtimes directory
@@ -13,4 +13,8 @@ mkdir -p runtimes
 # link the stopify executable
 if ! hash stopify; then
   npm link
+fi
+
+if [ ! -L node_modules/stopify ]; then
+    (cd node_modules; ln -s .. stopify)
 fi

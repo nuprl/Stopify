@@ -36,7 +36,8 @@
   "scripts": {
     "build": "./bin/build",
     "build-webpage": "npm run build && ./node_modules/.bin/browserify built/demo-webpage/paws-client/container.js -o demo-webpage/html/container.js && ./node_modules/.bin/browserify built/demo-webpage/paws-client/runner.js -o demo-webpage/html/runner.js && cp -R ./demo-webpage/html built/demo-webpage/",
-    "test": "./bin/test"
+    "test": "./bin/test",
+    "test:integration": "./bin/test -int"
   },
   "author": "Rachit Nigam",
   "license": "ISC",

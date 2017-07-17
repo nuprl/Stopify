@@ -9,22 +9,6 @@ describe('CPS stopping tests', function () {
   })
 })
 
-describe('Regen stopping tests', function () {
-  f.stopTests.forEach(function(filename: string) {
-    it(filename, function () {
-      f.stopProgramTest(filename, 'regen');
-    })
-  })
-})
-
-describe('Trampoline CPS stopping tests', function () {
-  f.stopTests.forEach(function(filename: string) {
-    it(filename, function () {
-      f.stopProgramTest(filename, 'tcps')
-    })
-  })
-})
-
 describe('Yield stopping tests', function () {
   f.stopTests.forEach(function(filename: string) {
     it(filename, function () {

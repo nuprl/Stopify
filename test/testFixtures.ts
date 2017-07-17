@@ -8,12 +8,9 @@ const assert = require('assert');
 const tmp = require('tmp');
 const glob = require('glob');
 
-const simpleTests = glob.sync('test/should-run/*.js', {})
-const sourceLanguage = glob.sync('test/should-run/source-language/*.js', {})
+export const unitTests = glob.sync('test/should-run/*.js', {})
+export const intTests = glob.sync('test/should-run/source-language/*.js', {})
 export const stopTests = glob.sync('test/should-stop/*.js', {})
-
-export const testFiles = simpleTests.concat(sourceLanguage)
-export const skipped = glob.sync('test/should-run/skip/*.js')
 
 const opts = {
   debug: false, optimize: false, tail_calls: false, no_eval: false

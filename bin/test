@@ -9,5 +9,18 @@ trap cleanup EXIT
 
 npm run build
 
-./node_modules/.bin/mocha ./built/test/0-should-run-no-plug.js && \
-  ./node_modules/.bin/mocha ./built/test/should-*-tests.js
+function unit_test() {
+  ./node_modules/.bin/mocha ./built/test/0-should-run-no-plug.js && \
+    ./node_modules/.bin/mocha ./built/test/should-run-tests.js && \
+    ./node_modules/.bin/mocha ./built/test/should-stop-tests.js
+}
+
+function int_test() {
+  ./node_modules/.bin/mocha ./built/test/should-run-integration-tests.js
+}
+
+unit_test
+
+if [ "$1" == '-int' ]; then
+  int_test
+fi

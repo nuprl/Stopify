@@ -20,27 +20,23 @@ function appCallCC(receiver: t.Expression) {
     [receiver]);
 }
 
-function handleFunction(path: NodePath<t.Function>, body: t.BlockStatement) {
+function handleBlock(body: t.BlockStatement) {
   body.body.unshift(t.expressionStatement(
     t.callExpression(
       t.memberExpression(t.identifier("$__R"), t.identifier("suspend")),
       [interval, top])));
-
 }
 
 const bodyVisitor = {
   FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
-    handleFunction(path, path.node.body);
+    handleBlock(path.node.body);
   },
   FunctionExpression(path: NodePath<t.FunctionExpression>) {
-    handleFunction(path, path.node.body);
+    handleBlock(path.node.body);
   },
   WhileStatement(path: NodePath<t.WhileStatement>) {
-    path.node.body =
-      flatBodyStatement([t.expressionStatement(appCallCC(top)),
-                         path.node.body]);
-  }
-}
+    handleBlock(flatBodyStatement([path.node.body]));
+  },
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>) {

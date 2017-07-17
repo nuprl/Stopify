@@ -67,12 +67,13 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
   ]);
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
 
-  body.body = [
+  path.get('body').replaceWith(t.blockStatement([
     letExpression(target, t.nullLiteral()),
     ...pre,
     ifRestoring,
     ...post
-  ];
+  ]));
+  path.skip();
 };
 
 function labelsIncludeTarget(labels: number[]): t.Expression {
@@ -113,10 +114,10 @@ const jumper: Visitor = {
               t.binaryExpression('===', target, applyLbl),
               t.blockStatement([t.expressionStatement(
                 t.assignmentExpression(path.node.operator,
-                                       path.node.left, stackFrameCall))]))]));
+                  path.node.left, stackFrameCall))]))]));
 
         const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
-                                         [t.thisExpression(), ...(<any>funParams)]);
+          [t.thisExpression(), ...(<any>funParams)]);
         const tryAssign = t.tryStatement(t.blockStatement([ifAssign]),
           t.catchClause(exn, t.blockStatement([
             t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
@@ -138,9 +139,9 @@ const jumper: Visitor = {
 
         const tryApply = t.callExpression(t.arrowFunctionExpression([],
           t.blockStatement([tryAssign])), []);
-        t.isExpressionStatement(path.parent) ?
+        path.getStatementParent().isExpressionStatement() ?
           (path.getStatementParent().replaceWith(tryAssign), path.getStatementParent().skip()) :
-          path.replaceWith(tryApply), path.skip();
+          (path.replaceWith(tryApply), path.skip());
       }
     }
   },
@@ -190,19 +191,17 @@ const jumper: Visitor = {
     },
   },
 
-  ReturnStatement: {
-    exit(path: NodePath<Labeled<t.ReturnStatement>>): void {
-      if (!t.isCallExpression(path.node.argument)) {
-        return;
-      }
+  ReturnStatement: function(path: NodePath<Labeled<t.ReturnStatement>>): void {
+    if (!t.isCallExpression(path.node.argument)) {
+      return;
+    }
 
-      const ifReturn = t.ifStatement(isNormalMode,
-        path.node, t.ifStatement(t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
-          t.returnStatement(stackFrameCall)));
-      path.replaceWith(ifReturn);
-      path.skip();
-    },
+    const ifReturn = t.ifStatement(isNormalMode,
+      path.node, t.ifStatement(t.logicalExpression('&&',
+        isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+        t.returnStatement(stackFrameCall)));
+    path.replaceWith(ifReturn);
+    path.skip();
   },
 
   Program: function (path: NodePath<t.Program>): void {

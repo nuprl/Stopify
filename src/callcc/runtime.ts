@@ -158,7 +158,7 @@ export function handleNew(constr: any, ...args: any[]) {
 let countDown: number | undefined;
 
 export function suspend(interval: number, top: any) {
-  if (typeof interval !== "number") {
+  if (Number.isNaN(interval)) {
     return;
   }
   if (countDown === undefined) {

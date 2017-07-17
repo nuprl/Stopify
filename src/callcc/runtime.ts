@@ -165,7 +165,6 @@ export function suspend(interval: number, top: any) {
     countDown = interval;
   }
   if (--countDown === 0) {
-    console.log("Yielding");
     countDown = interval;
     return callCC(top);
   }

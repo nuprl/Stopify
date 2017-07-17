@@ -115,22 +115,8 @@ const jumper: Visitor = {
                 t.assignmentExpression(path.node.operator,
                                        path.node.left, stackFrameCall))]))]));
 
-        const funParams0 = funParams.map(param => {
-          if (param.type === "RestElement") {
-            if (param.argument.type === "Identifier") {
-              return t.spreadElement(param.argument);
-            }
-            else {
-              throw "Unsupported";
-            }
-          }
-          else {
-            return param;
-          }
-        });
-
         const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
-                                         [t.thisExpression(), ...(<any>funParams0)]);
+                                         [t.thisExpression(), ...(<any>funParams)]);
         const tryAssign = t.tryStatement(t.blockStatement([ifAssign]),
           t.catchClause(exn, t.blockStatement([
             t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),

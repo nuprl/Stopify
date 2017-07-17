@@ -93,10 +93,8 @@ export function runtime(body: () => any): any {
       // a top-of-stack frame that actually restores the saved continuation. We
       // need to apply the function passed to callCC to the stack here, because
       // this is the only point where the whole stack is ready.
-      return runtime(() => {
-        return restore([
-          topK(() => exn.f(makeCont(exn.stack))), ...exn.stack])
-        });
+      return runtime(() =>
+        restore([topK(() => exn.f(makeCont(exn.stack))), ...exn.stack]));
     }
     else if (exn instanceof Restore) {
       // The current continuation has been discarded and we now restore the

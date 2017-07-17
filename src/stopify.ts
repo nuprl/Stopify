@@ -15,6 +15,7 @@ import {
 import {
   tcpsStopify, tcpsStopifyPrint
 } from './cps/stopifyTCps'
+import { stopifyPrint } from './interfaces/stopifyInterface'
 import { StopWrapper, Options } from './common/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -38,10 +39,11 @@ const argv = require('minimist')(process.argv.slice(2));
 if (argv.h || argv.help) {
   showUsage();
 }
-let code;
-if (argv.s) {
-  code = argv.s;
-} else if (argv.file || argv.i) {
+let code: string = "";
+if (argv.h || argv.help) {
+  showUsage()
+}
+if (argv.i) {
   const filename = argv.file || argv.i
   code = fs.readFileSync(
     path.join(process.cwd(), filename), 'utf-8').toString()
@@ -49,8 +51,11 @@ if (argv.s) {
   console.log('No input')
   showUsage();
 }
+if (!code) {
+  throw new Error('Failed to read file')
+}
 
-const transform = argv.transform || argv.t
+const transform: string = argv.transform || argv.t
 const output = argv.output || argv.o || 'print';
 
 if (transform === undefined) {
@@ -74,76 +79,45 @@ function timeInSecs(time: number[]): string {
   return `${time[0] + time[1] * 1e-9}`
 }
 
+let stopifyFunc: stopifyPrint;
+switch(transform) {
+  case 'yield':
+    stopifyFunc = yieldStopifyPrint
+    break;
+  case 'regen':
+    stopifyFunc = regenStopifyPrint
+    break;
+  case 'cps':
+    stopifyFunc = cpsStopifyPrint
+    break;
+  case 'tcps':
+    stopifyFunc = tcpsStopifyPrint
+    break;
+  case 'callcc':
+    stopifyFunc = callCCStopifyPrint
+    break;
+  default:
+    throw new Error(`Unknown transform: ${transform}`)
+}
+const stime = Date.now()
+const prog = stopifyFunc(code, opts)
+const ctime = (Date.now() - stime)
+const runnableProg =
+  `const s = Date.now();
+      (${prog}).call(this, _ => false, () => 0, () => {
+        const e = Date.now();
+        console.log("Runtime: " + (e - s) + "ms");
+      }, //|INTERVAL|
+      ${interval})`
+console.log(`// Compilation time: ${ctime}ms`)
+
 switch(output) {
   case 'print': {
-    let stopifyFunc;
-    switch(transform) {
-      case 'yield':
-        stopifyFunc = yieldStopifyPrint
-        break;
-      case 'regen':
-        stopifyFunc = regenStopifyPrint
-        break;
-      case 'cps':
-        stopifyFunc = cpsStopifyPrint
-        break;
-      case 'tcps':
-        stopifyFunc = tcpsStopifyPrint
-        break;
-      case 'callcc':
-        stopifyFunc = callCCStopifyPrint
-        break;
-      default:
-        throw new Error(`Unknown transform: ${transform}`)
-    }
-    let time = "";
-    let prog;
-    const stime = process.hrtime()
-    prog = stopifyFunc(code, opts)
-    time = timeInSecs(process.hrtime(stime))
-    const runnableProg =
-      `(${prog}).call(this, _ => false, () => 0, x => x, //|INTERVAL|
-      ${interval})`
     console.log(runnableProg)
-    console.log(`// Compilation time: ${time}s`)
     break;
   }
   case 'eval': {
-    let stopifyFunc;
-    switch(transform) {
-      case 'yield':
-        stopifyFunc = yieldStopify;
-        break;
-      case 'regen':
-        stopifyFunc = regenStopify;
-        break;
-      case 'cps':
-        stopifyFunc = cpsStopify;
-        break;
-      case 'tcps':
-        stopifyFunc = tcpsStopify;
-        break;
-      case 'callcc':
-        stopifyFunc = callCCStopify;
-        break;
-      default:
-        throw new Error(`Unknown transform: ${transform}`)
-    }
-    let ctime = "";
-    let prog;
-    const stime = process.hrtime()
-    prog = stopifyFunc(code, opts)
-    ctime = timeInSecs(process.hrtime(stime))
-    console.log(`// Compilation time: ${ctime}s`)
-    const sw: StopWrapper = new StopWrapper();
-    let rtime = "";
-    if (process) {
-      const stime = process.hrtime()
-      prog(sw.isStop.bind(sw), sw.onStop.bind(sw), () => {
-        const rtime = process.hrtime(stime)
-        console.log(`// Runtime : ${timeInSecs(rtime)}s`)
-      }, interval)
-    }
+    eval(runnableProg)
     break;
   }
   case 'stop': {

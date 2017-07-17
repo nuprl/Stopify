@@ -27,40 +27,42 @@ function handleBlock(body: t.BlockStatement) {
       [interval, top])));
 }
 
-const bodyVisitor = {
+const visitor: Visitor = {
   FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
     handleBlock(path.node.body);
   },
+
   FunctionExpression(path: NodePath<t.FunctionExpression>) {
     handleBlock(path.node.body);
   },
+
   WhileStatement(path: NodePath<t.WhileStatement>) {
     handleBlock(flatBodyStatement([path.node.body]));
   },
 
-const visitor: Visitor = {
-  Program(path: NodePath<t.Program>) {
-    path.node.body.push(t.returnStatement(t.stringLiteral("done")));
-    const body = t.blockStatement(path.node.body);
-    path.traverse(bodyVisitor);
-    path.node.body = [
-      letExpression(
-        result, appCallCC(t.functionExpression(undefined, [top],
-                                               body))),
-      t.ifStatement(
-        t.binaryExpression("===", result, t.stringLiteral("done")),
-        t.blockStatement([t.returnStatement(t.callExpression(onDone, []))]),
+  Program: {
+    exit(path: NodePath<t.Program>) {
+      path.node.body.push(t.returnStatement(t.stringLiteral("done")));
+      const body = t.blockStatement(path.node.body);
+      path.node.body = [
+        letExpression(
+          result, appCallCC(t.functionExpression(undefined, [top],
+            body))),
         t.ifStatement(
-          t.callExpression(isStop, []),
-          t.blockStatement([t.returnStatement(t.callExpression(onStop, []))]),
-          t.returnStatement(
-            t.callExpression(
-              t.identifier("setTimeout"),
-              [t.functionExpression(
-                undefined,
-                [],
-                t.blockStatement([t.returnStatement(t.callExpression(result, []))])), t.numericLiteral(0)]))))
-    ];
+          t.binaryExpression("===", result, t.stringLiteral("done")),
+          t.blockStatement([t.returnStatement(t.callExpression(onDone, []))]),
+          t.ifStatement(
+            t.callExpression(isStop, []),
+            t.blockStatement([t.returnStatement(t.callExpression(onStop, []))]),
+            t.returnStatement(
+              t.callExpression(
+                t.identifier("setTimeout"),
+                [t.functionExpression(
+                  undefined,
+                  [],
+                  t.blockStatement([t.returnStatement(t.callExpression(result, []))])), t.numericLiteral(0)]))))
+      ];
+    }
   },
 
 }

@@ -2,9 +2,9 @@ const assert = require('assert');
 let a = 0;
 try {
   try {
-    foo + 1;
+    throw "x";
   } catch (e) {
-    a = a + b;
+    throw "y";
   }
 } catch (e) {
   a = 2;

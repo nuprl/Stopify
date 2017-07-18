@@ -6,6 +6,8 @@ import * as t from 'babel-types';
 import { transform, letExpression, flatBodyStatement } from '../common/helpers';
 import * as fs from 'fs';
 import * as babylon from 'babylon';
+import cleanupGlobals from '../common/cleanupGlobals';
+import hygiene from '../common/hygiene';
 
 const top = t.identifier("$top");
 const isStop = t.identifier("$isStop");
@@ -13,6 +15,21 @@ const onStop = t.identifier("$onStop");
 const onDone = t.identifier("$onDone");
 const interval = t.identifier("$interval");
 const result = t.identifier("$result");
+
+const allowed = [
+  "Object",
+  "require",
+  "console"
+];
+
+const reserved = [
+  "$top",
+  "$isStop",
+  "$onStop",
+  "$onDone",
+  "$interval",
+  "$result"
+];
 
 function appCallCC(receiver: t.Expression) {
   return t.callExpression(
@@ -83,9 +100,13 @@ function plugin() {
 
 export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
   const r = transform(
-    code,
-    [[plugin],
-     [[callcc, { useReturn: true }]]],
+    code, [
+      [[cleanupGlobals, { allowed }],
+       [hygiene, { reserved }]
+      ],
+     [plugin],
+     [[callcc, { useReturn: true }]]
+    ],
     { debug: false, optimize: false, tail_calls: false, no_eval: false });
   return r.code.slice(0, -1); // TODO(arjun): hack to deal with string/visitor mismatch
 }

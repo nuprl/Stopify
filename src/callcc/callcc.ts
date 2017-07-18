@@ -18,6 +18,8 @@ import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
+import hygiene from '../common/hygiene';
+
 import { transform, letExpression } from '../common/helpers';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as babylon from 'babylon';
@@ -68,7 +70,8 @@ const visitor: Visitor = {
     });
 
     trans(path,
-      [makeBlocks, nameExprs, desugarLoop, desugarLabel,
+          [[hygiene, { reserved: ["target"] }],
+           makeBlocks, nameExprs, desugarLoop, desugarLabel,
         desugarSwitch, desugarLogical]);
     trans(path, [anf]);
     trans(path, [declVars, boxAssignables]);

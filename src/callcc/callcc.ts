@@ -96,7 +96,8 @@ const visitor: Visitor = {
       path.node.body = [t.expressionStatement(
         t.functionExpression(
           void 0,
-          [isStop, onStop, onDone, interval], t.blockStatement(path.node.body)))];
+          [isStop, onStop, onDone, interval], t.blockStatement(path.node.body, path.node.directives)))];
+      path.node.directives = undefined;
     }
   }
 };

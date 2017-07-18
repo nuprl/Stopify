@@ -112,6 +112,11 @@ const runnableProg =
 console.log(`// Compilation time: ${ctime}ms`)
 
 switch(output) {
+  case 'html': {
+    const html = `<html><body><script>${runnableProg}</script></body></html>`
+    console.log(html)
+    break;
+  }
   case 'print': {
     console.log(runnableProg)
     break;

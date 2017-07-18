@@ -69,6 +69,12 @@ const visitor: Visitor = {
 
     exit(path: NodePath<t.FunctionDeclaration>): void {
       this.vars = this.oldVars;
+      const f = path.node.id;
+      if (this.vars.includes(f.name)) {
+        const init = t.assignmentExpression("=", f, t.arrayExpression([f]));
+        (<any>init).__boxVarsInit__ = true;
+        path.insertAfter(t.expressionStatement(init));
+      }
     },
   },
 

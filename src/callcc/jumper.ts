@@ -189,18 +189,12 @@ const jumper: Visitor = {
 
   FunctionExpression: {
     exit(path: NodePath<Labeled<t.FunctionExpression>>): void {
-      if (path.scope.hasOwnBinding("target")) {
-        path.scope.rename("target");
-      }
       return func(path);
     }
   },
 
   FunctionDeclaration: {
     exit(path: NodePath<Labeled<t.FunctionDeclaration>>): void {
-      if (path.scope.hasOwnBinding("target")) {
-        path.scope.rename("target");
-      }
       return func(path);
     }
   },

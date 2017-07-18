@@ -5,7 +5,8 @@
   "main": "index.js",
   "devDependencies": {
     "@types/babel-core": "^6.7.14",
-    "@types/babel-types": "^6.7.14",
+    "@types/babel-types": "^6.7.16",
+    "@types/babel-traverse": "^6.7.17",
     "@types/babylon": "^6.16.0",
     "@types/mocha": "^2.2.41",
     "@types/node": "^6.0.69",

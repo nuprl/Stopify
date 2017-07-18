@@ -37,6 +37,7 @@ const pushStack = t.memberExpression(runtimeStack, t.identifier('push'));
 const normalMode = t.stringLiteral('normal');
 const restoringMode = t.stringLiteral('restoring');
 const captureExn = t.memberExpression(runtime, t.identifier('Capture'));
+const restoreExn = t.memberExpression(runtime, t.identifier('Restore'));
 
 const isNormalMode = t.binaryExpression('===', runtimeModeKind, normalMode);
 const isRestoringMode = t.binaryExpression('===', runtimeModeKind, restoringMode);
@@ -215,6 +216,18 @@ const jumper: Visitor = {
         t.throwStatement(stackFrameCall)));
     path.replaceWith(ifThrow);
     path.skip();
+  },
+
+  CatchClause: {
+    exit(path: NodePath<t.CatchClause>): void {
+      const { param, body } = path.node;
+      body.body.unshift(t.ifStatement(
+        t.logicalExpression('||',
+          t.binaryExpression('instanceof', param, captureExn),
+          t.binaryExpression('instanceof', param, restoreExn)),
+        t.throwStatement(param)));
+      path.skip();
+    }
   },
 
   Program: function (path: NodePath<t.Program>): void {

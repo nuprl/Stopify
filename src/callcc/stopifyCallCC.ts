@@ -37,7 +37,14 @@ const visitor: Visitor = {
   },
 
   WhileStatement(path: NodePath<t.WhileStatement>) {
-    handleBlock(flatBodyStatement([path.node.body]));
+    if (path.node.body.type === "BlockStatement") {
+      return handleBlock(path.node.body);
+    }
+    else {
+      const body = t.blockStatement([path.node.body]);
+      path.node.body = body;
+      return handleBlock(body);
+    }
   },
 
   Program: {

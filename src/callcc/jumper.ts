@@ -83,6 +83,63 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
       target, t.numericLiteral(lbl)), acc), t.booleanLiteral(false));
 }
 
+function addCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
+  const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
+  const exn = t.identifier('exn');
+
+  const funParent = <NodePath<FunctionT>>path.findParent(p =>
+    p.isFunctionExpression() || p.isFunctionDeclaration());
+  const funId = funParent.node.id, funParams = funParent.node.params,
+  funBody = funParent.node.body;
+
+  const afterDecls = funBody.body.findIndex(e => !t.isVariableDeclaration(e));
+  const { pre, post } = split(funBody.body, afterDecls);
+
+  const locals: t.LVal[] = [];
+  pre.forEach(decls =>
+    (<t.VariableDeclaration>decls).declarations.forEach(x =>
+      locals.push(x.id)));
+
+  const nodeStmt = t.isStatement(path.node) ?
+  path.node :
+  t.expressionStatement(path.node);
+
+  const ifStmt = t.ifStatement(
+    isNormalMode,
+    t.blockStatement([nodeStmt]),
+    t.blockStatement(
+      [t.ifStatement(
+        t.binaryExpression('===', target, applyLbl),
+        t.blockStatement([restoreCall()]))]));
+
+  const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
+    [t.thisExpression(), ...(<any>funParams)]);
+  const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
+    t.catchClause(exn, t.blockStatement([
+      t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
+        t.blockStatement([
+          t.expressionStatement(t.callExpression(t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
+            t.objectExpression([
+              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+              t.objectProperty(
+                t.identifier('f'),
+                t.arrowFunctionExpression([], reapply)),
+              t.objectProperty(t.identifier('locals'),
+                t.arrayExpression(<any>locals)),
+              t.objectProperty(t.identifier('index'), applyLbl),
+            ]),
+          ]))
+        ])),
+      t.throwStatement(exn)
+    ])));
+
+  const tryApply = t.callExpression(t.arrowFunctionExpression([],
+    t.blockStatement([tryStmt])), []);
+  path.getStatementParent().isExpressionStatement() ?
+  (path.getStatementParent().replaceWith(tryStmt), path.getStatementParent().skip()) :
+  (path.replaceWith(tryApply), path.skip());
+}
+
 const jumper: Visitor = {
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>): void {
@@ -91,58 +148,10 @@ const jumper: Visitor = {
         path.replaceWith(ifAssign);
         path.skip();
       } else {
-        const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-        const exn = t.identifier('exn');
-
-        const funParent = <NodePath<FunctionT>>path.findParent(p =>
-          p.isFunctionExpression() || p.isFunctionDeclaration());
-        const funId = funParent.node.id, funParams = funParent.node.params,
-          funBody = funParent.node.body;
-
-        const afterDecls = funBody.body.findIndex(e => !t.isVariableDeclaration(e));
-        const { pre, post } = split(funBody.body, afterDecls);
-
-        const locals: t.LVal[] = [];
-        pre.forEach(decls =>
-          (<t.VariableDeclaration>decls).declarations.forEach(x =>
-            locals.push(x.id)));
-
-        const ifAssign = t.ifStatement(
-          isNormalMode,
-          t.blockStatement([t.expressionStatement(path.node)]),
-          t.blockStatement(
-            [t.ifStatement(
-              t.binaryExpression('===', target, applyLbl),
-              t.blockStatement([t.expressionStatement(
-                t.assignmentExpression(path.node.operator,
-                  path.node.left, stackFrameCall))]))]));
-
-        const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
-          [t.thisExpression(), ...(<any>funParams)]);
-        const tryAssign = t.tryStatement(t.blockStatement([ifAssign]),
-          t.catchClause(exn, t.blockStatement([
-            t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
-              t.blockStatement([
-                t.expressionStatement(t.callExpression(t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
-                  t.objectExpression([
-                    t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-                    t.objectProperty(
-                      t.identifier('f'),
-                      t.arrowFunctionExpression([], reapply)),
-                    t.objectProperty(t.identifier('locals'),
-                      t.arrayExpression(<any>locals)),
-                    t.objectProperty(t.identifier('index'), applyLbl),
-                  ]),
-                ]))
-              ])),
-            t.throwStatement(exn)
-          ])));
-
-        const tryApply = t.callExpression(t.arrowFunctionExpression([],
-          t.blockStatement([tryAssign])), []);
-        path.getStatementParent().isExpressionStatement() ?
-          (path.getStatementParent().replaceWith(tryAssign), path.getStatementParent().skip()) :
-          (path.replaceWith(tryApply), path.skip());
+        addCaptureLogic(path, () =>
+          t.expressionStatement(
+            t.assignmentExpression(path.node.operator,
+              path.node.left, stackFrameCall)));
       }
     }
   },

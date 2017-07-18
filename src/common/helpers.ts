@@ -87,6 +87,7 @@ function letExpression(name: t.LVal,
 /**
  * Use this when the contents of the body need to be flattened.
  * @param body An array of statements
+ * @returns a new block (does not update the argument)
  */
 function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   const newBody : t.Statement[] = [];

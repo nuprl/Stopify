@@ -48,7 +48,7 @@ export function stopProgramTest(srcFile: string, transform: string) {
   const runner = spawnSync(
     './bin/stopify',
     ['-i', srcFile, '-t', transform, '-o', 'stop', '-y', '10'],
-    { timeout: 2000 }
+    { timeout: 5000 }
   )
 
   assert.equal(runner.status, 0, `failed to stop ${srcFile} with ${transform}`)

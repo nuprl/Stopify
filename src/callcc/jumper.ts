@@ -204,6 +204,19 @@ const jumper: Visitor = {
     path.skip();
   },
 
+  ThrowStatement: function(path: NodePath<Labeled<t.ThrowStatement>>): void {
+    if (!t.isCallExpression(path.node.argument)) {
+      return;
+    }
+
+    const ifThrow = t.ifStatement(isNormalMode,
+      path.node, t.ifStatement(t.logicalExpression('&&',
+        isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+        t.throwStatement(stackFrameCall)));
+    path.replaceWith(ifThrow);
+    path.skip();
+  },
+
   Program: function (path: NodePath<t.Program>): void {
     path.node.body = [t.functionDeclaration(t.identifier('$program'),
       [], t.blockStatement(path.node.body))];

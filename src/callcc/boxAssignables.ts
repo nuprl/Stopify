@@ -17,10 +17,6 @@ function handleFunction(vars: string[], path: NodePath<t.Function>, body: t.Bloc
   this.vars = [...vars0, ...vars1];
 }
 
-function boxVars(path: NodePath<t.Node>, vars: string[]) {
-  path.traverse(visitor, { vars: vars });
-}
-
 const visitor: Visitor = {
   Program: {
     enter(path: NodePath<t.Program>) {

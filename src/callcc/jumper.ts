@@ -65,14 +65,14 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
 
   // Flatten list of assignments restoring local variables
   pre.forEach(decls =>
-              (<t.VariableDeclaration>decls).declarations.forEach(x => restore1(x.id)));
+    (<t.VariableDeclaration>decls).declarations.forEach(x => restore1(x.id)));
 
-  for (const x of Object.keys(path.scope.bindings)) {
+  for (const x of Object.keys(path.scope.getAllBindings())) {
     // Type definition is missing this case.
-    if (<string>(path.scope.bindings[x].kind) !== 'hoisted') {
+    if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
       continue;
     }
-    restore1(path.scope.bindings[x].identifier);
+    restore1(path.scope.getBinding(x).identifier);
   }
 
   const restoreBlock = t.blockStatement([
@@ -116,12 +116,12 @@ function addCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall
   pre.forEach(decls =>
     (<t.VariableDeclaration>decls).declarations.forEach(x =>
       locals.push(x.id)));
-  for (const x of Object.keys(path.scope.bindings)) {
+  for (const x of Object.keys(path.scope.getAllBindings())) {
     // Type definition is missing this case.
-    if (<string>(path.scope.bindings[x].kind) !== 'hoisted') {
+    if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
       continue;
     }
-    locals.push(path.scope.bindings[x].identifier);
+    locals.push(path.scope.getBinding(x).identifier);
   }
 
   const nodeStmt = t.isStatement(path.node) ?

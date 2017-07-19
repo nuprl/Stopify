@@ -53,11 +53,12 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
   const locals = path.scope.generateUidIdentifier('locals');
 
   const restoreLocals: t.ExpressionStatement[] = [];
+  let i = 0;
   // Flatten list of assignments restoring local variables
-  pre.forEach((decls, i) =>
-    (<t.VariableDeclaration>decls).declarations.forEach((x, j) =>
+  pre.forEach(decls =>
+    (<t.VariableDeclaration>decls).declarations.forEach(x =>
       restoreLocals.push(t.expressionStatement(t.assignmentExpression('=', x.id,
-        t.memberExpression(locals, t.numericLiteral(i), true))))));
+        t.memberExpression(locals, t.numericLiteral(i++), true))))));
   const restoreBlock = t.blockStatement([
     letExpression(locals,
       t.memberExpression(topOfRuntimeStack, t.identifier('locals')), 'const'),

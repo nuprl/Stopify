@@ -159,7 +159,7 @@ function addCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall
 
   const tryApply = t.callExpression(t.arrowFunctionExpression([],
     t.blockStatement([tryStmt])), []);
-  path.getStatementParent().isExpressionStatement() ?
+  t.isExpressionStatement(path.parent) ?
   (path.getStatementParent().replaceWith(tryStmt), path.getStatementParent().skip()) :
   (path.replaceWith(tryApply), path.skip());
 }

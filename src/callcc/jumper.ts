@@ -141,6 +141,13 @@ function addCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall
 }
 
 const jumper: Visitor = {
+  UpdateExpression: {
+    exit(path: NodePath<t.UpdateExpression>): void {
+      path.replaceWith(t.ifStatement(isNormalMode, t.expressionStatement(path.node)));
+      path.skip();
+    }
+  },
+
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>): void {
       if (!t.isCallExpression(path.node.right)) {

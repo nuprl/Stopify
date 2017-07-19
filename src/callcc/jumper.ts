@@ -234,12 +234,20 @@ const jumper: Visitor = {
       return;
     }
 
-    const ifThrow = t.ifStatement(isNormalMode,
-      path.node, t.ifStatement(t.logicalExpression('&&',
-        isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
-        t.throwStatement(stackFrameCall)));
-    path.replaceWith(ifThrow);
-    path.skip();
+    const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
+
+    if (t.isFunction(funOrTryParent)) {
+      const ifThrow = t.ifStatement(isNormalMode,
+        path.node, t.ifStatement(t.logicalExpression('&&',
+          isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+          t.throwStatement(stackFrameCall)));
+      path.replaceWith(ifThrow);
+      path.skip();
+    } else if (t.isTryStatement(funOrTryParent)) {
+      addCaptureLogic(path, () => t.throwStatement(stackFrameCall));
+    } else {
+      throw new Error(`Unexpected 'return' parent of type ${typeof funOrTryParent}`);
+    }
   },
 
   CatchClause: {

@@ -36,7 +36,7 @@ const visitor: Visitor = {
     handleBlock(path.node.body);
   },
 
-  WhileStatement(path: NodePath<t.WhileStatement>) {
+  Loop(path: NodePath<t.Loop>) {
     if (path.node.body.type === "BlockStatement") {
       return handleBlock(path.node.body);
     }

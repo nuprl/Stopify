@@ -67,7 +67,7 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
   pre.forEach(decls =>
     (<t.VariableDeclaration>decls).declarations.forEach(x => restore1(x.id)));
 
-  for (const x of Object.keys(path.scope.getAllBindings())) {
+  for (const x of Object.keys(path.scope.bindings)) {
     // Type definition is missing this case.
     if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
       continue;
@@ -116,7 +116,7 @@ function addCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall
   pre.forEach(decls =>
     (<t.VariableDeclaration>decls).declarations.forEach(x =>
       locals.push(x.id)));
-  for (const x of Object.keys(path.scope.getAllBindings())) {
+  for (const x of Object.keys(funParent.scope.bindings)) {
     // Type definition is missing this case.
     if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
       continue;

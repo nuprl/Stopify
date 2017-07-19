@@ -35,7 +35,7 @@ describe('Call/CC transformation tests', function () {
       it.skip(filename);
       return;
     }
-    it(filename, function () {
+    it(`${filename} (call/cc)`, function () {
       f.stopifyTest(filename, 'callcc');
     })
   })

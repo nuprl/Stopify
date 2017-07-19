@@ -26,7 +26,7 @@ describe('Yield integration tests', function () {
 describe('Call/CC integration tests', function () {
   this.timeout(0)
   f.intTests.forEach(function(filename: string) {
-    it(filename, function () {
+    it(`${filename} (call/cc)`, function () {
       f.stopifyTest(filename, 'callcc');
     })
   })

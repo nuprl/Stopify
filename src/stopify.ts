@@ -31,6 +31,7 @@ Options:
        --optimize         Enable optimization passes
        --tailcalls        Support tail calls (for yield)
        --no_eval          Assume safe eval
+       --benchmark        Return benchmarking information
     `)
   process.exit(0);
 }
@@ -102,13 +103,50 @@ switch(transform) {
 const stime = Date.now()
 const prog = stopifyFunc(code, opts)
 const ctime = (Date.now() - stime)
-const runnableProg =
-  `const s = Date.now();
-      (${prog}).call(this, _ => false, () => 0, () => {
-        const e = Date.now();
-        console.log("Runtime: " + (e - s) + "ms");
-      }, //|INTERVAL|
-      ${interval})`
+let runnableProg;
+if (argv.benchmark) {
+  const latencyMeasure =
+`
+let $$oldDate = Date.now();
+const $$measurements = [];
+const $$internalSetTimeout = (global || window).setTimeout;
+let setTimeout = function (f, t) {
+  const $$currDate = Date.now();
+  $$measurements.push($$currDate - $$oldDate);
+  $$oldDate = $$currDate
+  $$internalSetTimeout(f, t);
+}`
+  const benchmarkingData = `
+console.log("Options: " + JSON.stringify(${JSON.stringify(opts)}));
+const $$ml = $$measurements.length
+const $$latencyAvg = $$measurements.reduce((x, y) => x + y)/$$ml;
+const $$latencyVar = $$measurements.map(x => Math.pow(x - $$latencyAvg, 2))
+                                   .reduce((x, y) => x + y)/$$ml;
+console.log("Latency measurements: " + $$ml +
+            ", avg: " + $$latencyAvg +
+            "ms, var: " + $$latencyVar + "ms");
+`
+  runnableProg =
+`
+${latencyMeasure}
+const s = Date.now();
+(${prog}).call(this, _ => false, () => 0, () => {
+  const e = Date.now();
+  console.log("Runtime: " + (e - s) + "ms");
+  ${benchmarkingData}
+}, //|INTERVAL|
+    ${interval})`
+} else {
+  runnableProg =
+`
+const s = Date.now();
+(${prog}).call(this, _ => false, () => 0, () => {
+  const e = Date.now();
+  console.log("Runtime: " + (e - s) + "ms");
+}, //|INTERVAL|
+    ${interval})`
+}
+
 console.log(`// Compilation time: ${ctime}ms`)
 
 switch(output) {

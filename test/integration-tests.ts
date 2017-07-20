@@ -1,1 +1,2 @@
-import * as hygiene from './should-run-integration-tests';
+require('./unit-tests');
+require('./should-run-integration-tests');

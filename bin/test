@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Cleanup any remaining process from test/should-stop
 function cleanup {
   pgrep -f 'test/should-stop' | xargs kill
@@ -9,19 +11,9 @@ trap cleanup EXIT
 
 npm run build
 
-function unit_test() {
-  ./node_modules/.bin/mocha ./built/test/0-should-run-no-plug.js && \
-    ./node_modules/.bin/mocha ./built/test/should-run-tests.js && \
-    ./node_modules/.bin/mocha ./built/test/should-stop-tests.js
-  ./node_modules/.bin/mocha ./built/test/test-hygiene.js
-}
-
-function int_test() {
-  ./node_modules/.bin/mocha ./built/test/should-run-integration-tests.js
-}
-
-unit_test
-
 if [ "$1" == '-int' ]; then
-  int_test
+  ./node_modules/.bin/mocha built/test/unit-tests.js built/test/integration-tests.js
+else
+  ./node_modules/.bin/mocha built/test/unit-tests.js
+
 fi

@@ -32,21 +32,6 @@ function trans(path: NodePath<t.Node>, plugins: any[]) {
 }
 
 const visitor: Visitor = {
-  CallExpression(path: NodePath<t.CallExpression>) {
-    if (!(path.node.callee.type === "Identifier" &&
-          path.node.callee.name === "setTimeout")) {
-      return;
-    }
-    // Calls to setTimeout need to re-enter the runtime
-    path.node.arguments[0] =
-      t.functionExpression(
-        undefined, [],
-        t.blockStatement(
-          [t.expressionStatement(
-            t.callExpression(
-              t.memberExpression(t.identifier("$__R"), t.identifier("runtime")),
-              [path.node.arguments[0]]))]));
-  },
   Program(path: NodePath<t.Program>, state) {
     const finalStatement =
       (state.opts.useReturn
@@ -102,6 +87,7 @@ const visitor: Visitor = {
           [isStop, onStop, onDone, interval], t.blockStatement(path.node.body, path.node.directives)))];
       path.node.directives = undefined;
     }
+    path.stop();
   }
 };
 

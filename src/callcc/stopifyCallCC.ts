@@ -81,10 +81,16 @@ const visitor: Visitor = {
             t.returnStatement(
               t.callExpression(
                 t.identifier("setTimeout"),
-                [t.functionExpression(
-                  undefined,
-                  [],
-                  t.blockStatement([t.returnStatement(t.callExpression(result, []))])), t.numericLiteral(0)]))))
+                [
+                  t.functionExpression(
+                    undefined,
+                    [],
+                    t.blockStatement([
+                      t.returnStatement(
+                        t.callExpression(t.memberExpression(t.identifier("$__R"), t.identifier("runtime")), [result]))
+                    ])),
+                  t.numericLiteral(0)
+                ]))))
       ];
     }
   },

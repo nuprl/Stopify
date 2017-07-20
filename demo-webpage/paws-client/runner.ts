@@ -4,59 +4,38 @@
 // before it has been stopified and (2) a message directing execution to stop.
 'use strict';
 
-import { yieldStopify } from '../../src/stopifyImplementation/stopifyYield';
-import { yieldSteppify } from '../../src/stepifyImplementation/steppifyYield';
-import { cpsStopify } from '../../src/stopifyImplementation/stopifyCPSEval';
-import { shamStopify } from '../../src/stopifyImplementation/stopifySham';
-import { regeneratorStopify } from '../../src/stopifyImplementation/stopifyRegenerator';
-import { Stoppable, stopify, isStopify } from '../../src/stopifyImplementation/stopifyInterface';
-import { Steppable, steppify, isSteppable } from '../../src/stepifyImplementation/steppifyInterface';
+import { yieldStopifyPrint } from '../../src/yield/stopifyYield';
+import { cpsStopifyPrint } from '../../src/cps/stopifyCps';
+import { callCCStopifyPrint } from '../../src/callcc/stopifyCallCC';
+//import { shamStopify } from '../../src/stopifyImplementation/stopifySham';
+//import { regeneratorStopify } from '../../src/stopifyImplementation/stopifyRegenerator';
+import { stopifyFunction, stopifyPrint } from '../../src/interfaces/stopifyInterface';
 let stopped = false;
+let running: string;
 
-let running: Stoppable | Steppable;
-
-const transforms : { [transform: string]: stopify | steppify }= {
-  'sham': shamStopify,
-  'yield': yieldStopify,
-  'regenerator': regeneratorStopify,
-  'cps': cpsStopify,
-  'yield-debug': yieldSteppify,
+const transforms : { [transform: string]: stopifyPrint }= {
+  'yield': yieldStopifyPrint,
+  'cps': cpsStopifyPrint,
+  'callcc': callCCStopifyPrint,
 }
 
-function transform(f: stopify | steppify, code: string): Stoppable | Steppable {
-  let stopped = false;
-  if (isStopify(f)) {
-    return f(code, () => stopped, () => stopped = true);
-  } else {
-    // TODO(rachit): Implement breakpoints
-      return f(code, [], () => stopped, () => stopped = true,
-               (lin: number) => {
-                   window.parent.postMessage(lin, '*');
-               })
-  }
+function transform(f: stopifyPrint, code: string): string {
+  return f(code, { debug: false, optimize: false, tail_calls: false, no_eval: false });
 }
 
 window.addEventListener('message', evt => {
   if (evt.data.code) {
     running = transform(transforms[evt.data.transform], evt.data.code);
-    if (isSteppable(running)) {
-      console.log("Compilation successful in debugging mode. Hit 'Step' to single step or hit 'Run' to execute program." )
-    } else {
-      console.log("Compilation successful. Hit 'Run' to execute program." )
-    }
+    console.log("Compilation successful. Hit 'Run' to execute program." )
   }
   else if (evt.data === 'run') {
-    running.run(() => console.log('Done'))
+    stopped = false;
+    eval(`(${running}).call(this, _ => stopped, () => console.log('Stopped'), () => {
+        console.log("Done");
+      }, 1)`);
   }
   else if (evt.data === 'stop') {
-    running.stop(() => console.log('Stopped'));
-  }
-  else if (evt.data === 'step') {
-    if (isSteppable(running)) {
-      running.step(() => console.log('Done'), false)
-    } else {
-      console.log('Not in debugging mode. Please compile with debug mode.')
-    }
+    stopped = true;
   }
 });
 

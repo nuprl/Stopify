@@ -94,12 +94,9 @@ function selectLanguage() {
   });
 }
 
-setupRun('sham');
-setupRun('regenerator');
-setupRun('yield-debug');
-setupRun('cps-trampoline');
 setupRun('yield');
 setupRun('cps');
+setupRun('callcc');
 selectLanguage();
 
 function setupButton(buttonId: string, eventName: string) {
@@ -113,5 +110,4 @@ function setupButton(buttonId: string, eventName: string) {
 }
 
 setupButton('stop', 'stop')
-setupButton('step', 'step')
 setupButton('code-run', 'run')

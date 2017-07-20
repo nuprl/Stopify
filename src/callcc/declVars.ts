@@ -14,10 +14,15 @@ type Lifted<T> = T & {
 }
 const lifted = <T>(t: T) => tag('lifted', t, true);
 
+const tUndefined = t.unaryExpression("void", t.numericLiteral(0));
+
 function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression {
-  return decl.init === null ?
-    t.assignmentExpression('=', decl.id, t.nullLiteral()) :
-    t.assignmentExpression('=', decl.id, decl.init)
+  if (decl.init === null) {
+    return t.assignmentExpression('=', decl.id, tUndefined);
+  }
+  else {
+    return t.assignmentExpression('=', decl.id, decl.init);
+  }
 }
 
 const lift: Visitor = {

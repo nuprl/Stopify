@@ -94,7 +94,8 @@ export function runtime(body: () => any): any {
       // need to apply the function passed to callCC to the stack here, because
       // this is the only point where the whole stack is ready.
       return runtime(() =>
-        restore([topK(() => exn.f(makeCont(exn.stack))), ...exn.stack]));
+                     // Doing exn.f makes "this" wrong.
+                     restore([topK(() => exn.f.call(global, makeCont(exn.stack))), ...exn.stack]));
     }
     else if (exn instanceof Restore) {
       // The current continuation has been discarded and we now restore the

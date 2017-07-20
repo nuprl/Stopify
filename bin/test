@@ -4,7 +4,7 @@ set -e
 
 # Cleanup any remaining process from test/should-stop
 function cleanup {
-  pgrep -f 'test/should-stop' | xargs kill
+  pgrep -f 'test/should-stop' | xargs kill || true
 }
 
 trap cleanup EXIT

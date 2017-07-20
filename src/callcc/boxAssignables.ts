@@ -13,7 +13,7 @@ function handleFunction(vars: string[], path: NodePath<t.Function>, body: t.Bloc
       body.body.unshift(t.expressionStatement(init));
     }
   });
-  this.oldVars = this.vars;
+  this.oldVars.push(this.vars);
   this.vars = [...vars0, ...vars1];
 }
 
@@ -22,6 +22,7 @@ const visitor: Visitor = {
     enter(path: NodePath<t.Program>) {
       const binds = path.scope.bindings;
       this.vars = Object.keys(binds).filter(x => !binds[x].constant);
+      this.oldVars = [];
     }
   },
 
@@ -68,7 +69,7 @@ const visitor: Visitor = {
     },
 
     exit(path: NodePath<t.FunctionDeclaration>): void {
-      this.vars = this.oldVars;
+      this.vars = this.oldVars.pop();
       const f = path.node.id;
       if (this.vars.includes(f.name)) {
         const init = t.assignmentExpression("=", f, t.arrayExpression([f]));
@@ -84,7 +85,7 @@ const visitor: Visitor = {
     },
 
     exit(path: NodePath<t.FunctionExpression>): void {
-      this.vars = this.oldVars;
+      this.vars = this.oldVars.pop();
     },
   }
 }

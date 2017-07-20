@@ -3,9 +3,13 @@ import * as path from 'path';
 
 // NOTE(rachit): Don't use arrow functions, otherwise timeout doesn't work.
 describe('CPS transform tests', function () {
-  this.timeout(0)
+  this.timeout(0);
+  const cpsSkip = [
+    'test/should-run/hoisted-call.js',
+    'test/should-run/function-decl-hoist.js',
+  ];
   f.unitTests.forEach(function(filename: string) {
-    if (filename === "test/should-run/hoisted-call.js") {
+    if (cpsSkip.includes(filename)) {
       it.skip(filename);
       return;
     }

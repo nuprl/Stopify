@@ -20,60 +20,62 @@ import { StopWrapper, Options } from './common/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 
-function showUsage() {
-  console.error(
-    `
-Usage: stopify.js -i <filename> -t [cps|tcps|callcc|yield|regen] [options]
-Options:
-       -y, --interval     Set yield interval
-       -o, --output       Can be print, eval, stop
-       -d, --debug        Print debugging info to stderr
-       --optimize         Enable optimization passes
-       --tailcalls        Support tail calls (for yield)
-       --no_eval          Assume safe eval
-       --benchmark        Return benchmarking information
-    `)
-  process.exit(0);
+const program = require('commander');
+
+program
+  .usage('Usage: stopify -i <file> -t <transform> [options] ')
+  .option('-i, --input <filename>', 'The input file', readFile)
+  .option('-t, --transform <transform>', 'The stopify transform', readTransform)
+  .option('-o, --output', 'Specify output mode', readOutputMode)
+  .option('-y, --interval <n>', 'Set the yield interval', parseInt)
+  .option('-d, --debug', 'Enable debugging')
+  .option('--optimize', 'Enable optimization pass')
+  .option('--tailcalls', 'Enable tailcalls (for generator based transform)')
+  .option('--no-eval', 'Assume safe eval')
+  .option('--benchmark', 'Output benchmarking information')
+  .parse(process.argv)
+
+
+function readFile(f: string): string {
+  const code = fs.readFileSync(path.join(process.cwd(), f), 'utf-8').toString();
+  if(!code) {
+    throw new Error(`Failed to read from ${f}`)
+  } else {
+    return code;
+  }
 }
 
-const argv = require('minimist')(process.argv.slice(2));
-if (argv.h || argv.help) {
-  showUsage();
-}
-let code: string = "";
-if (argv.h || argv.help) {
-  showUsage()
-}
-if (argv.i) {
-  const filename = argv.file || argv.i
-  code = fs.readFileSync(
-    path.join(process.cwd(), filename), 'utf-8').toString()
-} else {
-  console.log('No input')
-  showUsage();
-}
-if (!code) {
-  throw new Error('Failed to read file')
+function readTransform(str: string): string {
+  const validTransforms = ['cps', 'tcps', 'callcc', 'yield', 'regen'];
+  if(validTransforms.includes(str)) {
+    return str;
+  } else {
+    throw new Error(`${str} is not a valid transform.` +
+      ` Specify one of ${validTransforms.join(', ')}`)
+  }
 }
 
-const transform: string = argv.transform || argv.t
-const output = argv.output || argv.o || 'print';
-
-if (transform === undefined) {
-  console.log('No transformation was specified')
-  showUsage();
+function readOutputMode(s: string): string {
+  const outputModes = ['print', 'eval', 'stop', 'html'];
+  if(outputModes.includes(s)) {
+    return s
+  } else {
+    throw new Error(`${s} is not a valid output mode` +
+      `. Specify one of ${outputModes.join(', ')}`)
+  }
 }
 
-let interval = argv.y || argv.yieldInterval || NaN
-if (interval !== undefined) {
-  interval = parseInt(argv.y || argv.yieldInterval)
-}
+const code: string = program.input;
+const transform: string = program.transform;
+const output: string = program.ouput || 'print';
+const interval: number = program.interval;
+const benchmark: boolean = program.benchmark || false;
 
 let opts: Options = {
-  debug: argv.d || argv.debug || false,
-  optimize: argv.optimize || false,
-  no_eval: argv.no_eval || false,
-  tail_calls: argv.tailcalls || false,
+  debug: program.debug,
+  optimize: program.optimize,
+  no_eval: program.noEval,
+  tail_calls: program.tailcalls,
 }
 
 function timeInSecs(time: number[]): string {
@@ -104,7 +106,7 @@ const stime = Date.now()
 const prog = stopifyFunc(code, opts)
 const ctime = (Date.now() - stime)
 let runnableProg;
-if (argv.benchmark) {
+if (benchmark) {
   const latencyMeasure =
 `
 let $$oldDate = Date.now();
@@ -134,7 +136,7 @@ const s = Date.now();
   const e = Date.now();
   console.log("Runtime: " + (e - s) + "ms");
   ${benchmarkingData}
-}, //|INTERVAL|
+}, |INTERVAL|
     ${interval})`
 } else {
   runnableProg =
@@ -143,7 +145,7 @@ const s = Date.now();
 (${prog}).call(this, _ => false, () => 0, () => {
   const e = Date.now();
   console.log("Runtime: " + (e - s) + "ms");
-}, //|INTERVAL|
+}, |INTERVAL|
     ${interval})`
 }
 
@@ -205,5 +207,6 @@ switch(output) {
     break;
   }
   default:
+    throw new Error(`Unknown output format: ${output}`)
     break;
 }

@@ -19,20 +19,11 @@ export type Stack = KFrame[];
 
 // The type of execution mode, whether normally computing or restoring state
 // from a captured `Stack`.
-export type Mode = NormalMode | RestoringMode;
+export type Mode = 'normal' | 'restoring';
 
-export interface NormalMode {
-  kind: 'normal';
-}
+export let stack: Stack = [];
+export let mode: Mode = 'normal';
 
-export interface RestoringMode {
-  kind: 'restoring';
-  stack: Stack;
-}
-
-export let mode: Mode = {
-  kind: 'normal',
-};
 
 // We throw this exception when a continuation value is applied. i.e.,
 // callCC applies its argument to a function that throws this exception.
@@ -55,9 +46,8 @@ export function topK(f: () => any): KFrameTop {
   return {
     kind: 'top',
     f: () => {
-      mode = {
-        kind: 'normal',
-      };
+      stack = [];
+      mode = 'normal';
       return f();
     }
   };
@@ -72,12 +62,10 @@ export function makeCont(stack: Stack) {
   }
 }
 
-export function restore(stack: KFrame[]): any {
-  assert(stack.length > 0)
-  mode = {
-    kind: 'restoring',
-    stack: stack,
-  };
+export function restore(aStack: KFrame[]): any {
+  assert(aStack.length > 0);
+  mode = 'restoring';
+  stack = aStack;
   stack[stack.length - 1].f();
 }
 
@@ -117,27 +105,27 @@ export function handleNew(constr: any, ...args: any[]) {
   }
 
   let obj;
-  if (mode.kind === "normal") {
+  if (mode === "normal") {
 
     obj = Object.create(constr.prototype);
   }
   else {
-    const frame = mode.stack[mode.stack.length - 1];
+    const frame = stack[stack.length - 1];
     if (frame.kind === "rest") {
       [obj] = frame.locals;
     }
     else {
       throw "bad";
     }
-    mode.stack.pop();
+    stack.pop();
   }
 
   try {
-    if (mode.kind === "normal") {
+    if (mode === "normal") {
       constr.apply(obj, args);
     }
     else {
-      mode.stack[mode.stack.length - 1].f.apply(obj, []);
+     stack[stack.length - 1].f.apply(obj, []);
     }
   }
   catch (exn) {

@@ -139,6 +139,16 @@ const onDone = `() => {
 
 switch(output) {
   case 'html': {
+    const onDone = `
+() => {
+  console.error('Compilation time: ${ctime}ms')
+  const e = Date.now();
+  // s is defined at the start of the program
+  console.error("Runtime: " + (e - s) + "ms");
+  ${benchmark ? benchmarkingData.toString() : ""}
+  document.title = "done"
+}`
+
     const runnableProg =
 `
 console.error = function (data) {
@@ -152,9 +162,15 @@ const s = Date.now();
 `
     const html = `
     <html>
+      <title></title>
       <body>
         <div id='data'></div>
         <script type="text/javascript">
+          window.onerror = () = {
+            var div = document.getElementById('data');
+            div.innerHTML = "Failed"
+            document.title = "done"
+          }
           ${runnableProg}
         </script>
       </body>

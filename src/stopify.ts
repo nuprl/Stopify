@@ -118,24 +118,24 @@ let setTimeout = function (f, t) {
 }`
 
 const benchmarkingData = `
-console.log("Options: " + JSON.stringify(${JSON.stringify(opts)}));
+console.error("Options: " + JSON.stringify(${JSON.stringify(opts)}));
 const $$ml = $$measurements.length
 const $$latencyAvg = $$measurements.reduce((x, y) => x + y)/$$ml;
 const $$latencyVar = $$measurements.map(x => Math.pow(x - $$latencyAvg, 2))
                                    .reduce((x, y) => x + y)/$$ml;
-console.log("Latency measurements: " + $$ml +
+console.error("Latency measurements: " + $$ml +
             ", avg: " + $$latencyAvg +
             "ms, var: " + $$latencyVar + "ms");
 `
 
 const onDone = `() => {
+  console.error('Compilation time: ${ctime}ms')
   const e = Date.now();
   // s is defined at the start of the program
-  console.log("Runtime: " + (e - s) + "ms");
+  console.error("Runtime: " + (e - s) + "ms");
   ${benchmark ? benchmarkingData.toString() : ""}
 }`
 
-console.log(`// Compilation time: ${ctime}ms`)
 
 switch(output) {
   case 'html': {

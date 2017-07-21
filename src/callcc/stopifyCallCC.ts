@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import * as babylon from 'babylon';
 import cleanupGlobals from '../common/cleanupGlobals';
 import hygiene from '../common/hygiene';
+import markFlatFunctions from '../common/markFlatFunctions';
 
 const top = t.identifier("$top");
 const isStop = t.identifier("$isStop");
@@ -44,23 +45,34 @@ function handleBlock(body: t.BlockStatement) {
       [interval, top])));
 }
 
+type BlockBody = {
+  node: { body: t.BlockStatement }
+}
+
+function handleFunction(path: NodePath<t.Node> & BlockBody) {
+  if ((<any>path.node).mark === 'Flat') {
+    return;
+  }
+  handleBlock(path.node.body);
+}
+
 const visitor: Visitor = {
   FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
-    handleBlock(path.node.body);
+    handleFunction(path);
   },
 
   FunctionExpression(path: NodePath<t.FunctionExpression>) {
-    handleBlock(path.node.body);
+    handleFunction(path);
   },
 
   Loop(path: NodePath<t.Loop>) {
     if (path.node.body.type === "BlockStatement") {
-      return handleBlock(path.node.body);
+      handleBlock(path.node.body);
     }
     else {
       const body = t.blockStatement([path.node.body]);
       path.node.body = body;
-      return handleBlock(body);
+      handleBlock(body);
     }
   },
 
@@ -107,11 +119,12 @@ function plugin() {
 export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
   const r = transform(
     code, [
-      [[cleanupGlobals, { allowed }],
-       [hygiene, { reserved }]
+      [ [cleanupGlobals, { allowed }],
+        [hygiene, { reserved }],
+        markFlatFunctions
       ],
-     [plugin],
-     [[callcc, { useReturn: true }]]
+      [plugin],
+      [[callcc, { useReturn: true }]]
     ],
     { debug: false, optimize: false, tail_calls: false, no_eval: false });
   return r.code.slice(0, -1); // TODO(arjun): hack to deal with string/visitor mismatch

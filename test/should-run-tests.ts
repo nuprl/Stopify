@@ -26,7 +26,7 @@ describe('CPS transform tests', function () {
 describe('Yield transformation tests', function () {
   this.timeout(0)
   f.unitTests.forEach(function(filename: string) {
-    it(filename, function () {
+    it(`${filename} (yield)`, function () {
       f.stopifyTest(filename, 'yield');
     })
   })

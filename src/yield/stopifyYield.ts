@@ -9,7 +9,7 @@ import * as yieldPass from './yield';
 import * as pAssign from './prototypeAssign'
 import * as evalHandler from '../common/evalHandler';
 import * as mCall from './nameMethodCall'
-import * as markFlat from '../common/markFlatFunctions'
+import markFlat from '../common/markFlatFunctions'
 import * as fs from 'fs';
 import * as path from 'path'
 import { hofImpl } from '../common/hofImplementations'

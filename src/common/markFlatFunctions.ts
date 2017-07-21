@@ -66,6 +66,6 @@ const visitor = {
   "Loop": callExpr
 }
 
-module.exports = function () {
-  return { visitor }
+export default function() {
+  return { visitor };
 }

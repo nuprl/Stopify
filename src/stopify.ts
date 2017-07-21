@@ -36,12 +36,12 @@ program
   .parse(process.argv)
 
 
-function readFile(f: string): string {
+function readFile(f: string): [string, string] {
   const code = fs.readFileSync(path.join(process.cwd(), f), 'utf-8').toString();
   if(!code) {
     throw new Error(`Failed to read from ${f}`)
   } else {
-    return code;
+    return [f, code];
   }
 }
 
@@ -65,13 +65,23 @@ function readOutputMode(s: string): string {
   }
 }
 
-const code: string = program.input;
+const code: string = program.input[1];
 const transform: string = program.transform;
 const output: string = program.output || 'print';
 const interval: number = program.interval;
 const benchmark: boolean = program.benchmark || false;
 
 let opts: Options = {
+  debug: program.debug,
+  optimize: program.optimize,
+  no_eval: program.noEval,
+  tail_calls: program.tailcalls,
+}
+
+let reportOpts = {
+  filename: program.input[0],
+  transform,
+  interval,
   debug: program.debug,
   optimize: program.optimize,
   no_eval: program.noEval,
@@ -118,7 +128,7 @@ let setTimeout = function (f, t) {
 }`
 
 const benchmarkingData = `
-console.error("Options: " + JSON.stringify(${JSON.stringify(opts)}));
+console.error("Options: " + JSON.stringify(${JSON.stringify(reportOpts)}));
 const $$ml = $$measurements.length
 const $$latencyAvg = $$measurements.reduce((x, y) => x + y)/$$ml;
 const $$latencyVar = $$measurements.map(x => Math.pow(x - $$latencyAvg, 2))
@@ -153,7 +163,7 @@ switch(output) {
 `
 console.error = function (data) {
   var div = document.getElementById('data');
-  div.innerHTML = div.innerHTML + "," + data;
+  div.innerHTML = div.innerHTML + ", " + data;
 }
 ${benchmark ? latencyMeasure.toString() : ''}
 const s = Date.now();
@@ -168,7 +178,8 @@ const s = Date.now();
         <script type="text/javascript">
           window.onerror = () => {
             var div = document.getElementById('data');
-            div.innerHTML = "Failed"
+            div.innerHTML = "Failed, Options: " +
+                            JSON.stringify(${JSON.stringify(reportOpts)})
             document.title = "done"
           }
           ${runnableProg}

@@ -74,7 +74,10 @@ const visitor: Visitor = {
       if (this.vars.includes(f.name)) {
         const init = t.assignmentExpression("=", f, t.arrayExpression([f]));
         (<any>init).__boxVarsInit__ = true;
-        const functionParent = path.getFunctionParent().node;
+        const functionParent = path.findParent(p =>
+          p.isFunctionDeclaration() ||
+          p.isFunctionExpression() ||
+          p.isProgram()).node;
         if (t.isFunction(functionParent)) {
           (<any>functionParent).body.body.unshift(t.expressionStatement(init));
         } else {

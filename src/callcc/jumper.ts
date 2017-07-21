@@ -26,9 +26,8 @@ function getLabels(node: Labeled<t.Node>): number[] {
 
 const target = t.identifier('target');
 const runtime = t.identifier('$__R');
-const runtimeMode = t.memberExpression(runtime, t.identifier('mode'));
-const runtimeModeKind = t.memberExpression(runtimeMode, t.identifier('kind'));
-const runtimeStack = t.memberExpression(runtimeMode, t.identifier('stack'));
+const runtimeModeKind = t.memberExpression(runtime, t.identifier('mode'));
+const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
 const topOfRuntimeStack = t.memberExpression(runtimeStack,
   t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
 const popStack = t.callExpression(t.memberExpression(runtimeStack,

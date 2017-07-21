@@ -9,7 +9,6 @@ import * as desugarSwitch from '../common/desugarSwitch';
 import * as desugarWhileToFunc from '../common/desugarLoopToFunc';
 import * as desugarLabel from '../common/desugarLabel';
 import * as liftVar from '../common/liftVar';
-import cleanupGlobals from '../common/cleanupGlobals';
 
 // Call Expression naming transform.
 import * as makeBlockStmt from '../common/makeBlockStmt';
@@ -61,17 +60,10 @@ function $tryCatch(e) {
 }
 `;
 
-const allowed = [
-  "Object",
-  "require",
-  "console"
-];
-
 export const cpsStopifyPrint: stopifyPrint = (code: string, opts: Options) => {
   const plugins = [
     [desugarFunctionDecl, liftVar, noArrows, desugarLoop, desugarLabel,
-     [cleanupGlobals, { allowed }],
-     desugarSwitch, desugarNew],
+      desugarSwitch, desugarNew],
     [addKArg, desugarWhileToFunc],
     [makeBlockStmt],
     [cps, transformMarked, applyStop],

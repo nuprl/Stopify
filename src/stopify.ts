@@ -109,7 +109,7 @@ const latencyMeasure =
 `
 let $$oldDate = Date.now();
 const $$measurements = [];
-const $$internalSetTimeout = (global || window).setTimeout;
+const $$internalSetTimeout = (typeof window === "object" ? window : global).setTimeout;
 let setTimeout = function (f, t) {
   const $$currDate = Date.now();
   $$measurements.push($$currDate - $$oldDate);
@@ -141,12 +141,24 @@ switch(output) {
   case 'html': {
     const runnableProg =
 `
-    ${benchmark ? latencyMeasure.toString() : ''}
+console.error = function (data) {
+  var div = document.getElementById('data');
+  div.innerHTML = div.innerHTML + "," + data;
+}
+${benchmark ? latencyMeasure.toString() : ''}
 const s = Date.now();
 (${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
     ${interval})
 `
-    const html = `<html><body><script>${runnableProg}</script></body></html>`
+    const html = `
+    <html>
+      <body>
+        <div id='data'></div>
+        <script type="text/javascript">
+          ${runnableProg}
+        </script>
+      </body>
+    </html>`
     console.log(html)
     break;
   }

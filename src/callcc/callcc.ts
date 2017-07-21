@@ -27,8 +27,13 @@ import * as t from 'babel-types';
 import * as babel from 'babel-core';
 
 function trans(path: NodePath<t.Node>, plugins: any[]) {
-  const opts = { plugins: plugins, babelrc: false };
-  babel.transformFromAst(path.node, undefined, opts).ast!;
+  const opts = {
+    plugins: plugins,
+    babelrc: false,
+    code: false,
+    ast: false
+  };
+  babel.transformFromAst(path.node, undefined, opts);
 }
 
 const visitor: Visitor = {
@@ -97,7 +102,10 @@ module.exports = function() {
 
 function main() {
   const filename = process.argv[2];
-  const opts = { plugins: [() => ({ visitor })], babelrc: false };
+  const opts = {
+    plugins: [() => ({ visitor })],
+    babelrc: false
+  };
   babel.transformFile(filename, opts, (err, result) => {
     if (err !== null) {
       throw err;

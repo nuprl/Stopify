@@ -166,7 +166,7 @@ const s = Date.now();
       <body>
         <div id='data'></div>
         <script type="text/javascript">
-          window.onerror = () = {
+          window.onerror = () => {
             var div = document.getElementById('data');
             div.innerHTML = "Failed"
             document.title = "done"

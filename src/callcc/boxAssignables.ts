@@ -74,7 +74,12 @@ const visitor: Visitor = {
       if (this.vars.includes(f.name)) {
         const init = t.assignmentExpression("=", f, t.arrayExpression([f]));
         (<any>init).__boxVarsInit__ = true;
-        path.insertAfter(t.expressionStatement(init));
+        const functionParent = path.getFunctionParent().node;
+        if (t.isFunction(functionParent)) {
+          (<any>functionParent).body.body.unshift(t.expressionStatement(init));
+        } else {
+          (<any>functionParent).body.unshift(t.expressionStatement(init));
+        }
       }
     },
   },

@@ -46,20 +46,6 @@ const visitor: Visitor = {
 
     trans(path, [desugarNew]);
 
-    // This is a little hack to swap out the implementation of handleNew
-    // that the transform has baked in.  It only works with yield.
-    path.traverse({
-      FunctionExpression(path: NodePath<t.FunctionExpression>) {
-        if (path.node.id !== null && path.node.id.name === "$handleNew") {
-          path.replaceWith(t.memberExpression(t.identifier("$__R"), t.identifier("handleNew")));
-          path.stop();
-        }
-        else {
-          path.skip();
-        }
-      }
-    });
-
     trans(path,
           [[hygiene, { reserved: ["target"] }],
            makeBlocks, nameExprs, desugarLoop, desugarLabel,
@@ -74,6 +60,11 @@ const visitor: Visitor = {
       letExpression(
         t.identifier("callCC"),
         t.memberExpression(t.identifier("$__R"), t.identifier("callCC")),
+        "const"));
+    path.node.body.unshift(
+      letExpression(
+        t.identifier("$handleNew"),
+        t.memberExpression(t.identifier("$__R"), t.identifier("handleNew")),
         "const"));
     path.node.body.unshift(
       letExpression(

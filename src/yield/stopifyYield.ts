@@ -4,7 +4,7 @@ import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface'
 import * as makeBlockStmt from '../common/makeBlockStmt';
 import * as transformMarked from '../common/transformMarked';
 import { transform, Options } from '../common/helpers';
-import * as handleNew from './handleNew';
+import * as handleNew from '../common/desugarNew';
 import * as yieldPass from './yield';
 import * as pAssign from './prototypeAssign'
 import * as evalHandler from '../common/evalHandler';

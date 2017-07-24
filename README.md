@@ -21,8 +21,7 @@ resuming, stepping, and break-pointing at the source language level.
 4. (optional) Run `npm install -g typescript` for a global installation of the
    typescript compiler.
 ### Optional Server Dependencies
-1. For OCaml support
- - `npm install -g bs-platform`
+1. For OCaml support, install [js_of_ocaml](http://ocsigen.org/js_of_ocaml/)
 2. For ClojureScript support
  - `brew install leiningen`
 3. For ScalaJS, install [scala](https://www.scala-lang.org/download/) and

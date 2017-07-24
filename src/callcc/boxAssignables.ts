@@ -2,6 +2,16 @@ import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 
+function box(e: t.Expression): t.ObjectExpression {
+  return t.objectExpression([t.objectProperty(t.identifier('box'),
+    e === null || e === undefined ?
+    t.unaryExpression('void', t.numericLiteral(0)) : e)]);
+}
+
+function unbox(e: t.Expression): t.Expression {
+  return t.memberExpression(e, t.identifier('box'));
+}
+
 function handleFunction(vars: string[], path: NodePath<t.Function>, body: t.BlockStatement) {
   const vars0 = vars.filter(x => !path.scope.hasOwnBinding(x));
   const binds = path.scope.bindings;
@@ -9,7 +19,7 @@ function handleFunction(vars: string[], path: NodePath<t.Function>, body: t.Bloc
   path.node.params.forEach(x => {
     if (x.type === "Identifier" && !binds[x.name].constant) {
       const init = t.expressionStatement(t.assignmentExpression("=",
-        x, t.arrayExpression([x])));
+        x, box(x)));
       (<any>init).__boxVarsInit__ = true;
       body.body.unshift(init);
     }
@@ -32,7 +42,7 @@ const visitor: Visitor = {
       throw "unsupported";
     }
     if (this.vars.includes(path.node.id.name)) {
-      path.node.init = t.arrayExpression([path.node.init]);
+      path.node.init = box(path.node.init);
     }
   },
 
@@ -52,7 +62,8 @@ const visitor: Visitor = {
       return;
     }
     if (t.isMemberExpression(parent) &&
-      parent.property === path.node) {
+      parent.property === path.node &&
+      !parent.computed) {
       path.skip();
       return;
     }
@@ -67,7 +78,7 @@ const visitor: Visitor = {
       return;
     }
     if (this.vars.includes(path.node.name)) {
-      path.replaceWith(t.memberExpression(path.node, t.numericLiteral(0), true));
+      path.replaceWith(unbox(path.node));
       path.skip();
     }
   },
@@ -82,7 +93,7 @@ const visitor: Visitor = {
       const f = path.node.id;
       if (this.vars.includes(f.name)) {
         const init = t.expressionStatement(t.assignmentExpression("=",
-          f, t.arrayExpression([f])));
+          f, box(f)));
         (<any>init).__boxVarsInit__ = true;
         const functionParent = path.findParent(p =>
           p.isFunctionDeclaration() ||

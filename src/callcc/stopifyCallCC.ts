@@ -126,7 +126,7 @@ export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
       [plugin],
       [[callcc, { useReturn: true }]]
     ],
-    { debug: false, optimize: false, tail_calls: false, no_eval: false });
+    opts);
   return r.code.slice(0, -1); // TODO(arjun): hack to deal with string/visitor mismatch
 }
 

@@ -19,6 +19,9 @@ import { stopifyPrint } from './interfaces/stopifyInterface'
 import { StopWrapper, Options } from './common/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
+const browserify = require('browserify')
+const streamToString = require('stream-to-string')
+const tmp = require('tmp');
 
 const program = require('commander');
 
@@ -88,10 +91,6 @@ let reportOpts = {
   tail_calls: program.tailcalls,
 }
 
-function timeInSecs(time: number[]): string {
-  return `${time[0] + time[1] * 1e-9}`
-}
-
 let stopifyFunc: stopifyPrint;
 switch(transform) {
   case 'yield':
@@ -149,85 +148,93 @@ const onDone = `() => {
 
 switch(output) {
   case 'html': {
-    const onDone = `
-() => {
-  console.error('Compilation time: ${ctime}ms')
-  const e = Date.now();
-  // s is defined at the start of the program
-  console.error("Runtime: " + (e - s) + "ms");
-  ${benchmark ? benchmarkingData.toString() : ""}
-  document.title = "done"
-}`
+    const onDone =
+    `() => {
+      console.error('Compilation time: ${ctime}ms')
+      const e = Date.now();
+      // s is defined at the start of the program
+      console.error("Runtime: " + (e - s) + "ms");
+      ${benchmark ? benchmarkingData.toString() : ""}
+      document.title = "done"
+    }`
 
     const runnableProg =
-`
-console.error = function (data) {
-  var div = document.getElementById('data');
-  div.innerHTML = div.innerHTML + ", " + data;
-}
-${benchmark ? latencyMeasure.toString() : ''}
-const s = Date.now();
-(${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
-    ${interval})
-`
-    const html = `
-    <html>
-      <title></title>
-      <body>
-        <div id='data'></div>
-        <script type="text/javascript">
-          window.onerror = () => {
-            var div = document.getElementById('data');
-            div.innerHTML = "Failed, Options: " +
-                            JSON.stringify(${JSON.stringify(reportOpts)})
-            document.title = "done"
-          }
-          ${runnableProg}
-        </script>
-      </body>
-    </html>`
-    console.log(html)
+    `
+    console.error = function (data) {
+      var div = document.getElementById('data');
+      div.innerHTML = div.innerHTML + ", " + data;
+    }
+    ${benchmark ? latencyMeasure.toString() : ''}
+    const s = Date.now();
+    (${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
+        ${interval})
+    `
+
+    const tmpFile = tmp.fileSync()
+    fs.writeFileSync(tmpFile.name, runnableProg, 'utf8')
+    const outJs = browserify(tmpFile.name, {}).bundle()
+    streamToString(outJs,
+      'utf8',
+      (err: any, browserified: string) => {
+        const html =
+          `<html>
+          <title></title>
+          <body>
+            <div id='data'></div>
+            <script type="text/javascript">
+              window.onerror = () => {
+                var div = document.getElementById('data');
+                div.innerHTML = "Failed, Options: " +
+                                JSON.stringify(${JSON.stringify(reportOpts)})
+                document.title = "done"
+              }
+              ${browserified}
+            </script>
+          </body>
+        </html>`
+        console.log(html)
+      })
     break;
   }
   case 'print': {
     const runnableProg =
-`
-    ${benchmark ? latencyMeasure.toString() : ''}
-const s = Date.now();
-(${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
-    ${interval})
-`
+    `
+        ${benchmark ? latencyMeasure.toString() : ''}
+    const s = Date.now();
+    (${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
+        ${interval})
+    `
     console.log(runnableProg)
     break;
   }
   case 'eval': {
     const runnableProg =
-`
-    ${benchmark ? latencyMeasure.toString() : ''}
-const s = Date.now();
-(${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
-    ${interval})
-`
+    `
+        ${benchmark ? latencyMeasure.toString() : ''}
+    const s = Date.now();
+    (${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
+        ${interval})
+    `
     eval(runnableProg)
     break;
   }
   case 'stop': {
     const isStop =
-`
-() => {
-  // Stop after 1000ms,
-  const r = (Date.now() - $$stopCheck) > 1000
-  return r;
-}
-`
+    `
+    () => {
+      // Stop after 1000ms,
+      const r = (Date.now() - $$stopCheck) > 1000
+      return r;
+    }
+    `
     const runnableProg: string =
-`
-    ${benchmark ? latencyMeasure.toString() : ''}
-const $$stopCheck = Date.now();
-const s = Date.now();
-(${prog}).call(this, ${isStop}, ${onDone}, ${onDone}, // |INTERVAL|
-    ${interval})
-`
+    `
+        ${benchmark ? latencyMeasure.toString() : ''}
+    const $$stopCheck = Date.now();
+    const s = Date.now();
+    (${prog}).call(this, ${isStop}, ${onDone}, ${onDone}, // |INTERVAL|
+        ${interval})
+    `
     eval(runnableProg)
     break;
   }

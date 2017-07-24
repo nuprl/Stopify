@@ -70,6 +70,11 @@ const visitor: Visitor = {
     trans(path, [jumper]);
     path.node.body.unshift(
       letExpression(
+        t.identifier("callCC"),
+        t.memberExpression(t.identifier("$__R"), t.identifier("callCC")),
+        "const"));
+    path.node.body.unshift(
+      letExpression(
         t.identifier("$__R"),
         t.callExpression(
           t.identifier("require"),

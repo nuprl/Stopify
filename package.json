@@ -2,7 +2,7 @@
   "name": "Stopify",
   "version": "0.0.1",
   "description": "babel plugin to transform javascript into A Normal Form",
-  "main": "index.js",
+  "main": "built/src/index.js",
   "devDependencies": {
     "@types/babel-core": "^6.7.14",
     "@types/babel-types": "^6.7.16",

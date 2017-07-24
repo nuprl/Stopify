@@ -58,13 +58,18 @@ const visitor: Visitor = {
     trans(path, [[jumper, { captureMethod: 'lazyExn' }]]);
     path.node.body.unshift(
       letExpression(
+        t.identifier("$handleNew"),
+        t.memberExpression(t.identifier("$__R"), t.identifier("handleNew")),
+        "const"));
+    path.node.body.unshift(
+      letExpression(
         t.identifier("callCC"),
         t.memberExpression(t.identifier("$__R"), t.identifier("callCC")),
         "const"));
     path.node.body.unshift(
       letExpression(
-        t.identifier("$handleNew"),
-        t.memberExpression(t.identifier("$__R"), t.identifier("handleNew")),
+        t.identifier("suspendCC"),
+        t.memberExpression(t.identifier("$__R"), t.identifier("suspendCC")),
         "const"));
     path.node.body.unshift(
       letExpression(

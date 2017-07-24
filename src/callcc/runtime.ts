@@ -41,6 +41,11 @@ export function callCC(f: (k: any) => any) {
   throw new Capture(f, []);
 }
 
+export class Discard {
+  constructor (public f: () => any) {
+  }
+}
+
 // Helper function that constructs a top-of-stack frame.
 export function topK(f: () => any): KFrameTop {
   return {
@@ -69,6 +74,16 @@ export function restore(aStack: KFrame[]): any {
   stack[stack.length - 1].f();
 }
 
+export function suspendCC(f: (k: any) => any): any {
+  return callCC(function(k) {
+    throw new Discard(() =>
+      f(function(x: any) {
+        setTimeout(() => runtime(() => k(x)), 0);
+      })
+  )
+  });
+}
+
 export function runtime(body: () => any): any {
   try {
     body();
@@ -84,6 +99,9 @@ export function runtime(body: () => any): any {
       return runtime(() =>
                      // Doing exn.f makes "this" wrong.
                      restore([topK(() => exn.f.call(global, makeCont(exn.stack))), ...exn.stack]));
+    }
+    else if (exn instanceof Discard) {
+      return runtime(() => exn.f());
     }
     else if (exn instanceof Restore) {
       // The current continuation has been discarded and we now restore the

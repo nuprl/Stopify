@@ -38,7 +38,6 @@ program
   .option('--benchmark', 'Output benchmarking information')
   .parse(process.argv)
 
-
 function readFile(f: string): [string, string] {
   const code = fs.readFileSync(path.join(process.cwd(), f), 'utf-8').toString();
   if(!code) {
@@ -71,7 +70,7 @@ function readOutputMode(s: string): string {
 const code: string = program.input[1];
 const transform: string = program.transform;
 const output: string = program.output || 'print';
-const interval: number = program.interval;
+const interval: number = program.interval || NaN;
 const benchmark: boolean = program.benchmark || false;
 
 let opts: Options = {
@@ -81,15 +80,27 @@ let opts: Options = {
   tail_calls: program.tailcalls,
 }
 
-let reportOpts = {
+function optsToString(obj: object): string {
+  let ret = ""
+  for(let k in obj) {
+    const v = String((<any>obj)[k])
+    ret =
+      v ?
+        (ret ? `${ret}, ${k}: ${v}` : `${k}: ${v}`)
+        : ret
+  }
+  return ret;
+}
+
+let reportOpts = optsToString({
   filename: program.input[0],
   transform,
   interval,
-  debug: program.debug,
-  optimize: program.optimize,
-  no_eval: program.noEval,
-  tail_calls: program.tailcalls,
-}
+  debug: program.debug || false,
+  optimize: program.optimize || false,
+  no_eval: program.noEval || false,
+  tail_calls: program.tailcalls || false,
+})
 
 let stopifyFunc: stopifyPrint;
 switch(transform) {
@@ -127,21 +138,21 @@ let setTimeout = function (f, t) {
 }`
 
 const benchmarkingData = `
-console.error("Options: " + JSON.stringify(${JSON.stringify(reportOpts)}));
 const $$ml = $$measurements.length
 const $$latencyAvg = $$measurements.reduce((x, y) => x + y)/$$ml;
 const $$latencyVar = $$measurements.map(x => Math.pow(x - $$latencyAvg, 2))
                                    .reduce((x, y) => x + y)/$$ml;
-console.error("Latency measurements: " + $$ml +
-            ", avg: " + $$latencyAvg +
-            "ms, var: " + $$latencyVar + "ms");
+console.error("Latency measurements(in ms): " + $$ml +
+            ", avg(in ms): " + $$latencyAvg +
+            ", var(in ms): " + $$latencyVar);
+console.error("${reportOpts}");
 `
 
 const onDone = `() => {
-  console.error('Compilation time: ${ctime}ms')
+  console.error('Compilation time(in ms): ${ctime}')
   const e = Date.now();
   // s is defined at the start of the program
-  console.error("Runtime: " + (e - s) + "ms");
+  console.error("Runtime(in ms): " + (e - s));
   ${benchmark ? benchmarkingData.toString() : ""}
 }`
 
@@ -150,10 +161,10 @@ switch(output) {
   case 'html': {
     const onDone =
     `() => {
-      console.error('Compilation time: ${ctime}ms')
+      console.error('Compilation time(in ms): ${ctime}')
       const e = Date.now();
       // s is defined at the start of the program
-      console.error("Runtime: " + (e - s) + "ms");
+      console.error("Runtime(in ms): " + (e - s));
       ${benchmark ? benchmarkingData.toString() : ""}
       document.title = "done"
     }`
@@ -184,8 +195,7 @@ switch(output) {
             <script type="text/javascript">
               window.onerror = () => {
                 var div = document.getElementById('data');
-                div.innerHTML = "Failed, Options: " +
-                                JSON.stringify(${JSON.stringify(reportOpts)})
+                div.innerHTML = "Failed, ${reportOpts}"
                 document.title = "done"
               }
               ${browserified}

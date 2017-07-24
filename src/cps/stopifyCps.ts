@@ -23,6 +23,37 @@ import * as transformMarked from '../common/transformMarked';
 // Helpers
 import {transform, Options} from '../common/helpers';
 
+
+const knowns = ['Object',
+	'Boolean',
+	'Symbol',
+	'Error',
+	'EvalError',
+	'RangeError',
+	'ReferenceError',
+	'SyntaxError',
+	'TypeError',
+	'URIError',
+	'Number',
+	'Math',
+	'Date',
+	'String',
+	'RegExp',
+	'Array',
+	'Int8Array',
+	'Uint8Array',
+	'Uint8ClampedArray',
+	'Int16Array',
+	'Uint16Array',
+	'Int32Array',
+	'Uint32Array',
+	'Float32Array',
+	'Float64Array',
+	'Map',
+	'Set',
+	'WeakMap',
+	'WeakSet'];
+
 const cpsRuntime = `/*
  * The runtime is wrapped in a function:
  * function($isStop, $onStop, $onDone, $interval).
@@ -58,6 +89,7 @@ function $tryCatch(e) {
     return $topLevelEk(e);
   }
 }
+let $knownBuiltInts = [${knowns}]
 `;
 
 export const cpsStopifyPrint: stopifyPrint = (code: string, opts: Options) => {
@@ -68,7 +100,19 @@ export const cpsStopifyPrint: stopifyPrint = (code: string, opts: Options) => {
     [makeBlockStmt],
     [cps, transformMarked, applyStop],
   ];
-  const transformed: string = transform(code, plugins, opts).code;
+  const handleNewCode = `
+  function $handleNew(constr, ...args) {
+    if($knownBuiltInts.includes(constr) || !constr.$isTransformed) {
+      return new constr(...args);
+    } else {
+      let a = Object.create(constr.prototype);
+      constr.apply(a, args)
+      return a;
+    }
+  }
+  ${code}
+  `
+  const transformed: string = transform(handleNewCode, plugins, opts).code;
 
   if(transformed.length < code.length) {
     throw new Error('Transformed code is smaller than original code')

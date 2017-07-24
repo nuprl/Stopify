@@ -13,9 +13,15 @@ let debug = false;
 const prog = {
   enter(path: NodePath<OptionsAST<t.Program>>) {
     debug = (path.node.options && path.node.options.debug)
+    if(!(path.node.options && path.node.options.optimize)) {
+      path.skip();
+    }
   },
   // Mark the untransformed function.
-  exit(path: NodePath<t.Program>) {
+  exit(path: NodePath<OptionsAST<t.Program>>) {
+    if(!(path.node.options && path.node.options.optimize)) {
+      path.skip();
+    }
     path.traverse(markUntransformed)
   }
 }

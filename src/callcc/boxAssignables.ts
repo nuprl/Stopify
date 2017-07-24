@@ -8,9 +8,10 @@ function handleFunction(vars: string[], path: NodePath<t.Function>, body: t.Bloc
   const vars1 = Object.keys(binds).filter(x => !binds[x].constant);
   path.node.params.forEach(x => {
     if (x.type === "Identifier" && !binds[x.name].constant) {
-      const init = t.assignmentExpression("=", x, t.arrayExpression([x]));
+      const init = t.expressionStatement(t.assignmentExpression("=",
+        x, t.arrayExpression([x])));
       (<any>init).__boxVarsInit__ = true;
-      body.body.unshift(t.expressionStatement(init));
+      body.body.unshift(init);
     }
   });
   this.oldVars.push(this.vars);
@@ -35,8 +36,8 @@ const visitor: Visitor = {
     }
   },
 
-  AssignmentExpression(path: NodePath<t.AssignmentExpression>) {
-    if ((<any>path.node).__boxVarsInit__) {
+  ExpressionStatement(path: NodePath<t.ExpressionStatement>) {
+    if((<any>path.node).__boxVarsInit__) {
       path.skip();
     }
   },
@@ -44,12 +45,20 @@ const visitor: Visitor = {
   Identifier(path: NodePath<t.Identifier>) {
     const parent = path.parent;
     if (parent.type === "FunctionExpression" ||
-      parent.type === "FunctionDeclaration") {
+      parent.type === "FunctionDeclaration" ||
+      parent.type === "LabeledStatement" ||
+      parent.type === "BreakStatement") {
       path.skip();
       return;
     }
     if (t.isMemberExpression(parent) &&
       parent.property === path.node) {
+      path.skip();
+      return;
+    }
+    if (t.isObjectMember(parent) &&
+      parent.key === path.node &&
+      !parent.computed) {
       path.skip();
       return;
     }
@@ -72,16 +81,17 @@ const visitor: Visitor = {
       this.vars = this.oldVars.pop();
       const f = path.node.id;
       if (this.vars.includes(f.name)) {
-        const init = t.assignmentExpression("=", f, t.arrayExpression([f]));
+        const init = t.expressionStatement(t.assignmentExpression("=",
+          f, t.arrayExpression([f])));
         (<any>init).__boxVarsInit__ = true;
         const functionParent = path.findParent(p =>
           p.isFunctionDeclaration() ||
           p.isFunctionExpression() ||
           p.isProgram()).node;
         if (t.isFunction(functionParent)) {
-          (<any>functionParent).body.body.unshift(t.expressionStatement(init));
+          (<any>functionParent).body.body.unshift(init);
         } else {
-          (<any>functionParent).body.unshift(t.expressionStatement(init));
+          (<any>functionParent).body.unshift(init);
         }
       }
     },

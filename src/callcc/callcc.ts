@@ -64,7 +64,8 @@ const visitor: Visitor = {
            makeBlocks, nameExprs, desugarLoop, desugarLabel,
         desugarSwitch, desugarLogical]);
     trans(path, [anf]);
-    trans(path, [declVars, boxAssignables]);
+    trans(path, [declVars]);
+    trans(path, [boxAssignables]);
     trans(path, [label]);
     trans(path, [jumper]);
     path.node.body.unshift(

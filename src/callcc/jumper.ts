@@ -53,7 +53,8 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
     return;
   }
   const { body } = path.node;
-  const afterDecls = body.body.findIndex(e => !t.isVariableDeclaration(e));
+  const afterDecls = body.body.findIndex(e =>
+   !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(body.body, afterDecls);
 
   const locals = path.scope.generateUidIdentifier('locals');
@@ -70,8 +71,11 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
 
 
   // Flatten list of assignments restoring local variables
-  pre.forEach(decls =>
-    (<t.VariableDeclaration>decls).declarations.forEach(x => restore1(x.id)));
+  pre.forEach(decls => {
+    if (t.isVariableDeclaration(decls)) {
+      decls.declarations.forEach(x => restore1(x.id))
+    }
+  });
 
   for (const x of Object.keys(path.scope.bindings)) {
     // Type definition is missing this case.
@@ -90,9 +94,11 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
     t.expressionStatement(popStack)
   ]);
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
+  const declTarget = letExpression(target, t.nullLiteral());
+  (<any>declTarget).lifted = true;
 
   path.get('body').replaceWith(t.blockStatement([
-    letExpression(target, t.nullLiteral()),
+    declTarget,
     ...pre,
     ifRestoring,
     ...post
@@ -115,13 +121,16 @@ function addCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall
   const funId = funParent.node.id, funParams = funParent.node.params,
   funBody = funParent.node.body;
 
-  const afterDecls = funBody.body.findIndex(e => !t.isVariableDeclaration(e));
+  const afterDecls = funBody.body.findIndex(e =>
+    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(funBody.body, afterDecls);
 
   const locals: t.LVal[] = [];
-  pre.forEach(decls =>
-    (<t.VariableDeclaration>decls).declarations.forEach(x =>
-      locals.push(x.id)));
+  pre.forEach(decls => {
+    if (t.isVariableDeclaration(decls)) {
+      decls.declarations.forEach(x => locals.push(x.id))
+    }
+  });
   for (const x of Object.keys(funParent.scope.bindings)) {
     // Type definition is missing this case.
     if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {

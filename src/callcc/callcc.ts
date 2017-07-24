@@ -102,7 +102,7 @@ const visitor: Visitor = {
   }
 };
 
-module.exports = function() {
+export default function() {
   return { visitor };
 }
 

@@ -144,6 +144,10 @@ export function handleNew(constr: any, ...args: any[]) {
 
 let countDown: number | undefined;
 
+export function resume(result: any) {
+  return setTimeout(() => runtime(result), 0);
+}
+
 export function suspend(interval: number, top: any) {
   if (Number.isNaN(interval)) {
     return;

@@ -67,7 +67,7 @@ const visitor: Visitor = {
     trans(path, [declVars]);
     trans(path, [boxAssignables]);
     trans(path, [label]);
-    trans(path, [jumper]);
+    trans(path, [[jumper, { captureMethod: 'lazyExn' }]]);
     path.node.body.unshift(
       letExpression(
         t.identifier("callCC"),

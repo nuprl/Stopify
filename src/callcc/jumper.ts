@@ -9,6 +9,19 @@ type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
 type Labeled<T> = T & {
   labels?: number[];
 }
+type CaptureFun = (path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement) => void;
+
+export type CaptureLogic = 'lazyExn' | 'eagerExn' | 'lazyErrVal';
+
+interface State {
+  opts: {
+    captureMethod: CaptureLogic,
+  };
+}
+
+const captureLogics: { [key: string]: CaptureFun } = {
+  lazyExn: tryCatchCaptureLogic,
+};
 
 function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
   return {
@@ -105,7 +118,7 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
       target, t.numericLiteral(lbl)), acc), t.booleanLiteral(false));
 }
 
-function addCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
+function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const exn = t.identifier('exn');
 
@@ -181,13 +194,13 @@ const jumper: Visitor = {
   },
 
   AssignmentExpression: {
-    exit(path: NodePath<Labeled<t.AssignmentExpression>>): void {
+    exit(path: NodePath<Labeled<t.AssignmentExpression>>, s: State): void {
       if (!t.isCallExpression(path.node.right)) {
         const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
         path.replaceWith(ifAssign);
         path.skip();
       } else {
-        addCaptureLogic(path, () =>
+        captureLogics[s.opts.captureMethod](path, () =>
           t.expressionStatement(
             t.assignmentExpression(path.node.operator,
               path.node.left, stackFrameCall)));
@@ -236,7 +249,7 @@ const jumper: Visitor = {
     },
   },
 
-  ReturnStatement: function(path: NodePath<Labeled<t.ReturnStatement>>): void {
+  ReturnStatement: function(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
     if (!t.isCallExpression(path.node.argument)) {
       return;
     }
@@ -251,13 +264,13 @@ const jumper: Visitor = {
       path.replaceWith(ifReturn);
       path.skip();
     } else if (t.isTryStatement(funOrTryParent)) {
-      addCaptureLogic(path, () => t.returnStatement(stackFrameCall));
+      captureLogics[s.opts.captureMethod](path, () => t.returnStatement(stackFrameCall));
     } else {
       throw new Error(`Unexpected 'return' parent of type ${typeof funOrTryParent}`);
     }
   },
 
-  ThrowStatement: function(path: NodePath<Labeled<t.ThrowStatement>>): void {
+  ThrowStatement: function(path: NodePath<Labeled<t.ThrowStatement>>, s: State): void {
     if (!t.isCallExpression(path.node.argument)) {
       return;
     }
@@ -272,7 +285,7 @@ const jumper: Visitor = {
       path.replaceWith(ifThrow);
       path.skip();
     } else if (t.isTryStatement(funOrTryParent)) {
-      addCaptureLogic(path, () => t.throwStatement(stackFrameCall));
+      captureLogics[s.opts.captureMethod](path, () => t.throwStatement(stackFrameCall));
     } else {
       throw new Error(`Unexpected 'return' parent of type ${typeof funOrTryParent}`);
     }

@@ -139,9 +139,14 @@ let setTimeout = function (f, t) {
 
 const benchmarkingData = `
 const $$ml = $$measurements.length
-const $$latencyAvg = $$measurements.reduce((x, y) => x + y)/$$ml;
-const $$latencyVar = $$measurements.map(x => Math.pow(x - $$latencyAvg, 2))
-                                   .reduce((x, y) => x + y)/$$ml;
+let $$latencyAvg, $$latencyVar;
+if ($$ml < 1) {
+  $$latencyVar = $$latencyAvg = NaN
+} else {
+  $$latencyAvg = $$measurements.reduce((x, y) => x + y)/$$ml;
+  $$latencyVar = $$measurements.map(x => Math.pow(x - $$latencyAvg, 2))
+                               .reduce((x, y) => x + y)/$$ml;
+}
 console.error("Latency measurements(in ms): " + $$ml +
             ", avg(in ms): " + $$latencyAvg +
             ", var(in ms): " + $$latencyVar);
@@ -181,9 +186,10 @@ switch(output) {
         ${interval})
     `
 
-    const tmpFile = tmp.fileSync()
-    fs.writeFileSync(tmpFile.name, runnableProg, 'utf8')
-    const outJs = browserify(tmpFile.name, {}).bundle()
+    const tmpFile = 'stopify_build' + Math.floor(Math.random() * 10000) + '.js'
+
+    fs.writeFileSync(tmpFile, runnableProg, 'utf8')
+    const outJs = browserify(tmpFile, {}).bundle()
     streamToString(outJs,
       'utf8',
       (err: any, browserified: string) => {
@@ -202,6 +208,7 @@ switch(output) {
             </script>
           </body>
         </html>`
+        fs.unlinkSync(tmpFile)
         console.log(html)
       })
     break;

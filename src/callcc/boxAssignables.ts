@@ -9,113 +9,114 @@ function box(e: t.Expression): t.ObjectExpression {
 }
 
 function unbox(e: t.Expression): t.Expression {
-  return t.memberExpression(e, t.identifier('box'));
+  return  t.memberExpression(e, t.identifier('box'));
 }
 
-function handleFunction(vars: string[], path: NodePath<t.Function>, body: t.BlockStatement) {
-  const vars0 = vars.filter(x => !path.scope.hasOwnBinding(x));
+function parentBlock(path: NodePath<t.Node>): t.Statement[] {
+  const parents = [ "FunctionDeclaration", "FunctionExpression", "Program" ];
+  const parent = path.findParent(p => parents.includes(p.node.type)).node;
+  if (parent.type === "Program") {
+    return (<t.Program>parent).body;
+  }
+  else {
+    return (<t.FunctionExpression | t.FunctionDeclaration>parent).body.body;
+  }
+}
+
+
+function boxVars(path: NodePath<t.Node>, vars: string[]) {
+  const visitor = {
+    ReferencedIdentifier(path: NodePath<t.Identifier>) {
+      path.skip();
+      // NOTE(arjun): The parent type tests are because labels are
+      // categorized as ReferencedIdentifiers, which is a bug in
+      // Babel, in my opinion.
+      if (
+          path.parent.type === "BreakStatement" ||
+          path.parent.type === "LabeledStatement") {
+        return;
+      }
+      if (vars.includes(path.node.name)) {
+        path.replaceWith(unbox(path.node));
+      }
+    },
+    VariableDeclarator(path: NodePath<t.VariableDeclarator>) {
+      path.skip();
+      if (path.node.id.type !== "Identifier") {
+        throw "unsupported";
+      }
+      if (vars.includes(path.node.id.name)) {
+        path.node.init = box(path.node.init);
+      }
+    },
+    BindingIdentifier(path: NodePath<t.Identifier>) { 
+      path.skip();
+      if (path.parent.type !== "AssignmentExpression") {
+        return;
+      }
+
+      if (vars.includes(path.node.name)) {
+        path.replaceWith(unbox(path.node))
+      }
+
+    },
+    FunctionExpression(path: NodePath<t.FunctionExpression>) {
+      path.skip();
+      initFunction(vars, path);
+    },
+    FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
+      path.skip();
+      const x = path.node.id.name;
+      if (vars.includes(x)) {
+        const init = t.expressionStatement(
+          t.assignmentExpression(
+            "=", t.identifier(x), box(t.identifier(x))));
+        (<any>init).__boxVarsInit__ = true;
+        parentBlock(path).unshift(init);
+      }
+
+      initFunction(vars, path);
+    }
+  }
+
+  path.traverse(visitor);
+}
+
+
+
+function initFunction(
+  enclosingVars: string[],
+  path: NodePath<t.FunctionDeclaration | t.FunctionExpression>) {
+
+  // Mutable variables from this scope that are not shadowed
+  const vars0 = enclosingVars.filter(x => !path.scope.hasOwnBinding(x));
+  // Mutable variables from the inner scope
   const binds = path.scope.bindings;
   const vars1 = Object.keys(binds).filter(x => !binds[x].constant);
-  path.node.params.forEach(x => {
-    if (x.type === "Identifier" && !binds[x.name].constant) {
-      const init = t.expressionStatement(t.assignmentExpression("=",
-        x, box(x)));
-      (<any>init).__boxVarsInit__ = true;
-      body.body.unshift(init);
+
+  boxVars(path, [...vars0, ...vars1]);
+
+  // Initialize boxes after visiting the function body, else the
+  // initialization statements get messed up.
+  for(let param of path.node.params) {
+    if (param.type !== 'Identifier' || !vars1.includes(param.name)) {
+      continue;
     }
-  });
-  this.oldVars.push(this.vars);
-  this.vars = [...vars0, ...vars1];
+    const x = param.name;
+    const init = t.expressionStatement(
+      t.assignmentExpression(
+        "=", t.identifier(x), box(t.identifier(x))));
+    (<any>init).__boxVarsInit__ = true;
+    path.node.body.body.unshift(init);
+  }
+
 }
 
 const visitor: Visitor = {
-  Program: {
-    enter(path: NodePath<t.Program>) {
-      const binds = path.scope.bindings;
-      this.vars = Object.keys(binds).filter(x => !binds[x].constant);
-      this.oldVars = [];
-    }
-  },
-
-  VariableDeclarator(path: NodePath<t.VariableDeclarator>) {
-    if (path.node.id.type !== "Identifier") {
-      throw "unsupported";
-    }
-    if (this.vars.includes(path.node.id.name)) {
-      path.node.init = box(path.node.init);
-    }
-  },
-
-  ExpressionStatement(path: NodePath<t.ExpressionStatement>) {
-    if((<any>path.node).__boxVarsInit__) {
-      path.skip();
-    }
-  },
-
-  Identifier(path: NodePath<t.Identifier>) {
-    const parent = path.parent;
-    if (parent.type === "FunctionExpression" ||
-      parent.type === "FunctionDeclaration" ||
-      parent.type === "LabeledStatement" ||
-      parent.type === "BreakStatement") {
-      path.skip();
-      return;
-    }
-    if (t.isMemberExpression(parent) &&
-      parent.property === path.node &&
-      !parent.computed) {
-      path.skip();
-      return;
-    }
-    if (t.isObjectMember(parent) &&
-      parent.key === path.node &&
-      !parent.computed) {
-      path.skip();
-      return;
-    }
-    if (path.parent.type === "VariableDeclarator") {
-      path.skip();
-      return;
-    }
-    if (this.vars.includes(path.node.name)) {
-      path.replaceWith(unbox(path.node));
-      path.skip();
-    }
-  },
-
-  FunctionDeclaration: {
-    enter(path: NodePath<t.FunctionDeclaration>): void {
-      handleFunction.call(this, this.vars, path, path.node.body);
-    },
-
-    exit(path: NodePath<t.FunctionDeclaration>): void {
-      this.vars = this.oldVars.pop();
-      const f = path.node.id;
-      if (this.vars.includes(f.name)) {
-        const init = t.expressionStatement(t.assignmentExpression("=",
-          f, box(f)));
-        (<any>init).__boxVarsInit__ = true;
-        const functionParent = path.findParent(p =>
-          p.isFunctionDeclaration() ||
-          p.isFunctionExpression() ||
-          p.isProgram()).node;
-        if (t.isFunction(functionParent)) {
-          (<any>functionParent).body.body.unshift(init);
-        } else {
-          (<any>functionParent).body.unshift(init);
-        }
-      }
-    },
-  },
-
-  FunctionExpression: {
-    enter(path: NodePath<t.FunctionExpression>): void {
-      handleFunction.call(this, this.vars, path, path.node.body);
-    },
-
-    exit(path: NodePath<t.FunctionExpression>): void {
-      this.vars = this.oldVars.pop();
-    },
+  Program(path: NodePath<t.Program>) {
+    const binds = path.scope.bindings;
+    const vars = Object.keys(binds).filter(x => !binds[x].constant);
+    boxVars(path, vars);
   }
 }
 

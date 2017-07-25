@@ -22,6 +22,7 @@ export type Stack = KFrame[];
 export type Mode = 'normal' | 'restoring';
 
 export let stack: Stack = [];
+export let eagerStack: Stack = [];
 export let mode: Mode = 'normal';
 
 // We throw this exception when a continuation value is applied. i.e.,
@@ -37,21 +38,8 @@ export class Capture {
   constructor(public f: (k: any) => any, public stack: Stack) {}
 }
 
-// This exception does not need to be exported.
-class Discard {
-  constructor (public f: () => any) { }
-}
-
-/**
- * Applies f to the current continuation in the empty context.
- * 
- * Semantics: E[captureCC(f)] --> f((v) => abortCC(E[v]))
- * 
- * WARNING: It is not possible to define callCC using captureCC. The obvious
- * approach breaks the semantics of exceptions.
- */
-export function captureCC(f: (k: any) => any) {
-  throw new Capture(f, []);
+export function callCC(f: (k: any) => any) {
+  throw new Capture(f, eagerStack);
 }
 
 /**
@@ -83,12 +71,12 @@ export function makeCont(stack: Stack) {
   }
 }
 
-export function suspendCC(f: (k: any) => any): any {
-  return captureCC((k) => {
-    return f(function(x: any) {
-      return setTimeout(() => runtime(() => k(x)), 0);
-      });
-  });
+export function restore(aStack: KFrame[]): any {
+  assert(aStack.length > 0);
+  eagerStack = [];
+  mode = 'restoring';
+  stack = aStack;
+  stack[stack.length - 1].f();
 }
 
 export function runtime(body: () => any): any {
@@ -103,11 +91,9 @@ export function runtime(body: () => any): any {
       // a top-of-stack frame that actually restores the saved continuation. We
       // need to apply the function passed to captureCC to the stack here, because
       // this is the only point where the whole stack is ready.
-      // Doing exn.f makes "this" wrong.
-      return runtime(() => exn.f.call(global, makeCont(exn.stack)));
-    }
-    else if (exn instanceof Discard) {
-      return runtime(() => exn.f());
+      return runtime(() =>
+        // Doing exn.f makes "this" wrong.
+        restore([topK(() => exn.f.call(global, makeCont(exn.stack))), ...exn.stack]));
     }
     else if (exn instanceof Restore) {
       // The current continuation has been discarded and we now restore the
@@ -148,6 +134,27 @@ export function handleNew(constr: any, ...args: any[]) {
     stack.pop();
   }
 
+  if (mode === "normal") {
+    eagerStack.unshift({
+      kind: "rest",
+      f: () => handleNew(constr, ...args) ,
+      locals: [obj],
+      index: 0
+    });
+    constr.apply(obj, args);
+    eagerStack.shift();
+  } else {
+    eagerStack.unshift({
+      kind: "rest",
+      f: () => handleNew(constr, ...args) ,
+      locals: [obj],
+      index: 0
+    });
+    stack[stack.length - 1].f.apply(obj, []);
+    eagerStack.shift();
+  }
+  return obj;
+  /*
   try {
     if (mode === "normal") {
       constr.apply(obj, args);
@@ -158,7 +165,7 @@ export function handleNew(constr: any, ...args: any[]) {
   }
   catch (exn) {
     if (exn instanceof Capture) {
-      exn.stack.push({
+      exn.stack.unshift({
         kind: "rest",
         f: () => handleNew(constr, ...args) ,
         locals: [obj],
@@ -168,6 +175,7 @@ export function handleNew(constr: any, ...args: any[]) {
     throw exn;
   }
   return obj;
+*/
 }
 
 let countDown: number | undefined;

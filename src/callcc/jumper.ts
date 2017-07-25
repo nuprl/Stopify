@@ -152,10 +152,9 @@ function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restor
   const ifStmt = t.ifStatement(
     isNormalMode,
     t.blockStatement([nodeStmt]),
-    t.blockStatement(
-      [t.ifStatement(
+    t.ifStatement(
         t.binaryExpression('===', target, applyLbl),
-        t.blockStatement([restoreCall()]))]));
+        t.blockStatement([restoreCall()])));
 
   const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
     [t.thisExpression(), ...(<any>funParams)]);

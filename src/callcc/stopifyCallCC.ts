@@ -76,7 +76,9 @@ const visitor: Visitor = {
 
   Program: {
     exit(path: NodePath<t.Program>) {
-      path.node.body.push(t.returnStatement(t.stringLiteral("done")));
+      path.node.body.push(
+        t.returnStatement(
+          t.callExpression(top, [t.stringLiteral("done")])));
       const body = t.blockStatement(path.node.body);
       path.node.body = [
         letExpression(
@@ -89,18 +91,7 @@ const visitor: Visitor = {
             t.callExpression(isStop, []),
             t.blockStatement([t.returnStatement(t.callExpression(onStop, []))]),
             t.returnStatement(
-              t.callExpression(
-                t.identifier("setTimeout"),
-                [
-                  t.functionExpression(
-                    undefined,
-                    [],
-                    t.blockStatement([
-                      t.returnStatement(
-                        t.callExpression(t.memberExpression(t.identifier("$__R"), t.identifier("runtime")), [result]))
-                    ])),
-                  t.numericLiteral(0)
-                ]))))
+              t.callExpression(t.memberExpression(t.identifier("$__R"), t.identifier("resume")), [result]))))
       ];
     }
   },
@@ -132,7 +123,6 @@ export const callCCStopify: stopifyFunction = (code, opts) => {
   return eval(callCCStopifyPrint(code, opts));
 
 }
-
 
 function main() {
   const filename = process.argv[2];

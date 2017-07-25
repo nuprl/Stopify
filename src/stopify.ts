@@ -219,9 +219,7 @@ switch(output) {
     (${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
         ${interval})
     `
-    browserifyString(runnableProg, (e, v) => {
-      console.log(v)
-    })
+    console.log(runnableProg)
     break;
   }
   case 'eval': {
@@ -232,9 +230,7 @@ switch(output) {
     (${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
         ${interval})
     `
-    browserifyString(runnableProg, (e, v) => {
-      eval(v)
-    })
+    eval(runnableProg)
     break;
   }
   case 'stop': {
@@ -254,9 +250,7 @@ switch(output) {
     (${prog}).call(this, ${isStop}, ${onDone}, ${onDone}, // |INTERVAL|
         ${interval})
     `
-    browserifyString(runnableProg, (e, v) => {
-      eval(v)
-    })
+    eval(runnableProg)
     break;
   }
   default:

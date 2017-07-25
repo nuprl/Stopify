@@ -80,8 +80,10 @@ let opts: Options = {
   tail_calls: program.tailcalls,
 }
 
+// The string returned by this function should be embedded inside ``.
 function optsToString(obj: object): string {
-  let ret = ""
+  let ret = `interval: \${// |INTERVAL|
+  ${String(interval)}}`
   for(let k in obj) {
     const v = String((<any>obj)[k])
     ret =
@@ -95,7 +97,6 @@ function optsToString(obj: object): string {
 let reportOpts = optsToString({
   filename: program.input[0],
   transform,
-  interval,
   debug: program.debug || false,
   optimize: program.optimize || false,
   no_eval: program.noEval || false,
@@ -150,7 +151,7 @@ if ($$ml < 1) {
 console.error("Latency measurements(in ms): " + $$ml +
             ", avg(in ms): " + $$latencyAvg +
             ", var(in ms): " + $$latencyVar);
-console.error("${reportOpts}");
+console.error(\`${reportOpts}\`);
 `
 
 const onDone = `() => {
@@ -201,7 +202,7 @@ switch(output) {
             <script type="text/javascript">
               window.onerror = () => {
                 var div = document.getElementById('data');
-                div.innerHTML = ", Failed ${benchmark? ",,,," : "" },${reportOpts}"
+                div.innerHTML = \`, Failed ${benchmark? ",,,," : "" },${reportOpts}\`
                 document.title = "done"
               }
               ${browserified}

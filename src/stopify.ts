@@ -1,20 +1,11 @@
 'use strict';
 
-import {
-  yieldStopify, yieldStopifyPrint
-} from './yield/stopifyYield'
-import {
-  regenStopify, regenStopifyPrint
-} from './yield/stopifyRegen'
-import {
-  cpsStopify, cpsStopifyPrint
-} from './cps/stopifyCps'
-import {
-  callCCStopify, callCCStopifyPrint
-} from './callcc/stopifyCallCC'
-import {
-  tcpsStopify, tcpsStopifyPrint
-} from './cps/stopifyTCps'
+import { yieldStopifyPrint } from './yield/stopifyYield'
+import { regenStopifyPrint } from './yield/stopifyRegen'
+import { cpsStopifyPrint } from './cps/stopifyCps'
+import { callCCStopifyPrint } from './callcc/stopifyCallCC'
+import { tcpsStopifyPrint } from './cps/stopifyTCps'
+import { shamStopifyPrint } from './sham/stopifySham'
 import { stopifyPrint } from './interfaces/stopifyInterface'
 import { StopWrapper, Options } from './common/helpers'
 import * as fs from 'fs'
@@ -48,7 +39,7 @@ function readFile(f: string): [string, string] {
 }
 
 function readTransform(str: string): string {
-  const validTransforms = ['cps', 'tcps', 'callcc', 'yield', 'regen'];
+  const validTransforms = ['cps', 'tcps', 'callcc', 'yield', 'regen', 'sham'];
   if(validTransforms.includes(str)) {
     return str;
   } else {
@@ -65,6 +56,16 @@ function readOutputMode(s: string): string {
     throw new Error(`${s} is not a valid output mode` +
       `. Specify one of ${outputModes.join(', ')}`)
   }
+}
+
+function browserifyString(str: string, cb: (err: any, value: any) => any): void {
+  const tmpFile = 'stopify_build' + Math.floor(Math.random() * 10000) + '.js'
+
+  fs.writeFileSync(tmpFile, str, 'utf8')
+  const outJs = browserify(tmpFile, {}).bundle()
+  streamToString(outJs, 'utf8', (e: any, v: any) => {
+    fs.unlinkSync(tmpFile); cb(e, v)
+  })
 }
 
 const code: string = program.input[1];
@@ -119,6 +120,9 @@ switch(transform) {
     break;
   case 'callcc':
     stopifyFunc = callCCStopifyPrint
+    break;
+  case 'sham':
+    stopifyFunc = shamStopifyPrint
     break;
   default:
     throw new Error(`Unknown transform: ${transform}`)
@@ -187,15 +191,9 @@ switch(output) {
         ${interval})
     `
 
-    const tmpFile = 'stopify_build' + Math.floor(Math.random() * 10000) + '.js'
-
-    fs.writeFileSync(tmpFile, runnableProg, 'utf8')
-    const outJs = browserify(tmpFile, {}).bundle()
-    streamToString(outJs,
-      'utf8',
-      (err: any, browserified: string) => {
-        const html =
-          `<html>
+    browserifyString(runnableProg, (err: any, browserified: string) => {
+      const html =
+        `<html>
           <title></title>
           <body>
             <div id='data'></div>
@@ -209,9 +207,8 @@ switch(output) {
             </script>
           </body>
         </html>`
-        fs.unlinkSync(tmpFile)
-        console.log(html)
-      })
+      console.log(html)
+    })
     break;
   }
   case 'print': {
@@ -222,7 +219,9 @@ switch(output) {
     (${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
         ${interval})
     `
-    console.log(runnableProg)
+    browserifyString(runnableProg, (e, v) => {
+      console.log(v)
+    })
     break;
   }
   case 'eval': {
@@ -233,7 +232,9 @@ switch(output) {
     (${prog}).call(this, _ => false, () => 0, ${onDone}, // |INTERVAL|
         ${interval})
     `
-    eval(runnableProg)
+    browserifyString(runnableProg, (e, v) => {
+      eval(v)
+    })
     break;
   }
   case 'stop': {
@@ -253,7 +254,9 @@ switch(output) {
     (${prog}).call(this, ${isStop}, ${onDone}, ${onDone}, // |INTERVAL|
         ${interval})
     `
-    eval(runnableProg)
+    browserifyString(runnableProg, (e, v) => {
+      eval(v)
+    })
     break;
   }
   default:

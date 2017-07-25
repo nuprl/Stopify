@@ -201,7 +201,7 @@ switch(output) {
             <script type="text/javascript">
               window.onerror = () => {
                 var div = document.getElementById('data');
-                div.innerHTML = "Failed, ${reportOpts}"
+                div.innerHTML = ", Failed ${benchmark? ",,,," : "" },${reportOpts}"
                 document.title = "done"
               }
               ${browserified}

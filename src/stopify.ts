@@ -135,7 +135,7 @@ const latencyMeasure =
 let $$oldDate = Date.now();
 const $$measurements = [];
 const $$internalSetTimeout = (typeof window === "object" ? window : global).setTimeout;
-let setTimeout = function (f, t) {
+setTimeout = function (f, t) {
   const $$currDate = Date.now();
   $$measurements.push($$currDate - $$oldDate);
   $$oldDate = $$currDate;

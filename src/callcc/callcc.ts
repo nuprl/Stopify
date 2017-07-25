@@ -55,7 +55,7 @@ const visitor: Visitor = {
     freeIds.annotate(path);
     trans(path, [boxAssignables]);
     trans(path, [label]);
-    trans(path, [[jumper, { captureMethod: 'lazyExn' }]]);
+    trans(path, [[jumper, { captureMethod: 'eagerExn' }]]);
     path.node.body.unshift(
       letExpression(
         t.identifier("$handleNew"),

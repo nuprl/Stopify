@@ -9,7 +9,7 @@ type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
 type Labeled<T> = T & {
   labels?: number[];
 }
-type CaptureFun = (path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement) => void;
+type CaptureFun = (path: NodePath<t.Node>, restoreCall: () => t.Statement) => void;
 
 export type CaptureLogic = 'lazyExn' | 'eagerExn' | 'lazyErrVal';
 
@@ -21,6 +21,7 @@ interface State {
 
 const captureLogics: { [key: string]: CaptureFun } = {
   lazyExn: tryCatchCaptureLogic,
+  eagerExn: eagerTCCaptureLogic,
 };
 
 function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
@@ -41,11 +42,14 @@ const target = t.identifier('target');
 const runtime = t.identifier('$__R');
 const runtimeModeKind = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
+const eagerStack = t.memberExpression(runtime, t.identifier('eagerStack'));
 const topOfRuntimeStack = t.memberExpression(runtimeStack,
   t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
-const popStack = t.callExpression(t.memberExpression(runtimeStack,
+const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
-const pushStack = t.memberExpression(runtimeStack, t.identifier('push'));
+const pushRuntimeStack = t.memberExpression(runtimeStack, t.identifier('push'));
+const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
+const popEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
 const normalMode = t.stringLiteral('normal');
 const restoringMode = t.stringLiteral('restoring');
 const captureExn = t.memberExpression(runtime, t.identifier('Capture'));
@@ -104,7 +108,7 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
     ...restoreLocals,
     t.expressionStatement(t.assignmentExpression('=', target,
       t.memberExpression(topOfRuntimeStack, t.identifier('index')))),
-    t.expressionStatement(popStack)
+    t.expressionStatement(popRuntimeStack)
   ]);
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
   const declTarget = letExpression(target, t.nullLiteral());
@@ -127,7 +131,7 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
 
 function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const exn = t.identifier('exn');
+  const exn = path.scope.generateUidIdentifier('exn');
 
   const funParent = <NodePath<FunctionT>>path.findParent(p =>
     p.isFunctionExpression() || p.isFunctionDeclaration());
@@ -160,8 +164,8 @@ function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restor
     isNormalMode,
     t.blockStatement([nodeStmt]),
     t.ifStatement(
-        t.binaryExpression('===', target, applyLbl),
-        t.blockStatement([restoreCall()])));
+      t.binaryExpression('===', target, applyLbl),
+      t.blockStatement([restoreCall()])));
 
   const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
     [t.thisExpression(), ...(<any>funParams)]);
@@ -194,6 +198,75 @@ function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restor
   (path.replaceWith(tryApply), path.skip());
 }
 
+function eagerTCCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
+  const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
+
+  const funParent = <NodePath<FunctionT>>path.findParent(p =>
+    p.isFunctionExpression() || p.isFunctionDeclaration());
+  const funId = funParent.node.id, funParams = funParent.node.params,
+  funBody = funParent.node.body;
+
+  const afterDecls = funBody.body.findIndex(e =>
+    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
+  const { pre, post } = split(funBody.body, afterDecls);
+
+  const locals: t.LVal[] = [];
+  pre.forEach(decls => {
+    if (t.isVariableDeclaration(decls)) {
+      decls.declarations.forEach(x => locals.push(x.id))
+    }
+  });
+  for (const x of Object.keys(funParent.scope.bindings)) {
+    // Type definition is missing this case.
+    if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
+      continue;
+    }
+    locals.push(path.scope.getBinding(x).identifier);
+  }
+
+  const nodeStmt = t.isStatement(path.node) ?
+  path.node :
+  t.expressionStatement(path.node);
+
+  const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
+    [t.thisExpression(), ...(<any>funParams)]);
+  const stackFrame = t.objectExpression([
+    t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+    t.objectProperty(
+      t.identifier('f'),
+      t.arrowFunctionExpression([], reapply)),
+    t.objectProperty(t.identifier('locals'),
+      t.arrayExpression(<any>locals)),
+    t.objectProperty(t.identifier('index'), applyLbl),
+  ]);
+
+  const ifStmt = t.ifStatement(
+    isNormalMode,
+    t.blockStatement([
+      t.expressionStatement(t.callExpression(pushEagerStack, [
+        stackFrame,
+      ])),
+      nodeStmt,
+      t.expressionStatement(t.callExpression(popEagerStack, [])),
+    ]),
+    t.ifStatement(
+      t.binaryExpression('===', target, applyLbl),
+      t.blockStatement([
+        t.expressionStatement(t.callExpression(pushEagerStack, [
+          stackFrame,
+        ])),
+        restoreCall(),
+        t.expressionStatement(t.callExpression(popEagerStack, [])),
+      ])));
+  (<any>ifStmt).isTransformed = true;
+
+  const ifApply = t.callExpression(t.arrowFunctionExpression([],
+    t.blockStatement([ifStmt])), []);
+  const parentPath = path.getStatementParent();
+  t.isExpressionStatement(path.parent) ?
+  (parentPath.replaceWith(ifStmt), parentPath.skip()) :
+  (path.replaceWith(ifApply), path.skip());
+}
 const jumper: Visitor = {
   UpdateExpression: {
     exit(path: NodePath<t.UpdateExpression>): void {
@@ -219,6 +292,7 @@ const jumper: Visitor = {
           t.expressionStatement(
             t.assignmentExpression(path.node.operator,
               path.node.left, stackFrameCall)));
+        path.skip();
       }
     }
   },
@@ -247,7 +321,8 @@ const jumper: Visitor = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      if (isFlat(path)) {
+      if (isFlat(path) ||
+        (<any>path.node).isTransformed) {
         return;
       }
       const { test, consequent, alternate } = path.node;

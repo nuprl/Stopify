@@ -11,10 +11,20 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from './helpers';
 
+function withinTryBlock(path: NodePath<t.Node>): boolean {
+  const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
+  return t.isTryStatement(funOrTryParent);
+}
+
 const anfVisitor : Visitor = {
   CallExpression: function (path: NodePath<t.CallExpression>): void {
     const p = path.parent;
-    if (!t.isVariableDeclarator(p) && !t.isReturnStatement(p)) {
+    if ((!t.isVariableDeclarator(p) &&
+      !t.isReturnStatement(p) &&
+      !t.isThrowStatement(p)) ||
+      ((t.isReturnStatement(p) ||
+        t.isThrowStatement(p)) &&
+        withinTryBlock(path))) {
       // Name the function application if it is not already named.
       const name = path.scope.generateUidIdentifier('app');
       const bind = h.letExpression(name, path.node);
@@ -25,7 +35,12 @@ const anfVisitor : Visitor = {
 
   NewExpression: function (path: NodePath<t.NewExpression>): void {
     const p = path.parent;
-    if (!t.isVariableDeclarator(p) && !t.isReturnStatement(p)) {
+    if ((!t.isVariableDeclarator(p) &&
+      !t.isReturnStatement(p) &&
+      !t.isThrowStatement(p)) ||
+      ((t.isReturnStatement(p) ||
+        t.isThrowStatement(p)) &&
+        withinTryBlock(path))) {
       // Name the function application if it is not already named.
       const name = path.scope.generateUidIdentifier('app');
       const bind = h.letExpression(name, path.node);

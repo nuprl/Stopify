@@ -7,6 +7,7 @@ import {
 
 let opt = false;
 let tail_calls = false
+let no_eval = false;
 
 const program = {
   enter(path: NodePath<OptionsAST<t.Program>>) {
@@ -14,6 +15,7 @@ const program = {
       const options = path.node.options
       opt = options.optimize
       tail_calls = options.tail_calls
+      no_eval = options.no_eval
     }
   }
 }
@@ -60,8 +62,11 @@ const callExpression = {
     }
     // Don't transform `eval`
     else if (t.isIdentifier(callee) && callee.name === 'eval') {
-      path.replaceWith(t.yieldExpression(path.node, true))
-      return;
+      if (no_eval) {
+        path.skip();
+      } else {
+        path.replaceWith(t.yieldExpression(path.node, true))
+      }
     }
     else if (t.isMemberExpression(path.node.callee)) {
       if (t.isIdentifier(path.node.callee.property)) {

@@ -1,6 +1,7 @@
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
+import * as freeIds from '../common/freeIds';
 
 function box(e: t.Expression): t.ObjectExpression {
   return t.objectExpression([t.objectProperty(t.identifier('box'),
@@ -23,7 +24,6 @@ function parentBlock(path: NodePath<t.Node>): t.Statement[] {
   }
 }
 
-
 function boxVars(path: NodePath<t.Node>, vars: string[]) {
   const visitor = {
     ReferencedIdentifier(path: NodePath<t.Identifier>) {
@@ -31,8 +31,7 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
       // NOTE(arjun): The parent type tests are because labels are
       // categorized as ReferencedIdentifiers, which is a bug in
       // Babel, in my opinion.
-      if (
-          path.parent.type === "BreakStatement" ||
+      if (path.parent.type === "BreakStatement" ||
           path.parent.type === "LabeledStatement") {
         return;
       }
@@ -49,12 +48,11 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
         path.node.init = box(path.node.init);
       }
     },
-    BindingIdentifier(path: NodePath<t.Identifier>) { 
+    BindingIdentifier(path: NodePath<t.Identifier>) {
       path.skip();
       if (path.parent.type !== "AssignmentExpression") {
         return;
       }
-
       if (vars.includes(path.node.name)) {
         path.replaceWith(unbox(path.node))
       }
@@ -66,6 +64,7 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
     },
     FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
       path.skip();
+      // Box this function declaration if it is updated.
       const x = path.node.id.name;
       if (vars.includes(x)) {
         const init = t.expressionStatement(
@@ -92,12 +91,15 @@ function initFunction(
   const vars0 = enclosingVars.filter(x => !path.scope.hasOwnBinding(x));
   // Mutable variables from the inner scope
   const binds = path.scope.bindings;
-  const vars1 = Object.keys(binds).filter(x => !binds[x].constant);
+  const vars1 = Object.keys(binds)
+    .filter(x => !binds[x].constant &&
+            (<any>binds[x].kind === "hoisted" || freeIds.isNestedFree(path, x)));
 
   boxVars(path, [...vars0, ...vars1]);
 
-  // Initialize boxes after visiting the function body, else the
-  // initialization statements get messed up.
+
+  // Box arguments if necessary. We do this after visiting the function
+  // body or the initialization statements get messed up.
   for(let param of path.node.params) {
     if (param.type !== 'Identifier' || !vars1.includes(param.name)) {
       continue;

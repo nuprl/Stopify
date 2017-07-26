@@ -39,7 +39,7 @@ export class Capture {
 }
 
 export function callCC(f: (k: any) => any) {
-  throw new Capture(f, eagerStack);
+  throw new Capture(f, [...eagerStack]);
 }
 
 /**
@@ -67,13 +67,13 @@ export function topK(f: () => any): KFrameTop {
 // that returns the supplied value.
 export function makeCont(stack: Stack) {
   return function (v: any) {
+    eagerStack = [...stack];
     throw new Restore([topK(() => v), ...stack]);
   }
 }
 
 export function restore(aStack: KFrame[]): any {
   assert(aStack.length > 0);
-  eagerStack = [];
   mode = 'restoring';
   stack = aStack;
   stack[stack.length - 1].f();
@@ -122,13 +122,11 @@ export function handleNew(constr: any, ...args: any[]) {
   if (mode === "normal") {
 
     obj = Object.create(constr.prototype);
-  }
-  else {
+  } else {
     const frame = stack[stack.length - 1];
     if (frame.kind === "rest") {
       [obj] = frame.locals;
-    }
-    else {
+    } else {
       throw "bad";
     }
     stack.pop();
@@ -144,38 +142,10 @@ export function handleNew(constr: any, ...args: any[]) {
     constr.apply(obj, args);
     eagerStack.shift();
   } else {
-    eagerStack.unshift({
-      kind: "rest",
-      f: () => handleNew(constr, ...args) ,
-      locals: [obj],
-      index: 0
-    });
     stack[stack.length - 1].f.apply(obj, []);
     eagerStack.shift();
   }
   return obj;
-  /*
-  try {
-    if (mode === "normal") {
-      constr.apply(obj, args);
-    }
-    else {
-     stack[stack.length - 1].f.apply(obj, []);
-    }
-  }
-  catch (exn) {
-    if (exn instanceof Capture) {
-      exn.stack.unshift({
-        kind: "rest",
-        f: () => handleNew(constr, ...args) ,
-        locals: [obj],
-        index: 0
-      });
-    }
-    throw exn;
-  }
-  return obj;
-*/
 }
 
 let countDown: number | undefined;

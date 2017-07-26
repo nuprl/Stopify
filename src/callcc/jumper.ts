@@ -49,7 +49,7 @@ const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
 const pushRuntimeStack = t.memberExpression(runtimeStack, t.identifier('push'));
 const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
-const popEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
+const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
 const normalMode = t.stringLiteral('normal');
 const restoringMode = t.stringLiteral('restoring');
 const captureExn = t.memberExpression(runtime, t.identifier('Capture'));
@@ -247,16 +247,13 @@ function eagerTCCaptureLogic(path: NodePath<t.Expression | t.Statement>, restore
         stackFrame,
       ])),
       nodeStmt,
-      t.expressionStatement(t.callExpression(popEagerStack, [])),
+      t.expressionStatement(t.callExpression(shiftEagerStack, [])),
     ]),
     t.ifStatement(
       t.binaryExpression('===', target, applyLbl),
       t.blockStatement([
-        t.expressionStatement(t.callExpression(pushEagerStack, [
-          stackFrame,
-        ])),
         restoreCall(),
-        t.expressionStatement(t.callExpression(popEagerStack, [])),
+        t.expressionStatement(t.callExpression(shiftEagerStack, [])),
       ])));
   (<any>ifStmt).isTransformed = true;
 
@@ -269,6 +266,7 @@ function eagerTCCaptureLogic(path: NodePath<t.Expression | t.Statement>, restore
   (stmtParent.replaceWith(ifStmt), stmtParent.skip()) :
   (path.replaceWith(ifApply), path.skip());
 }
+
 const jumper: Visitor = {
   UpdateExpression: {
     exit(path: NodePath<t.UpdateExpression>): void {

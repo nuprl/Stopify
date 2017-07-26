@@ -54,10 +54,10 @@ export function stopProgramTest(srcFile: string, transform: string) {
   assert.equal(runner.status, 0, `failed to stop ${srcFile} with ${transform}`)
 }
 
-export function stopifyTest(srcFile: string, transform: string) {
+export function stopifyTest(srcFile: string, transform: string, interval: number) {
   const runner = spawnSync(
     './bin/stopify',
-    ['-i', srcFile, '-t', transform, '-o', 'eval', '-y', '500']
+    ['-i', srcFile, '-t', transform, '-o', 'eval', '-y', interval]
   )
 
   assert.equal(runner.status, 0, (runner.stderr || "").toString());

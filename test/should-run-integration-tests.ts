@@ -5,7 +5,7 @@ describe('CPS integration tests', function () {
   this.timeout(0)
   f.intTests.forEach(function(filename: string) {
     it.skip(filename, function () {
-      f.stopifyTest(filename, 'cps')
+      f.stopifyTest(filename, 'cps', 500)
     })
   })
 })
@@ -14,7 +14,7 @@ describe('Yield integration tests', function () {
   this.timeout(0)
   f.intTests.forEach(function(filename: string) {
     it(filename, function () {
-      f.stopifyTest(filename, 'yield');
+      f.stopifyTest(filename, 'yield', 500);
     })
   })
 })
@@ -23,7 +23,7 @@ describe('Call/CC integration tests', function () {
   this.timeout(0)
   f.intTests.forEach(function(filename: string) {
     it(`${filename} (call/cc)`, function () {
-      f.stopifyTest(filename, 'callcc');
+      f.stopifyTest(filename, 'callcc', 1);
     })
   })
 })

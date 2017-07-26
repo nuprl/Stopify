@@ -2,6 +2,7 @@ import * as t from 'babel-types';
 import { NodePath } from 'babel-traverse';
 import * as h from '../common/helpers';
 import * as path from 'path';
+import { OptionsAST, IsEval } from "./helpers";
 
 let addRuntime = false
 
@@ -16,7 +17,18 @@ function skip<T>(t: T): Skip<T> {
 }
 
 const prog = {
-  exit(path: NodePath<h.IsEval<t.Program>>) {
+  enter(path: NodePath<OptionsAST<t.Program>>) {
+    if(path.node.options) {
+      console.error(path.node.options.no_eval)
+    }
+    if(path.node.options && path.node.options.no_eval) {
+      path.skip()
+    }
+  },
+  exit(path: NodePath<OptionsAST<IsEval<t.Program>>>) {
+    if(path.node.options && path.node.options.no_eval) {
+      path.skip()
+    }
     path.node.isEval = addRuntime
   }
 }
@@ -53,7 +65,8 @@ const newExpr = {
         path.replaceWith(skip(t.callExpression(
           t.identifier('eval'),
           [t.callExpression(t.identifier('$compile_func'),
-            [t.stringLiteral(name.name), body, t.arrayExpression([...path.node.arguments])])])))
+            [t.stringLiteral(name.name), body, t.arrayExpression(
+              [...path.node.arguments])])])))
       }
     }
   }

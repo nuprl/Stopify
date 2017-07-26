@@ -25,7 +25,7 @@ program
   .option('-d, --debug', 'Enable debugging')
   .option('--optimize', 'Enable optimization pass')
   .option('--tailcalls', 'Enable tailcalls (for generator based transform)')
-  .option('--no-eval', 'Assume safe eval')
+  .option('--noeval', 'Assume safe eval')
   .option('--benchmark', 'Output benchmarking information')
   .parse(process.argv)
 
@@ -77,7 +77,7 @@ const benchmark: boolean = program.benchmark || false;
 let opts: Options = {
   debug: program.debug,
   optimize: program.optimize,
-  no_eval: program.noEval,
+  no_eval: program.noeval,
   tail_calls: program.tailcalls,
 }
 
@@ -100,7 +100,7 @@ let reportOpts = optsToString({
   transform,
   debug: program.debug || false,
   optimize: program.optimize || false,
-  no_eval: program.noEval || false,
+  no_eval: program.noeval || false,
   tail_calls: program.tailcalls || false,
 })
 

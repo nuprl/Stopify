@@ -262,9 +262,11 @@ function eagerTCCaptureLogic(path: NodePath<t.Expression | t.Statement>, restore
 
   const ifApply = t.callExpression(t.arrowFunctionExpression([],
     t.blockStatement([ifStmt])), []);
-  const parentPath = path.getStatementParent();
-  t.isExpressionStatement(path.parent) ?
-  (parentPath.replaceWith(ifStmt), parentPath.skip()) :
+  const stmtParent = path.getStatementParent();
+  path.isStatement() ?
+  (path.replaceWith(ifStmt), path.skip()) :
+  t.isStatement(path.parent) ?
+  (stmtParent.replaceWith(ifStmt), stmtParent.skip()) :
   (path.replaceWith(ifApply), path.skip());
 }
 const jumper: Visitor = {

@@ -19,6 +19,7 @@ import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
 import hygiene from '../common/hygiene';
+import * as freeIds from '../common/freeIds';
 
 import { transform, letExpression } from '../common/helpers';
 import { NodePath, Visitor } from 'babel-traverse';
@@ -65,6 +66,7 @@ const visitor: Visitor = {
         desugarSwitch, desugarLogical]);
     trans(path, [anf]);
     trans(path, [declVars]);
+    freeIds.annotate(path);
     trans(path, [boxAssignables]);
     trans(path, [label]);
     trans(path, [[jumper, { captureMethod: 'lazyExn' }]]);

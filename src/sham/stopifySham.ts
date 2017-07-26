@@ -4,6 +4,7 @@ export const shamStopifyPrint: stopifyPrint = (code, opts) => {
   return `
   function $stopifiedProg($isStop, $onStop, $onDone, $interval) {
     ${code}
+    $onDone();
   }
   `
 }

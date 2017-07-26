@@ -4,11 +4,7 @@ import * as f from './testFixtures.js';
 describe('CPS integration tests', function () {
   this.timeout(0)
   f.intTests.forEach(function(filename: string) {
-    if (filename.indexOf("dart") >= 0) {
-      it.skip(filename);
-      return;
-    }
-    it(filename, function () {
+    it.skip(filename, function () {
       f.stopifyTest(filename, 'cps')
     })
   })

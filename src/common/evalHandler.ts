@@ -19,7 +19,6 @@ function skip<T>(t: T): Skip<T> {
 const prog = {
   enter(path: NodePath<OptionsAST<t.Program>>) {
     if(path.node.options) {
-      console.error(path.node.options.no_eval)
     }
     if(path.node.options && path.node.options.no_eval) {
       path.skip()

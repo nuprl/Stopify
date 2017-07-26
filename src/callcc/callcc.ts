@@ -39,6 +39,18 @@ function trans(path: NodePath<t.Node>, plugins: any[]) {
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
+    let runtimePath: string;
+    switch (state.opts.captureMethod) {
+      case 'lazyExn':
+        runtimePath = "stopify/built/src/callcc/lazyRuntime";
+        break;
+      case 'eagerExn':
+        runtimePath = "stopify/built/src/callcc/eagerRuntime";
+        break;
+      default:
+        throw new Error(`Stack strategy ${state.opts.captureMethod} does not exist`);
+    }
+
     const finalStatement =
       (state.opts.useReturn
        ? (e: t.Expression) => t.returnStatement(e)
@@ -55,7 +67,7 @@ const visitor: Visitor = {
     freeIds.annotate(path);
     trans(path, [boxAssignables]);
     trans(path, [label]);
-    trans(path, [[jumper, { captureMethod: 'eagerExn' }]]);
+    trans(path, [[jumper, { captureMethod: state.opts.captureMethod }]]);
     path.node.body.unshift(
       letExpression(
         t.identifier("$handleNew"),
@@ -76,7 +88,7 @@ const visitor: Visitor = {
         t.identifier("$__R"),
         t.callExpression(
           t.identifier("require"),
-          [t.stringLiteral("Stopify")]),
+          [t.stringLiteral(runtimePath)]),
         "const"));
     path.node.body.push(
       finalStatement(

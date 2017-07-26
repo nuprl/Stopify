@@ -114,7 +114,7 @@ export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
         markFlatFunctions
       ],
       [plugin],
-      [[callcc, { useReturn: true }]]
+      [[callcc, { useReturn: true, captureMethod: 'lazyExn' }]]
     ],
     opts);
   return r.code.slice(0, -1); // TODO(arjun): hack to deal with string/visitor mismatch

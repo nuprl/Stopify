@@ -179,8 +179,11 @@ function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restor
 
   const tryApply = t.callExpression(t.arrowFunctionExpression([],
     t.blockStatement([tryStmt])), []);
-  t.isExpressionStatement(path.parent) ?
-  (path.getStatementParent().replaceWith(tryStmt), path.getStatementParent().skip()) :
+  const stmtParent = path.getStatementParent();
+  path.isStatement() ?
+  (path.replaceWith(tryStmt), path.skip()) :
+  t.isStatement(path.parent) ?
+  (stmtParent.replaceWith(tryStmt), stmtParent.skip()) :
   (path.replaceWith(tryApply), path.skip());
 }
 

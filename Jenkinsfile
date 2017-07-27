@@ -1,13 +1,15 @@
 pipeline {
   agent any
 
+  tools {
+    nodejs 'node'
+  }
   stages {
     stage('Test') {
       steps {
-        nodejs(nodeJSInstallationName: 'node', configId: '') {
-          sh 'npm install'
-          sh 'npm run test:integration'
-        }
+        sh 'rm -r node_modules package-lock.json || true'
+        sh 'npm install'
+        sh 'npm run test:integration'
       }
     }
   }

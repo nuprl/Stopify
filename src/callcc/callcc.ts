@@ -119,7 +119,7 @@ export default function() {
 function main() {
   const filename = process.argv[2];
   const opts = {
-    plugins: [() => ({ visitor })],
+    plugins: [[() => ({ visitor }), { captureMethod: 'lazyExn' }]],
     babelrc: false
   };
   babel.transformFile(filename, opts, (err, result) => {

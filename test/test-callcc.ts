@@ -10,7 +10,7 @@ import * as fs from 'fs';
 function check(codeWithCallCC: string) {
   const { code: jsCode  } = babel.transform(codeWithCallCC, {
     babelrc: false,
-    plugins: [ CallCC ]
+    plugins: [ [ CallCC, { captureMethod: 'lazyExn' } ] ]
   });
   eval(jsCode!);
 }

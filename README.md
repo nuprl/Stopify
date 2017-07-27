@@ -1,4 +1,4 @@
-## Stopify [![Build Status](https://travis-ci.org/plasma-umass/Stopify.svg?branch=master)](https://travis-ci.org/plasma-umass/Stopify)
+## Stopify [![Build Status](http://23.20.114.147:5000/buildStatus/icon?job=stopify-build/master)](http://23.20.114.147:5000/job/stopify-build/job/master/)
 
 Web-based programming environments lack many basic features that programmers
 expect to find in desktop-based IDEs. For example, given a non-terminating

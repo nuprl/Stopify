@@ -71,7 +71,7 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
   }
   const { body } = path.node;
   const afterDecls = body.body.findIndex(e =>
-   !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
+    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(body.body, afterDecls);
 
   const locals = path.scope.generateUidIdentifier('locals');
@@ -482,8 +482,15 @@ const jumper: Visitor = {
   },
 
   FunctionExpression: {
+    enter(path: NodePath<FlatnessMark<Labeled<t.FunctionExpression>>>): void {
+      if (path.node.mark === 'Flat') {
+        path.skip()
+        return;
+      }
+    },
     exit(path: NodePath<FlatnessMark<Labeled<t.FunctionExpression>>>): void {
       if (path.node.mark === 'Flat') {
+        path.skip()
         return;
       }
       return func(path);
@@ -491,8 +498,15 @@ const jumper: Visitor = {
   },
 
   FunctionDeclaration: {
+    enter(path: NodePath<FlatnessMark<Labeled<t.FunctionDeclaration>>>): void {
+      if (path.node.mark === 'Flat') {
+        path.skip()
+        return;
+      }
+    },
     exit(path: NodePath<FlatnessMark<Labeled<t.FunctionDeclaration>>>): void {
       if (path.node.mark === 'Flat') {
+        path.skip()
         return;
       }
       return func(path);
@@ -500,8 +514,6 @@ const jumper: Visitor = {
   },
 
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
-    // These cannot appear in flat functions, so no check.
-
     path.node.test = t.logicalExpression('||',
       t.logicalExpression('&&',
         isRestoringMode, labelsIncludeTarget(getLabels(path.node))),

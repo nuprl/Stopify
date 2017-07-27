@@ -24,7 +24,7 @@ interface State {
 }
 
 const hasNff = [ "FunctionDeclaration", "FunctionExpression", "Program" ];
-const functionTypes = [ 'FunctionDeclaration', 'FuntionExpression' ];
+const functionTypes = [ 'FunctionDeclaration', 'FunctionExpression' ];
 
 const visitor = {
   Function(this: State, path: NodePath<t.Function & NestedFunctionFree>) {

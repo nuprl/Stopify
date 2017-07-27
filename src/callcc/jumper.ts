@@ -62,7 +62,7 @@ function isFlat(path: NodePath<t.Node>): boolean {
 }
 
 const func = function (path: NodePath<Labeled<FunctionT>>): void {
-  if (isFlat(path)) {
+  if ((<any>path.node).mark === 'Flat') {
     return;
   }
   const { body } = path.node;

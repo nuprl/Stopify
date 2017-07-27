@@ -57,7 +57,14 @@ const isRestoringMode = t.binaryExpression('===', runtimeModeKind, restoringMode
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);
 
+function isFlat(path: NodePath<t.Node>): boolean {
+  return (<any>path.getFunctionParent().node).mark === 'Flat';
+}
+
 const func = function (path: NodePath<Labeled<FunctionT>>): void {
+  if ((<any>path.node).mark === 'Flat') {
+    return;
+  }
   const { body } = path.node;
   const afterDecls = body.body.findIndex(e =>
    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
@@ -190,6 +197,9 @@ function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restor
 const jumper: Visitor = {
   UpdateExpression: {
     exit(path: NodePath<t.UpdateExpression>): void {
+      if (isFlat(path)) {
+        return;
+      }
       path.replaceWith(t.ifStatement(isNormalMode, t.expressionStatement(path.node)));
       path.skip();
     }
@@ -197,6 +207,9 @@ const jumper: Visitor = {
 
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>, s: State): void {
+      if (isFlat(path)) {
+        return;
+      }
       if (!t.isCallExpression(path.node.right)) {
         const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
         path.replaceWith(ifAssign);
@@ -234,6 +247,9 @@ const jumper: Visitor = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
+      if (isFlat(path)) {
+        return;
+      }
       const { test, consequent, alternate } = path.node;
       const newAlt = alternate === null ? alternate :
       t.ifStatement(t.logicalExpression('||',
@@ -295,6 +311,9 @@ const jumper: Visitor = {
 
   CatchClause: {
     exit(path: NodePath<t.CatchClause>): void {
+      if (isFlat(path)) {
+        return;
+      }
       const { param, body } = path.node;
       body.body.unshift(t.ifStatement(
         t.logicalExpression('||',

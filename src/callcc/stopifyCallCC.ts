@@ -106,6 +106,7 @@ function plugin() {
 
 
 export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
+  opts.optimize = true;
   const r = transform(
     code, [
       [ [cleanupGlobals, { allowed }],

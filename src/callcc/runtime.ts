@@ -160,6 +160,7 @@ export function resume(result: any) {
 
 let deltas: number[] = [];
 process.on('exit', () => {
+  console.log(`Suspension count: ${suspensionCount}`);
   console.log(deltas.reduce((x,y) => x + y) / deltas.length);
 
 });
@@ -176,19 +177,18 @@ export function suspend(interval: number, top: any) {
 
   const now = Date.now();
   const delta = now - lastYieldTime;
+
+  // The actual rate at which we were suspending : ms / tick
+  const timePerTick = delta / ticksPerInterval;
+  // The new estimate based on the last rate : ms / (ms / tick)
+  ticksPerInterval = Math.max(1, Math.floor(yieldInterval / timePerTick));
+  
   if (delta >= yieldInterval) {
     lastYieldTime = now;
     suspensionCount = ticksPerInterval;
     deltas.push(delta);
     return callCC(top);
   }
-
-  // Need to revise our estimated ticksPerInterval
-
-  // The actual rate at which we were suspending : ms / tick
-  const timePerTick = delta / ticksPerInterval;
-  // The new estimate based on the last rate : ms / (ms / tick)
-  ticksPerInterval = Math.max(1, Math.floor(yieldInterval / timePerTick));
 
   // How much longer?
   const remainingTime = yieldInterval - delta; // ms

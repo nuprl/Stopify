@@ -22,6 +22,7 @@ interface State {
 const captureLogics: { [key: string]: CaptureFun } = {
   lazyExn: tryCatchCaptureLogic,
   eagerExn: eagerTCCaptureLogic,
+  lazyErrVal: retvalCaptureLogic,
 };
 
 function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
@@ -267,6 +268,134 @@ function eagerTCCaptureLogic(path: NodePath<t.Expression | t.Statement>, restore
   (path.replaceWith(ifApply), path.skip());
 }
 
+function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
+  const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
+  const ret = path.scope.generateUidIdentifier('ret');
+
+  const funParent = <NodePath<FunctionT>>path.findParent(p =>
+    p.isFunctionExpression() || p.isFunctionDeclaration());
+  const funId = funParent.node.id, funParams = funParent.node.params,
+  funBody = funParent.node.body;
+
+  const afterDecls = funBody.body.findIndex(e =>
+    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
+  const { pre, post } = split(funBody.body, afterDecls);
+
+  const locals: t.LVal[] = [];
+  pre.forEach(decls => {
+    if (t.isVariableDeclaration(decls)) {
+      decls.declarations.forEach(x => locals.push(x.id))
+    }
+  });
+  for (const x of Object.keys(funParent.scope.bindings)) {
+    // Type definition is missing this case.
+    if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
+      continue;
+    }
+    locals.push(path.scope.getBinding(x).identifier);
+  }
+
+  const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
+    [t.thisExpression(), ...(<any>funParams)]);
+  const stackFrame = t.objectExpression([
+    t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+    t.objectProperty(
+      t.identifier('f'),
+      t.arrowFunctionExpression([], reapply)),
+    t.objectProperty(t.identifier('locals'),
+      t.arrayExpression(<any>locals)),
+    t.objectProperty(t.identifier('index'), applyLbl),
+  ]);
+
+  const nodeBlock: t.Statement[] = t.isReturnStatement(path.node) || t.isThrowStatement(path.node) ?
+  [
+    letExpression(ret, path.node.argument, 'const'),
+    t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
+      t.blockStatement([
+        t.expressionStatement(t.callExpression(
+          t.memberExpression(t.memberExpression(ret,
+            t.identifier('stack')), t.identifier('push')), [
+              stackFrame,
+            ])),
+        t.returnStatement(ret),
+      ]),
+      t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
+        t.returnStatement(ret))),
+  ] :
+  [
+    letExpression(ret, (<t.AssignmentExpression>path.node).right, 'const'),
+    t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
+      t.blockStatement([
+        t.expressionStatement(t.callExpression(
+          t.memberExpression(t.memberExpression(ret,
+            t.identifier('stack')), t.identifier('push')), [
+              stackFrame,
+            ])),
+        t.returnStatement(ret),
+      ]),
+      t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
+        t.returnStatement(ret))),
+    t.expressionStatement(t.assignmentExpression(
+      (<t.AssignmentExpression>path.node).operator,
+      (<t.AssignmentExpression>path.node).left, ret))
+  ];
+
+  const restoreNode = restoreCall();
+  const restoreBlock: t.Statement[] = t.isReturnStatement(restoreNode) || t.isThrowStatement(restoreNode) ?
+  [
+    letExpression(ret, restoreNode.argument, 'const'),
+    t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
+      t.blockStatement([
+        t.expressionStatement(t.callExpression(
+          t.memberExpression(t.memberExpression(ret,
+            t.identifier('stack')), t.identifier('push')), [
+              stackFrame,
+            ])),
+        t.returnStatement(ret),
+      ]),
+      t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
+        t.returnStatement(ret))),
+  ] :
+  [
+    letExpression(ret, (<any>restoreNode).expression.right, 'const'),
+    t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
+      t.blockStatement([
+        t.expressionStatement(t.callExpression(
+          t.memberExpression(t.memberExpression(ret,
+            t.identifier('stack')), t.identifier('push')), [
+              stackFrame,
+            ])),
+        t.returnStatement(ret),
+      ]),
+      t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
+        t.returnStatement(ret))),
+    t.expressionStatement(t.assignmentExpression(
+      (<any>restoreNode).expression.operator,
+      (<any>restoreNode).expression.left, ret))
+  ];
+
+  const ifStmt = t.ifStatement(
+    isNormalMode,
+    t.blockStatement([
+      ...nodeBlock,
+    ]),
+    t.ifStatement(
+      t.binaryExpression('===', target, applyLbl),
+      t.blockStatement([
+        ...restoreBlock,
+      ])));
+  (<any>ifStmt).isTransformed = true;
+
+  const ifApply = t.callExpression(t.arrowFunctionExpression([],
+    t.blockStatement([ifStmt])), []);
+  const stmtParent = path.getStatementParent();
+  path.isStatement() ?
+  (path.replaceWith(ifStmt), path.skip()) :
+  t.isStatement(path.parent) ?
+  (stmtParent.replaceWith(ifStmt), stmtParent.skip()) :
+  (path.replaceWith(ifApply), path.skip());
+}
+
 const jumper: Visitor = {
   UpdateExpression: {
     exit(path: NodePath<t.UpdateExpression>): void {
@@ -385,8 +514,9 @@ const jumper: Visitor = {
   },
 
   CatchClause: {
-    exit(path: NodePath<t.CatchClause>): void {
-      if (isFlat(path)) {
+    exit(path: NodePath<t.CatchClause>, s: State): void {
+      if (isFlat(path) ||
+        s.opts.captureMethod === 'lazyErrVal') {
         return;
       }
       const { param, body } = path.node;

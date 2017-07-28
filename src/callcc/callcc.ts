@@ -47,6 +47,9 @@ const visitor: Visitor = {
       case 'eagerExn':
         runtimePath = "stopify/built/src/callcc/eagerRuntime";
         break;
+      case 'lazyErrVal':
+        runtimePath = "stopify/built/src/callcc/retvalRuntime";
+        break;
       default:
         throw new Error(`Stack strategy ${state.opts.captureMethod} does not exist`);
     }
@@ -119,7 +122,7 @@ export default function() {
 function main() {
   const filename = process.argv[2];
   const opts = {
-    plugins: [[() => ({ visitor }), { captureMethod: 'lazyExn' }]],
+    plugins: [[() => ({ visitor }), { captureMethod: 'lazyErrVal' }]],
     babelrc: false
   };
   babel.transformFile(filename, opts, (err, result) => {

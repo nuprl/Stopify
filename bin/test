@@ -12,8 +12,7 @@ trap cleanup EXIT
 npm run build
 
 if [ "$1" == '-int' ]; then
-  ./node_modules/.bin/mocha built/test/unit-tests.js built/test/integration-tests.js
+  ./node_modules/.bin/mocha built/test/unit-tests.js built/test/integration-tests.js ${@:2}
 else
-  ./node_modules/.bin/mocha built/test/unit-tests.js
-
+  ./node_modules/.bin/mocha built/test/unit-tests.js $@
 fi

@@ -20,7 +20,7 @@ describe("Testing call/cc visitor", function() {
 
   const files = glob.sync("test/callcc/*.js", {});
   files.forEach((path: string) => {
-    it(`${path} (call/cc only)`, () => {
+    it.skip(`${path} (call/cc only)`, () => {
       check(fs.readFileSync(path, "utf-8").toString());
     });
   });

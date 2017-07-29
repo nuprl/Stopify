@@ -24,27 +24,43 @@ export type Mode = 'normal' | 'restoring';
 export let stack: Stack = [];
 export let mode: Mode = 'normal';
 
-
 // We throw this exception when a continuation value is applied. i.e.,
-// callCC applies its argument to a function that throws this exception.
+// captureCC applies its argument to a function that throws this exception.
 export class Restore {
   constructor(public stack: Stack) {}
 }
 
 // We throw this exception to capture the current continuation. i.e.,
-// callCC throws this exception when it is applied.
+// captureCC throws this exception when it is applied. This class needs to be
+// exported because source programs are instrumented to catch it.
 export class Capture {
   constructor(public f: (k: any) => any, public stack: Stack) {}
 }
 
-export function callCC(f: (k: any) => any) {
+// This exception does not need to be exported.
+class Discard {
+  constructor (public f: () => any) { }
+}
+
+/**
+ * Applies f to the current continuation in the empty context.
+ * 
+ * Semantics: E[captureCC(f)] --> f((v) => abortCC(E[v]))
+ * 
+ * WARNING: It is not possible to define callCC using captureCC. The obvious
+ * approach breaks the semantics of exceptions.
+ */
+export function captureCC(f: (k: any) => any) {
   throw new Capture(f, []);
 }
 
-export class Discard {
-  constructor (public f: () => any) {
-  }
+/**
+ * Discards the current continuation and then applies f.
+ */
+export function abortCC(f: () => any) {
+  throw new Discard(f);
 }
+
 
 // Helper function that constructs a top-of-stack frame.
 export function topK(f: () => any): KFrameTop {
@@ -67,20 +83,11 @@ export function makeCont(stack: Stack) {
   }
 }
 
-export function restore(aStack: KFrame[]): any {
-  assert(aStack.length > 0);
-  mode = 'restoring';
-  stack = aStack;
-  stack[stack.length - 1].f();
-}
-
 export function suspendCC(f: (k: any) => any): any {
-  return callCC(function(k) {
-    throw new Discard(() =>
-      f(function(x: any) {
-        setTimeout(() => runtime(() => k(x)), 0);
-      })
-  )
+  return captureCC((k) => {
+    return f(function(x: any) {
+      return setTimeout(() => runtime(() => k(x)), 0);
+      });
   });
 }
 
@@ -92,13 +99,12 @@ export function runtime(body: () => any): any {
     if (exn instanceof Capture) {
       // Recursive call to runtime addresses nested continuations. The return
       // statement ensures that the invocation is in tail position.
-      // At this point, exn.stack is the continuation of callCC, but doesn’t have
+      // At this point, exn.stack is the continuation of captureCC, but doesn’t have
       // a top-of-stack frame that actually restores the saved continuation. We
-      // need to apply the function passed to callCC to the stack here, because
+      // need to apply the function passed to captureCC to the stack here, because
       // this is the only point where the whole stack is ready.
-      return runtime(() =>
-                     // Doing exn.f makes "this" wrong.
-                     restore([topK(() => exn.f.call(global, makeCont(exn.stack))), ...exn.stack]));
+      // Doing exn.f makes "this" wrong.
+      return runtime(() => exn.f.call(global, makeCont(exn.stack)));
     }
     else if (exn instanceof Discard) {
       return runtime(() => exn.f());
@@ -106,8 +112,12 @@ export function runtime(body: () => any): any {
     else if (exn instanceof Restore) {
       // The current continuation has been discarded and we now restore the
       // continuation in exn.
-      return runtime(() =>
-        restore([...exn.stack]));
+      return runtime(() => {
+        stack = exn.stack;
+        assert(stack.length > 0);
+        mode = 'restoring';
+        stack[stack.length - 1].f();
+      });
     }
     else {
       throw exn; // userland exception
@@ -175,6 +185,6 @@ export function suspend(interval: number, top: any) {
   }
   if (--countDown === 0) {
     countDown = interval;
-    return callCC(top);
+    return captureCC(top);
   }
 }

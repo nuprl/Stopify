@@ -63,8 +63,8 @@ const visitor: Visitor = {
         "const"));
     path.node.body.unshift(
       letExpression(
-        t.identifier("callCC"),
-        t.memberExpression(t.identifier("$__R"), t.identifier("callCC")),
+        t.identifier("captureCC"),
+        t.memberExpression(t.identifier("$__R"), t.identifier("captureCC")),
         "const"));
     path.node.body.unshift(
       letExpression(

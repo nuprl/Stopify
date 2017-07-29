@@ -160,21 +160,55 @@ export function handleNew(constr: any, ...args: any[]) {
   return obj;
 }
 
-let countDown: number | undefined;
+
+
+let yieldInterval = Number(process.argv[2]);
+console.log(`Yield interval is ${yieldInterval}`);
+
+let lastYieldTime = 0;
+
+// Our estimate of how many times we reach suspend during a single
+// yield interval. The formula below is just our first guess.
+let ticksPerInterval = Math.max(1, Math.floor(yieldInterval / 10));
+let suspensionCount = ticksPerInterval;
 
 export function resume(result: any) {
   return setTimeout(() => runtime(result), 0);
 }
 
+let deltas: number[] = [];
+process.on('exit', () => {
+  console.log(`Suspension count: ${suspensionCount}`);
+  console.log(deltas.reduce((x,y) => x + y) / deltas.length);
+
+});
+
 export function suspend(interval: number, top: any) {
-  if (Number.isNaN(interval)) {
+  if (lastYieldTime === 0) {
+    lastYieldTime = Date.now();
     return;
   }
-  if (countDown === undefined) {
-    countDown = interval;
+
+  if (--suspensionCount > 0) {
+    return;
   }
-  if (--countDown === 0) {
-    countDown = interval;
+
+  const now = Date.now();
+  const delta = now - lastYieldTime;
+
+  // The actual rate at which we were suspending : ms / tick
+  const timePerTick = delta / ticksPerInterval;
+  // The new estimate based on the last rate : ms / (ms / tick)
+  ticksPerInterval = Math.max(1, Math.floor(yieldInterval / timePerTick));
+  
+  if (delta >= yieldInterval) {
+    lastYieldTime = now;
+    suspensionCount = ticksPerInterval;
+    deltas.push(delta);
     return callCC(top);
   }
+
+  // How much longer?
+  const remainingTime = yieldInterval - delta; // ms
+  suspensionCount = remainingTime / timePerTick; // ms / (ms / tick) = tick
 }

@@ -32,8 +32,8 @@ const reserved = [
   "$result"
 ];
 
-function appCallCC(receiver: t.Expression) {
-  return t.callExpression(t.identifier("callCC"), [receiver]);
+function appCaptureCC(receiver: t.Expression) {
+  return t.callExpression(t.identifier("captureCC"), [receiver]);
 }
 
 function handleBlock(body: t.BlockStatement) {
@@ -82,7 +82,7 @@ const visitor: Visitor = {
       const body = t.blockStatement(path.node.body);
       path.node.body = [
         letExpression(
-          result, appCallCC(t.functionExpression(undefined, [top],
+          result, appCaptureCC(t.functionExpression(undefined, [top],
             body))),
         t.ifStatement(
           t.binaryExpression("===", result, t.stringLiteral("done")),

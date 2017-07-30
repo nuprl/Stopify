@@ -40,8 +40,12 @@
     "test": "./bin/test",
     "test:integration": "./bin/test -int"
   },
-  "author": "Rachit Nigam",
-  "license": "ISC",
+  "contributors": [
+    { "name": "Rachit Nigam" },
+    { "name": "Samuel Baxter" },
+    { "name": "Arjun Guha" }
+  ],
+  "license": "BSD-3-Clause",
   "dependencies": {
     "@types/babel-generator": "^6.7.14",
     "@types/commander": "^2.9.1",

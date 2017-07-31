@@ -76,7 +76,7 @@ const visitor: Visitor = {
         t.identifier("$__R"),
         t.callExpression(
           t.identifier("require"),
-          [t.stringLiteral("stopify/built/src/callcc/runtime")]),
+          [t.stringLiteral("Stopify")]),
         "const"));
     path.node.body.push(
       finalStatement(

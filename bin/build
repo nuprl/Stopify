@@ -13,6 +13,7 @@ mkdir -p runtimes
 # link the stopify executable
 if ! hash stopify; then
   npm link
+  npm link Stopify
 fi
 
 if [ ! -L node_modules/stopify ]; then

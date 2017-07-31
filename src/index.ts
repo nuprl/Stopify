@@ -1,3 +1,2 @@
-import * as R from "./callcc/runtime";
-
-module.exports = R;
+export * from './callcc/runtime';
+export * from './callcc/callcc';

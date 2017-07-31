@@ -11,10 +11,10 @@ pipeline {
         sh 'npm run test:integration -- --reporter xunit --reporter-options output=results.xml'
       }
     }
-    stage('Publish Results') {
-      steps {
-        junit 'results.xml'
-      }
+  }
+  post {
+    always {
+      junit 'results.xml'
     }
   }
 }

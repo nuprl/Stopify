@@ -21,8 +21,8 @@ function containsCall<T>(path: NodePath<T>) {
 }
 
 export const visitor: Visitor = {
-  WhileStatement(path: NodePath<t.WhileStatement>) {
-    if (!containsCall(path.get('test'))) {
+  WhileStatement: function (path: NodePath<t.WhileStatement>) {
+    if (!containsCall(path.get('test')) && path.node.test.type !== 'CallExpression') {
       return;
     }
     const test = path.node.test;

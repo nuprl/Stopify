@@ -49,15 +49,6 @@ export function suspendCC(f: (k: any) => any): any {
   });
 }
 
-export function restore(aStack: common.Stack): any {
-  if (aStack.length === 0) {
-    throw new Error(`Can't restore from empty stack`);
-  }
-  mode = 'restoring';
-  stack = aStack;
-  stack[stack.length - 1].f();
-}
-
 export function runtime(body: () => any): any {
   try {
     body();

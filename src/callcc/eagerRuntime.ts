@@ -5,8 +5,12 @@ export let mode: common.Mode = 'normal';
 export let stack: common.Stack = [];
 export let eagerStack: common.Stack = [];
 
-export function callCC(f: (k: any) => any) {
+export function captureCC(f: (k: any) => any) {
   throw new common.Capture(f, [...eagerStack]);
+}
+
+export function abortCC(f: () => any) {
+  throw new common.Discard(f);
 }
 
 export function makeCont(stack: common.Stack) {
@@ -28,13 +32,12 @@ export function topK(f: () => any): common.KFrameTop {
   };
 }
 
-export function restore(aStack: common.Stack): any {
-  if (aStack.length === 0) {
-    throw new Error(`Can't restore from empty stack`);
-  }
-  mode = 'restoring';
-  stack = aStack;
-  stack[stack.length - 1].f();
+export function suspendCC(f: (k: any) => any): any {
+  return captureCC((k) => {
+    return f(function (x: any) {
+      return setTimeout(() => runtime(() => k(x)), 0);
+    });
+  });
 }
 
 export function runtime(body: () => any): any {
@@ -49,17 +52,22 @@ export function runtime(body: () => any): any {
       // a top-of-stack frame that actually restores the saved continuation. We
       // need to apply the function passed to callCC to the stack here, because
       // this is the only point where the whole stack is ready.
-      return runtime(() =>
-        // Doing exn.f makes "this" wrong.
-        restore([topK(() => exn.f.call(global, makeCont(exn.stack))), ...exn.stack]));
-    }
-    else if (exn instanceof common.Restore) {
+      // Doing exn.f makes "this" wrong.
+      return runtime(() => exn.f.call(global, makeCont(exn.stack)));
+    } else if (exn instanceof common.Discard) {
+      return runtime(() => exn.f());
+    } else if (exn instanceof common.Restore) {
       // The current continuation has been discarded and we now restore the
       // continuation in exn.
-      return runtime(() =>
-        restore([...exn.stack]));
-    }
-    else {
+      return runtime(() => {
+        if (exn.stack.length === 0) {
+          throw new Error(`Can't restore from empty stack`);
+        }
+        mode = 'restoring';
+        stack = exn.stack;
+        stack[stack.length - 1].f();
+      });
+    } else {
       throw exn; // userland exception
     }
   }
@@ -117,7 +125,7 @@ export function suspend(interval: number, top: any) {
   }
   if (--countDown === 0) {
     countDown = interval;
-    return callCC(top);
+    return captureCC(top);
   }
 }
 

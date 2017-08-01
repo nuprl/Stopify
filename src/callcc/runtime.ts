@@ -32,6 +32,10 @@ export class Capture {
   constructor(public f: (k: any) => any, public stack: Stack) {}
 }
 
+export class Discard {
+  constructor(public f: () => any) {}
+}
+
 declare function callCC(f: (k: any) => any): void;
 declare function topK(f: () => any): KFrameTop;
 // Wraps a stack in a function that throws an exception to discard the current

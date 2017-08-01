@@ -47,8 +47,8 @@ const visitor: Visitor = {
     trans(path, [desugarNew]);
 
     trans(path,
-          [[hygiene, { reserved: ["target"] }],
-           makeBlocks, nameExprs, desugarLoop, desugarLabel,
+      [[hygiene, { reserved: ["target"] }],
+        makeBlocks, nameExprs, desugarLoop, desugarLabel,
         desugarSwitch, desugarLogical]);
     trans(path, [anf]);
     trans(path, [declVars]);
@@ -58,25 +58,11 @@ const visitor: Visitor = {
     trans(path, [[jumper, { captureMethod: state.opts.captureMethod }]]);
     path.node.body.unshift(
       letExpression(
-        t.identifier("$handleNew"),
-        t.memberExpression(t.identifier("$__R"), t.identifier("handleNew")),
-        "const"));
-    path.node.body.unshift(
-      letExpression(
-        t.identifier("captureCC"),
-        t.memberExpression(t.identifier("$__R"), t.identifier("captureCC")),
-        "const"));
-    path.node.body.unshift(
-      letExpression(
-        t.identifier("suspendCC"),
-        t.memberExpression(t.identifier("$__R"), t.identifier("suspendCC")),
-        "const"));
-    path.node.body.unshift(
-      letExpression(
         t.identifier("$__R"),
-        t.callExpression(
+        t.memberExpression(t.callExpression(
           t.identifier("require"),
           [t.stringLiteral("Stopify")]),
+          t.identifier('default')),
         "const"));
     path.node.body.push(
       finalStatement(

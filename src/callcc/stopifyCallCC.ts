@@ -33,7 +33,8 @@ const reserved = [
 ];
 
 function appCaptureCC(receiver: t.Expression) {
-  return t.callExpression(t.identifier("captureCC"), [receiver]);
+  return t.callExpression(t.memberExpression(t.identifier('$__R'),
+    t.identifier('captureCC')), [receiver]);
 }
 
 function handleBlock(body: t.BlockStatement) {

@@ -4,8 +4,12 @@ export * from './runtime';
 export let stack: common.Stack = [];
 export let mode: common.Mode = 'normal';
 
-export function callCC(f: (k: any) => any): common.Capture {
+export function captureCC(f: (k: any) => any): common.Capture {
   return new common.Capture(f, []);
+}
+
+export function abortCC(f: () => any): common.Discard {
+  return new common.Discard(f);
 }
 
 export function makeCont(stack: common.Stack): (v: any) => common.Restore {
@@ -48,19 +52,35 @@ export function runtime(body: any): any {
       return runtime(() =>
         // Doing res.f makes "this" wrong.
         restore([topK(() => res.f.call(global, makeCont(res.stack))), ...res.stack]));
+    } else if (res instanceof common.Discard) {
+      return runtime(() => res.f());
     } else if (res instanceof common.Restore) {
       // The current continuation has been discarded and we now restore the
       // continuation in res.
-      return runtime(() =>
-        restore([...res.stack]));
+      return runtime(() => {
+        if (res.stack.length === 0) {
+          throw new Error(`Can't restore from empty stack`);
+        }
+        mode = 'restoring';
+        stack = res.stack;
+        return stack[stack.length - 1].f();
+      });
     }
 
     return res;
+  } else if (body instanceof common.Discard) {
+    return runtime(() => body.f());
   } else if (body instanceof common.Restore) {
     // The current continuation has been discarded and we now restore the
     // continuation in body.
-    return runtime(() =>
-      restore([...body.stack]));
+    return runtime(() => {
+      if (body.stack.length === 0) {
+        throw new Error(`Can't restore from empty stack`);
+      }
+      mode = 'restoring';
+      stack = body.stack;
+      return stack[stack.length - 1].f();
+    });
   }
 }
 
@@ -130,7 +150,7 @@ export function suspend(interval: number, top: any): any {
   }
   if (--countDown === 0) {
     countDown = interval;
-    return callCC(top);
+    return captureCC(top);
   }
 }
 

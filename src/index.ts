@@ -1,4 +1,4 @@
-import * as R from './callcc/runtime';
+import * as R from './callcc/eagerRuntime';
 import CallCC from './callcc/callcc';
 
 module.exports = R;

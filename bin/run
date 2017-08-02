@@ -1,0 +1,4 @@
+#!/bin/bash
+
+DIR=`dirname $0`
+node --harmony_tailcalls $DIR/../built/src/run $@

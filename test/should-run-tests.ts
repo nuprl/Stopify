@@ -32,17 +32,11 @@ describe('Yield transformation tests', function () {
   })
 })
 
-describe('Call/CC transformation tests', function () {
-  this.timeout(0)
+describe('call/cc', function() {
+  this.timeout(0);
   f.unitTests.forEach(function(filename: string) {
-    if (path.basename(filename).indexOf("eval") === 0) {
-      it.skip(filename);
-      return;
-    }
-    it(`${filename} (call/cc)`, function () {
-      f.stopifyTest(filename, 'eager', 1);
-      f.stopifyTest(filename, 'lazy', 1);
-      f.stopifyTest(filename, 'retval', 1);
-    })
-  })
-})
+    f.callCCTest(filename, "lazy");
+    f.callCCTest(filename, "eager");
+    f.callCCTest(filename, "retval");
+  });  
+});

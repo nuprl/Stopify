@@ -3,7 +3,7 @@ import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { transform, letExpression, flatBodyStatement } from '../common/helpers';
+import { Options, transform, letExpression, flatBodyStatement } from '../common/helpers';
 import * as fs from 'fs';
 import * as babylon from 'babylon';
 import cleanupGlobals from '../common/cleanupGlobals';
@@ -106,7 +106,9 @@ function plugin() {
 }
 
 
-export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
+function callCCStopifyPrint(code: string,
+  opts: Options,
+  strategy: 'eager' | 'lazy' | 'retval') {
   opts.optimize = true;
   const r = transform(
     code, [
@@ -115,22 +117,34 @@ export const callCCStopifyPrint: stopifyPrint = (code, opts) => {
         markFlatFunctions
       ],
       [plugin],
-      [[callcc, { useReturn: true, captureMethod: 'eager' }]]
+      [[callcc, { useReturn: true, captureMethod: strategy }]]
     ],
     opts);
   return r.code.slice(0, -1); // TODO(arjun): hack to deal with string/visitor mismatch
 }
 
-export const callCCStopify: stopifyFunction = (code, opts) => {
-  return eval(callCCStopifyPrint(code, opts));
+export const eagerStopifyPrint: stopifyPrint = (code, opts) =>
+  callCCStopifyPrint(code, opts, 'eager');
+export const lazyStopifyPrint: stopifyPrint = (code, opts) =>
+  callCCStopifyPrint(code, opts, 'lazy');
+export const retvalStopifyPrint: stopifyPrint = (code, opts) =>
+  callCCStopifyPrint(code, opts, 'retval');
 
+export const eagerStopify: stopifyFunction = (code, opts) => {
+  return eval(eagerStopifyPrint(code, opts));
+}
+export const lazyStopify: stopifyFunction = (code, opts) => {
+  return eval(lazyStopifyPrint(code, opts));
+}
+export const retvalStopify: stopifyFunction = (code, opts) => {
+  return eval(retvalStopifyPrint(code, opts));
 }
 
 function main() {
   const filename = process.argv[2];
   const code = fs.readFileSync(filename, 'utf-8').toString();
   const opts = { debug: false, optimize: false, tail_calls: false, no_eval: false };
-  console.log(callCCStopifyPrint(code, opts));
+  console.log(eagerStopifyPrint(code, opts));
 }
 
 if (require.main === module) {

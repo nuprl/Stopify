@@ -119,6 +119,9 @@ if (opts.mode === 'main') {
 else if (opts.mode === 'compile') {
   compile();
 }
+else {
+  throw new Error(`Invalid mode on command line (${opts.mode})`);
+}
 
 
 

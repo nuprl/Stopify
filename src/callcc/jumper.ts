@@ -41,6 +41,7 @@ function getLabels(node: Labeled<t.Node>): number[] {
 
 const target = t.identifier('target');
 const runtime = t.identifier('$__R');
+const types = t.identifier('$__T');
 const runtimeModeKind = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
 const eagerStack = t.memberExpression(runtime, t.identifier('eagerStack'));
@@ -53,8 +54,8 @@ const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
 const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
 const normalMode = t.stringLiteral('normal');
 const restoringMode = t.stringLiteral('restoring');
-const captureExn = t.memberExpression(runtime, t.identifier('Capture'));
-const restoreExn = t.memberExpression(runtime, t.identifier('Restore'));
+const captureExn = t.memberExpression(types, t.identifier('Capture'));
+const restoreExn = t.memberExpression(types, t.identifier('Restore'));
 
 const isNormalMode = t.binaryExpression('===', runtimeModeKind, normalMode);
 const isRestoringMode = t.binaryExpression('===', runtimeModeKind, restoringMode);

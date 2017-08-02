@@ -39,10 +39,7 @@ function trans(path: NodePath<t.Node>, plugins: any[]) {
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
-    let captureMethod = state.opts.captureMethod;
-    if (!captureMethod) {
-      captureMethod = 'eager';
-    }
+    let captureMethod = state.opts.captureMethod || 'eager';
 
     const finalStatement =
       (state.opts.useReturn
@@ -103,7 +100,7 @@ const visitor: Visitor = {
 };
 
 export default function() {
-  return { visitor: visitor };
+  return { visitor };
 }
 
 function main() {

@@ -132,6 +132,24 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
       target, t.numericLiteral(lbl)), acc), t.booleanLiteral(false));
 }
 
+/**
+ * Wrap callsites in try/catch block, lazily building the stack on catching a
+ * Capture exception, then rethrowing.
+ *
+ *  jumper [[ x = f_n(...args) ]] =
+ *    try {
+ *      if (mode === 'normal') {
+ *        x = f_n(...args);
+ *      } else if (mode === restoring && target === n) {
+ *        x = R.stack[R.stack.length-1].f();
+ *      }
+ *    } catch (exn) {
+ *      if (exn instanceof Capture) {
+ *        exn.stack.push(stackFrame);
+ *      }
+ *      throw exn;
+ *    }
+ */
 function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const exn = path.scope.generateUidIdentifier('exn');
@@ -201,6 +219,23 @@ function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCal
   (path.replaceWith(tryApply), path.skip());
 }
 
+/**
+ * Eagerly build the stack, pushing frames before applications and popping on
+ * their return. Capture exns are thrown straight to the runtime, passing the
+ * eagerly built stack along with it.
+ *
+ *  jumper [[ x = f_n(...args) ]] =
+ *    if (mode === 'normal') {
+ *      eagerStack.unshift(stackFrame);
+ *      x = f_n(...args);
+ *      eagerStack.shift();
+ *    } else if (mode === 'restoring' && target === n) {
+ *      // Don't have to `unshift` to rebuild stack because the eagerStack is
+ *      // preserved from when the Capture exn was thrown.
+ *      x = R.stack[R.stack.length-1].f();
+ *      eagerStack.shift();
+ *    }
+ */
 function eagerCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
 
@@ -270,6 +305,25 @@ function eagerCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCa
   (path.replaceWith(ifApply), path.skip());
 }
 
+/**
+ * Special return-value to conditionally capture stack frames and propogate
+ * returns up to the runtime.
+ *
+ *  jumper [[ x = f_n(...args) ]] =
+ *    if (mode === 'normal') {
+ *      x = f_n(...args);
+ *      if (x instanceof Capture) {
+ *        x.stack.push(stackFrame);
+ *        return x;
+ *      }
+ *    } else if (mode === 'restoring' && target === n) {
+ *      x = R.stack[R.stack.length-1].f();
+ *      if (x instanceof Capture) {
+ *        x.stack.push(stackFrame);
+ *        return x;
+ *      }
+ *    }
+ */
 function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const ret = path.scope.generateUidIdentifier('ret');

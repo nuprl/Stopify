@@ -15,9 +15,9 @@ export class LazyRuntime extends common.Runtime {
   }
 
   makeCont(stack: common.Stack) {
-    return function (v: any) {
-      throw new common.Restore([this.topK(() => v), ...this.stack]);
-    }
+    return (v: any) => {
+      throw new common.Restore([this.topK(() => v), ...stack]);
+    };
   }
 
   runtime(body: () => any): any {

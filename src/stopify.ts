@@ -3,8 +3,6 @@
 import { yieldStopifyPrint } from './yield/stopifyYield'
 import { regenStopifyPrint } from './yield/stopifyRegen'
 import { cpsStopifyPrint } from './cps/stopifyCps'
-import { eagerStopifyPrint, lazyStopifyPrint, retvalStopifyPrint }
-from './callcc/stopifyCallCC'
 import { tcpsStopifyPrint } from './cps/stopifyTCps'
 import { shamStopifyPrint } from './sham/stopifySham'
 import { stopifyPrint } from './interfaces/stopifyInterface'
@@ -40,7 +38,7 @@ function readFile(f: string): [string, string] {
 }
 
 function readTransform(str: string): string {
-  const validTransforms = ['cps', 'tcps', 'eager', 'lazy', 'retval', 'yield', 'regen', 'sham'];
+  const validTransforms = ['cps', 'tcps', 'yield', 'regen', 'sham'];
   if(validTransforms.includes(str)) {
     return str;
   } else {
@@ -118,15 +116,6 @@ switch(transform) {
     break;
   case 'tcps':
     stopifyFunc = tcpsStopifyPrint
-    break;
-  case 'eager':
-    stopifyFunc = eagerStopifyPrint
-    break;
-  case 'lazy':
-    stopifyFunc = lazyStopifyPrint
-    break;
-  case 'retval':
-    stopifyFunc = retvalStopifyPrint
     break;
   case 'sham':
     stopifyFunc = shamStopifyPrint

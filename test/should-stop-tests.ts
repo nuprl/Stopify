@@ -25,19 +25,9 @@ describe('Yield stopping tests', function () {
 
 describe('Call/CC stopping tests', function () {
   this.timeout(5000);
-  f.stopTests.forEach(function(filename: string) {
-    if (filename.indexOf("eval") >= 0) {
-      it.skip(filename);
-      return;
-    }
-    it(`${filename} (lazy)`, function () {
-      f.stopProgramTest(filename, 'lazy');
-    });
-    it(`${filename} (eager)`, function () {
-      f.stopProgramTest(filename, 'eager');
-    });
-    it(`${filename} (retval)`, function () {
-      f.stopProgramTest(filename, 'retval');
-    });
-  })
-})
+  f.stopTests.forEach((filename: string) => {
+    f.stopCallCCTest(filename, 'lazy');
+    f.stopCallCCTest(filename, 'eager');
+    f.stopCallCCTest(filename, 'retval');
+  });
+});

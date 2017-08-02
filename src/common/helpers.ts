@@ -1,5 +1,6 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
+import { NodePath, Visitor } from 'babel-traverse';
 import * as b from '../interfaces/steppifyInterface';
 import { SourceMapConsumer } from 'source-map';
 import * as smc from 'convert-source-map';
@@ -129,6 +130,23 @@ interface TransformResult {
   code: string,
   ast: t.Node,
   usesEval: boolean
+}
+
+/**
+ * A simple wrapper around Babel's `transformFromAst` function.
+ */
+export function transformFromAst(
+  path: NodePath<t.Node>,
+  plugins: any[],
+  ast = false,
+  code = false): babel.BabelFileResult {
+  const opts = {
+    plugins: plugins,
+    babelrc: false,
+    code: false,
+    ast: false
+  };
+  return babel.transformFromAst(path.node, undefined, opts);
 }
 
 function transform(src: string, plugs: any[][],

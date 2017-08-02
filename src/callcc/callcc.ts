@@ -39,6 +39,11 @@ function trans(path: NodePath<t.Node>, plugins: any[]) {
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
+    let captureMethod = state.opts.captureMethod;
+    if (!captureMethod) {
+      captureMethod = 'eager';
+    }
+
     const finalStatement =
       (state.opts.useReturn
        ? (e: t.Expression) => t.returnStatement(e)
@@ -55,15 +60,20 @@ const visitor: Visitor = {
     freeIds.annotate(path);
     trans(path, [boxAssignables]);
     trans(path, [label]);
-    trans(path, [[jumper, { captureMethod: state.opts.captureMethod }]]);
+    trans(path, [[jumper, { captureMethod: captureMethod }]]);
     path.node.body.unshift(
       letExpression(
-        t.identifier("$__R"),
-        t.memberExpression(t.callExpression(
-          t.identifier("require"),
-          [t.stringLiteral("Stopify")]),
-          t.identifier('default')),
-        "const"));
+        t.identifier('$__R'),
+        t.memberExpression(t.identifier('$__T'),
+          t.identifier(captureMethod)),
+        'const'));
+    path.node.body.unshift(
+      letExpression(
+        t.identifier('$__T'),
+        t.callExpression(
+          t.identifier('require'),
+          [t.stringLiteral('Stopify')]),
+        'const'));
     path.node.body.push(
       finalStatement(
         t.callExpression(
@@ -87,13 +97,13 @@ const visitor: Visitor = {
 };
 
 export default function() {
-  return { visitor };
+  return { visitor: visitor };
 }
 
 function main() {
   const filename = process.argv[2];
   const opts = {
-    plugins: [[() => ({ visitor }), { captureMethod: 'retval' }]],
+    plugins: [[() => ({ visitor }), { captureMethod: 'eager' }]],
     babelrc: false
   };
   babel.transformFile(filename, opts, (err, result) => {

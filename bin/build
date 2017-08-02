@@ -16,6 +16,6 @@ if ! hash stopify; then
   npm link Stopify
 fi
 
-if [ ! -L node_modules/stopify ]; then
-    (cd node_modules; ln -s .. stopify)
+if [ ! -L node_modules/Stopify ]; then
+    (cd node_modules; ln -s .. Stopify)
 fi

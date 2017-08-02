@@ -63,6 +63,12 @@ const visitor: Visitor = {
     trans(path, [[jumper, { captureMethod: captureMethod }]]);
     path.node.body.unshift(
       letExpression(
+        t.identifier('$handleNew'),
+        t.callExpression(t.memberExpression(t.memberExpression(t.identifier('$__R'),
+          t.identifier('handleNew')), t.identifier('bind')), [t.identifier('$__R')]),
+        'const'));
+    path.node.body.unshift(
+      letExpression(
         t.identifier('$__R'),
         t.memberExpression(t.identifier('$__T'),
           t.identifier(captureMethod)),

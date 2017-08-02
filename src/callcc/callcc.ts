@@ -20,22 +20,11 @@ import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
 import hygiene from '../common/hygiene';
 import * as freeIds from '../common/freeIds';
-
-import { transform, letExpression } from '../common/helpers';
+import * as h from '../common/helpers';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as babylon from 'babylon';
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
-
-function trans(path: NodePath<t.Node>, plugins: any[]) {
-  const opts = {
-    plugins: plugins,
-    babelrc: false,
-    code: false,
-    ast: false
-  };
-  babel.transformFromAst(path.node, undefined, opts);
-}
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -44,35 +33,35 @@ const visitor: Visitor = {
        ? (e: t.Expression) => t.returnStatement(e)
        : (e: t.Expression) => t.expressionStatement(e));
 
-    trans(path, [desugarNew]);
+    h.transformFromAst(path, [desugarNew]);
 
-    trans(path,
+    h.transformFromAst(path,
           [[hygiene, { reserved: ["target"] }],
            makeBlocks, nameExprs, desugarLoop, desugarLabel,
         desugarSwitch, desugarLogical]);
-    trans(path, [anf]);
-    trans(path, [declVars]);
+    h.transformFromAst(path, [anf]);
+    h.transformFromAst(path, [declVars]);
     freeIds.annotate(path);
-    trans(path, [boxAssignables]);
-    trans(path, [label]);
-    trans(path, [[jumper, { captureMethod: 'lazyExn' }]]);
+    h.transformFromAst(path, [boxAssignables]);
+    h.transformFromAst(path, [label]);
+    h.transformFromAst(path, [[jumper, { captureMethod: 'lazyExn' }]]);
     path.node.body.unshift(
-      letExpression(
+      h.letExpression(
         t.identifier("$handleNew"),
         t.memberExpression(t.identifier("$__R"), t.identifier("handleNew")),
         "const"));
     path.node.body.unshift(
-      letExpression(
+      h.letExpression(
         t.identifier("captureCC"),
         t.memberExpression(t.identifier("$__R"), t.identifier("captureCC")),
         "const"));
     path.node.body.unshift(
-      letExpression(
+      h.letExpression(
         t.identifier("suspendCC"),
         t.memberExpression(t.identifier("$__R"), t.identifier("suspendCC")),
         "const"));
     path.node.body.unshift(
-      letExpression(
+      h.letExpression(
         t.identifier("$__R"),
         t.callExpression(
           t.identifier("require"),

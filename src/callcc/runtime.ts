@@ -46,10 +46,6 @@ export abstract class Runtime {
     this.mode = 'normal';
   }
 
-  abortCC(f: () => any) {
-    throw new Discard(f);
-  }
-
   topK(f: () => any): KFrameTop {
     return {
       kind: 'top',

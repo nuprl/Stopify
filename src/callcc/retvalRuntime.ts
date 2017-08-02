@@ -9,6 +9,10 @@ class RetValRuntime extends common.Runtime {
     return new common.Capture(f, []);
   }
 
+  abortCC(f: () => any) {
+    return new common.Discard(f);
+  }
+
   makeCont(stack: common.Stack): (v: any) => common.Restore {
     return function (v: any) {
       return new common.Restore([this.topK(() => v), ...this.stack]);

@@ -40,7 +40,9 @@ describe('Call/CC transformation tests', function () {
       return;
     }
     it(`${filename} (call/cc)`, function () {
-      f.stopifyTest(filename, 'callcc', 1);
+      f.stopifyTest(filename, 'eager', 1);
+      f.stopifyTest(filename, 'lazy', 1);
+      f.stopifyTest(filename, 'retval', 1);
     })
   })
 })

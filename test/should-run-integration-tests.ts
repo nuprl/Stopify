@@ -23,7 +23,9 @@ describe('Call/CC integration tests', function () {
   this.timeout(0)
   f.intTests.forEach(function(filename: string) {
     it(`${filename} (call/cc)`, function () {
-      f.stopifyTest(filename, 'callcc', 1);
+      f.stopifyTest(filename, 'eager', 1);
+      f.stopifyTest(filename, 'lazy', 1);
+      f.stopifyTest(filename, 'retval', 1);
     })
   })
 })

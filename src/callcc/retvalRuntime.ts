@@ -14,9 +14,8 @@ class RetValRuntime extends common.Runtime {
   }
 
   makeCont(stack: common.Stack): (v: any) => common.Restore {
-    return function (v: any) {
-      return new common.Restore([this.topK(() => v), ...this.stack]);
-    }
+    return (v: any) =>
+      new common.Restore([this.topK(() => v), ...stack]);
   }
 
   runtime(body: any): any {

@@ -15,8 +15,11 @@
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^2.2.41",
     "@types/node": "^6.0.69",
+    "@types/selenium-webdriver": "^3.0.4",
     "@types/source-map": "^0.5.0",
+    "@types/sprintf": "0.0.28",
     "@types/tmp": "0.0.33",
+    "@types/webpack": "^3.0.5",
     "assert": "^1.4.1",
     "babel-cli": "^6.18.0",
     "babel-core": "^6.22.1",
@@ -67,8 +70,12 @@
     "express": "^4.15.2",
     "fs-extra": "^3.0.0",
     "graphlib": "^2.1.1",
+    "selenium-webdriver": "^3.5.0",
+    "sprintf": "^0.1.5",
     "stream-to-string": "^1.1.0",
-    "tmp": "0.0.31"
+    "tmp": "0.0.31",
+    "webpack": "^3.4.1",
+    "xvfb": "^0.2.3"
   },
   "bin": {
     "stopify": "bin/stopify"

@@ -30,8 +30,14 @@ describe('Call/CC stopping tests', function () {
       it.skip(filename);
       return;
     }
-    it(filename, function () {
-      f.stopProgramTest(filename, 'callcc');
-    })
+    it(`${filename} (lazy)`, function () {
+      f.stopProgramTest(filename, 'lazy');
+    });
+    it(`${filename} (eager)`, function () {
+      f.stopProgramTest(filename, 'eager');
+    });
+    it(`${filename} (retval)`, function () {
+      f.stopProgramTest(filename, 'retval');
+    });
   })
 })

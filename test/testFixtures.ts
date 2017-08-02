@@ -1,11 +1,11 @@
 import * as babel from 'babel-core';
 import * as fs from 'fs';
 import * as path from 'path';
-import { spawnSync } from 'child_process';
+import { spawnSync, execSync } from 'child_process';
 import {transform} from '../src/common/helpers';
 import * as h from '../src/common/helpers'
 const assert = require('assert');
-const tmp = require('tmp');
+import * as tmp from 'tmp';
 const glob = require('glob');
 
 export const unitTests = glob.sync('test/should-run/*.js', {})
@@ -54,11 +54,44 @@ export function stopProgramTest(srcFile: string, transform: string) {
   assert.equal(runner.status, 0, `failed to stop ${srcFile} with ${transform}`)
 }
 
+function runStopifyCallCC(srcFile: string, interval?: number) {
+  const tmpJs = tmp.fileSync({ dir: ".", postfix: ".js" });
+  try {
+    const out = fs.createWriteStream(tmpJs.name, { fd: tmpJs.fd });
+    
+    assert.equal(
+      spawnSync(
+        "node", ["./built/src/callcc/toModule", srcFile],
+        { stdio: [ 'ignore', out, process.stderr ] }).status,
+      0,
+      "compile failed");
+
+      out.close();
+
+    const runArgs = ['./built/src/runStopify', tmpJs.name];
+    if (typeof interval === 'number') {
+      runArgs.push('-y');
+      runArgs.push(String(interval));
+    }
+    assert.equal(
+      spawnSync(
+        'node', runArgs, { stdio: [ 'ignore', 'ignore', 'inherit' ] }).status,
+      0,
+      "run failed");
+  }
+  finally {
+    tmpJs.removeCallback();
+  }
+}
+
 export function stopifyTest(srcFile: string, transform: string, interval: number) {
+  if (transform === 'callcc') {
+    return runStopifyCallCC(srcFile, interval);
+  }
+
   const runner = spawnSync(
     './bin/stopify',
     ['-i', srcFile, '-t', transform, '-o', 'eval', '-y', interval]
-  )
-
+  );
   assert.equal(runner.status, 0, (runner.stderr || "").toString());
 }

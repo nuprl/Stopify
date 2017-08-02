@@ -3,7 +3,7 @@ import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { Options, transform, letExpression, flatBodyStatement } from '../common/helpers';
+import * as h from '../common/helpers';
 import * as fs from 'fs';
 import * as babylon from 'babylon';
 import cleanupGlobals from '../common/cleanupGlobals';
@@ -55,7 +55,7 @@ function handleFunction(path: NodePath<t.Node> & BlockBody) {
   handleBlock(path.node.body);
 }
 
-const visitor: Visitor = {
+const insertSuspend: Visitor = {
   FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
     handleFunction(path);
   },
@@ -82,7 +82,7 @@ const visitor: Visitor = {
           t.callExpression(top, [t.stringLiteral("done")])));
       const body = t.blockStatement(path.node.body);
       path.node.body = [
-        letExpression(
+        h.letExpression(
           result, appCaptureCC(t.functionExpression(undefined, [top],
             body))),
         t.ifStatement(
@@ -99,7 +99,21 @@ const visitor: Visitor = {
 
 }
 
-function plugin() {
+export const visitor: Visitor = {
+  Program(path: NodePath<t.Program>, state) {
+    path.stop();
+    h.transformFromAst(path, [
+      [cleanupGlobals, { allowed }],
+      [hygiene, { reserved }],
+      [markFlatFunctions, { optimize: true }]
+    ]);
+    h.transformFromAst(path, [() => ({ visitor: insertSuspend })]);
+    h.transformFromAst(path, 
+      [[callcc, { useReturn: true, captureMethod: state.captureMethod }]]);
+  }
+}
+
+export function plugin() {
   return {
     visitor: visitor
   };
@@ -107,20 +121,16 @@ function plugin() {
 
 
 function callCCStopifyPrint(code: string,
-  opts: Options,
+  opts: h.Options,
   strategy: 'eager' | 'lazy' | 'retval') {
   opts.optimize = true;
-  const r = transform(
-    code, [
-      [ [cleanupGlobals, { allowed }],
-        [hygiene, { reserved }],
-        markFlatFunctions
-      ],
-      [plugin],
-      [[callcc, { useReturn: true, captureMethod: strategy }]]
-    ],
-    opts);
-  return r.code.slice(0, -1); // TODO(arjun): hack to deal with string/visitor mismatch
+  const r = babel.transform(code, {
+    babelrc: false,
+    plugins: [ [ plugin, { captureMethod: strategy } ] ],
+    ast: false,
+    code: true
+  });
+  return r.code!.slice(0, -1); // TODO(arjun): hack to deal with string/visitor mismatch
 }
 
 export const eagerStopifyPrint: stopifyPrint = (code, opts) =>

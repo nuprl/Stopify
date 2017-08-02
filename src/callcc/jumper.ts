@@ -56,6 +56,7 @@ const normalMode = t.stringLiteral('normal');
 const restoringMode = t.stringLiteral('restoring');
 const captureExn = t.memberExpression(types, t.identifier('Capture'));
 const restoreExn = t.memberExpression(types, t.identifier('Restore'));
+const discardExn = t.memberExpression(types, t.identifier('Discard'));
 
 const isNormalMode = t.binaryExpression('===', runtimeModeKind, normalMode);
 const isRestoringMode = t.binaryExpression('===', runtimeModeKind, restoringMode);
@@ -321,7 +322,9 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
         t.returnStatement(ret),
       ]),
       t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
-        t.returnStatement(ret))),
+        t.returnStatement(ret),
+        t.ifStatement(t.binaryExpression('instanceof', ret, discardExn),
+          t.returnStatement(ret)))),
   ] :
   [
     letExpression(ret, (<t.AssignmentExpression>path.node).right, 'const'),
@@ -335,7 +338,9 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
         t.returnStatement(ret),
       ]),
       t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
-        t.returnStatement(ret))),
+        t.returnStatement(ret),
+        t.ifStatement(t.binaryExpression('instanceof', ret, discardExn),
+          t.returnStatement(ret)))),
     t.expressionStatement(t.assignmentExpression(
       (<t.AssignmentExpression>path.node).operator,
       (<t.AssignmentExpression>path.node).left, ret))
@@ -355,7 +360,9 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
         t.returnStatement(ret),
       ]),
       t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
-        t.returnStatement(ret))),
+        t.returnStatement(ret),
+        t.ifStatement(t.binaryExpression('instanceof', ret, discardExn),
+          t.returnStatement(ret)))),
   ] :
   [
     letExpression(ret, (<any>restoreNode).expression.right, 'const'),
@@ -369,7 +376,9 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
         t.returnStatement(ret),
       ]),
       t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
-        t.returnStatement(ret))),
+        t.returnStatement(ret),
+        t.ifStatement(t.binaryExpression('instanceof', ret, discardExn),
+          t.returnStatement(ret)))),
     t.expressionStatement(t.assignmentExpression(
       (<any>restoreNode).expression.operator,
       (<any>restoreNode).expression.left, ret))
@@ -524,7 +533,9 @@ const jumper: Visitor = {
       body.body.unshift(t.ifStatement(
         t.logicalExpression('||',
           t.binaryExpression('instanceof', param, captureExn),
-          t.binaryExpression('instanceof', param, restoreExn)),
+          t.logicalExpression('||',
+            t.binaryExpression('instanceof', param, restoreExn),
+            t.binaryExpression('instanceof', param, discardExn))),
         t.throwStatement(param)));
       path.skip();
     }

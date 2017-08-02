@@ -93,7 +93,7 @@ export default function() {
 function main() {
   const filename = process.argv[2];
   const opts = {
-    plugins: [[() => ({ visitor }), { captureMethod: 'lazyErrVal' }]],
+    plugins: [[() => ({ visitor }), { captureMethod: 'retval' }]],
     babelrc: false
   };
   babel.transformFile(filename, opts, (err, result) => {

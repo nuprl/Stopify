@@ -11,7 +11,7 @@ type Labeled<T> = T & {
 }
 type CaptureFun = (path: NodePath<t.Node>, restoreCall: () => t.Statement) => void;
 
-export type CaptureLogic = 'lazyExn' | 'eagerExn' | 'lazyErrVal';
+export type CaptureLogic = 'lazy' | 'eager' | 'retval';
 
 interface State {
   opts: {
@@ -20,9 +20,9 @@ interface State {
 }
 
 const captureLogics: { [key: string]: CaptureFun } = {
-  lazyExn: tryCatchCaptureLogic,
-  eagerExn: eagerTCCaptureLogic,
-  lazyErrVal: retvalCaptureLogic,
+  lazy: lazyCaptureLogic,
+  eager: eagerCaptureLogic,
+  retval: retvalCaptureLogic,
 };
 
 function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
@@ -130,7 +130,7 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
       target, t.numericLiteral(lbl)), acc), t.booleanLiteral(false));
 }
 
-function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
+function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const exn = path.scope.generateUidIdentifier('exn');
 
@@ -199,7 +199,7 @@ function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restor
   (path.replaceWith(tryApply), path.skip());
 }
 
-function eagerTCCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
+function eagerCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
 
   const funParent = <NodePath<FunctionT>>path.findParent(p =>
@@ -516,7 +516,7 @@ const jumper: Visitor = {
   CatchClause: {
     exit(path: NodePath<t.CatchClause>, s: State): void {
       if (isFlat(path) ||
-        s.opts.captureMethod === 'lazyErrVal') {
+        s.opts.captureMethod === 'retval') {
         return;
       }
       const { param, body } = path.node;

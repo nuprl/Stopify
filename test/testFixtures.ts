@@ -84,6 +84,27 @@ export function callCCTest(srcPath: string, transform: string) {
   });
 }
 
+export function browserTest(srcPath: string, transform: string) {
+  const testName = `${srcPath} (${transform}) (in-browser)`;
+
+  // Skip tests we know we can't handle
+  if ( srcPath.indexOf("dart") >= 0 ||
+      srcPath.indexOf("ocaml") >= 0) {
+    it.skip(testName);
+    return;
+  }
+
+  it(testName, () => {
+    const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: ".js" });
+    const { name: htmlPath } = tmp.fileSync({ dir: ".", postfix: ".html" });
+    execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
+    execSync(`./bin/webpack ${dstPath} ${htmlPath}`);
+    execSync(`./bin/browser ${htmlPath} --yield 1000`);
+    fs.unlinkSync(dstPath);
+    fs.unlinkSync(htmlPath);
+  });
+}
+
 export function stopCallCCTest(srcPath: string, transform: string) {
   const testName = `${srcPath} (${transform}) (infinite loop)`;
 

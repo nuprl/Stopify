@@ -6,7 +6,7 @@ function getArgs(): string[] {
     return [];
   };
 
-  return JSON.parse(window.location.hash.slice(1));
+  return JSON.parse(decodeURIComponent(window.location.hash.slice(1)));
 }
 
 export default function(M: Stoppable, filename: string) {

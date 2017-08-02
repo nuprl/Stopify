@@ -1,11 +1,17 @@
 import * as selenium from 'selenium-webdriver';
 import * as path from 'path';
+import * as runtime from './runtime/default';
+
+const args = process.argv.slice(2);
+const opts = runtime.parseRuntimeOpts(args);
 
 function suffixAfter(str: string, key: string) {
   return str.slice(str.indexOf(' ')! + 1);
 }
 
-const src = 'file://' + path.resolve('.', process.argv[2]);
+
+const src = 'file://' + path.resolve('.', opts.filename) + 
+  '#' + encodeURIComponent(JSON.stringify(args));
 
 const loggingPrefs = new selenium.logging.Preferences();
 loggingPrefs.setLevel('browser', 'all');

@@ -10,6 +10,10 @@ export class LazyRuntime extends common.Runtime {
     throw new common.Capture(f, []);
   }
 
+  abortCC(f: () => any) {
+    throw new common.Discard(f);
+  }
+
   makeCont(stack: common.Stack) {
     return function (v: any) {
       throw new common.Restore([this.topK(() => v), ...this.stack]);

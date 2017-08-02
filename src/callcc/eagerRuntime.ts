@@ -12,6 +12,10 @@ export class EagerRuntime extends common.Runtime {
     throw new common.Capture(f, [...this.eagerStack]);
   }
 
+  abortCC(f: () => any) {
+    throw new common.Discard(f);
+  }
+
   makeCont(stack: common.Stack) {
     return (v: any) => {
       this.eagerStack = [...stack];

@@ -10,17 +10,32 @@ const parseOpts = {
 
 interface Opts {
   filename: string,
-  yieldInterval: number
+  yieldInterval: number,
+  appArgs: string[]
 }
 
 export function parseRuntimeOpts(args: string[], filename?: string): Opts {
 
   const rawOpts = minimist(args, parseOpts);
 
-  if (!(rawOpts._.length === 1 || filename)) {
+  if (rawOpts._.length >= 1 || filename) {
+    filename = filename || rawOpts._[0];
+  }
+  else {
     throw 'Expected one file';
   }
-  filename = filename || rawOpts._[0];
+
+  let appArgs: string[] | undefined;
+
+  if (rawOpts._.length >= 2) {
+    appArgs = rawOpts._.slice(1);
+  }
+  else if (rawOpts._.length === 1) {
+    appArgs = [];
+  }
+  else {
+    throw new Error(`Expected at least a filename`);
+  }
 
   let yieldInterval : number | undefined;
 
@@ -34,7 +49,11 @@ export function parseRuntimeOpts(args: string[], filename?: string): Opts {
     throw 'Yield interval must be a number';
   }
 
-  return { filename, yieldInterval: yieldInterval! };
+  return { 
+    filename, 
+    yieldInterval: yieldInterval!,
+    appArgs: appArgs!
+   };
 
 }
 
@@ -58,5 +77,5 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
 
   const startTime = Date.now();
 
-  M(isStop, onStop, onDone, opts.yieldInterval);
+  M(isStop, onStop, onDone, opts.yieldInterval, opts.appArgs);
 }

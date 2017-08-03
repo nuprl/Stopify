@@ -1,4 +1,5 @@
 export type Stoppable = (isStop: () => boolean, 
                          onStop: () => void,
                          onDone: () => void, 
-                         interval: number) => void
+                         interval: number,
+                         args: string[]) => void

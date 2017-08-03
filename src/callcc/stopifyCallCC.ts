@@ -20,7 +20,8 @@ const result = t.identifier("$result");
 const allowed = [
   "Object",
   "require",
-  "console"
+  "console",
+  "args"
 ];
 
 const reserved = [

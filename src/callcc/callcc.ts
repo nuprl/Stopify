@@ -78,11 +78,12 @@ const visitor: Visitor = {
       const onStop = t.identifier("$onStop");
       const onDone = t.identifier("$onDone");
       const interval = t.identifier("$interval");
+      const args = t.identifier("args");
 
       path.node.body = [t.expressionStatement(
         t.functionExpression(
           void 0,
-          [isStop, onStop, onDone, interval], t.blockStatement(path.node.body, path.node.directives)))];
+          [isStop, onStop, onDone, interval, args], t.blockStatement(path.node.body, path.node.directives)))];
       path.node.directives = undefined;
     }
     path.stop();

@@ -7,15 +7,6 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-# Create the runtimes directory
-mkdir -p runtimes
-
-# link the stopify executable
-if ! hash stopify; then
-  npm link
-  npm link Stopify
-fi
-
-if [ ! -L node_modules/stopify ]; then
-    (cd node_modules; ln -s .. stopify)
+if [ ! -L node_modules/Stopify ]; then
+    (cd node_modules; ln -s .. Stopify)
 fi

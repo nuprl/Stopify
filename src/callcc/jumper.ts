@@ -99,10 +99,10 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
 
   for (const x of Object.keys(path.scope.bindings)) {
     // Type definition is missing this case.
-    if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
+    if (<string>(path.scope.getBinding(x)!.kind) !== 'hoisted') {
       continue;
     }
-    restore1(path.scope.getBinding(x).identifier);
+    restore1(path.scope.getBinding(x)!.identifier);
   }
 
   const restoreBlock = t.blockStatement([
@@ -171,10 +171,10 @@ function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCal
   });
   for (const x of Object.keys(funParent.scope.bindings)) {
     // Type definition is missing this case.
-    if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
+    if (<string>(path.scope.getBinding(x)!.kind) !== 'hoisted') {
       continue;
     }
-    locals.push(path.scope.getBinding(x).identifier);
+    locals.push(path.scope.getBinding(x)!.identifier);
   }
 
   const nodeStmt = t.isStatement(path.node) ?
@@ -256,10 +256,10 @@ function eagerCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCa
   });
   for (const x of Object.keys(funParent.scope.bindings)) {
     // Type definition is missing this case.
-    if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
+    if (<string>(path.scope.getBinding(x)!.kind) !== 'hoisted') {
       continue;
     }
-    locals.push(path.scope.getBinding(x).identifier);
+    locals.push(path.scope.getBinding(x)!.identifier);
   }
 
   const nodeStmt = t.isStatement(path.node) ?
@@ -345,10 +345,10 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
   });
   for (const x of Object.keys(funParent.scope.bindings)) {
     // Type definition is missing this case.
-    if (<string>(path.scope.getBinding(x).kind) !== 'hoisted') {
+    if (<string>(path.scope.getBinding(x)!.kind) !== 'hoisted') {
       continue;
     }
-    locals.push(path.scope.getBinding(x).identifier);
+    locals.push(path.scope.getBinding(x)!.identifier);
   }
 
   const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),

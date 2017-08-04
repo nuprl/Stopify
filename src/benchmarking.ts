@@ -77,6 +77,13 @@ function exec(cmd: string) {
   return execSync(cmd, { stdio: 'inherit', shell: '/bin/bash' });
 }
 
+function creates(path: string, thunk: (path: string) => void): void {
+  if (fs.existsSync(path)) {
+    return;
+  }
+  thunk(path);
+}
+
 function execCreates(cmd: string, expected: string) {
   if (fs.existsSync(expected)) {
     return;
@@ -84,19 +91,23 @@ function execCreates(cmd: string, expected: string) {
   exec(cmd);
 }
 
+const nodeBin = "$HOME/.nvm/versions/node/v8.2.1/bin/node "
+
 function main() {
   const wd = opts.wd || createWorkingDirectory();
 
 
   const sshloginfile = path.resolve(wd, 'sshloginfile');
-  fs.writeFileSync(sshloginfile, parseSlurmNodelist(), 'utf8');
+  fs.writeFileSync(sshloginfile, '8/10.200.0.9\n12/10.200.0.6', 'utf8');
 
-  fs.mkdirSync(`${wd}/node_modules`);
-  fs.symlinkSync(path.resolve('.'), `${wd}/node_modules/Stopify`);
+  creates(`${wd}/node_modules`, p => fs.mkdirSync(p));
+  creates(`${wd}/node_modules/Stopify`, p => fs.symlinkSync(path.resolve('.'), p));
 
-  exec(`parallel -j 1 --sshloginfile ${sshloginfile} \
-    cd $PWD '&&' node ./built/src/benchmarking --mode=compile --wd=${wd}  \
+  exec(`parallel --sshloginfile ${sshloginfile} \
+    cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=compile --wd=${wd}  \
     --src={1} ::: benchmarks/{scala,python}/js-build/*`);
+  exec(`parallel --sshloginfile ${sshloginfile} \
+    cd $PWD '&&' ${nodeBin} ./built/src/runStopify {1} ::: ${wd}/*.js`);
 
 }
 
@@ -108,8 +119,8 @@ function compile() {
   const dstJs = `${wd}/${language}-${base}.js`;
   const dstHtml = `${wd}/${language}-${base}.html`;
 
-  execCreates(`node ./built/src/callcc/toModule ${src} > ${dstJs}`, dstJs);
-  execCreates(`node ./built/src/webpack/webpack ${dstJs} ${dstHtml}`, dstHtml);
+  execCreates(`${nodeBin} ./built/src/callcc/toModule ${src} > ${dstJs}`, dstJs);
+  execCreates(`${nodeBin} ./built/src/webpack/webpack ${dstJs} ${dstHtml}`, dstHtml);
 }
 
 

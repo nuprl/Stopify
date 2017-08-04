@@ -90,13 +90,15 @@ export function topK(f: () => any): KFrameTop {
 // continuation. The exception carries the provided stack with a final frame
 // that returns the supplied value.
 export function makeCont() {
-  //const aStack = stack;
+  const aStack = stack;
+  stack = [];
   return function (v: any) {
-    throw new Restore([topK(() => v), ...stack]);
+    throw new Restore([topK(() => v), ...aStack]);
   }
 }
 
 export function suspendCC(f: (k: any) => any): any {
+  throw 'bad';
   return captureCC((k) => {
     return f(function(x: any) {
       return setTimeout(() => runtime(() => k(x)), 0);
@@ -117,18 +119,18 @@ export function runtime(body: () => any): any {
       // need to apply the function passed to captureCC to the stack here, because
       // this is the only point where the whole stack is ready.
       // Doing exn.f makes "this" wrong.
-      return runtime(() => exn.f.call(global, makeCont()));
+      const k = makeCont();
+      return runtime(() => exn.f.call(global, k));
     }
     else if (exn instanceof Discard) {
       return runtime(() => exn.f());
     }
     else if (exn instanceof Restore) {
+      stack = exn.stack;
+      mode = 'restoring';
       // The current continuation has been discarded and we now restore the
       // continuation in exn.
       return runtime(() => {
-        stack = exn.stack;
-        assert(stack.length > 0);
-        mode = 'restoring';
         stack[stack.length - 1].f();
       });
     }

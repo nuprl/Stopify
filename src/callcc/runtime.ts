@@ -21,8 +21,20 @@ export type Stack = KFrame[];
 // from a captured `Stack`.
 export type Mode = 'normal' | 'restoring';
 
-export let stack: Stack = [];
+let stack: Stack = [];
 export let mode: Mode = 'normal';
+
+export function pushStack(frame: KFrame) {
+  stack.push(frame);
+}
+
+export function popStack(): KFrame {
+  return stack.pop()!;
+}
+
+export function peekStack(): KFrame {
+  return stack[stack.length - 1];
+}
 
 // We throw this exception when a continuation value is applied. i.e.,
 // captureCC applies its argument to a function that throws this exception.
@@ -34,7 +46,7 @@ export class Restore {
 // captureCC throws this exception when it is applied. This class needs to be
 // exported because source programs are instrumented to catch it.
 export class Capture {
-  constructor(public f: (k: any) => any, public stack: Stack) {}
+  constructor(public f: (k: any) => any) {}
 }
 
 // This exception does not need to be exported.
@@ -51,7 +63,7 @@ class Discard {
  * approach breaks the semantics of exceptions.
  */
 export function captureCC(f: (k: any) => any) {
-  throw new Capture(f, []);
+  throw new Capture(f);
 }
 
 /**
@@ -77,7 +89,8 @@ export function topK(f: () => any): KFrameTop {
 // Wraps a stack in a function that throws an exception to discard the current
 // continuation. The exception carries the provided stack with a final frame
 // that returns the supplied value.
-export function makeCont(stack: Stack) {
+export function makeCont() {
+  //const aStack = stack;
   return function (v: any) {
     throw new Restore([topK(() => v), ...stack]);
   }
@@ -104,7 +117,7 @@ export function runtime(body: () => any): any {
       // need to apply the function passed to captureCC to the stack here, because
       // this is the only point where the whole stack is ready.
       // Doing exn.f makes "this" wrong.
-      return runtime(() => exn.f.call(global, makeCont(exn.stack)));
+      return runtime(() => exn.f.call(global, makeCont()));
     }
     else if (exn instanceof Discard) {
       return runtime(() => exn.f());
@@ -158,7 +171,7 @@ export function handleNew(constr: any, ...args: any[]) {
   }
   catch (exn) {
     if (exn instanceof Capture) {
-      exn.stack.push({
+      pushStack({
         kind: "rest",
         f: () => handleNew(constr, ...args) ,
         locals: [obj],

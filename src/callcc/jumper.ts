@@ -39,13 +39,19 @@ function getLabels(node: Labeled<t.Node>): number[] {
 
 const target = t.identifier('target');
 const runtime = t.identifier('$__R');
+
+function fromRuntime(x: string) {
+  return t.memberExpression(runtime, t.identifier(x));
+}
+
 const runtimeModeKind = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
-const topOfRuntimeStack = t.memberExpression(runtimeStack,
-  t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
-const popStack = t.callExpression(t.memberExpression(runtimeStack,
-  t.identifier('pop')), []);
-const pushStack = t.memberExpression(runtimeStack, t.identifier('push'));
+const topOfRuntimeStack = t.callExpression(fromRuntime('peekStack'), []);
+const popStack = t.callExpression(fromRuntime('popStack'), []);
+
+function pushStack(x: t.Expression) {
+  return t.callExpression(fromRuntime('pushStack'),[x]);
+}
 const normalMode = t.stringLiteral('normal');
 const restoringMode = t.stringLiteral('restoring');
 const captureExn = t.memberExpression(runtime, t.identifier('Capture'));
@@ -169,7 +175,8 @@ function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restor
     t.catchClause(exn, t.blockStatement([
       t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
         t.blockStatement([
-          t.expressionStatement(t.callExpression(t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
+          t.expressionStatement(
+            pushStack(
             t.objectExpression([
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
               t.objectProperty(
@@ -178,11 +185,8 @@ function tryCatchCaptureLogic(path: NodePath<t.Expression | t.Statement>, restor
               t.objectProperty(t.identifier('locals'),
                 t.arrayExpression(<any>locals)),
               t.objectProperty(t.identifier('index'), applyLbl),
-            ]),
-          ]))
-        ])),
-      t.throwStatement(exn)
-    ])));
+            ])))])),
+      t.throwStatement(exn)])));
 
   const tryApply = t.callExpression(t.arrowFunctionExpression([],
     t.blockStatement([tryStmt])), []);

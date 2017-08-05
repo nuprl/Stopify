@@ -1,6 +1,7 @@
 import * as babel from 'babel-core';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { spawnSync, execSync } from 'child_process';
 import {transform} from '../src/common/helpers';
 import * as h from '../src/common/helpers'
@@ -108,9 +109,15 @@ export function browserTest(srcPath: string, transform: string) {
 export function stopCallCCTest(srcPath: string, transform: string) {
   const testName = `${srcPath} (${transform}) (infinite loop)`;
 
+  // Don't even try this on a non-Linux platform!
+  if (os.platform() !== 'linux') {
+    it.skip(testName);
+    return;
+  }
+
   // Skip tests that we know we can't handle
   if (srcPath.indexOf("eval") >= 0) {
-    it.skip(srcPath);
+    it.skip(testName);
     return;
   }
   it(testName, () => {

@@ -6,13 +6,19 @@ const assert = require('assert');
 import CallCC from '../src/callcc/callcc';
 const glob = require('glob');
 import * as fs from 'fs';
+import * as tmp from 'tmp';
+import { spawnSync, execSync } from 'child_process';
 
 function check(codeWithCallCC: string) {
   const { code: jsCode  } = babel.transform(codeWithCallCC, {
     babelrc: false,
-    plugins: [ [ CallCC, { captureMethod: 'lazyExn' } ] ]
+    plugins: [ [ CallCC, { captureMethod: 'lazy' } ] ]
   });
-  eval(jsCode!);
+  const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: ".js" });
+  fs.writeFileSync(dstPath, jsCode);
+  const { status } = spawnSync("node", ["--harmony_tailcalls", dstPath], { stdio: 'inherit' });
+  assert(status == 42);
+  fs.unlinkSync(dstPath);
 }
 
 describe("Testing call/cc visitor", function() {
@@ -24,3 +30,14 @@ describe("Testing call/cc visitor", function() {
   });
 
 });
+
+describe("Testing capture/cc visitor", function() {
+  const files = glob.sync("test/continuations/*.js", {});
+  files.forEach((path: string) => {
+    it(`${path} (call/cc only)`, () => {
+      check(fs.readFileSync(path, "utf-8").toString());
+    });
+  });
+
+});
+

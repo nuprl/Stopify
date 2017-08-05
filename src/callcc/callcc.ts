@@ -60,6 +60,11 @@ const visitor: Visitor = {
         "const"));
     path.node.body.unshift(
       h.letExpression(
+        t.identifier("captureCC"),
+        t.memberExpression(t.identifier("$__R"), t.identifier("captureCC")),
+        "const"));
+    path.node.body.unshift(
+      h.letExpression(
         t.identifier('$__R'),
         t.memberExpression(t.identifier('$__T'), t.identifier(captureMethod)),
         'const'));

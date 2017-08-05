@@ -6,7 +6,6 @@ const file = require('file');
 
 // NOTE(rachit): Don't use arrow functions, otherwise timeout doesn't work.
 describe('Sanity check -- All tests pass without plugins', function () {
-  this.timeout(0)
   f.unitTests.forEach(function(filename: string) {
     const prog = fs.readFileSync(filename, 'utf-8').toString();
     it(filename, function () {

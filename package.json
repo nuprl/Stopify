@@ -30,8 +30,9 @@
     "fs": "0.0.1-security",
     "fs-extra": "^3.0.1",
     "glob": "^7.1.1",
+    "jest": "^20.0.4",
+    "jest-junit": "^2.1.0",
     "minimist": "^1.2.0",
-    "mocha": "^3.2.0",
     "path": "^0.12.7",
     "process": "^0.11.10",
     "regenerator": "^0.9.7",
@@ -41,7 +42,7 @@
   "scripts": {
     "build": "./bin/build",
     "build-webpage": "npm run build && ./node_modules/.bin/browserify built/demo-webpage/paws-client/container.js -o demo-webpage/html/container.js && ./node_modules/.bin/browserify built/demo-webpage/paws-client/runner.js -o demo-webpage/html/runner.js && cp -R ./demo-webpage/html built/demo-webpage/",
-    "test": "./bin/test",
+    "test": "./node_modules/.bin/jest",
     "test:integration": "./bin/test -int"
   },
   "contributors": [
@@ -71,5 +72,14 @@
   },
   "bin": {
     "stopify": "bin/stopify"
+  },
+  "jest": {
+    "roots": [
+      "<rootDir>/built/test"
+    ],
+    "testResultsProcessor": "./node_modules/jest-junit"
+  },
+  "jest-junit": {
+    "output": "./results.xml"
   }
 }

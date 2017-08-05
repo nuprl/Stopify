@@ -39,8 +39,6 @@ function check(src: string, ...reserved: string[]) {
 }
 
 describe("Testing hygiene visitor", function() {
-  this.timeout(0);
-
   it("function argument", () => {
     check(`function f(target, x) { return target; }`, "target");
   });

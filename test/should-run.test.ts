@@ -3,7 +3,7 @@ import * as path from 'path';
 
 // NOTE(rachit): Don't use arrow functions, otherwise timeout doesn't work.
 describe('CPS transform tests', function () {
-  this.timeout(0);
+  
   const cpsSkip = [
     'test/should-run/hoisted-call.js',
     'test/should-run/function-decl-hoist.js',
@@ -24,7 +24,7 @@ describe('CPS transform tests', function () {
 })
 
 describe('Yield transformation tests', function () {
-  this.timeout(0)
+
   f.unitTests.forEach(function(filename: string) {
     it(`${filename} (yield)`, function () {
       f.stopifyTest(filename, 'yield', 500);
@@ -33,7 +33,6 @@ describe('Yield transformation tests', function () {
 })
 
 describe('call/cc', function() {
-  this.timeout(0);
   f.unitTests.forEach(function(filename: string) {
     f.callCCTest(filename, "lazy");
     f.callCCTest(filename, "eager");

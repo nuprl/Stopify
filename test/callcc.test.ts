@@ -16,8 +16,6 @@ function check(codeWithCallCC: string) {
 }
 
 describe("Testing call/cc visitor", function() {
-  this.timeout(0);
-
   const files = glob.sync("test/callcc/*.js", {});
   files.forEach((path: string) => {
     it.skip(`${path} (call/cc only)`, () => {

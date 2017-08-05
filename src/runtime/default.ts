@@ -11,7 +11,7 @@ const parseOpts = {
 interface Opts {
   filename: string,
   yieldInterval: number,
-  stop: number | undefined
+  stop: number | undefined,
 }
 
 export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
@@ -26,17 +26,16 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
   }
   if (['number', 'undefined'].includes(typeof args.stop) === false) {
     throw new Error(`--stop must be a number in seconds (or omitted)`);
-    process.exit(1);
   }
 
   filename = filename || args._[0];
 
   let yieldInterval : number | undefined;
 
-  if (typeof args.yield === 'number') {
+  if (typeof args.yield === 'number' && args.yield > 0) {
     yieldInterval = args.yield;
   }
-  else if (typeof args.yield === 'undefined') {
+  else if (typeof args.yield === 'undefined' || args.yield === 0) {
     yieldInterval = NaN;
   }
   else {
@@ -67,7 +66,7 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
   function onDone() {
     const endTime = Date.now();
     const runningTime = endTime - startTime;
-    console.log(`${opts.filename},${runningTime},${yields}`);
+    console.log(`${runningTime},${yields}`);
     done();
   }
 

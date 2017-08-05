@@ -6,9 +6,9 @@ import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
 
 const visitor: Visitor = {
-  Program(path: NodePath<t.Program>) {
+  Program(path: NodePath<t.Program>, { opts }) {
     path.stop();
-    h.transformFromAst(path, [ stopifyCallCC.plugin ]);
+    h.transformFromAst(path, [ [stopifyCallCC.plugin, opts]  ]);
     assert.equal(path.node.body.length, 1);
     const stmt = path.node.body[0];
     if (stmt.type !== 'ExpressionStatement') {

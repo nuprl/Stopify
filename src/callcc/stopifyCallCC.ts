@@ -109,7 +109,7 @@ export const visitor: Visitor = {
     ]);
     h.transformFromAst(path, [() => ({ visitor: insertSuspend })]);
     h.transformFromAst(path, 
-      [[callcc, { useReturn: true, captureMethod: state.captureMethod }]]);
+      [[callcc, { useReturn: true, captureMethod: state.opts.captureMethod }]]);
   }
 }
 

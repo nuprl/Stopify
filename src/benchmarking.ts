@@ -88,7 +88,7 @@ function main() {
   creates(`${wd}/node_modules/Stopify`, 
     p => fs.symlinkSync(path.resolve('.'), p));
 
-  exec(`parallel --sshloginfile ${sshloginfile} \
+  exec(`parallel --progress --sshloginfile ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=compile --wd=${wd}  \
     --src={1} ::: benchmarks/scala/js-build/*`);
 
@@ -100,7 +100,7 @@ function main() {
       'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,RunningTime,NumYields\n');
   }
 
-  exec(`parallel --sshloginfile ${sshloginfile} \
+  exec(`parallel --progress  --sshloginfile ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=run --wd=${wd} \
       --src={1} --platform={2} --interval={3}  \
       ::: ${wd}/*.js ::: node chrome ::: 10 50 100  >> ${results}`);
@@ -180,7 +180,7 @@ function compile() {
       exec(`./bin/webpack ${dstJs} ${dstHtml}`));
   }
 
-  [ 'lazy', 'original' ].forEach(f);
+  [ 'lazy', 'original', 'eager', 'retval' ].forEach(f);
 }
 
 

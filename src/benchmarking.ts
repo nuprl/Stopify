@@ -180,7 +180,7 @@ function compile() {
       exec(`./bin/webpack ${dstJs} ${dstHtml}`));
   }
 
-  [ 'lazy', 'original', 'eager', 'retval' ].forEach(f);
+  [ 'lazy', 'original', 'eager' ].forEach(f);
 }
 
 

@@ -1,9 +1,8 @@
 // NOTE(arjun): If this script doesn't work, you probably don't have Xvfb.
-// The script should probably just skip starting Xvfb on Mac OS X.
-
 import * as selenium from 'selenium-webdriver';
 import * as path from 'path';
 import * as runtime from './runtime/default';
+import * as os from 'os';
 const xvfb = require('xvfb'); // No type definitions as of 8/2/2017
 
 const stdout = process.stdout;
@@ -17,8 +16,13 @@ function suffixAfter(str: string, key: string) {
 const src = 'file://' + path.resolve('.', opts.filename) + 
   '#' + encodeURIComponent(JSON.stringify(args));
 
-const vfb = new xvfb();
-vfb.startSync();
+
+let vfb: any;
+
+if (os.platform() === 'linux') {
+  vfb = new xvfb();
+  vfb.startSync();
+}
 
 const loggingPrefs = new selenium.logging.Preferences();
 loggingPrefs.setLevel('browser', 'all');
@@ -37,5 +41,7 @@ driver.manage().logs().get('browser').then(logs => {
   });
 
   driver.quit();
-  vfb.stopSync();
+  if (vfb) {
+    vfb.stopSync();
+  }
 });

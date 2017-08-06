@@ -1,3 +1,5 @@
+import { setImmediate } from '../setImmediate';
+
 // The type of continuation frames
 export type KFrame = KFrameTop | KFrameRest;
 
@@ -58,7 +60,7 @@ export abstract class Runtime {
   }
 
   resume(result: any): any {
-    return setTimeout(() => this.runtime(result), 0);
+    return setImmediate(() => this.runtime(result));
   }
 
   suspend(interval: number, top: any): void {

@@ -1,6 +1,3 @@
-
-const _runtime = require("./runtime.js");
-
 function node(left, right) {
   return { left: left, right: right, type: "node" };
 }
@@ -16,14 +13,14 @@ function treeLeafGen(tree) {
     console.log("Here 4");
     returnLeaf(tree);
     return caller("done");
-  }
+  };
 
   let returnLeaf = function(tree) {
     if (tree.type === "leaf") {
       console.log("At leaf", tree.val);
-      _runtime.callCC(function(remainingLeaves) {
+      callCC(function(remainingLeaves) {
         console.log("Captured");
-        resume = function() { remainingLeaves(void 0); }
+        resume = function() { remainingLeaves(void 0); };
         console.log("Producing ", tree.val);
         caller(tree.val);
       });
@@ -33,11 +30,11 @@ function treeLeafGen(tree) {
       returnLeaf(tree.left);
       returnLeaf(tree.right);
     }
-  }
+  };
 
   return function() {
     console.log("Here 0");
-    return _runtime.callCC(function(k) {
+    return callCC(function(k) {
       console.log("Here 1");
 
       caller = k;

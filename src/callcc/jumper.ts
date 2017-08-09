@@ -434,6 +434,44 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 }
 
 const jumper: Visitor = {
+  BlockStatement: {
+    enter(path: NodePath<t.BlockStatement>): void {
+      const { body } = path.node;
+      const afterDecls = body.findIndex(e =>
+        !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
+      const { pre, post } = split(body, afterDecls);
+
+      const labels = post.map(statement => {
+        return { stmt: statement, lbls: getLabels(statement) }
+      });
+      const newBlock: t.Statement[] = [];
+      let block: t.Statement[] = [];
+      labels.forEach(o => {
+        const { stmt, lbls } = o;
+        if (lbls.length === 0 &&
+          !t.isFunctionDeclaration(stmt) &&
+          !t.isReturnStatement(stmt)) {
+          block.push(stmt);
+          return;
+        } else if (block.length !== 0) {
+          const b: t.Statement & { mark?: 'Flat' } = t.ifStatement(isNormalMode,
+            t.blockStatement(block));
+          b.mark = 'Flat';
+          newBlock.push(b);
+        }
+        newBlock.push(stmt);
+        block = [];
+      });
+      if (block.length !== 0) {
+          const b: t.Statement & { mark?: 'Flat' } = t.ifStatement(isNormalMode,
+            t.blockStatement(block));
+          b.mark = 'Flat';
+          newBlock.push(b);
+      }
+      path.node.body = [...pre, ...newBlock];
+    }
+  },
+
   UpdateExpression: {
     exit(path: NodePath<Labeled<t.UpdateExpression>>): void {
       if (isFlat(path)) {
@@ -477,26 +515,36 @@ const jumper: Visitor = {
     }
   },
 
-  WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
-    // These cannot appear in flat functions, so no check.
+  WhileStatement: {
+    exit(path: NodePath<Labeled<t.WhileStatement>>): void {
+      // These cannot appear in flat functions, so no check.
 
-    const labels = getLabels(path.node);
-    const test = labels.length === 0 ?
-    t.logicalExpression('&&', isNormalMode, path.node.test) :
-    t.logicalExpression('||',
-      t.logicalExpression('&&',
-        isRestoringMode, labelsIncludeTarget(labels)),
-      t.logicalExpression('&&',
-        isNormalMode, path.node.test));
+      const labels = getLabels(path.node);
+      const test = labels.length === 0 ?
+      t.logicalExpression('&&', isNormalMode, path.node.test) :
+      t.logicalExpression('||',
+        t.logicalExpression('&&',
+          isRestoringMode, labelsIncludeTarget(labels)),
+        t.logicalExpression('&&',
+          isNormalMode, path.node.test));
 
-    path.node.test = test;
+      path.node.test = test;
+    }
   },
 
   IfStatement: {
+    enter(path: NodePath<t.IfStatement>): void {
+      if ((<any>path.node).mark === 'Flat') {
+        path.skip();
+        return;
+      }
+    },
+
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
       if ((<any>path.node).isTransformed || isFlat(path)) {
         return;
       }
+
       const { test, consequent, alternate } = path.node;
 
       const alternateLabels = getLabels(alternate);

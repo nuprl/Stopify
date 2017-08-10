@@ -1,4 +1,5 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { FlatnessMark } from '../common/helpers';
 import * as t from 'babel-types';
 
 import * as assert from 'assert';
@@ -64,17 +65,13 @@ const isRestoringMode = t.binaryExpression('===', runtimeModeKind, restoringMode
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);
 
-function isFlat(path: NodePath<t.Node>): boolean {
-  return (<any>path.getFunctionParent().node).mark === 'Flat';
-}
-
 const func = function (path: NodePath<Labeled<FunctionT>>): void {
   if ((<any>path.node).mark === 'Flat') {
     return;
   }
   const { body } = path.node;
   const afterDecls = body.body.findIndex(e =>
-   !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
+    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(body.body, afterDecls);
 
   const locals = path.scope.generateUidIdentifier('locals');
@@ -463,9 +460,6 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
 const jumper: Visitor = {
   UpdateExpression: {
     exit(path: NodePath<t.UpdateExpression>): void {
-      if (isFlat(path)) {
-        return;
-      }
       path.replaceWith(t.ifStatement(isNormalMode, t.expressionStatement(path.node)));
       path.skip();
     }
@@ -473,9 +467,6 @@ const jumper: Visitor = {
 
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>, s: State): void {
-      if (isFlat(path)) {
-        return;
-      }
       if (!t.isCallExpression(path.node.right)) {
         const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
         path.replaceWith(ifAssign);
@@ -491,20 +482,38 @@ const jumper: Visitor = {
   },
 
   FunctionExpression: {
-    exit(path: NodePath<Labeled<t.FunctionExpression>>): void {
+    enter(path: NodePath<FlatnessMark<Labeled<t.FunctionExpression>>>): void {
+      if (path.node.mark === 'Flat') {
+        path.skip()
+        return;
+      }
+    },
+    exit(path: NodePath<FlatnessMark<Labeled<t.FunctionExpression>>>): void {
+      if (path.node.mark === 'Flat') {
+        path.skip()
+        return;
+      }
       return func(path);
     }
   },
 
   FunctionDeclaration: {
-    exit(path: NodePath<Labeled<t.FunctionDeclaration>>): void {
+    enter(path: NodePath<FlatnessMark<Labeled<t.FunctionDeclaration>>>): void {
+      if (path.node.mark === 'Flat') {
+        path.skip()
+        return;
+      }
+    },
+    exit(path: NodePath<FlatnessMark<Labeled<t.FunctionDeclaration>>>): void {
+      if (path.node.mark === 'Flat') {
+        path.skip()
+        return;
+      }
       return func(path);
     }
   },
 
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
-    // These cannot appear in flat functions, so no check.
-
     path.node.test = t.logicalExpression('||',
       t.logicalExpression('&&',
         isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
@@ -514,8 +523,7 @@ const jumper: Visitor = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      if (isFlat(path) ||
-        (<any>path.node).isTransformed) {
+      if ((<any>path.node).isTransformed) {
         return;
       }
       const { test, consequent, alternate } = path.node;
@@ -579,8 +587,7 @@ const jumper: Visitor = {
 
   CatchClause: {
     exit(path: NodePath<t.CatchClause>, s: State): void {
-      if (isFlat(path) ||
-        s.opts.captureMethod === 'retval') {
+      if (s.opts.captureMethod === 'retval') {
         return;
       }
       const { param, body } = path.node;

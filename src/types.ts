@@ -1,4 +1,11 @@
 export type Stoppable = (isStop: () => boolean, 
                          onStop: () => void,
                          onDone: () => void, 
-                         interval: number) => void
+                         opts: Opts) => void
+
+export interface Opts {
+  filename: string,
+  yieldMethod: 'fixed' | 'flexible';
+  yieldInterval: number,
+  stop: number | undefined,
+}

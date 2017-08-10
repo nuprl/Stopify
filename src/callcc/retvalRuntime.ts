@@ -111,4 +111,4 @@ class RetValRuntime extends common.Runtime {
   }
 }
 
-export default new RetValRuntime();
+export default RetValRuntime;

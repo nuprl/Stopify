@@ -38,10 +38,51 @@ export class Discard {
   constructor(public f: () => any) {}
 }
 
+interface RuntimeInterface {
+  captureCC(f: (k: any) => any): void;
+  // Wraps a stack in a function that throws an exception to discard the current
+  // continuation. The exception carries the provided stack with a final frame
+  // that returns the supplied value.
+  makeCont(stack: Stack): (v: any) => any;
+  runtime(body: () => any): any;
+  handleNew(constr: any, ...args: any[]): any;
+}
+
+type Constructor<T> = new(...args: any[]) => T;
+
+// This is a mixin:
+// https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html
+export const YieldInterval = <T extends Constructor<RuntimeInterface>>(Base: T) =>
+  class extends Base {
+   interval: number;
+   countDown: number;
+   constructor( ...args: any[]) {
+      super(...args);
+    }
+    
+    setInterval(interval: number) {
+      this.interval = interval;
+      this.countDown = interval;
+    }      
+
+    resume(result: any): any {
+      return setImmediate(() => this.runtime(result));
+    }
+
+    suspend(top: any): void {
+      if (Number.isNaN(this.interval)) {
+        return;
+      }
+      if (--this.countDown === 0) {
+        this.countDown = this.interval;
+        return this.captureCC(top);
+      }
+    }
+  }
+
 export abstract class Runtime {
   stack: Stack;
   mode: Mode;
-  countDown: number | undefined;
 
   constructor() {
     this.stack = [];
@@ -57,23 +98,6 @@ export abstract class Runtime {
         return f();
       }
     };
-  }
-
-  resume(result: any): any {
-    return setImmediate(() => this.runtime(result));
-  }
-
-  suspend(interval: number, top: any): void {
-    if (Number.isNaN(interval)) {
-      return;
-    }
-    if (this.countDown === undefined) {
-      this.countDown = interval;
-    }
-    if (--this.countDown === 0) {
-      this.countDown = interval;
-      return this.captureCC(top);
-    }
   }
 
   abstract captureCC(f: (k: any) => any): void;

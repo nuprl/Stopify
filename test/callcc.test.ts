@@ -34,7 +34,7 @@ describe("Testing call/cc visitor", function() {
 describe("Testing capture/cc visitor", function() {
   const files = glob.sync("test/continuations/*.js", {});
   files.forEach((path: string) => {
-    it(`${path} (call/cc only)`, () => {
+    it.skip(`${path} (call/cc only)`, () => {
       check(fs.readFileSync(path, "utf-8").toString());
     });
   });

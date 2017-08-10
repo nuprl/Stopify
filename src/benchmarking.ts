@@ -97,13 +97,13 @@ function main() {
   }
   else {
     fs.writeFileSync(results,
-      'Path,Hostname,Platform,Benchmark,Language,Transform,YieldInterval,RunningTime,NumYields\n');
+      'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,RunningTime,NumYields\n');
   }
 
   exec(`parallel --sshloginfile ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=run --wd=${wd} \
       --src={1} --platform={2} --interval={3}  \
-      ::: ${wd}/*.js ::: node chrome ::: 0 30000 60000 >> ${results}`);
+      ::: ${wd}/*.js ::: node chrome ::: 10 50 100  >> ${results}`);
 }
 
 
@@ -152,7 +152,7 @@ function run() {
   const dst = `${opts.wd}/${benchmark}.${language}.${platform}.${transform}.${interval}.done`;
 
   creates(dst, () => {
-    const args = ["--yield", `${interval}`, src];
+    const args = ["--latency", `${interval}`, src];
     const proc = spawnSync(cmd, args,
       { stdio: [ 'none', 'inherit', 'pipe' ] });
     const result = proc.status === 0 ? String(proc.stdout) : 'NA,NA,NA\n';

@@ -1,18 +1,13 @@
 
-import { Stoppable } from '../types';
+import { Opts, Stoppable } from '../types';
 import * as minimist from 'minimist';
 
 const parseOpts = {
   alias: { 
-    "y": "yield"
+    "y": "yield",
+    "l": "latency",
   }
 };
-
-interface Opts {
-  filename: string,
-  yieldInterval: number,
-  stop: number | undefined,
-}
 
 export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
 
@@ -21,30 +16,46 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
   if ((args._.length === 1 || typeof filename === "string") === false) {
     throw new Error(`Missing filename`);
   }
+
   if (['number', 'undefined'].includes(typeof args.yield) === false) {
     throw new Error(`--yield must be a number (or omitted)`);
   }
+
+  if (!(typeof args.latency === 'undefined' ||
+       (typeof args.latency === 'number' && isFinite(args.latency)))) {
+    throw new Error(`--latency must be a number (or omitted)`);
+  }
+
+  if (typeof args.yield === 'number' && typeof args.latency === 'number') {
+    throw new Error(`cannot specify both --yield and --latency`);
+  }
+
   if (['number', 'undefined'].includes(typeof args.stop) === false) {
     throw new Error(`--stop must be a number in seconds (or omitted)`);
   }
 
   filename = filename || args._[0];
 
+  let yieldMethod : 'fixed' | 'flexible';
   let yieldInterval : number | undefined;
 
-  if (typeof args.yield === 'number' && args.yield > 0) {
+  if (typeof args.latency === 'number') {
+    yieldMethod = 'flexible';
+    yieldInterval = args.latency;
+  }
+ else if (typeof args.yield === 'number' && args.yield > 0) {
+    yieldMethod = 'fixed';
     yieldInterval = args.yield;
   }
-  else if (typeof args.yield === 'undefined' || args.yield === 0) {
-    yieldInterval = NaN;
-  }
   else {
-    throw 'Yield interval must be a number';
+    yieldMethod = 'fixed';
+    yieldInterval = NaN;
   }
 
   return { 
     filename: filename, 
     yieldInterval: yieldInterval!,
+    yieldMethod: yieldMethod,
     stop: args.stop
   };
 
@@ -72,9 +83,9 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
 
   const startTime = Date.now();
 
-    if (typeof opts.stop !== 'undefined') {
+  if (typeof opts.stop !== 'undefined') {
     setTimeout(() => mustStop = true, opts.stop * 1000);
   }
 
-  M(isStop, onStop, onDone, opts.yieldInterval);
+  M(isStop, onStop, onDone, opts);
 }

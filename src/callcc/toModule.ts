@@ -13,7 +13,7 @@ function fakeModule(path: NodePath<t.Program>) {
   const isStop = t.identifier("$isStop");
   const onStop = t.identifier("$onStop");
   const onDone = t.identifier("$onDone");
-  const interval = t.identifier("$interval");
+  const opts = t.identifier("$opts");
 
   path.node.body.push(t.returnStatement(t.callExpression(onDone, [])));
 
@@ -23,7 +23,7 @@ function fakeModule(path: NodePath<t.Program>) {
       t.memberExpression(t.identifier('module'), t.identifier('exports')),
       t.functionExpression(
         void 0,
-        [isStop, onStop, onDone, interval], 
+        [isStop, onStop, onDone, opts], 
         t.blockStatement(path.node.body))))];
 }
 const visitor: Visitor = {

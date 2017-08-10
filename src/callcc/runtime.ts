@@ -95,7 +95,6 @@ export const Latency = <T extends RTS>(Base: T) => class extends Base {
         this.ticksBetweenYields = 100;
       }
       this.lastTime = now;
-      console.log(`Ticks between yields: ${this.ticksBetweenYields}`);
     });
     this.nextYield = this.ticksBetweenYields;
   }

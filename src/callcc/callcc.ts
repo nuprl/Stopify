@@ -69,7 +69,7 @@ const visitor: Visitor = {
         t.callExpression(
           t.memberExpression(t.identifier('$__T'), t.identifier('makeRTS')),
           [t.stringLiteral(captureMethod),
-           state.opts.useReturn ? t.identifier('$interval') : t.unaryExpression('void', t.numericLiteral(0))]),
+           state.opts.useReturn ? t.identifier('$opts') : t.unaryExpression('void', t.numericLiteral(0))]),
         'const'));
     path.node.body.unshift(
       h.letExpression(
@@ -88,12 +88,12 @@ const visitor: Visitor = {
       const isStop = t.identifier("$isStop");
       const onStop = t.identifier("$onStop");
       const onDone = t.identifier("$onDone");
-      const interval = t.identifier("$interval");
+      const opts = t.identifier("$opts");
 
       path.node.body = [t.expressionStatement(
         t.functionExpression(
           void 0,
-          [isStop, onStop, onDone, interval], t.blockStatement(path.node.body, path.node.directives)))];
+          [isStop, onStop, onDone, opts], t.blockStatement(path.node.body, path.node.directives)))];
       path.node.directives = undefined;
     }
     path.stop();

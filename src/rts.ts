@@ -1,4 +1,5 @@
-import { Runtime, YieldInterval } from './callcc/runtime';
+import { Opts } from './types';
+import { Runtime, YieldInterval, Latency } from './callcc/runtime';
 
 import eager from './callcc/eagerRuntime';
 import lazy from './callcc/lazyRuntime';
@@ -19,10 +20,18 @@ function modeToBase(mode: string) {
   }
 }
 
-export function makeRTS(mode: string, interval: number): Runtime {
+export function makeRTS(mode: string, opts: Opts): Runtime {
   const base = modeToBase(mode);
-  const withSuspend = YieldInterval(base);
-  const rts = new withSuspend();
-  rts.setInterval(interval);
-  return rts;
+  if (opts.yieldMethod === 'fixed') {
+    const withSuspend = YieldInterval(base);
+    const rts = new withSuspend();
+    rts.setInterval(opts.yieldInterval);
+    return rts;
+  }
+  else {
+    const withSuspend = Latency(base);
+    const rts = new withSuspend();
+    rts.setLatency(opts.yieldInterval);
+    return rts;
+  }
 }

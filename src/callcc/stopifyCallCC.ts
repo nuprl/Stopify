@@ -14,7 +14,7 @@ const top = t.identifier("$top");
 const isStop = t.identifier("$isStop");
 const onStop = t.identifier("$onStop");
 const onDone = t.identifier("$onDone");
-const interval = t.identifier("$interval");
+const opts = t.identifier("$opts");
 const result = t.identifier("$result");
 
 const allowed = [
@@ -28,7 +28,7 @@ const reserved = [
   "$isStop",
   "$onStop",
   "$onDone",
-  "$interval",
+  "$opts",
   "$result"
 ];
 

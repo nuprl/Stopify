@@ -50,9 +50,77 @@ interface RuntimeInterface {
 
 type Constructor<T> = new(...args: any[]) => T;
 
+type RTS = Constructor<RuntimeInterface>
+
+function geom(p: number): number { 
+  return Math.ceil(Math.log(1 - Math.random()) / Math.log(1 - p)); 
+}
+
+class ReservoirSampleTime {
+  private i: number;
+  private countDown: number;
+  private countDownFrom: number;
+  private sample: (t: number, ticks: number) => void;
+
+  constructor(sample: (t: number, ticks: number) => void) {
+    this.i = 1;
+    this.countDownFrom = geom(1 / this.i);
+    this.countDown = this.countDownFrom;
+    this.sample = sample;
+    sample(Date.now(), 1);
+  }
+
+  tick() {
+    this.i = (this.i + 1) | 0;
+    if (this.countDown-- === 0) {
+      this.sample(Date.now(), this.countDownFrom);
+      this.countDownFrom = geom(1 / this.i);
+      this.countDown = this.countDownFrom;
+    }
+  }
+}
+
+export const Latency = <T extends RTS>(Base: T) => class extends Base {
+  latency: number;
+  lastTime: number;
+  ticksBetweenYields: number;
+  nextYield: number;
+  sampler: ReservoirSampleTime;
+
+  constructor( ...args: any[]) {
+    super(...args);
+    this.sampler = new ReservoirSampleTime((now, ticks) => {
+      this.ticksBetweenYields = Math.floor(ticks / (now - this.lastTime) * this.latency);
+      if (!isFinite(this.ticksBetweenYields)) {
+        this.ticksBetweenYields = 100;
+      }
+      this.lastTime = now;
+      console.log(`Ticks between yields: ${this.ticksBetweenYields}`);
+    });
+    this.nextYield = this.ticksBetweenYields;
+  }
+
+  setLatency(latency: number) {
+    this.latency = latency;
+  }
+
+  resume(result: any): any {
+    return setImmediate(() => this.runtime(result));
+  }
+
+  suspend(top: any): void {
+    this.sampler.tick();
+    if (--this.nextYield <= 0) {
+      this.nextYield = this.ticksBetweenYields;
+      return this.captureCC(top);
+    }
+  }
+  
+}
+
 // This is a mixin:
 // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html
-export const YieldInterval = <T extends Constructor<RuntimeInterface>>(Base: T) =>
+export const YieldInterval = <T extends RTS>(Base: T) =>
   class extends Base {
    interval: number;
    countDown: number;

@@ -66,7 +66,10 @@ const visitor: Visitor = {
     path.node.body.unshift(
       h.letExpression(
         t.identifier('$__R'),
-        t.memberExpression(t.identifier('$__T'), t.identifier(captureMethod)),
+        t.callExpression(
+          t.memberExpression(t.identifier('$__T'), t.identifier('makeRTS')),
+          [t.stringLiteral(captureMethod),
+           state.opts.useReturn ? t.identifier('$interval') : t.unaryExpression('void', t.numericLiteral(0))]),
         'const'));
     path.node.body.unshift(
       h.letExpression(

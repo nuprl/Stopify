@@ -16,59 +16,80 @@ const lifted = <T>(t: T) => tag('lifted', t, true);
 
 const tUndefined = t.unaryExpression("void", t.numericLiteral(0));
 
-function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression {
+function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression | null {
   if (decl.init === null) {
-    return t.assignmentExpression('=', decl.id, tUndefined);
+    return null;
   }
   else {
     return t.assignmentExpression('=', decl.id, decl.init);
   }
 }
 
+function getFunctionArgs(path: NodePath<t.Node>): string[] {
+  const node = path.node;
+  if (node.type === 'FunctionDeclaration' || 
+      node.type === 'FunctionExpression') {
+    return (<any>node).params.map((x: t.Identifier) => x.name);
+  }
+  else {
+    return [];
+  }
+}
+
+function getBlock(node: t.Node): t.Statement[] {
+  if (node.type === 'FunctionDeclaration' || 
+      node.type === 'FunctionExpression') {
+    return (<t.FunctionDeclaration>node).body.body;
+  }
+  else if (node.type === 'Program') {
+    return (<t.Program>node).body;
+  }
+  else {
+    throw new Error(`Got ${node.type}`);
+  }
+}
+
 const lift: Visitor = {
-  VariableDeclaration:
-  function (path: NodePath<Lifted<t.VariableDeclaration>>): void {
+  VariableDeclaration(path: NodePath<Lifted<t.VariableDeclaration>>) {
     if (path.node.lifted) {
       return;
     }
+
     let { kind, declarations } = path.node;
     if (kind === 'const') {
       kind = 'let';
     }
+
     const topScope = path.getFunctionParent();
-    switch (topScope.node.type) {
-      case 'FunctionDeclaration':
-      case 'FunctionExpression': {
-        const ids = declarations.map(decl => decl.id);
-        // TODO(sbaxter): Update babel typescript declaration to type
-        // `unshiftContainer` and remove `any` cast
-        (<any>topScope.get('body')).unshiftContainer('body',
-          lifted(t.variableDeclaration(kind,
-            ids.map(id => t.variableDeclarator(id, undefined)))));
-        const exp = declarations.length === 1 ?
-          declToAssign(declarations[0]):
-          t.sequenceExpression(declarations.map(decl => declToAssign(decl)));
-        path.replaceWith(exp);
-        break;
+    const topArgs = getFunctionArgs(topScope); // [] if topScope is a program
+    for (const decl of declarations) {
+      if (decl.id.type !== 'Identifier') {
+        throw new Error(`Destructuring assignment not supported`);
       }
-      case 'Program':
-        const ids = declarations.map(decl => decl.id);
-        // TODO(sbaxter): Update babel typescript declaration to type
-        // `unshiftContainer` and remove `any` cast
-        (<any>topScope).unshiftContainer('body',
-          lifted(t.variableDeclaration(kind,
-            ids.map(id => t.variableDeclarator(id, undefined)))));
-        const exp = declarations.length === 1 ?
-          declToAssign(declarations[0]):
-          t.sequenceExpression(declarations.map(decl => declToAssign(decl)));
-        path.replaceWith(t.expressionStatement(exp));
-        break;
-      default:
-        throw new Error(
-          `Expected to find function/program parent, but found ${topScope.type} instead`);
+      const id = decl.id.name;
+      // This checks for the following case:
+      //
+      //   function(x) { var x = 10; }
+      //
+      // is the same as:
+      //
+      //   function(x) { x = 10; }
+      //
+      // Therefore, we do not need to lift x. Instead, we eliminate the
+      // declaration and only turn it into an assignment.
+      if ((kind === 'var' && topArgs.includes(id)) === false) {
+        const newDecl = t.variableDeclaration(kind, 
+                          [t.variableDeclarator(decl.id)]);
+        getBlock(topScope.node).unshift(lifted(newDecl));
+      }
+      if (decl.init !== null) {
+        path.insertAfter(t.expressionStatement(
+          t.assignmentExpression('=', decl.id, decl.init)));
+      }
     }
+    path.remove();
   }
-};
+}
 
 module.exports = function() {
   return { visitor: lift };

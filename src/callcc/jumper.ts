@@ -8,6 +8,7 @@ import { letExpression } from '../common/helpers';
 type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
 type Labeled<T> = T & {
   labels?: number[];
+  __usesArgs__?: boolean
 }
 type CaptureFun = (path: NodePath<t.Node>, restoreCall: () => t.Statement) => void;
 
@@ -42,6 +43,7 @@ function getLabels(node: Labeled<t.Node>): number[] {
 const target = t.identifier('target');
 const runtime = t.identifier('$__R');
 const types = t.identifier('$__T');
+const matArgs = t.identifier('materializedArguments');
 const runtimeModeKind = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
 const eagerStack = t.memberExpression(runtime, t.identifier('eagerStack'));
@@ -68,7 +70,25 @@ function isFlat(path: NodePath<t.Node>): boolean {
   return (<any>path.getFunctionParent().node).mark === 'Flat';
 }
 
-const func = function (path: NodePath<Labeled<FunctionT>>): void {
+function usesArguments(path: NodePath<t.Function>) {
+  let r = false;
+  const visitor = {
+    ReferencedIdentifier(path: NodePath<t.Identifier>) {
+      if (path.node.name === 'arguments') {
+        r = true;
+        path.stop();
+      }
+    },
+    Function(path: NodePath<t.Function>) {
+      path.skip();
+    }
+  };
+  path.traverse(visitor);
+  return r;
+}
+
+
+function func(path: NodePath<Labeled<FunctionT>>): void {
   if ((<any>path.node).mark === 'Flat') {
     return;
   }
@@ -114,6 +134,14 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
     t.expressionStatement(popRuntimeStack)
   ]);
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
+  
+  const mayMatArgs: t.Statement[] = [];
+  if (path.node.__usesArgs__) {
+    mayMatArgs.push(
+      t.variableDeclaration('const',
+        [t.variableDeclarator(matArgs, t.identifier('arguments'))]));
+  }
+
   const declTarget = letExpression(target, t.nullLiteral());
   (<any>declTarget).lifted = true;
 
@@ -121,6 +149,7 @@ const func = function (path: NodePath<Labeled<FunctionT>>): void {
     declTarget,
     ...pre,
     ifRestoring,
+    ...mayMatArgs,
     ...post
   ]));
   path.skip();
@@ -130,6 +159,21 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
   return labels.reduce((acc: t.Expression, lbl) =>
     t.logicalExpression('||', t.binaryExpression('===',
       target, t.numericLiteral(lbl)), acc), t.booleanLiteral(false));
+}
+
+
+function reapplyExpr(path: NodePath<Labeled<t.Function>>): t.Expression {
+  const funId = path.node.id;
+  if (path.node.__usesArgs__) {
+    return t.callExpression(
+      t.memberExpression(funId, t.identifier('apply')),
+      [t.thisExpression(), matArgs]);
+  }
+  else {
+    return t.callExpression(
+      t.memberExpression(funId, t.identifier("call")),
+      [t.thisExpression(), ...<any>path.node.params]);
+  }
 }
 
 /**
@@ -188,8 +232,6 @@ function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCal
       t.binaryExpression('===', target, applyLbl),
       t.blockStatement([restoreCall()])));
 
-  const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
-    [t.thisExpression(), ...(<any>funParams)]);
   const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
     t.catchClause(exn, t.blockStatement([
       t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
@@ -199,7 +241,7 @@ function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCal
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
               t.objectProperty(
                 t.identifier('f'),
-                t.arrowFunctionExpression([], reapply)),
+                t.arrowFunctionExpression([], reapplyExpr(funParent))),
               t.objectProperty(t.identifier('locals'),
                 t.arrayExpression(<any>locals)),
               t.objectProperty(t.identifier('index'), applyLbl),
@@ -266,13 +308,11 @@ function eagerCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCa
   path.node :
   t.expressionStatement(path.node);
 
-  const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
-    [t.thisExpression(), ...(<any>funParams)]);
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(
       t.identifier('f'),
-      t.arrowFunctionExpression([], reapply)),
+      t.arrowFunctionExpression([], reapplyExpr(funParent))),
     t.objectProperty(t.identifier('locals'),
       t.arrayExpression(<any>locals)),
     t.objectProperty(t.identifier('index'), applyLbl),
@@ -351,13 +391,11 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
     locals.push(path.scope.getBinding(x)!.identifier);
   }
 
-  const reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
-    [t.thisExpression(), ...(<any>funParams)]);
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(
       t.identifier('f'),
-      t.arrowFunctionExpression([], reapply)),
+      t.arrowFunctionExpression([], reapplyExpr(funParent))),
     t.objectProperty(t.identifier('locals'),
       t.arrayExpression(<any>locals)),
     t.objectProperty(t.identifier('index'), applyLbl),
@@ -462,7 +500,7 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
 
 const jumper: Visitor = {
   UpdateExpression: {
-    exit(path: NodePath<t.UpdateExpression>): void {
+    exit(path: NodePath<Labeled<t.UpdateExpression>>): void {
       if (isFlat(path)) {
         return;
       }
@@ -491,12 +529,18 @@ const jumper: Visitor = {
   },
 
   FunctionExpression: {
+    enter(path: NodePath<Labeled<t.FunctionExpression>>) {
+      path.node.__usesArgs__ = usesArguments(path);
+    },
     exit(path: NodePath<Labeled<t.FunctionExpression>>): void {
       return func(path);
     }
   },
 
   FunctionDeclaration: {
+    enter(path: NodePath<Labeled<t.FunctionDeclaration>>) {
+      path.node.__usesArgs__ = usesArguments(path);
+    },
     exit(path: NodePath<Labeled<t.FunctionDeclaration>>): void {
       return func(path);
     }

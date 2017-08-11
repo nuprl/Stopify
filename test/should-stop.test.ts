@@ -1,18 +1,5 @@
 import * as f from './testFixtures.js';
 
-// NOTE(rachit): Don't use arrow functions, otherwise timeout doesn't work.
-describe('CPS stopping tests', function () {
-  f.stopTests.forEach(function(filename: string) {
-    if (filename.indexOf("eval") >= 0) {
-      it.skip(filename);
-      return;
-    }
-    it(filename, function () {
-      f.stopProgramTest(filename, 'cps')
-    })
-  })
-})
-
 describe('Yield stopping tests', function () {
   f.stopTests.forEach(function(filename: string) {
     it(filename, function () {

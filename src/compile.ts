@@ -37,10 +37,11 @@ const opts = {
   ast: false,
   code: true
 };
-babel.transformFile(srcPath, opts, (err, { code }) => {
+babel.transformFile(srcPath, opts, (err, result) => {
   if (err !== null) {
     throw err;
   }
+  const { code } = result;
   if (typeof dstPath === 'undefined') {
     process.stdout.write(code!);
     process.exit(0);  

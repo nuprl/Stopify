@@ -20,6 +20,7 @@ import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
 import hygiene from '../common/hygiene';
 import * as freeIds from '../common/freeIds';
+import cleanup from './cleanup';
 import * as h from '../common/helpers';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as babylon from 'babylon';
@@ -40,7 +41,7 @@ const visitor: Visitor = {
     h.transformFromAst(path,
           [[hygiene, { reserved: ["target"] }],
            makeBlocks, nameExprs, desugarLoop, desugarLabel,
-        desugarSwitch, desugarLogical]);
+           desugarSwitch, desugarLogical, cleanup]);
     h.transformFromAst(path, [anf]);
     h.transformFromAst(path, [declVars]);
     freeIds.annotate(path);

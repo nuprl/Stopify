@@ -62,6 +62,7 @@ const lift: Visitor = {
 
     const topScope = path.getFunctionParent();
     const topArgs = getFunctionArgs(topScope); // [] if topScope is a program
+    const assignments: t.Statement[] = [];
     for (const decl of declarations) {
       if (decl.id.type !== 'Identifier') {
         throw new Error(`Destructuring assignment not supported`);
@@ -83,10 +84,13 @@ const lift: Visitor = {
         getBlock(topScope.node).unshift(lifted(newDecl));
       }
       if (decl.init !== null) {
-        path.insertAfter(t.expressionStatement(
+        // If we call path.insertAfter here, we will add assignments in reverse
+        // order. Fortunately, path.insertAfter can take an array of nodes.
+        assignments.push(t.expressionStatement(
           t.assignmentExpression('=', decl.id, decl.init)));
       }
     }
+    path.insertAfter(assignments);
     path.remove();
   }
 }

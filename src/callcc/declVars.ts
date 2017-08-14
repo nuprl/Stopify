@@ -90,8 +90,7 @@ const lift: Visitor = {
           t.assignmentExpression('=', decl.id, decl.init)));
       }
     }
-    path.insertAfter(assignments);
-    path.remove();
+    path.replaceWithMultiple(assignments);
   }
 }
 

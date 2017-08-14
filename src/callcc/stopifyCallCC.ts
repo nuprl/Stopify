@@ -104,10 +104,12 @@ const insertSuspend: Visitor = {
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     path.stop();
+    // NOTE(arjun): This is how we pass flags to markFlatFunctions.
+    (<any>path.node).options = { optimize: true };
     h.transformFromAst(path, [
       [cleanupGlobals, { allowed }],
       [hygiene, { reserved }],
-      [markFlatFunctions, { optimize: true }]
+      [markFlatFunctions]
     ]);
     h.transformFromAst(path, [() => ({ visitor: insertSuspend })]);
     h.transformFromAst(path, 

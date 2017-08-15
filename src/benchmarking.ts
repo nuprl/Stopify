@@ -155,7 +155,9 @@ function run() {
     const args = ["--latency", `${interval}`, src];
     const proc = spawnSync(cmd, args,
       { stdio: [ 'none', 'inherit', 'pipe' ] });
-    const result = proc.status === 0 ? String(proc.stdout) : 'NA,NA,NA\n';
+    const lines = (proc.status === 0 ? String(proc.stdout) : 'NA,NA\n')
+      .split('\n');
+    const result = lines[lines.length - 2];
     stdout.write(`${src},${os.hostname()},${platform},${benchmark},${language},${transform},${interval},${result}`);
 
     if (proc.status === 0) {

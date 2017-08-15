@@ -1,3 +1,7 @@
+/**
+ * This transformation boxes certain assignable variables to preserve
+ * reference equality when the stack is reconstructed.
+ */
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
@@ -81,19 +85,27 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
   path.traverse(visitor);
 }
 
+/**
+ * Produces 'true' if the identifier should be boxed.
+ *
+ * @param x an identifier
+ * @param path the path to the enclosing Function or Program
+ */
+function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
+  const binds = path.scope.bindings;
+  return !binds[x].constant &&
+    (<any>binds[x].kind === "hoisted" || freeIds.isNestedFree(path, x));
+}
 
 
 function initFunction(
   enclosingVars: string[],
   path: NodePath<t.FunctionDeclaration | t.FunctionExpression>) {
-
   // Mutable variables from this scope that are not shadowed
   const vars0 = enclosingVars.filter(x => !path.scope.hasOwnBinding(x));
   // Mutable variables from the inner scope
-  const binds = path.scope.bindings;
-  const vars1 = Object.keys(binds)
-    .filter(x => !binds[x].constant &&
-            (<any>binds[x].kind === "hoisted" || freeIds.isNestedFree(path, x)));
+  const vars1 = Object.keys(path.scope.bindings)
+    .filter(x => shouldBox(x, path));
 
   boxVars(path, [...vars0, ...vars1]);
 
@@ -117,7 +129,8 @@ function initFunction(
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>) {
     const binds = path.scope.bindings;
-    const vars = Object.keys(binds).filter(x => !binds[x].constant);
+    const vars = Object.keys(path.scope.bindings)
+      .filter(x => shouldBox(x, path));
     boxVars(path, vars);
   }
 }

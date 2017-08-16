@@ -6,7 +6,7 @@ import { cpsStopifyPrint } from './cps/stopifyCps'
 import { tcpsStopifyPrint } from './cps/stopifyTCps'
 import { shamStopifyPrint } from './sham/stopifySham'
 import { stopifyPrint } from './interfaces/stopifyInterface'
-import { StopWrapper, Options } from './common/helpers'
+import { Options } from './common/helpers'
 import * as fs from 'fs'
 import * as path from 'path'
 const browserify = require('browserify')

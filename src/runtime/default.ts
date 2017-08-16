@@ -43,7 +43,7 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
     yieldMethod = 'flexible';
     yieldInterval = args.latency;
   }
- else if (typeof args.yield === 'number' && args.yield > 0) {
+  else if (typeof args.yield === 'number' && args.yield > 0) {
     yieldMethod = 'fixed';
     yieldInterval = args.yield;
   }
@@ -52,11 +52,23 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
     yieldInterval = NaN;
   }
 
+  let execEnv : 'browser' | 'node';
+  if (typeof args.env !== 'string') {
+    execEnv = 'node';
+  } else if (args.env === 'browser') {
+    execEnv = 'browser';
+  } else if (args.env === 'node') {
+    execEnv = 'node';
+  } else {
+    throw new Error(`--env must be either 'browser' or 'node'`);
+  }
+
   return { 
     filename: filename, 
     yieldInterval: yieldInterval!,
     yieldMethod: yieldMethod,
-    stop: args.stop
+    stop: args.stop,
+    env: execEnv,
   };
 
 }
@@ -79,6 +91,19 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
     const runningTime = endTime - startTime;
     console.log(`${runningTime},${yields}`);
     done();
+  }
+
+  if (opts.env === 'browser') {
+    let foo = console.log;
+    console.log = function (data: any) {
+      var div = document.getElementById('data')!;
+      div.innerHTML = div.innerHTML + ", " + data;
+    }
+    window.onerror = () => {
+      var div = document.getElementById('data')!;
+      div.innerHTML = `, Failed`
+      document.title = "done"
+    }
   }
 
   const startTime = Date.now();

@@ -53,7 +53,7 @@ webpack(webpackConfig, (err, stats) => {
   }  
 
   const out = fs.openSync(dstPage, 'w');
-  fs.writeSync(out, "<html><body><script>\n");
+  fs.writeSync(out, "<html><body><div id='data'></div><script>\n");
   fs.writeSync(out, fs.readFileSync(outputJs.name, 'utf8'));
   fs.writeSync(out, "\n</script></body></html>\n");
   fs.closeSync(out);

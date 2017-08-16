@@ -65,6 +65,20 @@ const isRestoringMode = t.binaryExpression('===', runtimeModeKind, restoringMode
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);
 
+function isCondensed(path: NodePath<t.Node>): boolean {
+  if ((<any>path.node).mark === 'Condensed') {
+    return true;
+  }
+  const parent = path.findParent(p =>
+    p.isFunction() || (<any>p.node).mark === 'Condensed');
+  if (parent.isFunction()) {
+    return false;
+  } else if ((<any>parent.node).mark === 'Condensed') {
+    return true;
+  } else {
+    throw new Error(`fjalkejfkjahwefah`);
+  }
+}
 function isFlat(path: NodePath<t.Node>): boolean {
   return (<any>path.getFunctionParent().node).mark === 'Flat';
 }
@@ -436,6 +450,9 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 const jumper: Visitor = {
   BlockStatement: {
     enter(path: NodePath<t.BlockStatement>): void {
+      if (isCondensed(path)) {
+        return;
+      }
       const { body } = path.node;
       const afterDecls = body.findIndex(e =>
         !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
@@ -454,18 +471,18 @@ const jumper: Visitor = {
           block.push(stmt);
           return;
         } else if (block.length !== 0) {
-          const b: t.Statement & { mark?: 'Flat' } = t.ifStatement(isNormalMode,
+          const b: t.Statement & { mark?: 'Condensed' } = t.ifStatement(isNormalMode,
             t.blockStatement(block));
-          b.mark = 'Flat';
+          b.mark = 'Condensed';
           newBlock.push(b);
         }
         newBlock.push(stmt);
         block = [];
       });
       if (block.length !== 0) {
-          const b: t.Statement & { mark?: 'Flat' } = t.ifStatement(isNormalMode,
+          const b: t.Statement & { mark?: 'Condensed' } = t.ifStatement(isNormalMode,
             t.blockStatement(block));
-          b.mark = 'Flat';
+          b.mark = 'Condensed';
           newBlock.push(b);
       }
       path.node.body = [...pre, ...newBlock];
@@ -474,7 +491,8 @@ const jumper: Visitor = {
 
   UpdateExpression: {
     exit(path: NodePath<Labeled<t.UpdateExpression>>): void {
-      if (isFlat(path)) {
+      if (isFlat(path) ||
+        isCondensed(path)) {
         return;
       }
       path.replaceWith(t.ifStatement(isNormalMode, t.expressionStatement(path.node)));
@@ -484,7 +502,8 @@ const jumper: Visitor = {
 
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>, s: State): void {
-      if (isFlat(path)) {
+      if (isFlat(path) ||
+        isCondensed(path)) {
         return;
       }
       if (!t.isCallExpression(path.node.right)) {
@@ -534,7 +553,9 @@ const jumper: Visitor = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      if ((<any>path.node).isTransformed || isFlat(path)) {
+      if (isFlat(path) ||
+        (<any>path.node).isTransformed ||
+        isCondensed(path)) {
         return;
       }
 
@@ -587,7 +608,8 @@ const jumper: Visitor = {
   CatchClause: {
     exit(path: NodePath<t.CatchClause>, s: State): void {
       if (isFlat(path) ||
-        s.opts.captureMethod === 'retval') {
+        s.opts.captureMethod === 'retval' ||
+        isCondensed(path)) {
         return;
       }
       const { param, body } = path.node;

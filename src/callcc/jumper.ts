@@ -533,13 +533,6 @@ const jumper: Visitor = {
   },
 
   IfStatement: {
-    enter(path: NodePath<t.IfStatement>): void {
-      if ((<any>path.node).mark === 'Flat') {
-        path.skip();
-        return;
-      }
-    },
-
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
       if ((<any>path.node).isTransformed || isFlat(path)) {
         return;

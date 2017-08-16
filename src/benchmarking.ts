@@ -90,7 +90,7 @@ function main() {
 
   exec(`parallel --progress --sshloginfile ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=compile --wd=${wd}  \
-    --src={1} ::: benchmarks/scala/js-build/*`);
+    --src={1} ::: benchmarks/{python_pyjs,dart_dart2js,scala,ocaml}/js-build/*`);
 
   if (fs.existsSync(results)) {
     stdout.write(`WARNING: appending to existing results`);
@@ -103,7 +103,7 @@ function main() {
   exec(`parallel --progress  --sshloginfile ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=run --wd=${wd} \
       --src={1} --platform={2} --interval={3}  \
-      ::: ${wd}/*.js ::: node chrome ::: 10 50 100  >> ${results}`);
+      ::: ${wd}/*.js ::: node chrome ::: 100  >> ${results}`);
 }
 
 
@@ -158,12 +158,13 @@ function run() {
     const lines = (proc.status === 0 ? String(proc.stdout) : 'NA,NA\n')
       .split('\n');
     const result = lines[lines.length - 2];
-    stdout.write(`${src},${os.hostname()},${platform},${benchmark},${language},${transform},${interval},${result}`);
+    stdout.write(`${src},${os.hostname()},${platform},${benchmark},${language},${transform},${interval},${result}\n`);
 
     if (proc.status === 0) {
       fs.writeFileSync(dst, "");
     }
   });
+
 }
 
 function compile() {

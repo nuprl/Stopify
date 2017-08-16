@@ -94,7 +94,6 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
   }
 
   if (opts.env === 'browser') {
-    let foo = console.log;
     console.log = function (data: any) {
       var div = document.getElementById('data')!;
       div.innerHTML = div.innerHTML + ", " + data;
@@ -102,7 +101,7 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
     window.onerror = () => {
       var div = document.getElementById('data')!;
       div.innerHTML = `, Failed`
-      document.title = "done"
+      window.document.title = "done"
     }
   }
 

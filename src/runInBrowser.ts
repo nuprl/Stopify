@@ -13,7 +13,7 @@ function suffixAfter(str: string, key: string) {
   return str.slice(str.indexOf(' ')! + 1);
 }
 
-const src = 'file://' + path.resolve('.', opts.filename) + 
+const src = 'file://' + path.resolve('.', opts.filename) +
   '#' + encodeURIComponent(JSON.stringify(args));
 
 
@@ -32,16 +32,13 @@ const driver = new selenium.Builder()
   .build();
 
 driver.get(src);
-driver.wait(selenium.until.titleIs('done'), 5 * 60 * 1000);
-driver.manage().logs().get('browser').then(logs => {
-  logs.forEach(entry => {
-    // Selenium prints the filename and line number
-    const quoted = suffixAfter(suffixAfter(entry.message, ' '), ' ');
-    stdout.write(quoted.slice(1, quoted.length - 1) + '\n');
-  });
+driver.wait(selenium.until.titleIs('done'), 5 * 60 * 1000) .then(_ =>
+  driver.findElement(selenium.By.id('data')).then(e =>
+    e.getText().then(s => {
+      stdout.write(s.slice(2, s.length) + '\n');
 
-  driver.quit();
-  if (vfb) {
-    vfb.stopSync();
-  }
-});
+      driver.quit();
+      if (vfb) {
+        vfb.stopSync();
+      }
+    })));

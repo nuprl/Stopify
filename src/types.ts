@@ -1,6 +1,6 @@
-export type Stoppable = (isStop: () => boolean, 
+export type Stoppable = (isStop: () => boolean,
                          onStop: () => void,
-                         onDone: () => void, 
+                         onDone: () => void,
                          opts: Opts) => void
 
 export interface Opts {
@@ -8,4 +8,5 @@ export interface Opts {
   yieldMethod: 'fixed' | 'flexible';
   yieldInterval: number,
   stop: number | undefined,
+  env: 'browser' | 'node',
 }

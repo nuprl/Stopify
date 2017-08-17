@@ -28,10 +28,9 @@ import * as path from 'path';
 import { spawnSync, execSync } from 'child_process';
 import * as minimist from 'minimist';
 import * as os from 'os';
+import * as which from 'which';
 
-// Will not work with NVM. This is where the Ubuntu node package installs
-// itself.
-const nodeBin = "/usr/bin/node"
+const nodeBin = which.sync("node");
 
 const stdout = process.stdout;
 const stderr = process.stderr;
@@ -75,10 +74,24 @@ function creates(path: string, thunk: (path: string) => void): void {
 function main() {
   const wd = opts.wd;
 
-  const sshloginfile = path.resolve(wd, 'sshloginfile');
+  const src: string = opts.src || 
+    "benchmarks/{python_pyjs,dart_dart2js,scala,ocaml}/js-build/*";
+  const platform: string = opts.platform || "chrome";
+  const latency: string = opts.latency || "100";
+  const transform: string = opts.transform || "original lazy eager";
+  
+  if (transform.split(" ").includes("original") === false) {
+    throw new Error("--transform must include original");
+  }
+
+  let sshloginfile = path.resolve(wd, 'sshloginfile');
   if ((fs.existsSync(sshloginfile) && 
-       fs.statSync(sshloginfile).isFile()) === false) {
-    throw new Error(`expected sshloginfile in working directory`);
+       fs.statSync(sshloginfile).isFile()) === true) {
+    sshloginfile = `--sshloginfile ${sshloginfile}`;    
+  }
+  else {
+    console.log("No sshloginfile found. Running all benchmarks locally.");
+    sshloginfile = "";
   }
 
   const results = `${wd}/results.csv`;
@@ -88,9 +101,9 @@ function main() {
   creates(`${wd}/node_modules/Stopify`, 
     p => fs.symlinkSync(path.resolve('.'), p));
 
-  exec(`parallel --progress --sshloginfile ${sshloginfile} \
+  exec(`parallel --progress ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=compile --wd=${wd}  \
-    --src={1} ::: benchmarks/{python_pyjs,dart_dart2js,scala,ocaml}/js-build/*`);
+    --src={1} --transform={2} ::: ${src} ::: ${transform}`);
 
   if (fs.existsSync(results)) {
     stdout.write(`WARNING: appending to existing results`);
@@ -100,10 +113,10 @@ function main() {
       'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,RunningTime,NumYields\n');
   }
 
-  exec(`parallel --progress  --sshloginfile ${sshloginfile} \
+  exec(`parallel --progress ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=run --wd=${wd} \
       --src={1} --platform={2} --interval={3}  \
-      ::: ${wd}/*.js ::: node chrome ::: 100  >> ${results}`);
+      ::: ${wd}/*.js ::: ${platform} ::: ${latency}  >> ${results}`);
 }
 
 
@@ -172,22 +185,19 @@ function compile() {
   const src = opts.src;
   const base = path.basename(src).split('.')[0]; // assumes no further '.'
   const language = path.basename(path.dirname(path.dirname(src)));
+  const transform = opts.transform;
 
-  function f(transform: string) {
-    const dstJs = `${wd}/${transform}-${language}-${base}.js`;
-    const dstHtml = `${wd}/${transform}-${language}-${base}.html`;
+  const dstJs = `${wd}/${transform}-${language}-${base}.js`;
+  const dstHtml = `${wd}/${transform}-${language}-${base}.html`;
 
-    creates(dstJs, () =>
-      exec(`./bin/compile --transform ${transform} ${src} ${dstJs}`));
-    creates(dstHtml, () =>  
-      exec(`./bin/webpack ${dstJs} ${dstHtml}`));
-  }
-
-  [ 'lazy', 'original', 'eager' ].forEach(f);
+  creates(dstJs, () =>
+    exec(`./bin/compile --transform ${transform} ${src} ${dstJs}`));
+  creates(dstHtml, () =>  
+    exec(`./bin/webpack ${dstJs} ${dstHtml}`));
 }
 
 
-if (opts.mode === 'main') {
+if (opts.mode === 'main' || typeof opts.mode === 'undefined') {
   main();
 }
 else if (opts.mode === 'compile') {

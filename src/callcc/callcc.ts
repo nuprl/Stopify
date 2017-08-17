@@ -10,6 +10,7 @@ import * as desugarLoop from '../common/desugarLoop';
 import * as desugarLabel from '../common/desugarLabel';
 import * as desugarSwitch from '../common/desugarSwitch';
 import * as desugarLogical from '../common/desugarLogical';
+import * as singleVarDecls from '../common/singleVarDecls';
 import * as makeBlocks from '../common/makeBlockStmt';
 import * as boxAssignables from './boxAssignables';
 import * as desugarNew from '../common/desugarNew';
@@ -37,6 +38,7 @@ const visitor: Visitor = {
        : (e: t.Expression) => t.expressionStatement(e));
 
     h.transformFromAst(path, [desugarNew]);
+    h.transformFromAst(path, [singleVarDecls]);
 
     h.transformFromAst(path,
           [[hygiene, { reserved: ["target"] }],

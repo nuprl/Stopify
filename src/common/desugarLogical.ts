@@ -1,3 +1,4 @@
+import * as babel from 'babel-core';
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {letExpression} from '../common/helpers';
@@ -88,4 +89,22 @@ export const visitor: Visitor = {
       ));
     path.replaceWith(r);
   }
+}
+
+function main() {
+  const filename = process.argv[2];
+  const opts = {
+    plugins: [() => ({ visitor })],
+    babelrc: false
+  };
+  babel.transformFile(filename, opts, (err, result) => {
+    if (err !== null) {
+      throw err;
+    }
+    console.log(result.code);
+  });
+}
+
+if (require.main === module) {
+  main();
 }

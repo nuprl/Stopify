@@ -42,6 +42,12 @@ const label: Visitor = {
     }
   },
 
+  ThrowStatement: {
+    exit(path: NodePath<Labeled<t.ThrowStatement>>): void {
+      path.node.labels = getLabels(path.node.argument);
+    }
+  },
+
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
       const { test, consequent, alternate } = path.node;

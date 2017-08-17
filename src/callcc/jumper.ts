@@ -563,17 +563,21 @@ const jumper: Visitor = {
         return;
       }
       const { test, consequent, alternate } = path.node;
+
+      const alternateLabels = getLabels(alternate);
+      const alternateCond = alternateLabels.length === 0 ?  isNormalMode :
+      t.logicalExpression('&&', isRestoringMode,
+        labelsIncludeTarget(getLabels(alternate)));
       const newAlt = alternate === null ? alternate :
-      t.ifStatement(t.logicalExpression('||',
-        t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(getLabels(alternate))),
-        isNormalMode),
-        alternate);
-      const newIf = t.ifStatement(t.logicalExpression('||',
-        t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(getLabels(consequent))),
-        t.logicalExpression('&&', isNormalMode, test)),
-        consequent, newAlt);
+      t.ifStatement(alternateCond, alternate);
+
+      const consequentLabels = getLabels(consequent);
+      const consequentCond = consequentLabels.length === 0 ?
+      t.logicalExpression('&&', isNormalMode, test) :
+      t.logicalExpression('&&', isRestoringMode,
+        labelsIncludeTarget(getLabels(consequent)));
+
+      const newIf = t.ifStatement(consequentCond, consequent, newAlt);
       path.replaceWith(newIf);
       path.skip();
     },

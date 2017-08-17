@@ -549,11 +549,16 @@ const jumper: Visitor = {
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
     // These cannot appear in flat functions, so no check.
 
-    path.node.test = t.logicalExpression('||',
+    const labels = getLabels(path.node);
+    const test = labels.length === 0 ?
+    t.logicalExpression('&&', isNormalMode, path.node.test) :
+    t.logicalExpression('||',
       t.logicalExpression('&&',
-        isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+        isRestoringMode, labelsIncludeTarget(labels)),
       t.logicalExpression('&&',
         isNormalMode, path.node.test));
+
+    path.node.test = test;
   },
 
   IfStatement: {

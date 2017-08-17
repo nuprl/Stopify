@@ -599,9 +599,11 @@ const jumper: Visitor = {
       const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
 
       if (t.isFunction(funOrTryParent)) {
-        const ifReturn = t.ifStatement(isNormalMode,
-          path.node, t.ifStatement(t.logicalExpression('&&',
-            isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+        const labels = getLabels(path.node);
+        const ifReturn = t.ifStatement(isNormalMode, path.node,
+          labels.length === 0 ? undefined :
+          t.ifStatement(t.logicalExpression('&&',
+            isRestoringMode, labelsIncludeTarget(labels)),
             t.returnStatement(stackFrameCall)));
         path.replaceWith(ifReturn);
         path.skip();
@@ -621,9 +623,11 @@ const jumper: Visitor = {
     const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
 
     if (t.isFunction(funOrTryParent)) {
-      const ifThrow = t.ifStatement(isNormalMode,
-        path.node, t.ifStatement(t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+      const labels = getLabels(path.node);
+      const ifThrow = t.ifStatement(isNormalMode, path.node,
+        labels.length === 0 ? undefined :
+        t.ifStatement(t.logicalExpression('&&',
+          isRestoringMode, labelsIncludeTarget(labels)),
           t.throwStatement(stackFrameCall)));
       path.replaceWith(ifThrow);
       path.skip();

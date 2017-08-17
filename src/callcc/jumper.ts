@@ -549,11 +549,16 @@ const jumper: Visitor = {
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
     // These cannot appear in flat functions, so no check.
 
-    path.node.test = t.logicalExpression('||',
+    const labels = getLabels(path.node);
+    const test = labels.length === 0 ?
+    t.logicalExpression('&&', isNormalMode, path.node.test) :
+    t.logicalExpression('||',
       t.logicalExpression('&&',
-        isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+        isRestoringMode, labelsIncludeTarget(labels)),
       t.logicalExpression('&&',
         isNormalMode, path.node.test));
+
+    path.node.test = test;
   },
 
   IfStatement: {
@@ -563,17 +568,23 @@ const jumper: Visitor = {
         return;
       }
       const { test, consequent, alternate } = path.node;
+
+      const alternateLabels = getLabels(alternate);
+      const alternateCond = alternateLabels.length === 0 ?  isNormalMode :
+      t.logicalExpression('||', isNormalMode,
+        t.logicalExpression('&&', isRestoringMode,
+          labelsIncludeTarget(getLabels(alternate))));
       const newAlt = alternate === null ? alternate :
-      t.ifStatement(t.logicalExpression('||',
-        t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(getLabels(alternate))),
-        isNormalMode),
-        alternate);
-      const newIf = t.ifStatement(t.logicalExpression('||',
-        t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(getLabels(consequent))),
-        t.logicalExpression('&&', isNormalMode, test)),
-        consequent, newAlt);
+      t.ifStatement(alternateCond, alternate);
+
+      const consequentLabels = getLabels(consequent);
+      const consequentCond = consequentLabels.length === 0 ?
+      t.logicalExpression('&&', isNormalMode, test) :
+      t.logicalExpression('||', t.logicalExpression('&&', isNormalMode, test),
+      t.logicalExpression('&&', isRestoringMode,
+        labelsIncludeTarget(getLabels(consequent))));
+
+      const newIf = t.ifStatement(consequentCond, consequent, newAlt);
       path.replaceWith(newIf);
       path.skip();
     },
@@ -588,9 +599,11 @@ const jumper: Visitor = {
       const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
 
       if (t.isFunction(funOrTryParent)) {
-        const ifReturn = t.ifStatement(isNormalMode,
-          path.node, t.ifStatement(t.logicalExpression('&&',
-            isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+        const labels = getLabels(path.node);
+        const ifReturn = t.ifStatement(isNormalMode, path.node,
+          labels.length === 0 ? undefined :
+          t.ifStatement(t.logicalExpression('&&',
+            isRestoringMode, labelsIncludeTarget(labels)),
             t.returnStatement(stackFrameCall)));
         path.replaceWith(ifReturn);
         path.skip();
@@ -610,9 +623,11 @@ const jumper: Visitor = {
     const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
 
     if (t.isFunction(funOrTryParent)) {
-      const ifThrow = t.ifStatement(isNormalMode,
-        path.node, t.ifStatement(t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+      const labels = getLabels(path.node);
+      const ifThrow = t.ifStatement(isNormalMode, path.node,
+        labels.length === 0 ? undefined :
+        t.ifStatement(t.logicalExpression('&&',
+          isRestoringMode, labelsIncludeTarget(labels)),
           t.throwStatement(stackFrameCall)));
       path.replaceWith(ifThrow);
       path.skip();

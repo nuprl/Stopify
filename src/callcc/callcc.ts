@@ -39,7 +39,6 @@ const visitor: Visitor = {
        : (e: t.Expression) => t.expressionStatement(e));
 
     fastFreshId.init(path);
-    h.transformFromAst(path, [desugarNew]);
     h.transformFromAst(path, [singleVarDecls]);
 
     h.transformFromAst(path,
@@ -55,12 +54,6 @@ const visitor: Visitor = {
 
     h.transformFromAst(path, [label]);
     h.transformFromAst(path, [[jumper, { captureMethod: captureMethod }]]);
-    path.node.body.unshift(
-      h.letExpression(
-        t.identifier('$handleNew'),
-        t.callExpression(t.memberExpression(t.memberExpression(t.identifier('$__R'),
-          t.identifier('handleNew')), t.identifier('bind')), [t.identifier('$__R')]),
-        'const'));
     path.node.body.unshift(
       h.letExpression(
         t.identifier("suspendCC"),

@@ -155,16 +155,20 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
 
 function reapplyExpr(path: NodePath<Labeled<t.Function>>): t.Expression {
   const funId = path.node.id;
+  let reapply: t.Expression;
   if (path.node.__usesArgs__) {
-    return t.callExpression(
-      t.memberExpression(funId, t.identifier('apply')),
-      [t.thisExpression(), matArgs]);
+    reapply = t.callExpression(t.memberExpression(funId, t.identifier('apply')),
+        [t.thisExpression(), matArgs]);
   }
   else {
-    return t.callExpression(
-      t.memberExpression(funId, t.identifier("call")),
-      [t.thisExpression(), ...<any>path.node.params]);
+    reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
+        [t.thisExpression(), ...<any>path.node.params]);
   }
+  return t.conditionalExpression(t.binaryExpression('instanceof',
+    t.thisExpression(), funId),
+    t.sequenceExpression([reapply, t.thisExpression()]),
+    reapply);
+
 }
 
 function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
@@ -445,7 +449,8 @@ const jumper: Visitor = {
       if (isFlat(path)) {
         return;
       }
-      if (!t.isCallExpression(path.node.right)) {
+      if (!t.isCallExpression(path.node.right) &&
+        !t.isNewExpression(path.node.right)) {
         const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
         path.replaceWith(ifAssign);
         path.skip();
@@ -510,7 +515,8 @@ const jumper: Visitor = {
 
   ReturnStatement: {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
-      if (!t.isCallExpression(path.node.argument)) {
+      if (!t.isCallExpression(path.node.argument) &&
+        !t.isNewExpression(path.node.argument)) {
         return;
       }
 

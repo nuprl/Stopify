@@ -24,6 +24,10 @@ const label: Visitor = {
     path.node.labels = [counter++];
   },
 
+  NewExpression: function (path: NodePath<Labeled<t.NewExpression>>): void {
+    path.node.labels = [counter++];
+  },
+
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>): void {
       path.node.labels = getLabels(path.node.right);

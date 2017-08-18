@@ -52,16 +52,8 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
     yieldInterval = NaN;
   }
 
-  let execEnv : 'browser' | 'node';
-  if (typeof args.env !== 'string') {
-    execEnv = 'node';
-  } else if (args.env === 'browser') {
-    execEnv = 'browser';
-  } else if (args.env === 'node') {
-    execEnv = 'node';
-  } else {
-    throw new Error(`--env must be either 'browser' or 'node'`);
-  }
+  let execEnv: 'node' | 'browser' = 
+    typeof window === 'undefined' ? 'node' : 'browser';
 
   return { 
     filename: filename, 
@@ -94,13 +86,12 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
   }
 
   if (opts.env === 'browser') {
-    console.log = function (data: any) {
-      var div = document.getElementById('data')!;
-      div.innerHTML = div.innerHTML + ", " + data;
+    const data = <HTMLTextAreaElement>document.getElementById('data')!;
+    console.log = function (str: any) {
+      data.value = data.value + str + '\n';
     }
     window.onerror = () => {
-      var div = document.getElementById('data')!;
-      div.innerHTML = `, Failed`
+      data.value = data.value + ',NA\n';
       window.document.title = "done"
     }
   }

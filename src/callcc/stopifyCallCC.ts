@@ -9,6 +9,7 @@ import * as babylon from 'babylon';
 import cleanupGlobals from '../common/cleanupGlobals';
 import hygiene from '../common/hygiene';
 import markFlatFunctions from '../common/markFlatFunctions';
+import markFlatApplications from '../common/markFlatApplications';
 
 const top = t.identifier("$top");
 const isStop = t.identifier("$isStop");
@@ -95,7 +96,10 @@ const insertSuspend: Visitor = {
             t.callExpression(isStop, []),
             t.blockStatement([t.returnStatement(t.callExpression(onStop, []))]),
             t.returnStatement(
-              t.callExpression(t.memberExpression(t.identifier("$__R"), t.identifier("resume")), [result]))))
+              t.callExpression(
+                t.memberExpression(
+                  t.identifier("$__R"),
+                  t.identifier("resume")), [result]))))
       ];
     }
   },
@@ -105,15 +109,14 @@ const insertSuspend: Visitor = {
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     path.stop();
-    // NOTE(arjun): This is how we pass flags to markFlatFunctions.
-    (<any>path.node).options = { optimize: true };
     h.transformFromAst(path, [
       [cleanupGlobals, { allowed }],
       [hygiene, { reserved }],
-      [markFlatFunctions]
+      [markFlatFunctions],
     ]);
+    h.transformFromAst(path, [markFlatApplications])
     h.transformFromAst(path, [() => ({ visitor: insertSuspend })]);
-    h.transformFromAst(path, 
+    h.transformFromAst(path,
       [[callcc, { useReturn: true, captureMethod: state.opts.captureMethod }]]);
   }
 }

@@ -18,7 +18,7 @@ const transform = args.transform;
 
 const validTransforms = [ 'eager', 'lazy', 'retval', 'original' ];
 if (validTransforms.includes(transform) === false) {
-  stderr.write(`--transform must be one of ${validTransforms.join(', ')}`);
+  stderr.write(`--transform must be one of ${validTransforms.join(', ')}, got ${transform}.\n`);
   process.exit(1);
 }
 if (typeof srcPath === 'undefined') {

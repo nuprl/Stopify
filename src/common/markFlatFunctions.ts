@@ -6,22 +6,13 @@
 
 import * as t from 'babel-types';
 import { NodePath, Visitor } from 'babel-traverse';
-import { OptionsAST, FlatTag, FlatnessMark } from './helpers'
+import { FlatTag, FlatnessMark } from './helpers'
 
 let debug = false;
 
 const prog = {
-  enter(path: NodePath<OptionsAST<t.Program>>) {
-    debug = (path.node.options && path.node.options.debug)
-    if(!(path.node.options && path.node.options.optimize)) {
-      path.skip();
-    }
-  },
   // Mark the untransformed function.
-  exit(path: NodePath<OptionsAST<t.Program>>) {
-    if(!(path.node.options && path.node.options.optimize)) {
-      path.skip();
-    }
+  exit(path: NodePath<t.Program>) {
     path.traverse(markUntransformed)
   }
 }

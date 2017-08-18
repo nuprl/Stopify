@@ -1,3 +1,4 @@
+import { FlatnessMark } from "../common/helpers";
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 
@@ -134,7 +135,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
     t.expressionStatement(popRuntimeStack)
   ]);
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
-  
+
   const mayMatArgs: t.Statement[] = [];
   if (path.node.__usesArgs__) {
     mayMatArgs.push(
@@ -501,9 +502,6 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
 const jumper: Visitor = {
   UpdateExpression: {
     exit(path: NodePath<Labeled<t.UpdateExpression>>): void {
-      if (isFlat(path)) {
-        return;
-      }
       path.replaceWith(t.ifStatement(isNormalMode, t.expressionStatement(path.node)));
       path.skip();
     }
@@ -511,9 +509,6 @@ const jumper: Visitor = {
 
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>, s: State): void {
-      if (isFlat(path)) {
-        return;
-      }
       if (!t.isCallExpression(path.node.right)) {
         const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
         path.replaceWith(ifAssign);
@@ -538,10 +533,16 @@ const jumper: Visitor = {
   },
 
   FunctionDeclaration: {
-    enter(path: NodePath<Labeled<t.FunctionDeclaration>>) {
+    enter(path: NodePath<FlatnessMark<Labeled<t.FunctionDeclaration>>>) {
       path.node.__usesArgs__ = usesArguments(path);
+      if (path.node.mark == 'Flat') {
+        return
+      }
     },
-    exit(path: NodePath<Labeled<t.FunctionDeclaration>>): void {
+    exit(path: NodePath<Labeled<FlatnessMark<t.FunctionDeclaration>>>): void {
+      if (path.node.mark == 'Flat') {
+        return
+      }
       return func(path);
     }
   },
@@ -563,8 +564,7 @@ const jumper: Visitor = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      if (isFlat(path) ||
-        (<any>path.node).isTransformed) {
+      if ((<any>path.node).isTransformed) {
         return;
       }
       const { test, consequent, alternate } = path.node;
@@ -640,8 +640,7 @@ const jumper: Visitor = {
 
   CatchClause: {
     exit(path: NodePath<t.CatchClause>, s: State): void {
-      if (isFlat(path) ||
-        s.opts.captureMethod === 'retval') {
+      if (s.opts.captureMethod === 'retval') {
         return;
       }
       const { param, body } = path.node;

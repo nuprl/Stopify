@@ -6,7 +6,6 @@ import * as makeBlockStmt from '../common/makeBlockStmt';
 import * as yieldDebug from './yieldDebug';
 import * as transformMarked from '../common/transformMarked';
 import { transformWithLines } from '../common/helpers';
-import * as markKnown from '../common/markKnownFunctions'
 
 class YieldSteppify implements Steppable {
   private original: string;
@@ -30,7 +29,7 @@ class YieldSteppify implements Steppable {
     this.original = code;
 
     const plugins = [
-      [noArrows], [makeBlockStmt], [markKnown], [yieldDebug],
+      [noArrows], [makeBlockStmt], [yieldDebug],
       [transformMarked]
     ];
     this.transformed = transformWithLines(code, plugins, [])

@@ -19,6 +19,7 @@ const result = t.identifier("$result");
 
 const allowed = [
   "Object",
+  "exports",
   "require",
   "console",
   "global",

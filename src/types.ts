@@ -9,4 +9,5 @@ export interface Opts {
   yieldInterval: number,
   stop: number | undefined,
   env: 'browser' | 'node',
+  variance: boolean
 }

@@ -79,7 +79,8 @@ function main() {
   const platform: string = opts.platform || "chrome";
   const latency: string = opts.latency || "100";
   const transform: string = opts.transform || "original lazy eager";
-  
+  const variance: boolean = opts.variance;
+
   if (transform.split(" ").includes("original") === false) {
     throw new Error("--transform must include original");
   }
@@ -110,12 +111,12 @@ function main() {
   }
   else {
     fs.writeFileSync(results,
-      'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,RunningTime,NumYields\n');
+      'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,RunningTime,NumYields,AvgLatency,VarLatency\n');
   }
 
   exec(`parallel --progress ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=run --wd=${wd} \
-      --src={1} --platform={2} --interval={3}  \
+      --src={1} --platform={2} --interval={3} --variance=${variance} \
       ::: ${wd}/*.js ::: ${platform} ::: ${latency}  >> ${results}`);
 }
 
@@ -144,6 +145,7 @@ function byPlatform(platform: string, src: string): byPlatformResult {
 
 function run() {
   const platform: string = opts.platform;
+  const variance = opts.variance;
   const { cmd, src } = byPlatform(platform, opts.src);
   let interval: number = opts.interval;
   // Parse the filename into transform-language-benchmark
@@ -165,7 +167,7 @@ function run() {
   const dst = `${opts.wd}/${benchmark}.${language}.${platform}.${transform}.${interval}.done`;
 
   creates(dst, () => {
-    const args = ["--latency", `${interval}`, src];
+    const args = ["--latency", `${interval}`, src, "--variance", variance];
     const proc = spawnSync(cmd, args,
       { stdio: [ 'none', 'inherit', 'pipe' ] });
     const lines = (proc.status === 0 ? String(proc.stdout) : 'NA,NA\n')

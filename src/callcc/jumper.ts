@@ -2,6 +2,7 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';
+import { cannotCapture } from '../common/cannotCapture';
 import { letExpression } from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
 
@@ -433,6 +434,11 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   stmtParent.skip();
 }
 
+function mayCapture(node: t.Node): boolean {
+  return ((t.isCallExpression(node) || t.isNewExpression(node)) &&
+          !cannotCapture(node));
+}
+
 const jumper: Visitor = {
   UpdateExpression: {
     exit(path: NodePath<Labeled<t.UpdateExpression>>): void {
@@ -449,8 +455,7 @@ const jumper: Visitor = {
       if (isFlat(path)) {
         return;
       }
-      if (!t.isCallExpression(path.node.right) &&
-        !t.isNewExpression(path.node.right)) {
+      if (!mayCapture(path.node.right)) {
         const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
         path.replaceWith(ifAssign);
         path.skip();
@@ -515,8 +520,7 @@ const jumper: Visitor = {
 
   ReturnStatement: {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
-      if (!t.isCallExpression(path.node.argument) &&
-        !t.isNewExpression(path.node.argument)) {
+      if (!mayCapture(path.node.argument)) {
         return;
       }
 

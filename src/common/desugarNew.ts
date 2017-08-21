@@ -10,39 +10,7 @@ import {
   letExpression, transformed, OptimizeMark, NewTag, newTag
 } from '../common/helpers';
 
-const knowns = ['Object',
-  'Function',
-  'Boolean',
-  'Symbol',
-  'Error',
-  'EvalError',
-  //'InternalError',
-  'RangeError',
-  'ReferenceError',
-  'SyntaxError',
-  'TypeError',
-  'URIError',
-  'Number',
-  'Math',
-  'Date',
-  'String',
-  'RegExp',
-  'Array',
-  'Int8Array',
-  'Uint8Array',
-  'Uint8ClampedArray',
-  'Int16Array',
-  'Uint16Array',
-  'Int32Array',
-  'Uint32Array',
-  'Float32Array',
-  'Float64Array',
-  'Map',
-  'Set',
-  'WeakMap',
-  'WeakSet',
-  '$GeneratorConstructor'
-];
+import { knowns } from './cannotCapture';
 
 const newVisit: VisitNode<OptimizeMark<t.NewExpression>> =
   function (path: NodePath<OptimizeMark<t.NewExpression>>): void {

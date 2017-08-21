@@ -1,11 +1,13 @@
 
 import { Opts, Stoppable } from '../types';
 import * as minimist from 'minimist';
+import { sum } from '../generic';
+import { sprintf } from 'sprintf';
 
 const parseOpts = {
   alias: { 
     "y": "yield",
-    "l": "latency",
+    "l": "latency"
   }
 };
 
@@ -52,6 +54,8 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
     yieldInterval = NaN;
   }
 
+  let variance = args.variance === true;
+
   let execEnv: 'node' | 'browser' = 
     typeof window === 'undefined' ? 'node' : 'browser';
 
@@ -61,6 +65,7 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
     yieldMethod: yieldMethod,
     stop: args.stop,
     env: execEnv,
+    variance: variance
   };
 
 }
@@ -68,9 +73,18 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
 export function run(M: Stoppable, opts: Opts, done: () => void): void {
   let yields = 0;
   let mustStop = false;
+  let lastStopTime: number | undefined;
+  let stopIntervals: number[] = [];
 
   function isStop() {
     yields++;
+    if (opts.variance) {
+      const now = Date.now();
+      if (typeof lastStopTime === 'number') {
+        stopIntervals.push(now - lastStopTime);
+      }
+      lastStopTime = now;
+    }
     return mustStop;
   }
 
@@ -81,7 +95,22 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
   function onDone() {
     const endTime = Date.now();
     const runningTime = endTime - startTime;
-    console.log(`${runningTime},${yields}`);
+    const latencyAvg = runningTime / yields;
+    let latencyVar;
+    if (opts.variance) {
+      if (yields === 0) {
+        latencyVar = "0";
+      }
+      else {
+        latencyVar = sprintf("%.2f",
+          sum(stopIntervals.map(x => 
+            (latencyAvg - x) * (latencyAvg - x))) / yields);
+      }
+    }
+    else {
+      latencyVar = 'NA'; 
+    }
+    console.log(`${runningTime},${yields},${sprintf("%.2f", latencyAvg)},${latencyVar}`);
     done();
   }
 

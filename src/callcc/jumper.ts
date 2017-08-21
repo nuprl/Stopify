@@ -528,10 +528,16 @@ const jumper: Visitor = {
   },
 
   FunctionExpression: {
-    enter(path: NodePath<Labeled<t.FunctionExpression>>) {
+    enter(path: NodePath<Labeled<FlatnessMark<t.FunctionExpression>>>) {
       path.node.__usesArgs__ = usesArguments(path);
+      if (path.node.mark == 'Flat') {
+        return
+      }
     },
-    exit(path: NodePath<Labeled<t.FunctionExpression>>): void {
+    exit(path: NodePath<Labeled<FlatnessMark<t.FunctionExpression>>>): void {
+      if (path.node.mark == 'Flat') {
+        return
+      }
       return func(path);
     }
   },

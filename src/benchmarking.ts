@@ -171,9 +171,9 @@ function run() {
   creates(dst, () => {
     const args = [
       "--latency", `${interval}`,
-      src,
       "--env", platform,
-      "--variance", variance
+      "--variance", variance,
+      src
     ];
     const proc = spawnSync(cmd, args,
       { stdio: [ 'none', 'inherit', 'pipe' ] });

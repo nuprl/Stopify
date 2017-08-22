@@ -1,22 +1,12 @@
-/**
- * This visitor should be ran after markFlatFunctions. It assumes that
- * function nodes have a `.mark` field that says whether or not they
- * are flat.
- */
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { FlatTag, FlatnessMark } from './helpers';
+import { Tag, OptimizeMark } from './helpers';
 
-/**
- * 0 -> No debugging
- * 1 -> Display labels added to applications
- * 2 -> 1 + Display state of the scope structure
- */
-let debug = 0;
+let debug = false;
 
 class Scope {
-  bindings: Map<string, FlatTag>;
-  constructor(init: Array<[string, FlatTag]> = []) {
+  bindings: Map<string, Tag>;
+  constructor(init: Array<[string, Tag]> = []) {
     this.bindings = new Map(init)
   }
   toString(): string {
@@ -31,25 +21,23 @@ class Env {
   constructor() {
     this.scopes = new Array(new Scope([]));
 
-    // TODO(rachit): Add more known globals here.
-    // This is not correct in presence of renaming.
+    // NOTE(rachit): Add more known globals here.
     [
       'WeakMap', 'Map', 'Set', 'WeakSet', 'String', 'Number', 'Function',
       'Object', 'Array', 'Date', 'RegExp', 'Error', 'Object.create',
       'console.log', 'console.dir', 'Object.assign'
-    ].map(e => this.addBinding(e, 'Flat'))
+    ].map(e => this.addBinding(e, 'Untransformed'))
   }
   toString(): string {
     return this.scopes.map(x => x.toString()).join("\n")
   }
-  findBinding(id: string): FlatTag {
+  findBinding(id: string): Tag {
     for(let iter in this.scopes) {
       let scope = this.scopes[iter]
       let res = scope.bindings.get(id)
       if(res) return res;
     }
-    // NOTE(rachit): If can't find the tag, be conservative and return notflat.
-    return 'NotFlat'
+    return 'Unknown'
   };
   pushScope(scope: Scope): void {
     this.scopes.unshift(scope)
@@ -59,7 +47,7 @@ class Env {
       this.scopes.shift()
     }
   };
-  addBinding(id: string, tag: FlatTag): void {
+  addBinding(id: string, tag: Tag = 'Transformed'): void {
     if (this.scopes.length === 0) {
       throw new Error(`Tried to add ${id} with tag ${tag} in empty Env`)
     } else {
@@ -90,63 +78,64 @@ function nodeToString(node: t.Expression): string | null {
   }
 }
 
-const markCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
-  function (path: NodePath<FlatnessMark<t.CallExpression>>): void {
+const markCallExpression: VisitNode<OptimizeMark<t.CallExpression>> =
+  function (path: NodePath<OptimizeMark<t.CallExpression>>): void {
     const node = path.node
     const name = nodeToString(node.callee)
     if (name) {
-      const tag: FlatTag = globalEnv.findBinding(name)
-      if (debug > 0) {
+      const tag: Tag = globalEnv.findBinding(name)
+      if (debug) {
         process.stderr.write(`${name} -> ${tag} on line ${path.node.loc ?
             path.node.loc.start.line : ""}\n`)
       }
-      node.mark = tag
+      node.OptimizeMark = tag
     }
   }
 
-const programMarkCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
-  function (path: NodePath<FlatnessMark<t.CallExpression>>): void {
+const programMarkCallExpression: VisitNode<OptimizeMark<t.CallExpression>> =
+  function (path: NodePath<OptimizeMark<t.CallExpression>>): void {
     const fParent = path.findParent(p => t.isFunctionDeclaration(p) ||
       t.isFunctionExpression(p))
     if (fParent === null || fParent === undefined) {
       const node = path.node
+      // Known for a fact that all function expression are transformed.
       if (t.isFunctionExpression(node.callee)) {
-        node.mark = (<any>node.callee).mark
+        node.OptimizeMark = 'Transformed'
         return
       }
       const name = nodeToString(node.callee)
       if (name) {
-        const tag: FlatTag = globalEnv.findBinding(name)
-        if (debug > 0) {
+        const tag: Tag = globalEnv.findBinding(name)
+        if (debug) {
           process.stderr.write(`${name} -> ${tag} on line ${path.node.loc ?
               path.node.loc.start.line : ""}\n`)
         }
-        node.mark = tag
+        node.OptimizeMark = tag
       }
     }
   }
 
-const markLetBoundFuncExpr: VisitNode<FlatnessMark<t.FunctionExpression>> = {
-  enter (path: NodePath<FlatnessMark<t.FunctionExpression>>): void {
+const markLetBoundFuncExpr: VisitNode<OptimizeMark<t.FunctionExpression>> = {
+  enter (path: NodePath<OptimizeMark<t.FunctionExpression>>): void {
     const decl = path.parent;
     if(t.isVariableDeclarator(decl)) {
-      globalEnv.addBinding((<t.Identifier>decl.id).name, path.node.mark)
+      globalEnv.addBinding((<t.Identifier>decl.id).name, 'Transformed')
     }
   }
 }
 
-const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> = {
-  enter (path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>): void {
+const func: VisitNode<OptimizeMark<t.FunctionDeclaration|t.FunctionExpression>> = {
+  enter (path: NodePath<OptimizeMark<t.FunctionDeclaration|t.FunctionExpression>>): void {
     if (path.node.id) {
-      globalEnv.addBinding(path.node.id.name, path.node.mark);
-      globalEnv.pushScope(new Scope([[path.node.id.name, path.node.mark]]))
+      globalEnv.addBinding(path.node.id.name, 'Transformed');
+      globalEnv.pushScope(new Scope([[path.node.id.name, 'Transformed']]))
     } else {
       globalEnv.pushScope(new Scope([]));
     }
   },
 
-  exit (path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>): void {
-    if(debug > 1) {
+  exit (path: NodePath<OptimizeMark<t.FunctionDeclaration|t.FunctionExpression>>): void {
+    if(debug) {
       process.stderr.write(`\n-------${path.node.id.name}----------\n`)
       process.stderr.write(globalEnv.toString())
       process.stderr.write(`\n-------------------------\n`)
@@ -158,7 +147,7 @@ const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> 
 
 const program: VisitNode<t.Program> = {
   exit(path) {
-    if (debug > 1) {
+    if (debug) {
       process.stderr.write(`\n-------program----------\n`)
       process.stderr.write(globalEnv.toString())
       process.stderr.write(`\n-------------------------\n`)
@@ -182,6 +171,6 @@ const visitor = {
   FunctionExpression: func,
 }
 
-export default function () {
+module.exports = function () {
   return { visitor };
 }

@@ -71,12 +71,13 @@ export class LazyRuntime extends common.Runtime {
       this.stack.pop();
     }
 
+    let result: any;
     try {
       if (this.mode === "normal") {
-        constr.apply(obj, args);
+        result = constr.apply(obj, args);
       }
       else {
-        this.stack[this.stack.length - 1].f.apply(obj, []);
+        result = this.stack[this.stack.length - 1].f.apply(obj, []);
       }
     }
     catch (exn) {
@@ -90,7 +91,13 @@ export class LazyRuntime extends common.Runtime {
       }
       throw exn;
     }
-    return obj;
+    
+    if (typeof result === 'object') {
+      return result;
+    }
+    else {
+      return obj;
+    }
   }
 }
 

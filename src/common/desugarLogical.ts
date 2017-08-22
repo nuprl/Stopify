@@ -70,9 +70,9 @@ export const visitor: Visitor = {
       return;
     }
     const last = exprs[exprs.length - 1];
-    const restRev = exprs.slice(0, exprs.length - 1).reverse();
+    const rest = exprs.slice(0, exprs.length - 1);
     const stmt = path.getStatementParent();
-    for (const expr of restRev) {
+    for (const expr of rest) {
       stmt.insertBefore(t.expressionStatement(expr));
     }
     path.replaceWith(last);

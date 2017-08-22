@@ -62,6 +62,22 @@ export const visitor: Visitor = {
     path.replaceWith(r);
   },
 
+  SequenceExpression(path: NodePath<t.SequenceExpression>) {
+    const exprs = path.node.expressions;
+    if (exprs.length < 2) {
+      // This probably won't happen in a parsed program.
+      path.replaceWith(exprs[0]);
+      return;
+    }
+    const last = exprs[exprs.length - 1];
+    const restRev = exprs.slice(0, exprs.length - 1).reverse();
+    const stmt = path.getStatementParent();
+    for (const expr of restRev) {
+      stmt.insertBefore(t.expressionStatement(expr));
+    }
+    path.replaceWith(last);
+  },
+
   ConditionalExpression(path: NodePath<t.ConditionalExpression>) {
     if (!containsCall(path)) {
       return;

@@ -76,7 +76,7 @@ function main() {
 
   const src: string = opts.src ||
     "benchmarks/{python_pyjs,dart_dart2js,scala,ocaml}/js-build/*";
-  const platform: string = opts.platform || "chrome";
+  const platform: string = opts.platform || "chrome firefox";
   const latency: string = opts.latency || "100";
   const transform: string = opts.transform || "original lazy eager";
   const variance: boolean = opts.variance;

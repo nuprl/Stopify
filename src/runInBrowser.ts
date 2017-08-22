@@ -32,12 +32,12 @@ const driver = new selenium.Builder()
   .build();
 
 driver.get(src);
-driver.wait(selenium.until.titleIs('done'), 5 * 60 * 1000) .then(_ =>
-  driver.findElement(selenium.By.id('data')).then(e =>
-    e.getAttribute("value").then(s => {
-      stdout.write(s);
-      driver.quit();
-      if (vfb) {
-        vfb.stopSync();
-      }
-    })));
+driver.wait(selenium.until.titleIs('done'), 5 * 60 * 1000);
+driver.findElement(selenium.By.id('data'))
+  .then(e => e.getAttribute("value")
+    .then(s => stdout.write(s)))
+  .then(_ => driver.quit().then(_ => {
+    if (vfb) {
+      vfb.stopSync();
+    }
+  }));

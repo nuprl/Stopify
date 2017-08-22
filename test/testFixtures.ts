@@ -100,7 +100,8 @@ export function browserTest(srcPath: string, transform: string) {
     const { name: htmlPath } = tmp.fileSync({ dir: ".", postfix: ".html" });
     execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
     execSync(`./bin/webpack ${dstPath} ${htmlPath}`);
-    execSync(`./bin/browser ${htmlPath} --yield 1000`);
+    execSync(`./bin/browser ${htmlPath} --yield 1000 --env chrome`);
+    execSync(`./bin/browser ${htmlPath} --yield 1000 --env firefox`);
     fs.unlinkSync(dstPath);
     fs.unlinkSync(htmlPath);
   });

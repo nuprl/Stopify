@@ -223,8 +223,8 @@ function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCal
   }
 
   const nodeStmt = t.isStatement(path.node) ?
-    path.node :
-    t.expressionStatement(path.node);
+  path.node :
+  t.expressionStatement(path.node);
 
   const ifStmt = t.ifStatement(
     isNormalMode,
@@ -256,10 +256,10 @@ function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCal
     t.blockStatement([tryStmt])), []);
   const stmtParent = path.getStatementParent();
   path.isStatement() ?
-    (path.replaceWith(tryStmt), path.skip()) :
-    t.isStatement(path.parent) ?
-      (stmtParent.replaceWith(tryStmt), stmtParent.skip()) :
-      (path.replaceWith(tryApply), path.skip());
+  (path.replaceWith(tryStmt), path.skip()) :
+  t.isStatement(path.parent) ?
+  (stmtParent.replaceWith(tryStmt), stmtParent.skip()) :
+  (path.replaceWith(tryApply), path.skip());
 }
 
 /**
@@ -510,14 +510,10 @@ const jumper: Visitor = {
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>, s: State): void {
       if (!t.isCallExpression(path.node.right)) {
-        const ifAssign =
-          t.ifStatement(isNormalMode, t.expressionStatement(path.node));
+        const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
         path.replaceWith(ifAssign);
         path.skip();
       } else {
-        if ((<any>path.node.right).mark == 'Flat') {
-          return
-        }
         captureLogics[s.opts.captureMethod](path, () =>
           t.expressionStatement(
             t.assignmentExpression(path.node.operator,

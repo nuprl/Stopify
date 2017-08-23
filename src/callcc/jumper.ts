@@ -338,6 +338,8 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
         t.expressionStatement(restoreNode),
         t.expressionStatement(t.callExpression(shiftEagerStack, [])),
       ])));
+  (<any>ifStmt).isTransformed = true;
+
 
   const ifApply = t.callExpression(t.arrowFunctionExpression([],
     t.blockStatement([ifStmt])), []);
@@ -431,13 +433,18 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
       path.node.operator,
       path.node.left, ret)));
 
+  const replace = t.ifStatement(t.logicalExpression('||',
+    isNormalMode, t.binaryExpression('===', target, applyLbl)),
+    t.blockStatement([
+      t.variableDeclaration('let', [t.variableDeclarator(ret)]),
+      ifStmt,
+      restoreBlock,
+      reassign,
+    ]));
+  (<any>replace).isTransformed = true;
+
   const stmtParent = path.getStatementParent();
-  stmtParent.replaceWith(t.blockStatement([
-    t.variableDeclaration('let', [t.variableDeclarator(ret)]),
-    ifStmt,
-    restoreBlock,
-    reassign,
-  ]));
+  stmtParent.replaceWith(replace);
   stmtParent.skip();
 }
 
@@ -502,7 +509,7 @@ const jumper: Visitor = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      if (isFlat(path)) {
+      if ((<any>path.node).isTransformed || isFlat(path)) {
         return;
       }
       const { test, consequent, alternate } = path.node;

@@ -10,7 +10,7 @@ type Labeled<T> = T & {
   labels?: number[];
   __usesArgs__?: boolean
 }
-type CaptureFun = (path: NodePath<t.Node>, restoreCall: () => t.Statement) => void;
+type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
 
 export type CaptureLogic = 'lazy' | 'eager' | 'retval';
 
@@ -133,7 +133,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
     t.expressionStatement(popRuntimeStack)
   ]);
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
-  
+
   const mayMatArgs: t.Statement[] = [];
   if (path.node.__usesArgs__) {
     mayMatArgs.push(
@@ -193,7 +193,7 @@ function reapplyExpr(path: NodePath<Labeled<t.Function>>): t.Expression {
  *      throw exn;
  *    }
  */
-function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
+function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const exn = path.scope.generateUidIdentifier('exn');
 
@@ -224,12 +224,15 @@ function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCal
   path.node :
   t.expressionStatement(path.node);
 
+  const restoreNode =
+    t.assignmentExpression(path.node.operator,
+      path.node.left, stackFrameCall)
   const ifStmt = t.ifStatement(
     isNormalMode,
     t.blockStatement([nodeStmt]),
     t.ifStatement(
       t.binaryExpression('===', target, applyLbl),
-      t.blockStatement([restoreCall()])));
+      t.expressionStatement(restoreNode)));
 
   const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
     t.catchClause(exn, t.blockStatement([
@@ -277,7 +280,7 @@ function lazyCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCal
  *      eagerStack.shift();
  *    }
  */
-function eagerCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
+function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
 
   const funParent = <NodePath<FunctionT>>path.findParent(p =>
@@ -317,6 +320,9 @@ function eagerCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCa
     t.objectProperty(t.identifier('index'), applyLbl),
   ]);
 
+  const restoreNode =
+    t.assignmentExpression(path.node.operator,
+      path.node.left, stackFrameCall)
   const ifStmt = t.ifStatement(
     isNormalMode,
     t.blockStatement([
@@ -329,10 +335,9 @@ function eagerCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCa
     t.ifStatement(
       t.binaryExpression('===', target, applyLbl),
       t.blockStatement([
-        restoreCall(),
+        t.expressionStatement(restoreNode),
         t.expressionStatement(t.callExpression(shiftEagerStack, [])),
       ])));
-  (<any>ifStmt).isTransformed = true;
 
   const ifApply = t.callExpression(t.arrowFunctionExpression([],
     t.blockStatement([ifStmt])), []);
@@ -349,21 +354,21 @@ function eagerCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCa
  * returns up to the runtime.
  *
  *  jumper [[ x = f_n(...args) ]] =
- *    if (mode === 'normal') {
- *      x = f_n(...args);
- *      if (x instanceof Capture) {
- *        x.stack.push(stackFrame);
- *        return x;
+ *    {
+ *      let ret;
+ *      if (mode === 'normal') {
+ *        ret = f_n(...args);
+ *      } else if (mode === 'restoring' && target === n) {
+ *        ret = R.stack[R.stack.length-1].f();
  *      }
- *    } else if (mode === 'restoring' && target === n) {
- *      x = R.stack[R.stack.length-1].f();
- *      if (x instanceof Capture) {
- *        x.stack.push(stackFrame);
- *        return x;
+ *      if (ret instanceof Capture) {
+ *        ret.stack.push(stackFrame);
+ *        return ret;
  *      }
+ *      if (mode === 'normal') x = ret;
  *    }
  */
-function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreCall: () => t.Statement): void {
+function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const ret = path.scope.generateUidIdentifier('ret');
 
@@ -400,91 +405,40 @@ function retvalCaptureLogic(path: NodePath<t.Expression | t.Statement>, restoreC
     t.objectProperty(t.identifier('index'), applyLbl),
   ]);
 
-  const nodeBlock: t.Statement[] = t.isReturnStatement(path.node) || t.isThrowStatement(path.node) ?
-  [
-    letExpression(ret, path.node.argument, 'const'),
-    t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
-      t.blockStatement([
-        t.expressionStatement(t.callExpression(
-          t.memberExpression(t.memberExpression(ret,
-            t.identifier('stack')), t.identifier('push')), [
-              stackFrame,
-            ])),
-        t.returnStatement(ret),
-      ]),
-      t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
-        t.returnStatement(ret))),
-  ] :
-  [
-    letExpression(ret, (<t.AssignmentExpression>path.node).right, 'const'),
-    t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
-      t.blockStatement([
-        t.expressionStatement(t.callExpression(
-          t.memberExpression(t.memberExpression(ret,
-            t.identifier('stack')), t.identifier('push')), [
-              stackFrame,
-            ])),
-        t.returnStatement(ret),
-      ])),
-    t.expressionStatement(t.assignmentExpression(
-      (<t.AssignmentExpression>path.node).operator,
-      (<t.AssignmentExpression>path.node).left, ret))
-  ];
-
-  const restoreNode = restoreCall();
-  const restoreBlock: t.Statement[] = t.isReturnStatement(restoreNode) || t.isThrowStatement(restoreNode) ?
-  [
-    letExpression(ret, restoreNode.argument, 'const'),
-    t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
-      t.blockStatement([
-        t.expressionStatement(t.callExpression(
-          t.memberExpression(t.memberExpression(ret,
-            t.identifier('stack')), t.identifier('push')), [
-              stackFrame,
-            ])),
-        t.returnStatement(ret),
-      ]),
-      t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
-        t.returnStatement(ret))),
-  ] :
-  [
-    letExpression(ret, (<any>restoreNode).expression.right, 'const'),
-    t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
-      t.blockStatement([
-        t.expressionStatement(t.callExpression(
-          t.memberExpression(t.memberExpression(ret,
-            t.identifier('stack')), t.identifier('push')), [
-              stackFrame,
-            ])),
-        t.returnStatement(ret),
-      ]),
-      t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
-        t.returnStatement(ret))),
-    t.expressionStatement(t.assignmentExpression(
-      (<any>restoreNode).expression.operator,
-      (<any>restoreNode).expression.left, ret))
-  ];
+  const restoreBlock: t.IfStatement =
+  t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
+    t.blockStatement([
+      t.expressionStatement(t.callExpression(
+        t.memberExpression(t.memberExpression(ret,
+          t.identifier('stack')), t.identifier('push')), [
+            stackFrame,
+          ])),
+      t.returnStatement(ret),
+    ]),
+    t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
+      t.returnStatement(ret)));
 
   const ifStmt = t.ifStatement(
     isNormalMode,
-    t.blockStatement([
-      ...nodeBlock,
-    ]),
+    t.expressionStatement(t.assignmentExpression('=', ret, path.node.right)),
     t.ifStatement(
       t.binaryExpression('===', target, applyLbl),
-      t.blockStatement([
-        ...restoreBlock,
-      ])));
-  (<any>ifStmt).isTransformed = true;
+      t.expressionStatement(t.assignmentExpression('=',
+        ret, stackFrameCall))));
 
-  const ifApply = t.callExpression(t.arrowFunctionExpression([],
-    t.blockStatement([ifStmt])), []);
+  const reassign = t.ifStatement(isNormalMode,
+    t.expressionStatement(t.assignmentExpression(
+      path.node.operator,
+      path.node.left, ret)));
+
   const stmtParent = path.getStatementParent();
-  path.isStatement() ?
-  (path.replaceWith(ifStmt), path.skip()) :
-  t.isStatement(path.parent) ?
-  (stmtParent.replaceWith(ifStmt), stmtParent.skip()) :
-  (path.replaceWith(ifApply), path.skip());
+  stmtParent.replaceWith(t.blockStatement([
+    t.variableDeclaration('let', [t.variableDeclarator(ret)]),
+    ifStmt,
+    restoreBlock,
+    reassign,
+  ]));
+  stmtParent.skip();
 }
 
 const jumper: Visitor = {
@@ -508,11 +462,7 @@ const jumper: Visitor = {
         path.replaceWith(ifAssign);
         path.skip();
       } else {
-        captureLogics[s.opts.captureMethod](path, () =>
-          t.expressionStatement(
-            t.assignmentExpression(path.node.operator,
-              path.node.left, stackFrameCall)));
-        path.skip();
+        captureLogics[s.opts.captureMethod](path);
       }
     }
   },
@@ -552,8 +502,7 @@ const jumper: Visitor = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      if (isFlat(path) ||
-        (<any>path.node).isTransformed) {
+      if (isFlat(path)) {
         return;
       }
       const { test, consequent, alternate } = path.node;
@@ -585,9 +534,9 @@ const jumper: Visitor = {
         return;
       }
 
-      const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
+      const funParent = path.findParent(p => p.isFunction());
 
-      if (t.isFunction(funOrTryParent)) {
+      if (t.isFunction(funParent)) {
         const labels = getLabels(path.node);
         const ifReturn = t.ifStatement(isNormalMode, path.node,
           labels.length === 0 ? undefined :
@@ -596,34 +545,9 @@ const jumper: Visitor = {
             t.returnStatement(stackFrameCall)));
         path.replaceWith(ifReturn);
         path.skip();
-      } else if (t.isTryStatement(funOrTryParent)) {
-        captureLogics[s.opts.captureMethod](path, () => t.returnStatement(stackFrameCall));
       } else {
-        throw new Error(`Unexpected 'return' parent of type ${typeof funOrTryParent}`);
+        throw new Error(`Unexpected 'return' parent of type ${typeof funParent}`);
       }
-    }
-  },
-
-  ThrowStatement: function(path: NodePath<Labeled<t.ThrowStatement>>, s: State): void {
-    if (!t.isCallExpression(path.node.argument)) {
-      return;
-    }
-
-    const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
-
-    if (t.isFunction(funOrTryParent)) {
-      const labels = getLabels(path.node);
-      const ifThrow = t.ifStatement(isNormalMode, path.node,
-        labels.length === 0 ? undefined :
-        t.ifStatement(t.logicalExpression('&&',
-          isRestoringMode, labelsIncludeTarget(labels)),
-          t.throwStatement(stackFrameCall)));
-      path.replaceWith(ifThrow);
-      path.skip();
-    } else if (t.isTryStatement(funOrTryParent)) {
-      captureLogics[s.opts.captureMethod](path, () => t.throwStatement(stackFrameCall));
-    } else {
-      throw new Error(`Unexpected 'return' parent of type ${typeof funOrTryParent}`);
     }
   },
 

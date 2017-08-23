@@ -29,7 +29,13 @@ const anfVisitor : Visitor = {
       const name = path.scope.generateUidIdentifier('app');
       const bind = h.letExpression(name, path.node);
       path.getStatementParent().insertBefore(bind);
-      path.replaceWith(name);
+
+      if (path.parent.type === 'ExpressionStatement') {
+        path.remove();
+      }
+      else {
+        path.replaceWith(name);
+      }
     }
   },
 

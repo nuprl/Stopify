@@ -20,10 +20,8 @@ const anfVisitor : Visitor = {
   CallExpression: function (path: NodePath<t.CallExpression>): void {
     const p = path.parent;
     if ((!t.isVariableDeclarator(p) &&
-      !t.isReturnStatement(p) &&
-      !t.isThrowStatement(p)) ||
-      ((t.isReturnStatement(p) ||
-        t.isThrowStatement(p)) &&
+      !t.isReturnStatement(p)) ||
+      (t.isReturnStatement(p) &&
         withinTryBlock(path))) {
       // Name the function application if it is not already named.
       const name = path.scope.generateUidIdentifier('app');
@@ -42,10 +40,8 @@ const anfVisitor : Visitor = {
   NewExpression: function (path: NodePath<t.NewExpression>): void {
     const p = path.parent;
     if ((!t.isVariableDeclarator(p) &&
-      !t.isReturnStatement(p) &&
-      !t.isThrowStatement(p)) ||
-      ((t.isReturnStatement(p) ||
-        t.isThrowStatement(p)) &&
+      !t.isReturnStatement(p)) ||
+      (t.isReturnStatement(p) &&
         withinTryBlock(path))) {
       // Name the function application if it is not already named.
       const name = path.scope.generateUidIdentifier('app');

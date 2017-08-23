@@ -169,7 +169,6 @@ function run() {
   const dst = `${opts.wd}/${benchmark}.${language}.${platform}.${transform}.${interval}.done`;
 
   creates(dst, () => {
-
     const args = [
       "--latency", `${interval}`,
       "--env", platform,

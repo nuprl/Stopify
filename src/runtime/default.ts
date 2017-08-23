@@ -57,8 +57,6 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
   }
 
   let variance = args.variance === true;
-  let execEnv: 'node' | 'browser' = 
-    typeof window === 'undefined' ? 'node' : 'browser';
 
   let execEnv: 'node' | 'firefox' | 'chrome' =
     typeof args.env === 'undefined' ? 'node' :
@@ -108,12 +106,12 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
       }
       else {
         latencyVar = sprintf("%.2f",
-          sum(stopIntervals.map(x => 
+          sum(stopIntervals.map(x =>
             (latencyAvg - x) * (latencyAvg - x))) / yields);
       }
     }
     else {
-      latencyVar = 'NA'; 
+      latencyVar = 'NA';
     }
     console.log(`${runningTime},${yields},${sprintf("%.2f", latencyAvg)},${latencyVar}`);
     done();

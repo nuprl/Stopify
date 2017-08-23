@@ -30,8 +30,6 @@ class RetValRuntime extends common.Runtime {
         // this is the only point where the whole stack is ready.
         // Doing res.f makes "this" wrong.
         return this.runtime(() => res.f.call(global, this.makeCont(res.stack)));
-      } else if (res instanceof common.Discard) {
-        return this.runtime(() => res.f());
       } else if (res instanceof common.Restore) {
         // The current continuation has been discarded and we now restore the
         // continuation in res.
@@ -45,8 +43,6 @@ class RetValRuntime extends common.Runtime {
         });
       }
       return res;
-    } else if (body instanceof common.Discard) {
-      return this.runtime(() => body.f());
     } else if (body instanceof common.Restore) {
       // The current continuation has been discarded and we now restore the
       // continuation in body.

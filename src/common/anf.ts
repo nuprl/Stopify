@@ -30,8 +30,8 @@ const anfVisitor : Visitor = {
       const bind = h.letExpression(name, path.node);
       path.getStatementParent().insertBefore(bind);
 
-      if (path.getStatementParent().type === 'ExpressionStatement') {
-        path.getStatementParent().remove();
+      if (path.parent.type === 'ExpressionStatement') {
+        path.remove();
       }
       else {
         path.replaceWith(name);

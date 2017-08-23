@@ -509,15 +509,13 @@ const jumper: Visitor = {
 
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>, s: State): void {
-      if (!t.isCallExpression(path.node.right)) {
+      if (!t.isCallExpression(path.node.right) ||
+        (<any>path.node.right).mark == 'Flat') {
         const ifAssign =
           t.ifStatement(isNormalMode, t.expressionStatement(path.node));
         path.replaceWith(ifAssign);
         path.skip();
       } else {
-        if ((<any>path.node.right).mark == 'Flat') {
-          return
-        }
         captureLogics[s.opts.captureMethod](path, () =>
           t.expressionStatement(
             t.assignmentExpression(path.node.operator,

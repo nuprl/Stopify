@@ -12,7 +12,7 @@ import { FlatTag, FlatnessMark } from './helpers';
  * 1 -> Display labels added to applications
  * 2 -> 1 + Display state of the scope structure
  */
-let debug = 0;
+let debug = 1;
 
 class Scope {
   bindings: Map<string, FlatTag>;
@@ -138,7 +138,8 @@ const markLetBoundFuncExpr: VisitNode<FlatnessMark<t.FunctionExpression>> = {
 const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> = {
   enter (path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>): void {
     if (path.node.id) {
-      globalEnv.addBinding(path.node.id.name, path.node.mark);
+      let mark = t.isReferenced(path.node.id, path.parent) ? 'NotFlat' : path.node.mark
+      globalEnv.addBinding(path.node.id.name, mark);
       globalEnv.pushScope(new Scope([[path.node.id.name, path.node.mark]]))
     } else {
       globalEnv.pushScope(new Scope([]));

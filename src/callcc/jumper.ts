@@ -220,9 +220,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     locals.push(path.scope.getBinding(x)!.identifier);
   }
 
-  const nodeStmt = t.isStatement(path.node) ?
-  path.node :
-  t.expressionStatement(path.node);
+  const nodeStmt = t.expressionStatement(path.node);
 
   const restoreNode =
     t.assignmentExpression(path.node.operator,
@@ -253,14 +251,9 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
       t.throwStatement(exn)
     ])));
 
-  const tryApply = t.callExpression(t.arrowFunctionExpression([],
-    t.blockStatement([tryStmt])), []);
   const stmtParent = path.getStatementParent();
-  path.isStatement() ?
-  (path.replaceWith(tryStmt), path.skip()) :
-  t.isStatement(path.parent) ?
-  (stmtParent.replaceWith(tryStmt), stmtParent.skip()) :
-  (path.replaceWith(tryApply), path.skip());
+  stmtParent.replaceWith(tryStmt);
+  stmtParent.skip();
 }
 
 /**
@@ -306,9 +299,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     locals.push(path.scope.getBinding(x)!.identifier);
   }
 
-  const nodeStmt = t.isStatement(path.node) ?
-  path.node :
-  t.expressionStatement(path.node);
+  const nodeStmt = t.expressionStatement(path.node);
 
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
@@ -340,15 +331,9 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
       ])));
   (<any>ifStmt).isTransformed = true;
 
-
-  const ifApply = t.callExpression(t.arrowFunctionExpression([],
-    t.blockStatement([ifStmt])), []);
   const stmtParent = path.getStatementParent();
-  path.isStatement() ?
-  (path.replaceWith(ifStmt), path.skip()) :
-  t.isStatement(path.parent) ?
-  (stmtParent.replaceWith(ifStmt), stmtParent.skip()) :
-  (path.replaceWith(ifApply), path.skip());
+  stmtParent.replaceWith(ifStmt);
+  stmtParent.skip();
 }
 
 /**

@@ -1,25 +1,25 @@
 /**
  * This script is meant to be run on our "cluster" of dedicated servers,
  * virtual machines, and desktops.
- * 
+ *
  * 1. Create a working directory to store results.
- * 
- * 2. Within the working directory, create a file called 'sshloginfile' that 
+ *
+ * 2. Within the working directory, create a file called 'sshloginfile' that
  *    specifies  which machines to use (see GNU Parallel to learn more about
  *    sshloginfiles). Here is an example that uses half the processors on
  *    kate, william, and Arjun's desktop:
- * 
+ *
  *        4/10.200.0.9
  *        6/10.200.0.6
  *        2/10.9.0.100
- * 
+ *
  *    You must be able to SSH into these machines without a password.
- * 
+ *
  * 3. Run the command 'node ./built/src/benchmarking --wd=DIR' where DIR is
  *    the working directory created in Step 1.
- * 
+ *
  * This produces the file DIR/results.csv, which has the raw data.
- * 
+ *
  */
 
 import { sprintf } from 'sprintf';
@@ -74,9 +74,9 @@ function creates(path: string, thunk: (path: string) => void): void {
 function main() {
   const wd = opts.wd;
 
-  const src: string = opts.src || 
+  const src: string = opts.src ||
     "benchmarks/{python_pyjs,dart_dart2js,scala,ocaml}/js-build/*";
-  const platform: string = opts.platform || "chrome";
+  const platform: string = opts.platform || "chrome firefox";
   const latency: string = opts.latency || "100";
   const transform: string = opts.transform || "original lazy eager";
   const variance: boolean = opts.variance;
@@ -86,9 +86,9 @@ function main() {
   }
 
   let sshloginfile = path.resolve(wd, 'sshloginfile');
-  if ((fs.existsSync(sshloginfile) && 
+  if ((fs.existsSync(sshloginfile) &&
        fs.statSync(sshloginfile).isFile()) === true) {
-    sshloginfile = `--sshloginfile ${sshloginfile}`;    
+    sshloginfile = `--sshloginfile ${sshloginfile}`;
   }
   else {
     console.log("No sshloginfile found. Running all benchmarks locally.");
@@ -97,9 +97,9 @@ function main() {
 
   const results = `${wd}/results.csv`;
 
-  creates(`${wd}/node_modules`, 
+  creates(`${wd}/node_modules`,
     p => fs.mkdirSync(p));
-  creates(`${wd}/node_modules/Stopify`, 
+  creates(`${wd}/node_modules/Stopify`,
     p => fs.symlinkSync(path.resolve('.'), p));
 
   exec(`parallel --progress ${sshloginfile} \
@@ -138,7 +138,9 @@ function byPlatform(platform: string, src: string): byPlatformResult {
       return { cmd: './bin/run', src: match[1] + '.js' };
     case 'chrome':
       return { cmd: './bin/browser', src: match[1] + '.html' };
-    default:  
+    case 'firefox':
+      return { cmd: './bin/browser', src: match[1] + '.html' };
+    default:
       throw new Error(`bad platform ${platform}`)
   }
 }
@@ -157,7 +159,7 @@ function run() {
   const transform = match[1];
   const language = match[2];
   const benchmark = match[3];
-  
+
   // If the transform is 'original', reset all transformation parameters to
   // trivial values. This also ensures that original only runs once.
   if (transform === 'original') {
@@ -167,7 +169,13 @@ function run() {
   const dst = `${opts.wd}/${benchmark}.${language}.${platform}.${transform}.${interval}.done`;
 
   creates(dst, () => {
-    const args = ["--latency", `${interval}`, src, "--variance", variance];
+
+    const args = [
+      "--latency", `${interval}`,
+      "--env", platform,
+      "--variance", variance,
+      src
+    ];
     const proc = spawnSync(cmd, args,
       { stdio: [ 'none', 'inherit', 'pipe' ] });
     const lines = (proc.status === 0 ? String(proc.stdout) : 'NA,NA\n')
@@ -194,7 +202,7 @@ function compile() {
 
   creates(dstJs, () =>
     exec(`./bin/compile --transform ${transform} ${src} ${dstJs}`));
-  creates(dstHtml, () =>  
+  creates(dstHtml, () =>
     exec(`./bin/webpack ${dstJs} ${dstHtml}`));
 }
 

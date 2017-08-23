@@ -8,6 +8,6 @@ export interface Opts {
   yieldMethod: 'fixed' | 'flexible';
   yieldInterval: number,
   stop: number | undefined,
-  env: 'browser' | 'node',
-  variance: boolean
+  variance: boolean,
+  env: 'firefox' | 'chrome' | 'node',
 }

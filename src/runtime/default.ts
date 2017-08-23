@@ -5,9 +5,11 @@ import { sum } from '../generic';
 import { sprintf } from 'sprintf';
 
 const parseOpts = {
-  alias: { 
+  alias: {
     "y": "yield",
-    "l": "latency"
+    "l": "latency",
+    "e": "env",
+
   }
 };
 
@@ -55,12 +57,15 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
   }
 
   let variance = args.variance === true;
-
   let execEnv: 'node' | 'browser' = 
     typeof window === 'undefined' ? 'node' : 'browser';
 
-  return { 
-    filename: filename, 
+  let execEnv: 'node' | 'firefox' | 'chrome' =
+    typeof args.env === 'undefined' ? 'node' :
+    args.env;
+
+  return {
+    filename: filename,
     yieldInterval: yieldInterval!,
     yieldMethod: yieldMethod,
     stop: args.stop,
@@ -114,7 +119,7 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
     done();
   }
 
-  if (opts.env === 'browser') {
+  if (opts.env !== 'node') {
     const data = <HTMLTextAreaElement>document.getElementById('data')!;
     console.log = function (str: any) {
       data.value = data.value + str + '\n';

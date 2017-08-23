@@ -516,6 +516,9 @@ const jumper: Visitor = {
         path.replaceWith(ifAssign);
         path.skip();
       } else {
+        if ((<any>path.node.right).mark == 'Flat') {
+          return
+        }
         captureLogics[s.opts.captureMethod](path, () =>
           t.expressionStatement(
             t.assignmentExpression(path.node.operator,

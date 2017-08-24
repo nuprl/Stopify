@@ -43,7 +43,8 @@ const visitor: Visitor = {
     h.transformFromAst(path,
           [[hygiene, { reserved: ["target"] }],
            makeBlocks, nameExprs, desugarLoop, desugarLabel,
-           desugarSwitch, desugarLogical, cleanup]);
+           desugarSwitch, cleanup]);
+    h.transformFromAst(path, [desugarLogical]);
     h.transformFromAst(path, [anf]);
     h.transformFromAst(path, [declVars]);
     freeIds.annotate(path);

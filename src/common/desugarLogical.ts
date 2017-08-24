@@ -1,3 +1,14 @@
+/**
+ * Preconditions:
+ * 
+ * 1. The program only contains while loops
+ * 
+ * Postconditions:
+ * 
+ *   1. Function calls do not occur within &&-expressions, ||-expressions, 
+ *      ternary expressions, and  expression sequences (the comma operator).
+ *   2. Function applications do not occur in a loop guard.
+ */
 import * as babel from 'babel-core';
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
@@ -63,6 +74,9 @@ export const visitor: Visitor = {
   },
 
   SequenceExpression(path: NodePath<t.SequenceExpression>) {
+    if (containsCall(path) === false) {
+      return;
+    }
     const exprs = path.node.expressions;
     if (exprs.length < 2) {
       // This probably won't happen in a parsed program.

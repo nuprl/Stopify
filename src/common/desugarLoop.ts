@@ -10,6 +10,10 @@
  * to the nearest statement. In this case, the statement will be
  * outside the body of the for loop, effectively hoisting them outside
  * the function body. To fix this, the body of all loops should a statement.
+ * 
+ * Postconditions:
+ *  
+ *   1. The program only has while loops.
  */
 
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';

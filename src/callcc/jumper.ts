@@ -12,7 +12,7 @@ type Labeled<T> = T & {
 }
 type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
 
-export type CaptureLogic = 'lazy' | 'eager' | 'retval';
+export type CaptureLogic = 'lazy' | 'eager' | 'retval' | 'fudge';
 
 interface State {
   opts: {
@@ -24,6 +24,7 @@ const captureLogics: { [key: string]: CaptureFun } = {
   lazy: lazyCaptureLogic,
   eager: eagerCaptureLogic,
   retval: retvalCaptureLogic,
+  fudge: fudgeCaptureLogic,
 };
 
 function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
@@ -173,6 +174,10 @@ function reapplyExpr(path: NodePath<Labeled<t.Function>>): t.Expression {
       t.memberExpression(funId, t.identifier("call")),
       [t.thisExpression(), ...<any>path.node.params]);
   }
+}
+
+function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
+  return;
 }
 
 /**

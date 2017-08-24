@@ -16,7 +16,7 @@ const srcPath = args._[0];
 const dstPath = args._[1];
 const transform = args.transform;
 
-const validTransforms = [ 'eager', 'lazy', 'retval', 'original' ];
+const validTransforms = [ 'eager', 'lazy', 'retval', 'original', 'fudge' ];
 if (validTransforms.includes(transform) === false) {
   stderr.write(`--transform must be one of ${validTransforms.join(', ')}, got ${transform}.\n`);
   process.exit(1);

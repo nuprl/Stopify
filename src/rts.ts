@@ -4,6 +4,7 @@ import { Runtime, YieldInterval, Latency } from './callcc/runtime';
 import eager from './callcc/eagerRuntime';
 import lazy from './callcc/lazyRuntime';
 import retval from './callcc/retvalRuntime';
+import fudge from './callcc/fudgeRuntime';
 
 function modeToBase(mode: string) {
  if (mode === 'eager') {
@@ -14,6 +15,9 @@ function modeToBase(mode: string) {
   }
   else if (mode === 'retval') {
     return retval;
+  }
+  else if (mode === 'fudge') {
+    return fudge;
   }
   else {
     throw new Error(`unknown runtime system mode: ${mode}`);

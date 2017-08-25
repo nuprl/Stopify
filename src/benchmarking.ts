@@ -75,7 +75,7 @@ function main() {
   const wd = opts.wd;
 
   const src: string = opts.src ||
-    "benchmarks/{python_pyjs,dart_dart2js,scala,ocaml}/js-build/*";
+    "benchmarks/{python_pyjs,dart_dart2js,scala,ocaml,racket_racketscript}/js-build/*";
   const platform: string = opts.platform || "chrome firefox";
   const latency: string = opts.latency || "100";
   const transform: string = opts.transform || "original lazy eager";
@@ -177,14 +177,14 @@ function run() {
     ];
     const proc = spawnSync(cmd, args,
       { stdio: [ 'none', 'inherit', 'pipe' ] });
-    const lines = (proc.status === 0 ? String(proc.stdout) : 'NA,NA\n')
+    const stdoutStr = String(proc.stdout);
+    
+    const lines = (proc.status === 0 ? stdoutStr : 'NA,NA\n')
       .split('\n');
     const result = lines[lines.length - 2];
     stdout.write(`${src},${os.hostname()},${platform},${benchmark},${language},${transform},${interval},${result}\n`);
 
-    if (proc.status === 0) {
-      fs.writeFileSync(dst, "");
-    }
+    fs.writeFileSync(dst, stdoutStr + `Exit code ${proc.status}`);
   });
 
 }

@@ -20,6 +20,12 @@ function unionLabels(labelsResult: number[], node: Labeled<t.Node>): void {
 let counter: number = 0;
 
 const label: Visitor = {
+  CatchClause: {
+    exit(path: NodePath<Labeled<t.CatchClause>>): void {
+      path.node.labels = getLabels(path.node.body);
+    }
+  },
+
   CallExpression: function (path: NodePath<Labeled<t.CallExpression>>): void {
     path.node.labels = [counter++];
   },
@@ -62,6 +68,15 @@ const label: Visitor = {
       const { body } = path.node;
       path.node.labels = [];
       body.forEach(stmt => unionLabels(path.node.labels!, stmt));
+    }
+  },
+
+  TryStatement: {
+    exit(path: NodePath<Labeled<t.TryStatement>>): void {
+      const { block, handler, finalizer } = path.node;
+      path.node.labels = getLabels(block);
+      unionLabels(path.node.labels, handler);
+      unionLabels(path.node.labels, finalizer);
     }
   },
 };

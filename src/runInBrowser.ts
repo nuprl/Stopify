@@ -34,18 +34,7 @@ const driver = new selenium.Builder()
 driver.get(src);
 driver.wait(selenium.until.titleIs('done'), 5 * 60 * 1000);
 
-
-function saveLog(logs: selenium.logging.Entry[])  {
-  logs.forEach(entry => stdout.write(entry.message + '\n'));
-}
-
-const logger = driver.manage().logs();
-
-logger.get('browser')
-  .then(saveLog)
-  .then(_ => logger.get('driver'))
-  .then(saveLog)
-  .then(_ =>  driver.findElement(selenium.By.id('data')))
+driver.findElement(selenium.By.id('data'))
   .then(e => e.getAttribute("value"))
   .then(s => stdout.write(s))
   .then(_ => driver.quit())

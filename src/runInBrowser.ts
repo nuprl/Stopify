@@ -20,7 +20,7 @@ const src = 'file://' + path.resolve('.', opts.filename) +
 let vfb: any;
 
 if (os.platform() === 'linux') {
-  vfb = new xvfb();
+  vfb = new xvfb({ reuse: true });
   vfb.startSync();
 }
 
@@ -33,11 +33,23 @@ const driver = new selenium.Builder()
 
 driver.get(src);
 driver.wait(selenium.until.titleIs('done'), 5 * 60 * 1000);
-driver.findElement(selenium.By.id('data'))
-  .then(e => e.getAttribute("value")
-    .then(s => stdout.write(s)))
-  .then(_ => driver.quit().then(_ => {
-    if (vfb) {
-      vfb.stopSync();
-    }
-  }));
+
+
+function saveLog(logs: selenium.logging.Entry[])  {
+  logs.forEach(entry => stdout.write(entry.message + '\n'));
+}
+
+const logger = driver.manage().logs();
+
+logger.get('browser')
+  .then(saveLog)
+  .then(_ => logger.get('driver'))
+  .then(saveLog)
+  .then(_ =>  driver.findElement(selenium.By.id('data')))
+  .then(e => e.getAttribute("value"))
+  .then(s => stdout.write(s))
+  .then(_ => driver.quit())
+  .catch(exn => {
+    stdout.write(`Got an exception from Selenium: ${exn}`);
+    driver.quit();
+  });

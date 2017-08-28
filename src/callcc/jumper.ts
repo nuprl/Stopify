@@ -1,8 +1,7 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-
 import * as assert from 'assert';
-
+import * as bh from '../babelHelpers';
 import { letExpression } from '../common/helpers';
 
 type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
@@ -157,10 +156,9 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
 
 function labelsIncludeTarget(labels: number[]): t.Expression {
   return labels.reduce((acc: t.Expression, lbl) =>
-    t.logicalExpression('||', t.binaryExpression('===',
-      target, t.numericLiteral(lbl)), acc), t.booleanLiteral(false));
+    bh.or(t.binaryExpression('===',  target, t.numericLiteral(lbl)), acc), 
+    bh.eFalse);
 }
-
 
 function reapplyExpr(path: NodePath<Labeled<t.Function>>): t.Expression {
   const funId = path.node.id;
@@ -423,8 +421,8 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
       path.node.operator,
       path.node.left, ret)));
 
-  const replace = t.ifStatement(t.logicalExpression('||',
-    isNormalMode, t.binaryExpression('===', target, applyLbl)),
+  const replace = t.ifStatement(
+    bh.or(isNormalMode, t.binaryExpression('===', target, applyLbl)),
     t.blockStatement([
       t.variableDeclaration('let', [t.variableDeclarator(ret)]),
       ifStmt,
@@ -485,16 +483,9 @@ const jumper: Visitor = {
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
     // These cannot appear in flat functions, so no check.
 
-    const labels = getLabels(path.node);
-    const test = labels.length === 0 ?
-    t.logicalExpression('&&', isNormalMode, path.node.test) :
-    t.logicalExpression('||',
-      t.logicalExpression('&&',
-        isRestoringMode, labelsIncludeTarget(labels)),
-      t.logicalExpression('&&',
-        isNormalMode, path.node.test));
-
-    path.node.test = test;
+    path.node.test = bh.or(
+      bh.and(isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
+      bh.and(isNormalMode, path.node.test));
   },
 
   IfStatement: {
@@ -505,19 +496,18 @@ const jumper: Visitor = {
       const { test, consequent, alternate } = path.node;
 
       const alternateLabels = getLabels(alternate);
-      const alternateCond = alternateLabels.length === 0 ?  isNormalMode :
-      t.logicalExpression('||', isNormalMode,
-        t.logicalExpression('&&', isRestoringMode,
-          labelsIncludeTarget(getLabels(alternate))));
+      const alternateCond = bh.or(
+        isNormalMode,
+        bh.and(isRestoringMode,
+               labelsIncludeTarget(getLabels(alternate))));
+
       const newAlt = alternate === null ? alternate :
       t.ifStatement(alternateCond, alternate);
 
       const consequentLabels = getLabels(consequent);
-      const consequentCond = consequentLabels.length === 0 ?
-      t.logicalExpression('&&', isNormalMode, test) :
-      t.logicalExpression('||', t.logicalExpression('&&', isNormalMode, test),
-      t.logicalExpression('&&', isRestoringMode,
-        labelsIncludeTarget(getLabels(consequent))));
+      const consequentCond = bh.or(
+        bh.and(isNormalMode, test),
+        bh.and(isRestoringMode, labelsIncludeTarget(getLabels(consequent))));
 
       const newIf = t.ifStatement(consequentCond, consequent, newAlt);
       path.replaceWith(newIf);
@@ -534,12 +524,13 @@ const jumper: Visitor = {
       const funParent = path.findParent(p => p.isFunction());
 
       if (t.isFunction(funParent)) {
+        // Labels may occur if this return statement occurs in a try block.
         const labels = getLabels(path.node);
-        const ifReturn = t.ifStatement(isNormalMode, path.node,
-          labels.length === 0 ? undefined :
-          t.ifStatement(t.logicalExpression('&&',
-            isRestoringMode, labelsIncludeTarget(labels)),
-            t.returnStatement(stackFrameCall)));
+        const ifReturn = t.ifStatement(
+          isNormalMode, 
+          path.node,
+          bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
+                 t.returnStatement(stackFrameCall)));
         path.replaceWith(ifReturn);
         path.skip();
       } else {
@@ -556,7 +547,7 @@ const jumper: Visitor = {
       }
       const { param, body } = path.node;
       body.body.unshift(t.ifStatement(
-        t.logicalExpression('||',
+        bh.or(
           t.binaryExpression('instanceof', param, captureExn),
           t.binaryExpression('instanceof', param, restoreExn)),
         t.throwStatement(param)));

@@ -13,7 +13,7 @@ import * as babel from 'babel-core';
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {letExpression} from '../common/helpers';
-
+import * as fastFreshId from '../fastFreshId';
 
 const containsCallVisitor = {
   FunctionExpression(path: NodePath<t.FunctionExpression>): void {
@@ -51,9 +51,8 @@ export const visitor: Visitor = {
 
     const op = path.node.operator;
     const stmt = path.getStatementParent();
-    const r = stmt.scope.generateUidIdentifier(op === "&&" ? "and" : "or");
-    const lhs = stmt.scope.generateUidIdentifier("lhs");
-
+    const r = fastFreshId.fresh(op === "&&" ? "and" : "or");
+    const lhs = fastFreshId.fresh("lhs");
 
     stmt.insertBefore(letExpression(lhs, path.node.left));
     stmt.insertBefore(
@@ -97,8 +96,8 @@ export const visitor: Visitor = {
       return;
     }
 
-    const r = path.scope.generateUidIdentifier("cond");
-    const test = path.scope.generateUidIdentifier("test");
+    const r = fastFreshId.fresh("cond");
+    const test = fastFreshId.fresh("test");
 
     const stmt = path.getStatementParent();
     stmt.insertBefore(

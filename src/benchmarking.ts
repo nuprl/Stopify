@@ -25,6 +25,7 @@
 import { sprintf } from 'sprintf';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as cp from 'child_process';
 import { spawnSync, execSync } from 'child_process';
 import * as minimist from 'minimist';
 import * as os from 'os';
@@ -145,6 +146,19 @@ function byPlatform(platform: string, src: string): byPlatformResult {
   }
 }
 
+function spawnWithRetry(retries: number, 
+  cmd: string, 
+  args: string[], 
+  opts: cp.SpawnSyncOptions): cp.SpawnSyncReturns<Buffer> {
+  const proc = spawnSync(cmd, args, opts);
+  if (retries === 0 || proc.status === 0) {
+    return proc;
+  }
+  else {
+    return spawnWithRetry(retries - 1, cmd, args, opts);
+  }
+}
+
 function run() {
   const platform: string = opts.platform;
   const variance = opts.variance;
@@ -175,8 +189,10 @@ function run() {
       "--variance", variance,
       src
     ];
-    const proc = spawnSync(cmd, args,
-      { stdio: [ 'none', 'inherit', 'pipe' ] });
+    
+    let proc = spawnWithRetry(3, cmd, args,
+      { stdio: [ 'none', 'inherit', 'pipe' ], timeout: 120 * 1000 });
+    
     const stdoutStr = String(proc.stdout);
     
     const lines = (proc.status === 0 ? stdoutStr : 'NA,NA\n')

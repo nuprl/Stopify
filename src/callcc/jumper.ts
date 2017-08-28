@@ -3,6 +3,7 @@ import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';
 import { letExpression } from '../common/helpers';
+import * as fastFreshId from '../fastFreshId';
 
 type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
 type Labeled<T> = T & {
@@ -96,7 +97,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(body.body, afterDecls);
 
-  const locals = path.scope.generateUidIdentifier('locals');
+  const locals = fastFreshId.fresh('locals');
 
   const restoreLocals: t.ExpressionStatement[] = [];
   let i = 0;
@@ -198,7 +199,7 @@ function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  */
 function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const exn = path.scope.generateUidIdentifier('exn');
+  const exn = fastFreshId.fresh('exn');
 
   const funParent = <NodePath<FunctionT>>path.findParent(p =>
     p.isFunctionExpression() || p.isFunctionDeclaration());
@@ -360,7 +361,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  */
 function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const ret = path.scope.generateUidIdentifier('ret');
+  const ret = fastFreshId.fresh('ret');
 
   const funParent = <NodePath<FunctionT>>path.findParent(p =>
     p.isFunctionExpression() || p.isFunctionDeclaration());

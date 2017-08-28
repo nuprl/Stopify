@@ -10,6 +10,7 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from './helpers';
+import * as fastFreshId from '../fastFreshId';
 
 function withinTryBlock(path: NodePath<t.Node>): boolean {
   const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
@@ -24,7 +25,7 @@ const anfVisitor : Visitor = {
       (t.isReturnStatement(p) &&
         withinTryBlock(path))) {
       // Name the function application if it is not already named.
-      const name = path.scope.generateUidIdentifier('app');
+      const name = fastFreshId.fresh('app');
       const bind = h.letExpression(name, path.node);
       path.getStatementParent().insertBefore(bind);
 
@@ -44,7 +45,7 @@ const anfVisitor : Visitor = {
       (t.isReturnStatement(p) &&
         withinTryBlock(path))) {
       // Name the function application if it is not already named.
-      const name = path.scope.generateUidIdentifier('app');
+      const name = fastFreshId.fresh('app');
       const bind = h.letExpression(name, path.node);
       path.getStatementParent().insertBefore(bind);
       path.replaceWith(name);

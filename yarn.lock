@@ -3817,6 +3817,10 @@ tr46@~0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
 
+trie@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/trie/-/trie-0.2.1.tgz#72cf0ae9f1c53f54d82df4911aa8705945997298"
+
 trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"

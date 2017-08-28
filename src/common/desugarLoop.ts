@@ -19,14 +19,15 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from '../common/helpers';
+import * as fastFreshId from '../fastFreshId';
 
 // Object containing the visitor functions
 const loopVisitor : Visitor = {
   ForInStatement: function (path: NodePath<t.ForInStatement>): void {
     const { left, right, body } = path.node;
-    const it_obj = path.scope.generateUidIdentifier('it_obj');
-    const keys = path.scope.generateUidIdentifier('keys');
-    const idx = path.scope.generateUidIdentifier('idx');
+    const it_obj = fastFreshId.fresh('it_obj');
+    const keys = fastFreshId.fresh('keys');
+    const idx = fastFreshId.fresh('idx');
     const prop = t.isVariableDeclaration(left) ?
     t.variableDeclaration(left.kind, [
       t.variableDeclarator(left.declarations[0].id, t.memberExpression(keys, idx, true))
@@ -60,7 +61,7 @@ const loopVisitor : Visitor = {
     } else {
       nupdate = t.expressionStatement(update);
     }
-    const loopContinue = path.scope.generateUidIdentifier('loop_continue');
+    const loopContinue = fastFreshId.fresh('loop_continue');
     wBody = t.blockStatement([
       t.labeledStatement(loopContinue, wBody),
       nupdate,
@@ -88,7 +89,7 @@ const loopVisitor : Visitor = {
     let { test, body } = node;
 
     // Add flag to run the while loop at least once
-    const runOnce = path.scope.generateUidIdentifier('runOnce');
+    const runOnce = fastFreshId.fresh('runOnce');
     const runOnceInit = t.variableDeclaration('let',
       [t.variableDeclarator(runOnce, t.booleanLiteral(true))]);
     const runOnceSetFalse =
@@ -105,14 +106,14 @@ const loopVisitor : Visitor = {
   WhileStatement: function (path: NodePath<h.While<h.Break<t.WhileStatement>>>): void {
     // Wrap the body in a labeled continue block.
     if (path.node.continue_label === undefined) {
-      const loopContinue = path.scope.generateUidIdentifier('loop_continue');
+      const loopContinue = fastFreshId.fresh('loop_continue');
       path.node = h.continueLbl(path.node, loopContinue);
       path.node.body = t.labeledStatement(loopContinue, path.node.body);
     }
 
     // Wrap the loop in labeled break block.
     if (path.node.break_label === undefined) {
-      const loopBreak = path.scope.generateUidIdentifier('loop_break');
+      const loopBreak = fastFreshId.fresh('loop_break');
       path.node = h.breakLbl(path.node, loopBreak);
       const labeledStatement = t.labeledStatement(loopBreak, path.node);
       path.replaceWith(labeledStatement);

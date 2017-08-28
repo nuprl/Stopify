@@ -27,6 +27,7 @@ import { NodePath, Visitor } from 'babel-traverse';
 import * as babylon from 'babylon';
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
+import * as fastFreshId from '../fastFreshId';
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -37,6 +38,7 @@ const visitor: Visitor = {
        ? (e: t.Expression) => t.returnStatement(e)
        : (e: t.Expression) => t.expressionStatement(e));
 
+    fastFreshId.init(path);
     h.transformFromAst(path, [desugarNew]);
     h.transformFromAst(path, [singleVarDecls]);
 

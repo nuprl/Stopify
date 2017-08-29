@@ -79,9 +79,9 @@ function main() {
   const src: string = opts.src ||
     "benchmarks/{python_pyjs,dart_dart2js,scala,ocaml,racket_racketscript}/js-build/*";
   const platform: string = opts.platform || "chrome firefox";
-  const latency: string = opts.latency || "100";
   const transform: string = opts.transform || "original lazy eager";
   const variance: boolean = opts.variance;
+  const estimator: string = opts.estimator || 'reservoir/100';
 
   if (transform.split(" ").includes("original") === false) {
     throw new Error("--transform must include original");
@@ -108,8 +108,9 @@ function main() {
 
   exec(`parallel --progress ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=run --wd=${wd} \
-      --src={1} --platform={2} --interval={3} --variance=${variance} \
-      ::: ${wd}/*.js ::: ${platform} ::: ${latency}`);
+      --src={1} --platform={2} --variance=${variance} \
+      --estimator={3} \
+      ::: ${wd}/*.js ::: ${platform} ::: ${estimator}`);
 
   csv();
 }
@@ -143,7 +144,16 @@ function run() {
   const platform: string = opts.platform;
   const variance = opts.variance;
   const { cmd, src } = byPlatform(platform, opts.src);
-  let interval: number = opts.interval;
+  const estimatorRe = /^(reservoir|exact|countdown)(?:\/(\d+))?(?:\/(\d+))?$/;
+  const matchEstimator = estimatorRe.exec(opts.estimator);
+  if (matchEstimator === null) {
+    throw new Error(`could not parse --estimator=${opts.estimator}`);
+  }
+  let estimator: string = matchEstimator[1];  
+  let yieldInterval: number = Number(matchEstimator[2]);
+  let timePerElapsed: number =  Number(matchEstimator[3]);
+
+  
   // Parse the filename into transform-language-benchmark
   const re = /^([^-]*)-([^-]*)-(.*)\.(?:js|html)$/;
   const match =  re.exec(path.basename(src));
@@ -157,18 +167,27 @@ function run() {
   // If the transform is 'original', reset all transformation parameters to
   // trivial values. This also ensures that original only runs once.
   if (transform === 'original') {
-    interval = 0;
+    yieldInterval = NaN;
+    timePerElapsed = NaN;
+    estimator = "countdown";
   }
 
-  const dst = `${opts.wd}/${benchmark}.${language}.${platform}.${transform}.${interval}.done`;
+  const dst = `${opts.wd}/${benchmark}.${language}.${platform}.${transform}.${yieldInterval},${estimator}.${yieldInterval}.${timePerElapsed}.done`;
 
   creates(dst, () => {
     const args = [
-      "--latency", `${interval}`,
+      "--estimator", estimator,
       "--env", platform,
       "--variance", variance,
       src
     ];
+
+    if (isNaN(yieldInterval) === false) {
+      args.push("--yield", String(yieldInterval));
+    }
+    if (isNaN(timePerElapsed) === false) {
+      args.push('--time-per-elapsed', String(timePerElapsed));
+    }
     
     let proc = spawnSync(cmd, args,
       { stdio: [ 'none', 'inherit', 'pipe' ], timeout: 5 * 60 * 1000 });
@@ -180,7 +199,7 @@ function run() {
       return;
     }
 
-    const spec = `${src},${os.hostname()},${platform},${benchmark},${language},${transform},${interval}\n`;
+    const spec = `${src},${os.hostname()},${platform},${benchmark},${language},${transform},${estimator},${yieldInterval},${timePerElapsed}\n`;
 
     fs.writeFileSync(dst, stdoutStr + spec);
   });
@@ -210,9 +229,9 @@ function csv() {
   const varianceFd = fs.openSync(`${wd}/variance.csv`, 'w');
 
   fs.appendFileSync(<any>timingFd,
-    'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,RunningTime,NumYields,AvgLatency,VarLatency\n');
+    'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,RunningTime,NumYields,AvgLatency,VarLatency\n');
   fs.appendFileSync(<any>varianceFd,
-    'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,Index,Variance\n');
+    'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,Index,Variance\n');
   
   for (const outFile of outFiles) {
     let lines = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').split('\n');

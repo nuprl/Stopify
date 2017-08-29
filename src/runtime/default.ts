@@ -1,5 +1,5 @@
 
-import { Opts, Stoppable } from '../types';
+import { Opts, Stoppable, ElapsedTimeEstimatorName } from '../types';
 import * as minimist from 'minimist';
 import { sum } from '../generic';
 import { sprintf } from 'sprintf';
@@ -7,8 +7,8 @@ import { sprintf } from 'sprintf';
 const parseOpts = {
   alias: {
     "y": "yield",
-    "l": "latency",
     "e": "env",
+    "t": "time-per-elapsed"    
   },
   boolean: [ "variance" ]
 };
@@ -21,8 +21,15 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
     throw new Error(`Missing filename`);
   }
 
-  if (['number', 'undefined'].includes(typeof args.yield) === false) {
-    throw new Error(`--yield must be a number (or omitted)`);
+  let yieldInterval: number;
+  if (typeof args.yield === 'number') {
+    yieldInterval = args.yield;
+  }
+  else if (typeof args.yield === 'undefined') {
+    yieldInterval = NaN;
+  }
+  else {
+    throw new Error(`--yield must be a number or omitted`);
   }
 
   if (!(typeof args.latency === 'undefined' ||
@@ -40,21 +47,12 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
 
   filename = filename || args._[0];
 
-  let yieldMethod : 'fixed' | 'flexible';
-  let yieldInterval : number | undefined;
+  let estimator : ElapsedTimeEstimatorName = args.estimator || 'reservoir';
+  if (!['exact', 'reservoir', 'countdown'].includes(estimator)) {
+    throw new Error("Invalid --estimator");
+  }
 
-  if (typeof args.latency === 'number') {
-    yieldMethod = 'flexible';
-    yieldInterval = args.latency;
-  }
-  else if (typeof args.yield === 'number' && args.yield > 0) {
-    yieldMethod = 'fixed';
-    yieldInterval = args.yield;
-  }
-  else {
-    yieldMethod = 'fixed';
-    yieldInterval = NaN;
-  }
+  let timePerElapsed = args['time-per-elapsed'];
 
   let variance = args.variance === true;
 
@@ -64,8 +62,9 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
 
   return {
     filename: filename,
-    yieldInterval: yieldInterval!,
-    yieldMethod: yieldMethod,
+    yieldInterval: yieldInterval,
+    estimator: estimator,
+    timePerElapsed: timePerElapsed,
     stop: args.stop,
     env: execEnv,
     variance: variance

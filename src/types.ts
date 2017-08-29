@@ -3,10 +3,13 @@ export type Stoppable = (isStop: () => boolean,
                          onDone: () => void,
                          opts: Opts) => void
 
+export type ElapsedTimeEstimatorName = 'exact' | 'reservoir' | 'countdown';
+
 export interface Opts {
   filename: string,
-  yieldMethod: 'fixed' | 'flexible';
+  estimator: ElapsedTimeEstimatorName;
   yieldInterval: number,
+  timePerElapsed: number,
   stop: number | undefined,
   variance: boolean,
   env: 'firefox' | 'chrome' | 'node',

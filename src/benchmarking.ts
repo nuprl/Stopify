@@ -106,10 +106,12 @@ function main() {
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=compile --wd=${wd}  \
     --src={1} --transform={2} ::: ${src} ::: ${transform}`);
 
-    exec(`parallel --progress ${sshloginfile} \
+  exec(`parallel --progress ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=run --wd=${wd} \
       --src={1} --platform={2} --interval={3} --variance=${variance} \
       ::: ${wd}/*.js ::: ${platform} ::: ${latency}`);
+
+  csv();
 }
 
 
@@ -236,6 +238,7 @@ function csv() {
 
   fs.closeSync(timingFd);
   fs.closeSync(varianceFd);
+  console.log(`Created ${wd}/timing.csv and ${wd}/variance.csv.`);
 }
 
 if (opts.mode === 'main' || typeof opts.mode === 'undefined') {

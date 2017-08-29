@@ -30,6 +30,7 @@ import { spawnSync, execSync } from 'child_process';
 import * as minimist from 'minimist';
 import * as os from 'os';
 import * as which from 'which';
+import * as g from './generic';
 
 const nodeBin = which.sync("node");
 
@@ -96,8 +97,6 @@ function main() {
     sshloginfile = "";
   }
 
-  const results = `${wd}/results.csv`;
-
   creates(`${wd}/node_modules`,
     p => fs.mkdirSync(p));
   creates(`${wd}/node_modules/Stopify`,
@@ -107,18 +106,10 @@ function main() {
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=compile --wd=${wd}  \
     --src={1} --transform={2} ::: ${src} ::: ${transform}`);
 
-  if (fs.existsSync(results)) {
-    stdout.write(`WARNING: appending to existing results`);
-  }
-  else {
-    fs.writeFileSync(results,
-      'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,RunningTime,NumYields,AvgLatency,VarLatency\n');
-  }
-
-  exec(`parallel --progress ${sshloginfile} \
+    exec(`parallel --progress ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=run --wd=${wd} \
       --src={1} --platform={2} --interval={3} --variance=${variance} \
-      ::: ${wd}/*.js ::: ${platform} ::: ${latency}  >> ${results}`);
+      ::: ${wd}/*.js ::: ${platform} ::: ${latency}`);
 }
 
 
@@ -143,19 +134,6 @@ function byPlatform(platform: string, src: string): byPlatformResult {
       return { cmd: './bin/browser', src: match[1] + '.html' };
     default:
       throw new Error(`bad platform ${platform}`)
-  }
-}
-
-function spawnWithRetry(retries: number, 
-  cmd: string, 
-  args: string[], 
-  opts: cp.SpawnSyncOptions): cp.SpawnSyncReturns<Buffer> {
-  const proc = spawnSync(cmd, args, opts);
-  if (retries === 0 || proc.status === 0) {
-    return proc;
-  }
-  else {
-    return spawnWithRetry(retries - 1, cmd, args, opts);
   }
 }
 
@@ -190,17 +168,19 @@ function run() {
       src
     ];
     
-    let proc = spawnWithRetry(3, cmd, args,
-      { stdio: [ 'none', 'inherit', 'pipe' ], timeout: 120 * 1000 });
+    let proc = spawnSync(cmd, args,
+      { stdio: [ 'none', 'inherit', 'pipe' ], timeout: 5 * 60 * 1000 });
     
     const stdoutStr = String(proc.stdout);
     
-    const lines = (proc.status === 0 ? stdoutStr : 'NA,NA\n')
-      .split('\n');
-    const result = lines[lines.length - 2];
-    stdout.write(`${src},${os.hostname()},${platform},${benchmark},${language},${transform},${interval},${result}\n`);
+    if (proc.status !== 0) {
+      console.log(`Error running ${args} ${stdoutStr}`);
+      return;
+    }
 
-    fs.writeFileSync(dst, stdoutStr + `Exit code ${proc.status}`);
+    const spec = `${src},${os.hostname()},${platform},${benchmark},${language},${transform},${interval}\n`;
+
+    fs.writeFileSync(dst, stdoutStr + spec);
   });
 
 }
@@ -221,6 +201,42 @@ function compile() {
     exec(`./bin/webpack ${dstJs} ${dstHtml}`));
 }
 
+function csv() {
+  const wd = opts.wd;
+  const outFiles = fs.readdirSync(wd).filter(path => path.endsWith('.done'));
+  const timingFd = fs.openSync(`${wd}/timing.csv`, 'w');
+  const varianceFd = fs.openSync(`${wd}/variance.csv`, 'w');
+
+  fs.appendFileSync(<any>timingFd,
+    'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,RunningTime,NumYields,AvgLatency,VarLatency\n');
+  fs.appendFileSync(<any>varianceFd,
+    'Path,Hostname,Platform,Benchmark,Language,Transform,TargetLatency,Index,Variance\n');
+  
+  for (const outFile of outFiles) {
+    let lines = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').split('\n');
+    lines = g.dropWhile(line => line !== "BEGIN STOPIFY BENCHMARK RESULTS", 
+                        lines);
+    if (lines.length < 3) {
+      console.log(`Error reading ${outFile}`);
+      continue;
+    }
+    const factors = lines[lines.length - 2];
+    const timing = lines[lines.length - 3];
+    let variance = 
+      g.takeWhile(line => line !== "END VARIANCE", 
+        g.dropWhile(line => line !== "BEGIN VARIANCE", lines));
+    if (variance.length > 0) {
+      variance = variance.slice(1); // Drop the BEGIN VARIANCE
+    }
+    fs.appendFileSync(<any>timingFd, `${factors},${timing}\n`);
+    for (const v of variance) {
+      fs.appendFileSync(<any>varianceFd, `${factors},${v}\n`);
+    }   
+  }
+
+  fs.closeSync(timingFd);
+  fs.closeSync(varianceFd);
+}
 
 if (opts.mode === 'main' || typeof opts.mode === 'undefined') {
   main();
@@ -230,6 +246,9 @@ else if (opts.mode === 'compile') {
 }
 else if (opts.mode === 'run') {
   run();
+}
+else if (opts.mode === 'csv') {
+  csv();
 }
 else {
   throw new Error(`Invalid mode on command line (${opts.mode})`);

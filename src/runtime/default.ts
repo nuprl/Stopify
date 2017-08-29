@@ -9,7 +9,8 @@ const parseOpts = {
     "y": "yield",
     "l": "latency",
     "e": "env",
-  }
+  },
+  boolean: [ "variance" ]
 };
 
 export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
@@ -99,7 +100,13 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
     const runningTime = endTime - startTime;
     const latencyAvg = runningTime / yields;
     let latencyVar;
+    console.log("BEGIN STOPIFY BENCHMARK RESULTS");
     if (opts.variance) {
+      console.log("BEGIN VARIANCE")
+      for (let i = 0; i < stopIntervals.length; i++) {
+        console.log(`${i},${stopIntervals[i]}`);
+      }
+      console.log("END VARIANCE");
       if (yields === 0) {
         latencyVar = "0";
       }

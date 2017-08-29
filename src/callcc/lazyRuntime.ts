@@ -1,9 +1,10 @@
 import * as common from './runtime';
 export * from './runtime';
+import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 
 export class LazyRuntime extends common.Runtime {
-  constructor() {
-    super();
+  constructor(yieldInterval: number, estimator: ElapsedTimeEstimator) {
+    super(yieldInterval, estimator);
   }
 
   captureCC(f: (k: any) => any): void {

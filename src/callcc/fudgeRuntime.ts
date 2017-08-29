@@ -1,5 +1,5 @@
 import * as common from './runtime';
-export * from './runtime';
+import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 
 class FudgedContinuationError {
   
@@ -21,8 +21,8 @@ class FudgedContinuationError {
  * transformation still helps with debugging.
  */
 export class FudgeRuntime extends common.Runtime {
-  constructor() {
-    super();
+  constructor(yieldInterval: number, estimator: ElapsedTimeEstimator) {
+    super(yieldInterval, estimator);
   }
 
   captureCC(f: (k: any) => any): void {

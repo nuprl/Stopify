@@ -23,7 +23,12 @@ const allowed = [
   "require",
   "console",
   "global",
-  "setTimeout"
+  "window",
+  "document",
+  "setTimeout",
+  "setInterval",
+  "clearInterval",
+  "alert",
 ];
 
 const reserved = [

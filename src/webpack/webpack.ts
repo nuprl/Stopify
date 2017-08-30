@@ -32,7 +32,8 @@ const webpackConfig = {
   resolve: {
     alias: {
       "fs": path.resolve(__dirname, "sham"),
-      "net": path.resolve(__dirname, "sham")
+      "net": path.resolve(__dirname, "sham"),
+      "child_process": path.resolve(__dirname, "sham")
     }      
   },
   externals: {

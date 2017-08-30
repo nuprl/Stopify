@@ -3,73 +3,84 @@ import { Opts, Stoppable, ElapsedTimeEstimatorName } from '../types';
 import * as minimist from 'minimist';
 import { sum } from '../generic';
 import { sprintf } from 'sprintf';
+import * as commander from 'commander';
 
-const parseOpts = {
-  alias: {
-    "y": "yield",
-    "e": "env",
-    "t": "time-per-elapsed"    
-  },
-  boolean: [ "variance" ]
-};
+function parseArg<T>(
+  convert: (arg: string) => T,
+  validate: (parsed: T) => boolean,
+  error: string): (arg: any) => any {
+  return (arg: any) => {
+    const parsed = convert(arg);
+    if (validate(parsed)) {
+      return parsed;
+    }
+    else {
+      throw new Error(error);
+    }
+  };
+}
+
+commander.option(
+  '-y, --yield <interval>',
+  'time between yields to the event loop (default: never yield)',
+  parseArg(parseInt, x => x > 0, '--yield requires a number'),
+  NaN);
+
+commander.option(
+  '-e, --env <env>', 
+  'the runtime environment (default: node)',
+  parseArg(x => x, 
+    (x) => /^(chrome|firefox|node)$/.test(x), 
+    '--env must be chrome, firefox, or node'),
+  'node');
+
+commander.option(
+  '--variance',
+  'measure time elapsed between each yield (default: false)');
+
+commander.option(
+  '--time-per-elapsed <interval>',
+  `an estimate of the time that elapses between calls to the internal suspend \
+function (default: 100)`,
+   parseArg(parseInt, (x) => x > 0, 
+    '--time-per-elapsed expects a positive integer'),
+   100);
+
+commander.option(
+  '--stop <duration>',
+  'the time after which the program should be terminated (default: never stop)',
+  parseArg(parseInt, (x) => x > 0,
+    '--stop expects a positive integer'));
+
+commander.option(
+  '--estimator <estimator>',
+  `one of exact, reservoir, or countdown (default: reservoir)`,
+  parseArg(x => x, x => /^(exact|reservoir|countdown)$/.test(x),
+    'invalid --estimator value'),
+  'reservoir');
+
+commander.arguments('<filename>');
+
 
 export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
 
-  const args = minimist(rawArgs, parseOpts);
+  const args = commander.parse(["", "", ...rawArgs]);
 
-  if ((args._.length === 1 || typeof filename === "string") === false) {
+  filename = filename || args.args[0];  
+  if (typeof filename !== 'string') {
     throw new Error(`Missing filename`);
   }
 
-  let yieldInterval: number;
-  if (typeof args.yield === 'number') {
-    yieldInterval = args.yield;
-  }
-  else if (typeof args.yield === 'undefined') {
-    yieldInterval = NaN;
-  }
-  else {
-    throw new Error(`--yield must be a number or omitted`);
-  }
-
-  if (!(typeof args.latency === 'undefined' ||
-       (typeof args.latency === 'number' && isFinite(args.latency)))) {
-    throw new Error(`--latency must be a number (or omitted)`);
-  }
-
-  if (typeof args.yield === 'number' && typeof args.latency === 'number') {
-    throw new Error(`cannot specify both --yield and --latency`);
-  }
-
-  if (['number', 'undefined'].includes(typeof args.stop) === false) {
-    throw new Error(`--stop must be a number in seconds (or omitted)`);
-  }
-
-  filename = filename || args._[0];
-
-  let estimator : ElapsedTimeEstimatorName = args.estimator || 'reservoir';
-  if (!['exact', 'reservoir', 'countdown'].includes(estimator)) {
-    throw new Error("Invalid --estimator");
-  }
-
-  let timePerElapsed = args['time-per-elapsed'];
-
-  let variance = args.variance === true;
-
-  let execEnv: 'node' | 'firefox' | 'chrome' =
-    typeof args.env === 'undefined' ? 'node' :
-    args.env;
-
   return {
     filename: filename,
-    yieldInterval: yieldInterval,
-    estimator: estimator,
-    timePerElapsed: timePerElapsed,
+    yieldInterval: args.yield,
+    estimator: args.estimator,
+    timePerElapsed: args['time-per-elapsed'],
     stop: args.stop,
-    env: execEnv,
-    variance: variance
+    env: args.env,
+    variance: args.variance
   };
-
+  return <any>null;
 }
 
 export function run(M: Stoppable, opts: Opts, done: () => void): void {

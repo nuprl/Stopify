@@ -1,10 +1,8 @@
-// NOTE(arjun): If this script doesn't work, you probably don't have Xvfb.
 import * as selenium from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
 import * as path from 'path';
 import * as runtime from './runtime/default';
 import * as os from 'os';
-const xvfb = require('xvfb'); // No type definitions as of 8/2/2017
 
 process.env.MOZ_HEADLESS = "1";
 
@@ -18,9 +16,6 @@ function suffixAfter(str: string, key: string) {
 
 const src = 'file://' + path.resolve('.', opts.filename) +
   '#' + encodeURIComponent(JSON.stringify(args));
-
-
-let vfb: any;
 
 // NOTE(sam): No typing for `headless()` option as of 8/30/2017.
 // I've opened a PR to DefinitelyTyped to fix this.

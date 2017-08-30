@@ -78,8 +78,7 @@
     "tmp": "0.0.31",
     "trie": "^0.2.1",
     "webpack": "^3.4.1",
-    "which": "^1.3.0",
-    "xvfb": "^0.2.3"
+    "which": "^1.3.0"
   },
   "bin": {
     "stopify": "bin/stopify"

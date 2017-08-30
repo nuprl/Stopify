@@ -138,8 +138,8 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
     console.log = function (str: any) {
       data.value = data.value + str + '\n';
     }
-    window.onerror = () => {
-      data.value = data.value + ',NA\n';
+    window.onerror = (e) => {
+      data.value = data.value + e + ',NA\n';
       window.document.title = "done"
     }
   }

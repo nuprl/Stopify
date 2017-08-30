@@ -41,10 +41,10 @@ commander.option(
 commander.option(
   '--time-per-elapsed <interval>',
   `an estimate of the time that elapses between calls to the internal suspend \
-function (default: 100)`,
+function (default: 1)`,
    parseArg(parseInt, (x) => x > 0, 
     '--time-per-elapsed expects a positive integer'),
-   100);
+   1);
 
 commander.option(
   '--stop <duration>',
@@ -54,10 +54,10 @@ commander.option(
 
 commander.option(
   '--estimator <estimator>',
-  `one of exact, reservoir, or countdown (default: reservoir)`,
+  `one of exact, reservoir, or countdown (default: countdown)`,
   parseArg(x => x, x => /^(exact|reservoir|countdown)$/.test(x),
     'invalid --estimator value'),
-  'reservoir');
+  'countdown');
 
 commander.arguments('<filename>');
 
@@ -75,7 +75,7 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
     filename: filename,
     yieldInterval: args.yield,
     estimator: args.estimator,
-    timePerElapsed: args['time-per-elapsed'],
+    timePerElapsed: args.timePerElapsed,
     stop: args.stop,
     env: args.env,
     variance: args.variance

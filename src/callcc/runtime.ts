@@ -67,7 +67,7 @@ export abstract class Runtime {
 
   suspend(top: any): void {
     // If this.yieldInterval is NaN, the condition will be false
-    if (this.estimator.elapsedTime() > this.yieldInterval) {
+    if (this.estimator.elapsedTime() >= this.yieldInterval) {
       this.estimator.reset();
       return this.captureCC(top);
     }

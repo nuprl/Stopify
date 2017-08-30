@@ -177,9 +177,7 @@ function run() {
   creates(dst, () => {
     const args = [
       "--estimator", estimator,
-      "--env", platform,
-      "--variance", variance,
-      src
+      "--env", platform
     ];
 
     if (isNaN(yieldInterval) === false) {
@@ -188,6 +186,12 @@ function run() {
     if (isNaN(timePerElapsed) === false) {
       args.push('--time-per-elapsed', String(timePerElapsed));
     }
+
+    if (variance) {
+      args.push("--variance");
+    }
+    
+    args.push(src);
     
     let proc = spawnSync(cmd, args,
       { stdio: [ 'none', 'inherit', 'pipe' ], timeout: 5 * 60 * 1000 });

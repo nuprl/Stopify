@@ -20,7 +20,7 @@ export type Stack = KFrame[];
 
 // The type of execution mode, whether normally computing or restoring state
 // from a captured `Stack`.
-export type Mode = 'normal' | 'restoring';
+export type Mode = boolean;
 
 // We throw this exception when a continuation value is applied. i.e.,
 // captureCC applies its argument to a function that throws this exception.
@@ -58,7 +58,7 @@ export abstract class Runtime {
     public estimator: ElapsedTimeEstimator
     ) {
     this.stack = [];
-    this.mode = 'normal';
+    this.mode = true;
   }
 
   resume(result: any): any {
@@ -78,7 +78,7 @@ export abstract class Runtime {
       kind: 'top',
       f: () => {
         this.stack = [];
-        this.mode = 'normal';
+        this.mode = true;
         return f();
       }
     };

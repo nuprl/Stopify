@@ -44,7 +44,7 @@ export class LazyRuntime extends common.Runtime {
           if (exn.stack.length === 0) {
             throw new Error(`Can't restore from empty stack`);
           }
-          this.mode = 'restoring';
+          this.mode = false;
           this.stack = exn.stack;
           this.stack[this.stack.length - 1].f();
         });
@@ -60,7 +60,7 @@ export class LazyRuntime extends common.Runtime {
     }
 
     let obj;
-    if (this.mode === "normal") {
+    if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
       const frame = this.stack[this.stack.length - 1];
@@ -74,7 +74,7 @@ export class LazyRuntime extends common.Runtime {
 
     let result: any;
     try {
-      if (this.mode === "normal") {
+      if (this.mode) {
         result = constr.apply(obj, args);
       }
       else {

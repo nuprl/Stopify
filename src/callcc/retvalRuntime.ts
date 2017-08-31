@@ -38,7 +38,7 @@ class RetValRuntime extends common.Runtime {
           if (res.stack.length === 0) {
             throw new Error(`Can't restore from empty stack`);
           }
-          this.mode = 'restoring';
+          this.mode = false;
           this.stack = res.stack;
           return this.stack[this.stack.length - 1].f();
         });
@@ -51,7 +51,7 @@ class RetValRuntime extends common.Runtime {
         if (body.stack.length === 0) {
           throw new Error(`Can't restore from empty stack`);
         }
-        this.mode = 'restoring';
+        this.mode = false;
         this.stack = body.stack;
         return this.stack[this.stack.length - 1].f();
       });
@@ -64,7 +64,7 @@ class RetValRuntime extends common.Runtime {
     }
 
     let obj;
-    if (this.mode === "normal") {
+    if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
       const frame = this.stack[this.stack.length - 1];
@@ -76,7 +76,7 @@ class RetValRuntime extends common.Runtime {
       this.stack.pop();
     }
 
-    if (this.mode === "normal") {
+    if (this.mode) {
       let _a = constr.apply(obj, args);
       if (_a instanceof common.Capture) {
         _a.stack.push({

@@ -55,13 +55,10 @@ const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
 const pushRuntimeStack = t.memberExpression(runtimeStack, t.identifier('push'));
 const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
 const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
-const normalMode = t.stringLiteral('normal');
-const restoringMode = t.stringLiteral('restoring');
 const captureExn = t.memberExpression(types, t.identifier('Capture'));
 const restoreExn = t.memberExpression(types, t.identifier('Restore'));
-
-const isNormalMode = t.binaryExpression('===', runtimeModeKind, normalMode);
-const isRestoringMode = t.binaryExpression('===', runtimeModeKind, restoringMode);
+const isNormalMode = runtimeModeKind;
+const isRestoringMode = t.unaryExpression('!', runtimeModeKind);
 
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);

@@ -47,7 +47,7 @@ export class EagerRuntime extends common.Runtime {
           if (exn.stack.length === 0) {
             throw new Error(`Can't restore from empty stack`);
           }
-          this.mode = 'restoring';
+          this.mode = false;
           this.stack = exn.stack;
           this.stack[this.stack.length - 1].f();
         });
@@ -63,7 +63,7 @@ export class EagerRuntime extends common.Runtime {
     }
 
     let obj;
-    if (this.mode === "normal") {
+    if (this.mode) {
 
       obj = Object.create(constr.prototype);
     } else {
@@ -76,7 +76,7 @@ export class EagerRuntime extends common.Runtime {
       this.stack.pop();
     }
 
-    if (this.mode === "normal") {
+    if (this.mode) {
       this.eagerStack.unshift({
         kind: "rest",
         f: () => this.handleNew(constr, ...args) ,

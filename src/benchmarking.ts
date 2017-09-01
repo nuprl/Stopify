@@ -77,7 +77,7 @@ function main() {
   const wd = opts.wd;
 
   const src: string = opts.src ||
-    "benchmarks/{python_pyjs,dart_dart2js,scala,ocaml,racket_racketscript}/js-build/*";
+    "benchmarks/{clojurescript,python_pyjs,dart_dart2js,scala,ocaml,racket_racketscript}/js-build/*";
   const platform: string = opts.platform || "chrome firefox";
   const transform: string = opts.transform || "original lazy eager";
   const variance: boolean = opts.variance;

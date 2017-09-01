@@ -7,18 +7,25 @@ import toModule from './callcc/toModule';
 const stderr = process.stderr;
 
 const parseArgs = {
-  alias: { 
-    "t": "transform"
+  alias: {
+    "t": "transform",
+    "n": "new",
   }
 };
 const args = minimist(process.argv.slice(2), parseArgs);
 const srcPath = args._[0];
 const dstPath = args._[1];
 const transform = args.transform;
+const handleNew = args.new ? args.new : 'wrapper';
 
 const validTransforms = [ 'eager', 'lazy', 'retval', 'original', 'fudge' ];
 if (validTransforms.includes(transform) === false) {
   stderr.write(`--transform must be one of ${validTransforms.join(', ')}, got ${transform}.\n`);
+  process.exit(1);
+}
+const validNewMethods = [ 'direct', 'wrapper' ];
+if (validNewMethods.includes(handleNew) === false) {
+  stderr.write(`--new must be one of ${validNewMethods.join(', ')}, got ${handleNew}.\n`);
   process.exit(1);
 }
 if (typeof srcPath === 'undefined') {
@@ -30,9 +37,11 @@ if ((fs.existsSync(srcPath) && fs.statSync(srcPath).isFile()) === false) {
   process.exit(1);
 }
 
-
 const opts = {
-  plugins: [[toModule, { captureMethod: transform }]],
+  plugins: [[toModule, {
+    captureMethod: transform,
+    handleNew: handleNew,
+  }]],
   babelrc: false,
   ast: false,
   code: true
@@ -44,7 +53,7 @@ babel.transformFile(srcPath, opts, (err, result) => {
   const { code } = result;
   if (typeof dstPath === 'undefined') {
     process.stdout.write(code!);
-    process.exit(0);  
+    process.exit(0);
   }
   fs.writeFile(dstPath, code!, (err) => {
     if (err !== null) {

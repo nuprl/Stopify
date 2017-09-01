@@ -11,13 +11,15 @@ type Labeled<T> = T & {
   labels?: number[];
   __usesArgs__?: boolean
 }
-type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
+type CaptureFun = (path: NodePath<t.AssignmentExpression>, handleNew: NewMethod) => void;
 
 export type CaptureLogic = 'lazy' | 'eager' | 'retval' | 'fudge';
+export type NewMethod = 'direct' | 'wrapper';
 
 interface State {
   opts: {
     captureMethod: CaptureLogic,
+    handleNew: NewMethod,
   };
 }
 
@@ -150,11 +152,11 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
 
 function labelsIncludeTarget(labels: number[]): t.Expression {
   return labels.reduce((acc: t.Expression, lbl) =>
-    bh.or(t.binaryExpression('===',  target, t.numericLiteral(lbl)), acc), 
+    bh.or(t.binaryExpression('===',  target, t.numericLiteral(lbl)), acc),
     bh.eFalse);
 }
 
-function reapplyExpr(path: NodePath<Labeled<t.Function>>): t.Expression {
+function reapplyExpr(path: NodePath<Labeled<t.Function>>, handleNew: NewMethod): t.Expression {
   const funId = path.node.id;
   let reapply: t.Expression;
   if (path.node.__usesArgs__) {
@@ -165,11 +167,11 @@ function reapplyExpr(path: NodePath<Labeled<t.Function>>): t.Expression {
     reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
         [t.thisExpression(), ...<any>path.node.params]);
   }
-  return t.conditionalExpression(t.binaryExpression('instanceof',
-    t.thisExpression(), funId),
-    t.sequenceExpression([reapply, t.thisExpression()]),
-    reapply);
-
+  return handleNew === 'direct' ?
+    t.conditionalExpression(t.memberExpression(t.identifier('new'), t.identifier('target')),
+      t.sequenceExpression([reapply, t.thisExpression()]),
+      reapply) :
+    reapply;
 }
 
 function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
@@ -194,7 +196,7 @@ function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  *      throw exn;
  *    }
  */
-function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
+function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: NewMethod): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const exn = fastFreshId.fresh('exn');
 
@@ -242,7 +244,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
               t.objectProperty(
                 t.identifier('f'),
-                t.arrowFunctionExpression([], reapplyExpr(funParent))),
+                t.arrowFunctionExpression([], reapplyExpr(funParent, handleNew))),
               t.objectProperty(t.identifier('locals'),
                 t.arrayExpression(<any>locals)),
               t.objectProperty(t.identifier('index'), applyLbl),
@@ -274,7 +276,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  *      eagerStack.shift();
  *    }
  */
-function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
+function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: NewMethod): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
 
   const funParent = <NodePath<FunctionT>>path.findParent(p =>
@@ -306,7 +308,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(
       t.identifier('f'),
-      t.arrowFunctionExpression([], reapplyExpr(funParent))),
+      t.arrowFunctionExpression([], reapplyExpr(funParent, handleNew))),
     t.objectProperty(t.identifier('locals'),
       t.arrayExpression(<any>locals)),
     t.objectProperty(t.identifier('index'), applyLbl),
@@ -356,7 +358,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  *      if (mode === 'normal') x = ret;
  *    }
  */
-function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
+function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: NewMethod): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const ret = fastFreshId.fresh('ret');
 
@@ -387,7 +389,7 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(
       t.identifier('f'),
-      t.arrowFunctionExpression([], reapplyExpr(funParent))),
+      t.arrowFunctionExpression([], reapplyExpr(funParent, handleNew))),
     t.objectProperty(t.identifier('locals'),
       t.arrayExpression(<any>locals)),
     t.objectProperty(t.identifier('index'), applyLbl),
@@ -460,7 +462,7 @@ const jumper: Visitor = {
         path.replaceWith(ifAssign);
         path.skip();
       } else {
-        captureLogics[s.opts.captureMethod](path);
+        captureLogics[s.opts.captureMethod](path, s.opts.handleNew);
       }
     }
   },

@@ -113,8 +113,12 @@ export const visitor: Visitor = {
       [markFlatFunctions]
     ]);
     h.transformFromAst(path, [() => ({ visitor: insertSuspend })]);
-    h.transformFromAst(path, 
-      [[callcc, { useReturn: true, captureMethod: state.opts.captureMethod }]]);
+    h.transformFromAst(path,
+      [[callcc, {
+        useReturn: true,
+        captureMethod: state.opts.captureMethod,
+        handleNew: state.opts.handleNew
+      }]]);
   }
 }
 

@@ -39,6 +39,9 @@ const visitor: Visitor = {
        : (e: t.Expression) => t.expressionStatement(e));
 
     fastFreshId.init(path);
+    if (state.opts.handleNew === 'wrapper') {
+      h.transformFromAst(path, [desugarNew]);
+    }
     h.transformFromAst(path, [singleVarDecls]);
 
     h.transformFromAst(path,
@@ -53,7 +56,10 @@ const visitor: Visitor = {
     h.transformFromAst(path, [declVars]);
 
     h.transformFromAst(path, [label]);
-    h.transformFromAst(path, [[jumper, { captureMethod: captureMethod }]]);
+    h.transformFromAst(path, [[jumper, {
+      captureMethod: captureMethod,
+      handleNew: state.opts.handleNew,
+    }]]);
     path.node.body.unshift(
       h.letExpression(
         t.identifier("suspendCC"),
@@ -63,6 +69,12 @@ const visitor: Visitor = {
       h.letExpression(
         t.identifier("captureCC"),
         t.memberExpression(t.identifier("$__R"), t.identifier("captureCC")),
+        "const"));
+    path.node.body.unshift(
+      h.letExpression(
+        t.identifier("$handleNew"),
+        t.callExpression(t.memberExpression(t.memberExpression(t.identifier("$__R"),
+          t.identifier("handleNew")), t.identifier('bind')), [t.identifier('$__R')]),
         "const"));
     path.node.body.unshift(
       h.letExpression(
@@ -108,7 +120,10 @@ export default function() {
 function main() {
   const filename = process.argv[2];
   const opts = {
-    plugins: [[() => ({ visitor }), { captureMethod: 'eager' }]],
+    plugins: [[() => ({ visitor }), {
+      captureMethod: 'eager',
+      handleNew: 'wrapper',
+    }]],
     babelrc: false
   };
   babel.transformFile(filename, opts, (err, result) => {

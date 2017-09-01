@@ -92,7 +92,7 @@ export class LazyRuntime extends common.Runtime {
       }
       throw exn;
     }
-    
+
     if (typeof result === 'object') {
       return result;
     }

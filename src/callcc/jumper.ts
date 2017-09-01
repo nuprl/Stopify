@@ -94,23 +94,18 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(body.body, afterDecls);
 
-  const locals = fastFreshId.fresh('locals');
-
-  const restoreLocals: t.ExpressionStatement[] = [];
+  const restoreLocals: t.Identifier[] = [];
   let i = 0;
 
-  function restore1(x: t.LVal): void {
-    restoreLocals.push(
-      t.expressionStatement(
-        t.assignmentExpression(
-          '=', x, t.memberExpression(locals, t.numericLiteral(i++), true))));
+  function restore1(x: t.Identifier): void {
+    restoreLocals.push(x);
   }
 
 
   // Flatten list of assignments restoring local variables
   pre.forEach(decls => {
     if (t.isVariableDeclaration(decls)) {
-      decls.declarations.forEach(x => restore1(x.id))
+      decls.declarations.forEach(x => restore1(<t.Identifier>x.id))
     }
   });
 
@@ -123,9 +118,9 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
   }
 
   const restoreBlock = t.blockStatement([
-    letExpression(locals,
-      t.memberExpression(topOfRuntimeStack, t.identifier('locals')), 'const'),
-    ...restoreLocals,
+    t.expressionStatement(t.assignmentExpression('=',
+      t.arrayPattern(restoreLocals), t.memberExpression(topOfRuntimeStack,
+        t.identifier('locals')))),
     t.expressionStatement(t.assignmentExpression('=', target,
       t.memberExpression(topOfRuntimeStack, t.identifier('index')))),
     t.expressionStatement(popRuntimeStack)

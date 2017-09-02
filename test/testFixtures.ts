@@ -76,7 +76,7 @@ export function callCCTest(srcPath: string, transform: string) {
     const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: ".js" });
     execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
     try {
-      execSync(`./bin/run ${dstPath} --yield 1`);
+      execSync(`./bin/run ${dstPath} --yield 1`, { timeout: 30000 });
     }
     finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.

@@ -79,9 +79,10 @@ function main() {
   const src: string = opts.src ||
     "benchmarks/{clojurescript,python_pyjs,dart_dart2js,scala,ocaml,racket_racketscript}/js-build/*";
   const platform: string = opts.platform || "chrome firefox";
-  const transform: string = opts.transform || "original lazy eager";
+  const transform: string = opts.transform || "original lazy";
   const variance: boolean = opts.variance;
   const estimator: string = opts.estimator || 'reservoir/100';
+  const newMethod: string = 'direct wrapper';
 
   if (transform.split(" ").includes("original") === false) {
     throw new Error("--transform must include original");
@@ -104,7 +105,7 @@ function main() {
 
   exec(`parallel --progress ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=compile --wd=${wd}  \
-    --src={1} --transform={2} ::: ${src} ::: ${transform}`);
+    --src={1} --transform={2} --new={3} ::: ${src} ::: ${transform} ::: ${newMethod}`);
 
   exec(`parallel --progress ${sshloginfile} \
     cd $PWD '&&' ${nodeBin} ./built/src/benchmarking --mode=run --wd=${wd} \
@@ -149,20 +150,20 @@ function run() {
   if (matchEstimator === null) {
     throw new Error(`could not parse --estimator=${opts.estimator}`);
   }
-  let estimator: string = matchEstimator[1];  
+  let estimator: string = matchEstimator[1];
   let yieldInterval: number = Number(matchEstimator[2]);
   let timePerElapsed: number =  Number(matchEstimator[3]);
 
-  
-  // Parse the filename into transform-language-benchmark
-  const re = /^([^-]*)-([^-]*)-(.*)\.(?:js|html)$/;
+  // Parse the filename into transform-newMethod-language-benchmark
+  const re = /^([^-]*)-([^-]*)-([^-]*)-(.*)\.(?:js|html)$/;
   const match =  re.exec(path.basename(src));
   if (match === null) {
     throw new Error(`Could not parse filename ${src}`);
   }
-  const transform = match[1];
-  const language = match[2];
-  const benchmark = match[3];
+  const transform = match[1]
+  const newMethod = match[2];
+  const language = match[3];
+  const benchmark = match[4];
 
   // If the transform is 'original', reset all transformation parameters to
   // trivial values. This also ensures that original only runs once.
@@ -170,6 +171,13 @@ function run() {
     yieldInterval = NaN;
     timePerElapsed = NaN;
     estimator = "countdown";
+  }
+
+  if (platform === 'chrome' && newMethod === 'direct') {
+    return;
+  }
+  if (platform === 'firefox' && newMethod === 'wrapper') {
+    return;
   }
 
   const dst = `${opts.wd}/${benchmark}.${language}.${platform}.${transform}.${yieldInterval},${estimator}.${yieldInterval}.${timePerElapsed}.done`;
@@ -216,12 +224,13 @@ function compile() {
   const base = path.basename(src).split('.')[0]; // assumes no further '.'
   const language = path.basename(path.dirname(path.dirname(src)));
   const transform = opts.transform;
+  const newMethod = opts.new;
 
-  const dstJs = `${wd}/${transform}-${language}-${base}.js`;
-  const dstHtml = `${wd}/${transform}-${language}-${base}.html`;
+  const dstJs = `${wd}/${transform}-${newMethod}-${language}-${base}.js`;
+  const dstHtml = `${wd}/${transform}-${newMethod}-${language}-${base}.html`;
 
   creates(dstJs, () =>
-    exec(`./bin/compile --transform ${transform} ${src} ${dstJs}`));
+    exec(`./bin/compile --transform ${transform} --new ${newMethod} ${src} ${dstJs}`));
   creates(dstHtml, () =>
     exec(`./bin/webpack ${dstJs} ${dstHtml}`));
 }

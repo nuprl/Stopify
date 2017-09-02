@@ -47,10 +47,12 @@ const visitor: Visitor = {
            makeBlocks, nameExprs, desugarLoop, desugarLabel,
            desugarSwitch, cleanup]);
     h.transformFromAst(path, [desugarLogical]);
-    h.transformFromAst(path, [anf]);
-    h.transformFromAst(path, [declVars]);
+    h.transformFromAst(path, ["transform-es2015-block-scoping"]);
     freeIds.annotate(path);
     h.transformFromAst(path, [boxAssignables]);
+    h.transformFromAst(path, [anf]);
+    h.transformFromAst(path, [declVars]);
+
     h.transformFromAst(path, [label]);
     h.transformFromAst(path, [[jumper, { captureMethod: captureMethod }]]);
     path.node.body.unshift(

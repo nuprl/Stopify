@@ -5,6 +5,8 @@ export const eTrue = t.booleanLiteral(true);
 
 export const eFalse = t.booleanLiteral(false);
 
+export const eUndefined = t.identifier('undefined');
+
 /** Constructs an 'e1 && e2', but simplifies when either sub-expression is
  *  a literal.
  */

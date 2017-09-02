@@ -1,11 +1,17 @@
 /**
  * This transformation boxes certain assignable variables to preserve
  * reference equality when the stack is reconstructed.
+ * 
+ * Preconditions:
+ * 1. The freeIds pass has been applied.
  */
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
+import * as assert from 'assert';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as freeIds from '../common/freeIds';
+import * as fastFreshId from '../fastFreshId';
+import * as bh from '../babelHelpers';
 
 function box(e: t.Expression): t.ObjectExpression {
   return t.objectExpression([t.objectProperty(t.identifier('box'),
@@ -17,14 +23,36 @@ function unbox(e: t.Expression): t.Expression {
   return  t.memberExpression(e, t.identifier('box'));
 }
 
-function parentBlock(path: NodePath<t.Node>): t.Statement[] {
+function getParentPath(path: NodePath<t.Node>) {
   const parents = [ "FunctionDeclaration", "FunctionExpression", "Program" ];
-  const parent = path.findParent(p => parents.includes(p.node.type)).node;
-  if (parent.type === "Program") {
-    return (<t.Program>parent).body;
+  return path.findParent(p => parents.includes(p.node.type));
+}
+
+function liftStatement(path: NodePath<t.Node>, stmt: t.Statement, 
+  traverse: boolean) {
+  const parentPath = getParentPath(path);
+  const type_ = parentPath.node.type;
+  if (type_ === 'Program') {
+    if (traverse) {
+      parentPath.get('body.0').insertBefore(stmt);
+    }
+    else {
+      (<t.Program>parentPath.node).body.unshift(stmt);
+    }
+  }
+  else if (type_ === 'FunctionDeclaration' || type_ === 'FunctionExpression') {
+    if (traverse) {
+      parentPath.get('body.body.0').insertBefore(stmt);
+    }
+    else {
+      (<t.FunctionDeclaration | t.FunctionExpression>parentPath.node).body
+        .body.unshift(stmt);
+    }
   }
   else {
-    return (<t.FunctionExpression | t.FunctionDeclaration>parent).body.body;
+    throw new assert.AssertionError({ 
+      message: `liftStatement got ${type_} as parent` 
+    });
   }
 }
 
@@ -43,13 +71,27 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
         path.replaceWith(unbox(path.node));
       }
     },
-    VariableDeclarator(path: NodePath<t.VariableDeclarator>) {
-      path.skip();
-      if (path.node.id.type !== "Identifier") {
-        throw "unsupported";
+
+    VariableDeclaration(path: NodePath<t.VariableDeclaration>) {
+      assert(path.node.declarations.length === 1,
+        'variable declarations must have exactly one binding');
+      const decl = path.node.declarations[0];
+      if (decl.id.type !== "Identifier") {
+        throw new assert.AssertionError({
+          message: 'destructuring not supported'
+        });
       }
-      if (vars.includes(path.node.id.name)) {
-        path.node.init = box(path.node.init);
+      if (vars.includes(decl.id.name)) {
+        liftStatement(path,
+          t.variableDeclaration('var', 
+            [t.variableDeclarator(decl.id, box(bh.eUndefined))]),
+          false);
+        if (decl.init === null) {
+          path.remove();
+        }
+        else {
+          path.replaceWith(t.assignmentExpression('=', decl.id, decl.init));
+        }
       }
     },
     BindingIdentifier(path: NodePath<t.Identifier>) {
@@ -67,18 +109,23 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
       initFunction(vars, path);
     },
     FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
-      path.skip();
-      // Box this function declaration if it is updated.
-      const x = path.node.id.name;
-      if (vars.includes(x)) {
-        const init = t.expressionStatement(
-          t.assignmentExpression(
-            "=", t.identifier(x), box(t.identifier(x))));
-        (<any>init).__boxVarsInit__ = true;
-        parentBlock(path).unshift(init);
-      }
+      if (vars.includes(path.node.id.name)) {
+        const fun = t.functionExpression(
+          fastFreshId.fresh('fun'),
+          path.node.params,
+          path.node.body);
 
-      initFunction(vars, path);
+        // Little hack necessary to preseve annotation left by freeIds.ts
+        (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
+        const stmt = t.variableDeclaration("var",
+          [t.variableDeclarator(path.node.id, fun)]);
+        liftStatement(path, stmt, true);
+        path.remove();
+      }
+      else {
+        path.skip();
+        initFunction(vars, path);
+      }
     }
   }
 
@@ -93,8 +140,7 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
  */
 function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
   const binds = path.scope.bindings;
-  return !binds[x].constant &&
-    (<any>binds[x].kind === "hoisted" || freeIds.isNestedFree(path, x));
+  return (<any>binds[x].kind === "hoisted" || freeIds.isNestedFree(path, x));
 }
 
 

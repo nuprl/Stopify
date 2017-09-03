@@ -140,6 +140,9 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
  */
 function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
   const binds = path.scope.bindings;
+  if (path.node.type === 'FunctionExpression' && path.node.id.name === x) {
+    return false;
+  }
   return (<any>binds[x].kind === "hoisted" || freeIds.isNestedFree(path, x));
 }
 

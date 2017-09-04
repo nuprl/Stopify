@@ -436,34 +436,35 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: N
   stmtParent.skip();
 }
 
-function mayCapture(node: t.Node): boolean {
+function mayCapture(node: t.Expression | null): boolean {
+  if (node === null) {
+    return false;
+  }
+  if (node.type === 'AssignmentExpression') {
+    return mayCapture(node.right);
+  }
+
   return ((t.isCallExpression(node) || t.isNewExpression(node)) &&
           !cannotCapture(node));
 }
 
 const jumper: Visitor = {
-  UpdateExpression: {
-    exit(path: NodePath<Labeled<t.UpdateExpression>>): void {
+  ExpressionStatement: {
+    exit(path: NodePath<Labeled<t.ExpressionStatement>>, s: State) {
       if (isFlat(path)) {
         return;
       }
-      path.replaceWith(t.ifStatement(isNormalMode, t.expressionStatement(path.node)));
-      path.skip();
-    }
-  },
 
-  AssignmentExpression: {
-    exit(path: NodePath<Labeled<t.AssignmentExpression>>, s: State): void {
-      if (isFlat(path)) {
+      if (mayCapture(path.node.expression) &&
+          path.node.expression.type === 'AssignmentExpression') {
+        captureLogics[s.opts.captureMethod](
+          <any>path.get('expression'),
+          s.opts.handleNew);
         return;
       }
-      if (!mayCapture(path.node.right)) {
-        const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
-        path.replaceWith(ifAssign);
-        path.skip();
-      } else {
-        captureLogics[s.opts.captureMethod](path, s.opts.handleNew);
-      }
+
+      path.replaceWith(t.ifStatement(isNormalMode, path.node));
+      path.skip();
     }
   },
 

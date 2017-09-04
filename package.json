@@ -48,7 +48,8 @@
     "build": "./bin/build",
     "build-webpage": "npm run build && ./node_modules/.bin/browserify built/demo-webpage/paws-client/container.js -o demo-webpage/html/container.js && ./node_modules/.bin/browserify built/demo-webpage/paws-client/runner.js -o demo-webpage/html/runner.js && cp -R ./demo-webpage/html built/demo-webpage/",
     "test": "./node_modules/.bin/jest",
-    "test:integration": "./bin/test -int"
+    "test:integration": "./bin/test -int",
+    "bench": "./bin/benchmark"
   },
   "contributors": [
     {

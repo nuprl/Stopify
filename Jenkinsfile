@@ -7,11 +7,11 @@ pipeline {
         sh 'yarn install'
         sh 'yarn run test:integration'
       }
-    }
-  }
-  post {
-    always {
-      junit 'results.xml'
+      post {
+        always {
+          junit 'results.xml'
+        }
+      }
     }
   }
 }

@@ -16,11 +16,13 @@ pipeline {
     stage('Benchmark') {
       when {
         expression {
-          currentBuild.result == null || currentBuild.result == 'SUCCESS'
+          (currentBuild.result == null || currentBuild.result == 'SUCCESS') &&
+          env.BRANCH_NAME ==~ /PR-.*/
         }
       }
       steps {
         echo "${env.BRANCH_NAME}"
+        sh 'mkdir perf'
         sh 'yarn run bench'
       }
     }

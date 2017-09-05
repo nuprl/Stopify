@@ -13,5 +13,16 @@ pipeline {
         }
       }
     }
+    stage('Benchmark') {
+      when {
+        expression {
+          currentBuild.result == null || currentBuild.result == 'SUCCESS'
+        }
+      }
+      steps {
+        echo '${env.BRANCH_NAME}'
+          sh 'yarn run bench'
+      }
+    }
   }
 }

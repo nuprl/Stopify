@@ -21,7 +21,7 @@ pipeline {
         }
       }
       steps {
-        echo "${env.BRANCH_NAME}"
+        sh 'git clone https://github.com/plasma-umass/stopify-benchmarks benchmarks'
         sh 'mkdir perf'
         sh 'yarn run bench'
       }

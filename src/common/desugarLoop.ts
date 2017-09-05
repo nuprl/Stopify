@@ -20,6 +20,7 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
+import * as bh from '../babelHelpers';
 
 // Object containing the visitor functions
 const loopVisitor : Visitor = {
@@ -80,7 +81,7 @@ const loopVisitor : Visitor = {
       nInit = t.isExpression(init) ? t.expressionStatement(init) : init;
     }
 
-    path.replaceWith(h.flatBodyStatement([nInit, wl]));
+    bh.replaceWithStatements(path, nInit, wl);
   },
 
   // Convert do-while statements into while statements.
@@ -99,8 +100,7 @@ const loopVisitor : Visitor = {
 
     test = t.logicalExpression('||', runOnce, test);
 
-    path.replaceWith(
-      h.flatBodyStatement([runOnceInit, t.whileStatement(test, body)]));
+    bh.replaceWithStatements(path,runOnceInit, t.whileStatement(test, body));
   },
 
   WhileStatement: function (path: NodePath<h.While<h.Break<t.WhileStatement>>>): void {

@@ -5,6 +5,7 @@ import * as bh from '../babelHelpers';
 import { cannotCapture } from '../common/cannotCapture';
 import { letExpression } from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
+import * as generic from '../generic';
 
 type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
 type Labeled<T> = T & {
@@ -448,7 +449,40 @@ function mayCapture(node: t.Expression | null): boolean {
           !cannotCapture(node));
 }
 
+function isNormalGuarded(stmt: t.Statement): stmt is t.IfStatement {
+  return (t.isIfStatement(stmt) &&
+    stmt.test === isNormalMode &&
+    stmt.alternate === null);
+}
+
 const jumper: Visitor = {
+  BlockStatement: {
+    exit(path: NodePath<Labeled<t.BlockStatement>>) {
+      const stmts = path.node.body;
+      if (stmts.length === 1) {
+        return;
+      }
+      const blocks = generic.groupBy((x,y) =>
+        isNormalGuarded(x) && isNormalGuarded(y), stmts);
+      const result: t.Statement[] = [];
+      for (const block of blocks) {
+        if (block.length === 1) {
+          result.push(block[0]);
+        }
+        else {
+          block.forEach((stmt) => {
+            assert((<t.IfStatement>stmt).test === isNormalMode);
+          })
+          result.push(
+            bh.sIf(isNormalMode,
+              t.blockStatement(block.map((stmt) =>(<t.IfStatement>stmt)
+                .consequent))));
+        }
+      }
+
+      path.node.body = result;
+    }
+  },
   ExpressionStatement: {
     exit(path: NodePath<Labeled<t.ExpressionStatement>>, s: State) {
       if (isFlat(path)) {

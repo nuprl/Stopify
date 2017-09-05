@@ -21,8 +21,14 @@ pipeline {
         }
       }
       steps {
-        sh 'git clone https://github.com/plasma-umass/stopify-benchmarks benchmarks'
+        sh 'cd /mnt/homes/jenkins'
+        checkout scm
+        sh 'cd Stopify'
+        sh 'git clone https://github.com/plasma-umass/stopify-benchmarks.git'
+        sh 'yarn install'
+        sh 'yarn run build'
         sh 'yarn run bench'
+        archive 'perf/*.csv'
       }
     }
   }

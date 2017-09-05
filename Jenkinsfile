@@ -20,8 +20,8 @@ pipeline {
         }
       }
       steps {
-        echo '${env.BRANCH_NAME}'
-          sh 'yarn run bench'
+        echo "${env.BRANCH_NAME}"
+        sh 'yarn run bench'
       }
     }
   }

@@ -20,6 +20,7 @@ function withinTryBlock(path: NodePath<t.Node>): boolean {
 const anfVisitor : Visitor = {
   CallExpression: function (path: NodePath<t.CallExpression>): void {
     const p = path.parent;
+
     if ((!t.isVariableDeclarator(p) &&
       !t.isReturnStatement(p)) ||
       (t.isReturnStatement(p) &&

@@ -11,3 +11,4 @@ demo-webpage/html/runner.js
 package-lock.json
 auth-trial/html/src-noconflict
 /benchmarks
+.vscode

@@ -72,7 +72,7 @@ class Env {
 
 const globalEnv = new Env();
 
-function nodeToString(node: t.Expression): string | null {
+function nodeToString(node: t.Expression | t.LVal): string | null {
   switch(node.type) {
     case 'Identifier': return node.name;
     default: {
@@ -81,6 +81,9 @@ function nodeToString(node: t.Expression): string | null {
   }
 }
 
+/**
+ * Visitors that run mark call expressions as 'flat'
+ */
 const markCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
   function (path: NodePath<FlatnessMark<t.CallExpression>>): void {
     const node = path.node
@@ -96,7 +99,7 @@ const markCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
   }
 
 const programMarkCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
-  function (path: NodePath<FlatnessMark<t.CallExpression>>): void {
+  function (path: NodePath<FlatnessMark<t.CallExpression>>) {
     const fParent = path.findParent(p => t.isFunctionDeclaration(p) ||
       t.isFunctionExpression(p))
     if (fParent === null || fParent === undefined) {
@@ -117,8 +120,11 @@ const programMarkCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
     }
   }
 
+/**
+ * Visitors that collect 'flat' tags from previously marked functions
+ */
 const markLetBoundFuncExpr: VisitNode<FlatnessMark<t.FunctionExpression>> = {
-  enter (path: NodePath<FlatnessMark<t.FunctionExpression>>): void {
+  enter (path: NodePath<FlatnessMark<t.FunctionExpression>>) {
     const decl = path.parent;
     if(t.isVariableDeclarator(decl)) {
       globalEnv.addBinding((<t.Identifier>decl.id).name, path.node.mark)
@@ -127,7 +133,7 @@ const markLetBoundFuncExpr: VisitNode<FlatnessMark<t.FunctionExpression>> = {
 }
 
 const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> = {
-  enter (path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>): void {
+  enter(path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>) {
     if (path.node.id) {
       globalEnv.addBinding(path.node.id.name, path.node.mark);
       globalEnv.pushScope(new Scope([[path.node.id.name, path.node.mark]]))
@@ -136,7 +142,7 @@ const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> 
     }
   },
 
-  exit (path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>): void {
+  exit(path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>) {
     if(debug > 1) {
       process.stderr.write(`\n-------${path.node.id.name}----------\n`)
       process.stderr.write(globalEnv.toString())
@@ -144,6 +150,22 @@ const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> 
     }
     path.traverse(markingVisitor)
     globalEnv.popScope();
+  }
+}
+
+const assign = {
+  // NOTE(rachit): This naively assumes that all IDs that are assigned to
+  // are not flat. A better alternative to this is to check if the assignment
+  // is itself a flat function and give a tag accordingly.
+  enter(path: NodePath<FlatnessMark<t.AssignmentExpression>>) {
+    const name = nodeToString(path.node.left)
+    if (name) {
+      const tag = globalEnv.addBinding(name, 'NotFlat')
+      if (debug > 0) {
+        process.stderr.write(`${name} -> NotFlat on line ${path.node.loc ?
+            path.node.loc.start.line : ""} because of assignment\n`)
+      }
+    }
   }
 }
 
@@ -171,6 +193,7 @@ const visitor = {
   Program: program,
   FunctionDeclaration: func,
   FunctionExpression: func,
+  AssignmentExpression: assign,
 }
 
 export default function () {

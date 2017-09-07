@@ -56,8 +56,8 @@ const func = {
   exit(path: NodePath<t.FunctionDeclaration|t.FunctionExpression>) {
     const toDecl: t.Identifier[] | undefined = (<any>path.node).toDecl
     if(toDecl && toDecl.length > 0) {
-      path.node.body.body.unshift(t.variableDeclaration('var',
-        lifted(toDecl.map(d => t.variableDeclarator(d)))))
+      path.node.body.body.unshift(lifted(t.variableDeclaration('var',
+        toDecl.map(d => t.variableDeclarator(d)))))
     }
   }
 }
@@ -69,8 +69,8 @@ const prog = {
   exit(path: NodePath<t.Program>) {
     const toDecl: t.Identifier[] | undefined = (<any>path.node).toDecl
     if(toDecl && toDecl.length > 0) {
-      path.node.body.unshift(t.variableDeclaration('var',
-        lifted(toDecl.map(d => t.variableDeclarator(d)))))
+      path.node.body.unshift(lifted(t.variableDeclaration('var',
+        toDecl.map(d => t.variableDeclarator(d)))))
     }
   }
 }
@@ -113,10 +113,10 @@ const lift: Visitor = {
       // Therefore, we do not need to lift x. Instead, we eliminate the
       // declaration and only turn it into an assignment.
       if ((kind === 'var' && topArgs.includes(id)) === false) {
-        (<any>topScope.node).toDecl.push(decl.id)
         //const newDecl = t.variableDeclaration(kind,
                           //[t.variableDeclarator(decl.id)]);
         //getBlock(topScope.node).unshift(lifted(newDecl));
+        (<any>topScope.node).toDecl.push(decl.id)
       }
       if (decl.init !== null) {
         // If we call path.insertAfter here, we will add assignments in reverse

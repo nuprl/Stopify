@@ -534,15 +534,22 @@ const jumper = {
       if (path.node.appType !== AppType.Mixed) {
         return;
       }
-      // Labels may occur if this return statement occurs in a try block.
-      const labels = getLabels(path.node);
-      const ifReturn = t.ifStatement(
-        isNormalMode,
-        path.node,
-        bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
-                t.returnStatement(stackFrameCall)));
-      path.replaceWith(ifReturn);
-      path.skip();
+
+      const funParent = path.findParent(p => p.isFunction());
+
+      if (t.isFunction(funParent)) {
+        // Labels may occur if this return statement occurs in a try block.
+        const labels = getLabels(path.node);
+        const ifReturn = t.ifStatement(
+          isNormalMode,
+          path.node,
+          bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
+                 t.returnStatement(stackFrameCall)));
+        path.replaceWith(ifReturn);
+        path.skip();
+      } else {
+        throw new Error(`Unexpected 'return' parent of type ${typeof funParent}`);
+      }
     }
   },
 

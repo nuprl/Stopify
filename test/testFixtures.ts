@@ -35,6 +35,7 @@ export function callCCTest(srcPath: string, transform: string) {
 
 export function browserTest(srcPath: string, transform: string) {
   const testName = `${srcPath} (${transform}) (in-browser)`;
+  const basename = path.basename(srcPath, '.js')
 
   // Skip tests we know we can't handle
   if ( srcPath.indexOf("dart") >= 0 ||
@@ -44,8 +45,8 @@ export function browserTest(srcPath: string, transform: string) {
   }
 
   it(testName, () => {
-    const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: ".js" });
-    const { name: htmlPath } = tmp.fileSync({ dir: ".", postfix: ".html" });
+    const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
+    const { name: htmlPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.html` });
     execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
     execSync(`./bin/webpack ${dstPath} ${htmlPath}`);
     execSync(`./bin/browser ${htmlPath} --yield 1000 --env chrome`);

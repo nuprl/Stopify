@@ -1,53 +1,32 @@
 ## Stopify [![Build Status](http://23.20.114.147:5000/buildStatus/icon?job=stopify-build/master)](http://23.20.114.147:5000/job/stopify-build/job/master/)
 
-Web-based programming environments lack many basic features that programmers
-expect to find in desktop-based IDEs. For example, given a non-terminating
-program, many environments simply crash the browser. Some environments implement
-"infinite loop detectors", but these sacrifice the ability to execute
-long-running, interactive programs. The few exceptions that handle this
-correctly, such as Pyret and WeScheme, have required tremendous effort to build
-and are tightly coupled to specific programming languages.
+## Installation
+1. Install the latest version of `node` and `yarn` (install using `npm install -g yarn`).
+2. To install the dependecies, run `yarn` in the root of the project.
+3. Run `npm run build` to build the project.
+4. Run tests using `npm test`.
 
-We present Stopify, a new approach to building web-based programming
-environments, that supports any language that compiles to JavaScript and
-generates source maps. Stopify transforms the JavaScript produced by an ordinary
-compiler and implements a runtime scheduler that adds support for pausing,
-resuming, stepping, and break-pointing at the source language level.
+### Running in the terminal
+Stopify supports mutliple stack-saving strategies. Compile a JavaScript file by navigating the project root and:
+1. Run `./bin/compile -t <lazy|eager|retval|original|fudge> <intput> <output>`.
+2. To run the compiled file, use `./bin/run <input> [opts]`. Available options:
+   a. `-y | --yield <interval>`: yield interval in ms.
+   b. `-e | --env <chrome|firefox|node>`: For CLI, only `node` is a valid option.
+   c. `--variance`: Measure variance.
+   d. `--time-per-elapsed`: Estimate to the internal b/w internal suspend calls.
+   e. `--stop`: Time (in ms) after which program should be stopped.
+   f. `--estimator <exact|countdown|resevoir`
 
-## Dependencies
-1. Install the latest version of node.
-2. To install the dependecies, run `npm install` in the root of the project.
-3. Install [this](http://datalog.sourceforge.net/) implementation of Datalog.
-4. (optional) Run `npm install -g typescript` for a global installation of the
-   typescript compiler.
-### Optional Server Dependencies
-1. For OCaml support, install [js_of_ocaml](http://ocsigen.org/js_of_ocaml/)
-2. For ClojureScript support
- - `brew install leiningen`
-3. For ScalaJS, install [scala](https://www.scala-lang.org/download/) and
-   [sbt](http://www.scala-sbt.org/0.13/docs/Setup.html)
 
-## Program Transformation Plugins
-Stopify includes a collection of `babel` plugins for transforming JavaScript
-code to yield computation to event listeners. These transformations enable
-language-level debugging abstractions (e.g. pausing, resuming, and stepping
-through a running program).
+### Running in the browser
+To run a compiled the program in the browser:
+1. Run `./bin/compile -t <lazy|eager|retval|original|fudge> <intput> <output>`.
+2. Run the compiled program through webpack using `./bin/webpack <input.js> <output.html>`
+3. Open the output html file in a browser to the run program. **NOTE**: In case the page doesn't seem to be doing anything, check the console through dev tools.
+4. Alternatively, to use selenium runner provided with Stopify:
+   a. Install either [Chromedriver](http://chromedriver.storage.googleapis.com/2.30/chromedriver_linux64.zip) and [Geckodriver](https://github.com/mozilla/geckodriver/releases/download/v0.18.0/geckodriver-v0.18.0-linux64.tar.gz).
+   b. Run the program using `./bin/browser <out.html> -e <chrome|firefox> [opts]`. The opts are the same as the CLI options.
 
-### Building
-1. `npm run build`
-
-### Running
-The build produces the stopify executable in `<project-root>/built/`.
-Run the following to see the options:
-- `<projec-root>$ ./built/stopify.js --help`
 
 ## Paws Server
-Stopify also includes a server backend to support debugging multiple source
-languages within a web browser. Running the `paws-server` requires optional
-server dependencies to be installed.
-### Building
-1. `npm run build-webpage`
-
-### Running
- - `<project-root>$ ./paws-server.sh`
- - Navigate to `localhost:8080` in your browser.
+**TODO**(rachit): Update when paws server is functional again.

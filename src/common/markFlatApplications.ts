@@ -75,15 +75,6 @@ const globalEnv = new Env();
 function nodeToString(node: t.Expression): string | null {
   switch(node.type) {
     case 'Identifier': return node.name;
-    case 'MemberExpression': {
-      let l = nodeToString(node.object)
-      let r = nodeToString(node.property)
-      if (l && r) {
-        return l + '.' + r;
-      } else {
-        return null;
-      }
-    }
     default: {
       return null
     }

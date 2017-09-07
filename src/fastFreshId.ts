@@ -60,3 +60,14 @@ export function fresh(base: string): t.Identifier {
   known.set(base, { newBase: newBase, i: 1 });
   return t.identifier(newBase + String(0));
 }
+
+export function nameExprBefore(path: NodePath<t.Node>,
+  expr: t.Expression, base?: string): t.Identifier {
+  if (t.isIdentifier(expr)) {
+    return expr;
+  }
+  const x = fresh(base || "x");
+  path.insertBefore(
+    t.variableDeclaration('let', [t.variableDeclarator(x, expr)]));
+  return x;
+}

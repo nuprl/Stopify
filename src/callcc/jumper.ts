@@ -5,6 +5,7 @@ import * as bh from '../babelHelpers';
 import { cannotCapture } from '../common/cannotCapture';
 import { letExpression } from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
+import * as generic from '../generic';
 
 type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
 type Labeled<T> = T & {
@@ -156,7 +157,7 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
     bh.eFalse);
 }
 
-function reapplyExpr(path: NodePath<Labeled<t.Function>>, handleNew: NewMethod): t.Expression {
+function reapplyExpr(path: NodePath<Labeled<FunctionT>>, handleNew: NewMethod): t.Expression {
   const funId = path.node.id;
   let reapply: t.Expression;
   if (path.node.__usesArgs__) {
@@ -436,51 +437,76 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: N
   stmtParent.skip();
 }
 
-function mayCapture(node: t.Node): boolean {
+function mayCapture(node: t.Expression | null): boolean {
+  if (node === null) {
+    return false;
+  }
+  if (node.type === 'AssignmentExpression') {
+    return mayCapture(node.right);
+  }
+
   return ((t.isCallExpression(node) || t.isNewExpression(node)) &&
           !cannotCapture(node));
 }
 
-const jumper: Visitor = {
-  UpdateExpression: {
-    exit(path: NodePath<Labeled<t.UpdateExpression>>): void {
+function isNormalGuarded(stmt: t.Statement): stmt is t.IfStatement {
+  return (t.isIfStatement(stmt) &&
+    stmt.test === isNormalMode &&
+    stmt.alternate === null);
+}
+
+const jumper = {
+  BlockStatement: {
+    exit(path: NodePath<Labeled<t.BlockStatement>>) {
+      const stmts = path.node.body;
+      if (stmts.length === 1) {
+        return;
+      }
+      const blocks = generic.groupBy((x,y) =>
+        isNormalGuarded(x) && isNormalGuarded(y), stmts);
+      const result: t.Statement[] = [];
+      for (const block of blocks) {
+        if (block.length === 1) {
+          result.push(block[0]);
+        }
+        else {
+          block.forEach((stmt) => {
+            assert((<t.IfStatement>stmt).test === isNormalMode);
+          })
+          result.push(
+            bh.sIf(isNormalMode,
+              t.blockStatement(block.map((stmt) =>(<t.IfStatement>stmt)
+                .consequent))));
+        }
+      }
+
+      path.node.body = result;
+    }
+  },
+  ExpressionStatement: {
+    exit(path: NodePath<Labeled<t.ExpressionStatement>>, s: State) {
       if (isFlat(path)) {
         return;
       }
-      path.replaceWith(t.ifStatement(isNormalMode, t.expressionStatement(path.node)));
+
+      if (mayCapture(path.node.expression) &&
+          path.node.expression.type === 'AssignmentExpression') {
+        captureLogics[s.opts.captureMethod](
+          <any>path.get('expression'),
+          s.opts.handleNew);
+        return;
+      }
+
+      path.replaceWith(t.ifStatement(isNormalMode, path.node));
       path.skip();
     }
   },
 
-  AssignmentExpression: {
-    exit(path: NodePath<Labeled<t.AssignmentExpression>>, s: State): void {
-      if (isFlat(path)) {
-        return;
-      }
-      if (!mayCapture(path.node.right)) {
-        const ifAssign = t.ifStatement(isNormalMode, t.expressionStatement(path.node));
-        path.replaceWith(ifAssign);
-        path.skip();
-      } else {
-        captureLogics[s.opts.captureMethod](path, s.opts.handleNew);
-      }
-    }
-  },
-
-  FunctionExpression: {
-    enter(path: NodePath<Labeled<t.FunctionExpression>>) {
+  "FunctionExpression|FunctionDeclaration": {
+    enter(path: NodePath<Labeled<FunctionT>>) {
       path.node.__usesArgs__ = usesArguments(path);
     },
-    exit(path: NodePath<Labeled<t.FunctionExpression>>): void {
-      return func(path);
-    }
-  },
-
-  FunctionDeclaration: {
-    enter(path: NodePath<Labeled<t.FunctionDeclaration>>) {
-      path.node.__usesArgs__ = usesArguments(path);
-    },
-    exit(path: NodePath<Labeled<t.FunctionDeclaration>>): void {
+    exit(path: NodePath<Labeled<FunctionT>>): void {
       return func(path);
     }
   },

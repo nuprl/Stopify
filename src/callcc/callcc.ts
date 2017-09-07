@@ -45,8 +45,7 @@ const visitor: Visitor = {
     h.transformFromAst(path, [singleVarDecls]);
 
     h.transformFromAst(path,
-          [[hygiene, { reserved: ["target"] }],
-           makeBlocks, nameExprs, desugarLoop, desugarLabel,
+          [makeBlocks, nameExprs, desugarLoop, desugarLabel,
            desugarSwitch, cleanup]);
     h.transformFromAst(path, [desugarLogical]);
     h.transformFromAst(path, ["transform-es2015-block-scoping"]);

@@ -37,14 +37,14 @@ function getFunctionArgs(path: NodePath<t.Node>): string[] {
 }
 
 function getBlock(node: t.Node): t.Statement[] {
-  if (node.type === 'FunctionDeclaration' || 
-      node.type === 'FunctionExpression') {
-    return (<t.FunctionDeclaration>node).body.body;
-  }
-  else if (node.type === 'Program') {
-    return (<t.Program>node).body;
-  }
-  else {
+  if (t.isFunctionDeclaration(node) ||
+    t.isFunctionExpression(node)) {
+    return node.body.body;
+  } else if (t.isProgram(node)) {
+    return node.body;
+  } else if (t.isObjectMethod(node)) {
+    return node.body.body;
+  }else {
     throw new Error(`Got ${node.type}`);
   }
 }

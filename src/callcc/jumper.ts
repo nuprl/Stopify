@@ -157,7 +157,7 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
     bh.eFalse);
 }
 
-function reapplyExpr(path: NodePath<Labeled<t.Function>>, handleNew: NewMethod): t.Expression {
+function reapplyExpr(path: NodePath<Labeled<FunctionT>>, handleNew: NewMethod): t.Expression {
   const funId = path.node.id;
   let reapply: t.Expression;
   if (path.node.__usesArgs__) {
@@ -455,7 +455,7 @@ function isNormalGuarded(stmt: t.Statement): stmt is t.IfStatement {
     stmt.alternate === null);
 }
 
-const jumper: Visitor = {
+const jumper = {
   BlockStatement: {
     exit(path: NodePath<Labeled<t.BlockStatement>>) {
       const stmts = path.node.body;
@@ -502,20 +502,11 @@ const jumper: Visitor = {
     }
   },
 
-  FunctionExpression: {
-    enter(path: NodePath<Labeled<t.FunctionExpression>>) {
+  "FunctionExpression|FunctionDeclaration": {
+    enter(path: NodePath<Labeled<FunctionT>>) {
       path.node.__usesArgs__ = usesArguments(path);
     },
-    exit(path: NodePath<Labeled<t.FunctionExpression>>): void {
-      return func(path);
-    }
-  },
-
-  FunctionDeclaration: {
-    enter(path: NodePath<Labeled<t.FunctionDeclaration>>) {
-      path.node.__usesArgs__ = usesArguments(path);
-    },
-    exit(path: NodePath<Labeled<t.FunctionDeclaration>>): void {
+    exit(path: NodePath<Labeled<FunctionT>>): void {
       return func(path);
     }
   },

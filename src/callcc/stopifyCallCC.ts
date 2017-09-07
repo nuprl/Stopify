@@ -32,7 +32,8 @@ const reserved = [
   "$onStop",
   "$onDone",
   "$opts",
-  "$result"
+  "$result",
+  "target",
 ];
 
 function appCaptureCC(receiver: t.Expression) {

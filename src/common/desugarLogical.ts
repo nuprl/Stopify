@@ -14,6 +14,7 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {letExpression} from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
+import * as bh from '../babelHelpers';
 
 const containsCallVisitor = {
   FunctionExpression(path: NodePath<t.FunctionExpression>): void {
@@ -40,7 +41,7 @@ export const visitor: Visitor = {
     const test = path.node.test;
     path.get('test').replaceWith(t.booleanLiteral(true));
     path.get('body').replaceWith(t.blockStatement([
-      t.ifStatement(test, path.node.body, t.breakStatement())
+      bh.sIf(test, path.node.body, t.breakStatement())
     ]));
   },
 
@@ -51,10 +52,9 @@ export const visitor: Visitor = {
 
     const op = path.node.operator;
     const stmt = path.getStatementParent();
+    const lhs = fastFreshId.nameExprBefore(stmt, path.node.left);
     const r = fastFreshId.fresh(op === "&&" ? "and" : "or");
-    const lhs = fastFreshId.fresh("lhs");
 
-    stmt.insertBefore(letExpression(lhs, path.node.left));
     stmt.insertBefore(
       t.variableDeclaration("let", [t.variableDeclarator(r)]));
 
@@ -97,15 +97,11 @@ export const visitor: Visitor = {
     }
 
     const r = fastFreshId.fresh("cond");
-    const test = fastFreshId.fresh("test");
 
     const stmt = path.getStatementParent();
     stmt.insertBefore(
       t.variableDeclaration("let", [t.variableDeclarator(r)]));
-    stmt.insertBefore(
-      t.variableDeclaration(
-        "const",
-        [t.variableDeclarator(test, path.node.test)]));
+      const test = fastFreshId.nameExprBefore(stmt, path.node.test);
     stmt.insertBefore(
       t.ifStatement(
         test,

@@ -1,5 +1,6 @@
 import callcc from './callcc';
 import suspendStop from './suspendStop';
+import suspendStep from './suspendStep';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';

@@ -138,11 +138,11 @@ export function transformFromAst(
   plugins: any[],
   ast = false,
   code = false): babel.BabelFileResult {
-  const opts = {
+  const opts: babel.TransformOptions = {
     plugins: plugins,
     babelrc: false,
     code: false,
-    ast: false
+    ast: false,
   };
   return babel.transformFromAst(path.node, undefined, opts);
 }

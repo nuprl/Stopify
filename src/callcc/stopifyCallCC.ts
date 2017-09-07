@@ -1,4 +1,5 @@
 import callcc from './callcc';
+import suspendStop from './suspendStop';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
@@ -12,13 +13,6 @@ import * as fastFreshId from '../fastFreshId';
 import markFlatApplications from '../common/markFlatApplications'
 import { knowns } from '../common/cannotCapture'
 import * as exposeImplicitApps from '../exposeImplicitApps';
-
-const top = t.identifier("$top");
-const isStop = t.identifier("$isStop");
-const onStop = t.identifier("$onStop");
-const onDone = t.identifier("$onDone");
-const opts = t.identifier("$opts");
-const result = t.identifier("$result");
 
 const allowed = [
   "Object",
@@ -39,57 +33,6 @@ const reserved = [
   "SENTINAL",
   "finally_rv",
 ];
-
-
-function handleBlock(body: t.BlockStatement) {
-  body.body.unshift(t.expressionStatement(
-    t.callExpression(
-      t.memberExpression(t.identifier("$__R"), t.identifier("suspend")), [])));
-}
-
-type BlockBody = {
-  node: { body: t.BlockStatement }
-}
-
-function handleFunction(path: NodePath<t.Node> & BlockBody) {
-  if ((<any>path.node).mark === 'Flat') {
-    return;
-  }
-  handleBlock(path.node.body);
-}
-
-const insertSuspend: Visitor = {
-  FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
-    handleFunction(path);
-  },
-
-  FunctionExpression(path: NodePath<t.FunctionExpression>) {
-    handleFunction(path);
-  },
-
-  Loop(path: NodePath<t.Loop>) {
-    if (path.node.body.type === "BlockStatement") {
-      handleBlock(path.node.body);
-    }
-    else {
-      const body = t.blockStatement([path.node.body]);
-      path.node.body = body;
-      handleBlock(body);
-    }
-  },
-
-  Program(path: NodePath<t.Program>, { opts }) {
-    if(opts.compileFunction) {
-      if(path.node.body[0].type === 'FunctionDeclaration') {
-        (<any>path.node.body[0]).topFunction = true
-      }
-      else {
-        throw new Error(
-          `Compile function expected top-level functionDeclaration`)
-      }
-    }
-  }
-}
 
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -117,11 +60,9 @@ export const visitor: Visitor = {
       [markFlatFunctions]
     ]);
     h.transformFromAst(path, [markFlatApplications])
-    h.transformFromAst(path, [
-      [() => ({ visitor: insertSuspend }), {
+    h.transformFromAst(path, [[suspendStop, {
         compileFunction: state.opts.compileFunction
-      }]
-    ]);
+      }]]);
     h.transformFromAst(path,
       [[callcc, {
         useReturn: true,

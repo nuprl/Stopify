@@ -4,37 +4,19 @@
 // before it has been stopified and (2) a message directing execution to stop.
 'use strict';
 
-import { yieldStopifyPrint } from '../../src/yield/stopifyYield';
-import { cpsStopifyPrint } from '../../src/cps/stopifyCps';
-import { callCCStopifyPrint } from '../../src/callcc/stopifyCallCC';
-//import { shamStopify } from '../../src/stopifyImplementation/stopifySham';
-//import { regeneratorStopify } from '../../src/stopifyImplementation/stopifyRegenerator';
-import { stopifyFunction, stopifyPrint } from '../../src/interfaces/stopifyInterface';
 let stopped = false;
 let running: string;
 
-const transforms : { [transform: string]: stopifyPrint }= {
-  'yield': yieldStopifyPrint,
-  'cps': cpsStopifyPrint,
-  'callcc': callCCStopifyPrint,
-}
-
-function transform(f: stopifyPrint, code: string): string {
-  return f(code, { debug: false, optimize: false, tail_calls: false, no_eval: false });
-}
-
 window.addEventListener('message', evt => {
   if (evt.data.code) {
-    running = transform(transforms[evt.data.transform], evt.data.code);
+    running = evt.data.code;
     console.log("Compilation successful. Hit 'Run' to execute program." )
-  }
-  else if (evt.data === 'run') {
+  } else if (evt.data === 'run') {
     stopped = false;
     eval(`(${running}).call(this, _ => stopped, () => console.log('Stopped'), () => {
         console.log("Done");
       }, 1)`);
-  }
-  else if (evt.data === 'stop') {
+  } else if (evt.data === 'stop') {
     stopped = true;
   }
 });

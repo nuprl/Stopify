@@ -6,6 +6,8 @@ import * as commander from 'commander';
 import { parseArg } from './generic';
 import * as webpack from 'webpack';
 import * as tmp from 'tmp';
+import { RawSourceMap } from 'source-map';
+import {generateLineMapping} from './common/helpers';
 
 const stderr = process.stderr;
 
@@ -110,7 +112,8 @@ else {
     ast: false,
     code: true,
     minified: true,
-    comments: false
+    comments: false,
+    sourceMap: generateLineMapping(<RawSourceMap>map),
   };
 
   if (args.transform === 'original') {

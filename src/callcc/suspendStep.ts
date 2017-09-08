@@ -1,6 +1,11 @@
 import { NodePath, Visitor } from 'babel-traverse';
+import { SourceMapConsumer } from 'source-map';
 import * as t from 'babel-types';
-import {letExpression} from '../common/helpers';
+import {letExpression, LineMapping} from '../common/helpers';
+
+interface Options {
+  sourceMap: LineMapping;
+}
 
 const top = t.identifier("$top");
 const isStop = t.identifier("$isStop");
@@ -14,12 +19,8 @@ function appCaptureCC(receiver: t.Expression) {
     t.identifier('captureCC')), [receiver]);
 }
 
-type BlockBody = {
-  node: { body: t.BlockStatement }
-}
-
 const insertSuspend: Visitor = {
-  BlockStatement(path: NodePath<t.BlockStatement>): void {
+  BlockStatement(path: NodePath<t.BlockStatement>, s: { opts: Options }): void {
     const { body } = path.node;
     let j = 0;
     if (body.length === 0) {

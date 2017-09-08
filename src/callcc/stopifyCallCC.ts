@@ -62,8 +62,9 @@ export const visitor: Visitor = {
     ]);
     h.transformFromAst(path, [markFlatApplications])
     h.transformFromAst(path, [[suspendStop, {
-        compileFunction: state.opts.compileFunction
-      }]]);
+      compileFunction: state.opts.compileFunction,
+      sourceMap: state.opts.sourceMap,
+    }]]);
     h.transformFromAst(path,
       [[callcc, {
         useReturn: true,

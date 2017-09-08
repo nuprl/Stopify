@@ -1,4 +1,4 @@
-Grammar = {
+const Grammar = {
   constructAllParses: function() {
     for (;;) {
       const thiz = this;

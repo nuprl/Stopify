@@ -1,6 +1,9 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 import { NodePath, Visitor } from 'babel-traverse';
+import * as b from '../interfaces/steppifyInterface';
+import { SourceMapConsumer, RawSourceMap } from 'source-map';
+import * as smc from 'convert-source-map';
 
 export type FunctionNode =
   t.FunctionDeclaration | t.FunctionExpression | t.ObjectMethod;
@@ -76,6 +79,10 @@ export function containsCall<T>(path: NodePath<T>) {
   return o.containsCall;
 }
 
+export class LineMapping {
+  constructor(public getLine: (line: number, column: number) => number | null) {}
+}
+
 // Object to wrap the state of the stop, onStop, isStop functions
 class StopWrapper {
   private hasStopped: boolean;
@@ -147,6 +154,38 @@ export function transformFromAst(
   return babel.transformFromAst(path.node, undefined, opts);
 }
 
+/**
+ * Returns a custom line mapper which maps `node_modules` sources to `null`.
+ */
+function generateLineMapping(map: RawSourceMap | undefined): LineMapping {
+  if (map) {
+    console.log('// Mapping found');
+    const sourceMap = new SourceMapConsumer(map);
+    return new LineMapping((line: number, column: number) => {
+      const mapping = sourceMap.originalPositionFor({ line, column });
+      if (mapping.source === null ||
+        mapping.source.includes('node_modules') || mapping.line === null) {
+        return null;
+      } else {
+        return mapping.line;
+      }
+    });
+  } else {
+    console.log('// No mapping found, using one-to-one map');
+    return new LineMapping((line: number, column: number) => line);
+  }
+}
+
+function parseMapping(code: string) {
+  const mapConverter = smc.fromSource(code);
+  // No match
+  if (mapConverter === null) {
+    return generateLineMapping(undefined);
+  } else {
+    return generateLineMapping(mapConverter.toObject());
+  }
+}
+
 export {
   transformed,
   breakLbl,
@@ -155,6 +194,7 @@ export {
   newTag,
   letExpression,
   flatBodyStatement,
+  generateLineMapping,
   StopWrapper,
 };
 

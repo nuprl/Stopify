@@ -50,7 +50,7 @@ editor.getSession().setMode(langs[defaultLang].aceMode);
 editor.setValue(langs[defaultLang].defaultCode);
 
 let iframe: any = null;
-function loadJavaScript(jsCode: string, transform: string) {
+function loadJavaScript(jsCode: string) {
   if (iframe !== null) {
     iframe.parentNode.removeChild(iframe);
   }
@@ -63,24 +63,24 @@ function loadJavaScript(jsCode: string, transform: string) {
   iframe.style.border = 'none';
   (<Node>container).appendChild(iframe);
   iframe.onload = () => {
-    iframe.contentWindow.postMessage({ code: jsCode, transform: transform }, '*');
+    iframe.contentWindow.postMessage({ code: jsCode }, '*');
   }
 }
 
-function run(transform: string) {
+function compileRequest() {
   const languageSelect = <any>document.getElementById("language-selection");
   const val = languageSelect.value;
   const xhr = new XMLHttpRequest();
   xhr.open('POST', langs[val].compileUrl);
   xhr.send(editor.getValue());
   xhr.addEventListener('load', () => {
-    loadJavaScript(xhr.responseText, transform);
+    loadJavaScript(xhr.responseText);
   });
 }
 
-function setupRun(name: string) {
-  (<Node>document.getElementById("run-" + name)).addEventListener('click', () => {
-    run(name);
+function setupCompile() {
+  document.getElementById("compile")!.addEventListener('click', () => {
+    compileRequest();
   });
 }
 
@@ -94,9 +94,7 @@ function selectLanguage() {
   });
 }
 
-setupRun('yield');
-setupRun('cps');
-setupRun('callcc');
+setupCompile();
 selectLanguage();
 
 function setupButton(buttonId: string, eventName: string) {
@@ -110,4 +108,4 @@ function setupButton(buttonId: string, eventName: string) {
 }
 
 setupButton('stop', 'stop')
-setupButton('code-run', 'run')
+setupButton('run', 'run')

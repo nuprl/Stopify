@@ -2,7 +2,7 @@ import * as t from 'babel-types';
 import { NodePath } from 'babel-traverse';
 import * as h from '../common/helpers';
 import * as path from 'path';
-import { OptionsAST, IsEval } from "./helpers";
+import { IsEval } from "./helpers";
 
 let addRuntime = false
 
@@ -17,17 +17,7 @@ function skip<T>(t: T): Skip<T> {
 }
 
 const prog = {
-  enter(path: NodePath<OptionsAST<t.Program>>) {
-    if(path.node.options) {
-    }
-    if(path.node.options && path.node.options.no_eval) {
-      path.skip()
-    }
-  },
-  exit(path: NodePath<OptionsAST<IsEval<t.Program>>>) {
-    if(path.node.options && path.node.options.no_eval) {
-      path.skip()
-    }
+  exit(path: NodePath<IsEval<t.Program>>) {
     path.node.isEval = addRuntime
   }
 }

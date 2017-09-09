@@ -1,5 +1,4 @@
 import callcc from './callcc';
-import { stopifyFunction, stopifyPrint } from '../interfaces/stopifyInterface';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';

@@ -1,9 +1,6 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 import { NodePath, Visitor } from 'babel-traverse';
-import * as b from '../interfaces/steppifyInterface';
-import { SourceMapConsumer } from 'source-map';
-import * as smc from 'convert-source-map';
 
 export type FunctionNode =
   t.FunctionDeclaration | t.FunctionExpression | t.ObjectMethod;
@@ -35,9 +32,6 @@ export type Break<T> = T & {
 }
 export type While<T> = T & {
   continue_label?: t.Identifier;
-}
-export type LineMappingMark<T> = T & {
-  lineMapping?: b.LineMapping
 }
 // Mark a node as transformed. Used by the transformMarked transform.
 export type Transformed<T> = T & {
@@ -107,25 +101,6 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   return t.blockStatement(newBody);
 }
 
-export class Options {
-  // Print debugging information to stderr
-  debug: boolean;
-
-  // Add optimization data to the AST.
-  optimize: boolean;
-
-  // Add tail calls.
-  tail_calls: boolean;
-
-  // Do not handle `eval` and `new Function`
-  no_eval: boolean;
-
-}
-
-export type OptionsAST<T> = T & {
-  options: Options
-}
-
 interface TransformResult {
   code: string,
   ast: t.Node,
@@ -149,78 +124,6 @@ export function transformFromAst(
   return babel.transformFromAst(path.node, undefined, opts);
 }
 
-function transform(src: string, plugs: any[][],
-                   opts: Options): TransformResult {
-  let { code, ast } = babel.transform(src,
-    { babelrc: false, sourceMaps: 'inline' });
-  if (ast === undefined) {
-    throw new Error('AST was undefined')
-  } else {
-    (<any>ast).program.options = opts
-    plugs.forEach(trs => {
-      const res = babel.transformFromAst(<OptionsAST<t.Node>>ast, code, {
-        plugins: [...trs],
-        babelrc: false,
-      });
-      code = res.code;
-      ast = res.ast;
-      (<any>ast).program.options = opts
-    });
-
-    if (code !== undefined && ast !== undefined) {
-      return {
-        code: code,
-        ast: ast,
-        usesEval: (<IsEval<t.Program>>(<t.File>ast).program).isEval
-      };
-    } else {
-      throw new Error('Transform returned an empty string')
-    }
-  }
-}
-
-function parseMapping(code: string) {
-  const mapConverter = smc.fromSource(code);
-  // No match
-  if (mapConverter === null) {
-    console.log('// No mapping found, using one-to-one map')
-    return new b.LineMapping((line: number, column: number) => line);
-  } else {
-    console.log('// Mapping found')
-    const map = new SourceMapConsumer(mapConverter.toObject())
-    return new b.LineMapping((line: number, column: number) => {
-      const mapping = map.originalPositionFor({ line, column });
-      if (mapping.source === null ||
-        mapping.source.includes('node_modules') || mapping.line === null) {
-        return null;
-      } else {
-        return mapping.line
-      }
-    })
-  }
-}
-
-function transformWithLines(
-  src: string, plugs: any[][], breakPoints: number[]): string {
-    let { code, ast } = babel.transform(src,
-      { babelrc: false, sourceMaps:
-        'inline' });
-
-    let map = parseMapping(src);
-    (<any>ast).program.lineMapping = map;
-
-    plugs.forEach(trs => {
-      const res = babel.transformFromAst(<t.Node>ast, code, {
-        plugins: [...trs],
-        babelrc: false,
-      });
-      code = res.code;
-      ast = res.ast;
-    });
-
-    return code === undefined ? "" : code;
-  }
-
 export {
   transformed,
   breakLbl,
@@ -229,8 +132,6 @@ export {
   newTag,
   letExpression,
   flatBodyStatement,
-  transform,
-  transformWithLines,
   StopWrapper,
 };
 

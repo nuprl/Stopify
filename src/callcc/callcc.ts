@@ -54,7 +54,7 @@ const visitor: Visitor = {
     h.transformFromAst(path, [anf]);
     h.transformFromAst(path, [declVars]);
 
-    h.transformFromAst(path, [label]);
+    h.transformFromAst(path, [label.plugin]);
     h.transformFromAst(path, [[jumper, {
       captureMethod: captureMethod,
       handleNew: state.opts.handleNew,

@@ -8,7 +8,7 @@ import * as t from 'babel-types';
 import * as assert from 'assert';
 const trie = require('trie'); // NOTE(arjun): No @types on 08/28/2017
 
-let isInitialized = false;
+export let isInitialized = false;
 
 // We populate this trie will all the identifiers in the program.
 const prefixes = new trie.Trie();

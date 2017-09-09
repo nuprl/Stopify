@@ -10,9 +10,9 @@
  * to the nearest statement. In this case, the statement will be
  * outside the body of the for loop, effectively hoisting them outside
  * the function body. To fix this, the body of all loops should a statement.
- * 
+ *
  * Postconditions:
- *  
+ *
  *   1. The program only has while loops.
  */
 
@@ -23,6 +23,11 @@ import * as fastFreshId from '../fastFreshId';
 
 // Object containing the visitor functions
 const loopVisitor : Visitor = {
+  Program(path: NodePath<t.ForInStatement>): void {
+    if(fastFreshId.isInitialized === false) {
+      fastFreshId.init(path)
+    }
+  },
   ForInStatement: function (path: NodePath<t.ForInStatement>): void {
     const { left, right, body } = path.node;
     const it_obj = fastFreshId.fresh('it_obj');

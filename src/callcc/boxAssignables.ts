@@ -12,6 +12,7 @@ import { NodePath, Visitor } from 'babel-traverse';
 import * as freeIds from '../common/freeIds';
 import * as fastFreshId from '../fastFreshId';
 import * as bh from '../babelHelpers';
+import { Set } from 'immutable';
 
 function box(e: t.Expression): t.ObjectExpression {
   return t.objectExpression([t.objectProperty(t.identifier('box'),
@@ -27,36 +28,26 @@ function getParentPath(path: NodePath<t.Node>) {
   const parents = [ "FunctionDeclaration", "FunctionExpression", "Program" ];
   return path.findParent(p => parents.includes(p.node.type));
 }
+type Parent = t.Program | t.FunctionDeclaration | t.FunctionExpression;
 
-function liftStatement(path: NodePath<t.Node>, stmt: t.Statement, 
-  traverse: boolean) {
-  const parentPath = getParentPath(path);
+function liftStatement(parentPath: NodePath<Parent>, path: NodePath<t.Node>,
+  stmt: t.Statement) {
   const type_ = parentPath.node.type;
   if (type_ === 'Program') {
-    if (traverse) {
-      parentPath.get('body.0').insertBefore(stmt);
-    }
-    else {
-      (<t.Program>parentPath.node).body.unshift(stmt);
-    }
+    (<t.Program>parentPath.node).body.unshift(stmt);
   }
   else if (type_ === 'FunctionDeclaration' || type_ === 'FunctionExpression') {
-    if (traverse) {
-      parentPath.get('body.body.0').insertBefore(stmt);
-    }
-    else {
-      (<t.FunctionDeclaration | t.FunctionExpression>parentPath.node).body
-        .body.unshift(stmt);
-    }
+    (<t.FunctionDeclaration | t.FunctionExpression>parentPath.node).body
+      .body.unshift(stmt);
   }
   else {
-    throw new assert.AssertionError({ 
+    throw new assert.AssertionError({
       message: `liftStatement got ${type_} as parent` 
     });
   }
 }
 
-function boxVars(path: NodePath<t.Node>, vars: string[]) {
+function boxVars(parentPath: NodePath<Parent>, vars: Set<string>) {
   const visitor = {
     ReferencedIdentifier(path: NodePath<t.Identifier>) {
       path.skip();
@@ -82,10 +73,9 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
         });
       }
       if (vars.includes(decl.id.name)) {
-        liftStatement(path,
-          t.variableDeclaration('var', 
-            [t.variableDeclarator(decl.id, box(bh.eUndefined))]),
-          false);
+        liftStatement(parentPath, path,
+          t.variableDeclaration('var',
+            [t.variableDeclarator(decl.id, box(bh.eUndefined))]));
         if (decl.init === null) {
           path.remove();
         }
@@ -109,27 +99,25 @@ function boxVars(path: NodePath<t.Node>, vars: string[]) {
       initFunction(vars, path);
     },
     FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
+      path.skip();
+      initFunction(vars, path);
       if (vars.includes(path.node.id.name)) {
         const fun = t.functionExpression(
           fastFreshId.fresh('fun'),
           path.node.params,
           path.node.body);
 
-        // Little hack necessary to preseve annotation left by freeIds.ts
+        // Little hack necessary to preserve annotation left by freeIds.ts
         (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
         const stmt = t.variableDeclaration("var",
-          [t.variableDeclarator(path.node.id, fun)]);
-        liftStatement(path, stmt, true);
+          [t.variableDeclarator(path.node.id, box(fun))]);
+        liftStatement(parentPath, path, stmt);
         path.remove();
-      }
-      else {
-        path.skip();
-        initFunction(vars, path);
       }
     }
   }
 
-  path.traverse(visitor);
+  parentPath.traverse(visitor);
 }
 
 /**
@@ -148,15 +136,17 @@ function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
 
 
 function initFunction(
-  enclosingVars: string[],
+  enclosingVars: Set<string>,
   path: NodePath<t.FunctionDeclaration | t.FunctionExpression>) {
-  // Mutable variables from this scope that are not shadowed
-  const vars0 = enclosingVars.filter(x => !path.scope.hasOwnBinding(x));
-  // Mutable variables from the inner scope
-  const vars1 = Object.keys(path.scope.bindings)
-    .filter(x => shouldBox(x, path));
 
-  boxVars(path, [...vars0, ...vars1]);
+
+  const locals = Set.of(...Object.keys(path.scope.bindings));
+  // Mutable variables from this scope that are not shadowed
+  const vars0 = enclosingVars.subtract(locals);
+  // Mutable variables from the inner scope
+  const vars1 = locals.filter(x => shouldBox(x!, path)).toSet();
+
+  boxVars(path, vars0.union(vars1));
 
 
   // Box arguments if necessary. We do this after visiting the function
@@ -180,7 +170,7 @@ const visitor: Visitor = {
     const binds = path.scope.bindings;
     const vars = Object.keys(path.scope.bindings)
       .filter(x => shouldBox(x, path));
-    boxVars(path, vars);
+    boxVars(path, Set.of(...vars));
   }
 }
 

@@ -16,8 +16,9 @@ app.use(express.static(path.join(__dirname, '../html')));
 function compileAndSend(compiler: CompilerSupport, url: string): void {
   tmp.dir((_: any, tmpDir: string) => {
     app.post(url, bodyParser.text(), (req: any, res: any) => {
-      compiler.compile(tmpDir, req.body, jsCode => {
-        res.send(jsCode);
+      compiler.compile(tmpDir, req.body, html => {
+        app.use(express.static(html));
+        res.send(html);
       });
     });
   });

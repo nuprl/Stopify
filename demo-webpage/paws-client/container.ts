@@ -50,20 +50,20 @@ editor.getSession().setMode(langs[defaultLang].aceMode);
 editor.setValue(langs[defaultLang].defaultCode);
 
 let iframe: any = null;
-function loadJavaScript(jsCode: string) {
+function loadJavaScript(html: string) {
   if (iframe !== null) {
     iframe.parentNode.removeChild(iframe);
   }
 
   const container = document.getElementById('iframeContainer');
   iframe = document.createElement('iframe');
-  iframe.src = "runner.html";
-  iframe.width = "100%";
-  iframe.height = "100%";
+  iframe.src = 'runner.html';
+  iframe.width = '100%';
+  iframe.height = '100%';
   iframe.style.border = 'none';
   (<Node>container).appendChild(iframe);
   iframe.onload = () => {
-    iframe.contentWindow.postMessage({ code: jsCode }, '*');
+    iframe.contentWindow.postMessage({ code: html }, '*');
   }
 }
 

@@ -473,11 +473,19 @@ const jumper = {
       }
 
       if (path.node.appType !== undefined &&
-          path.node.appType >= AppType.Tail) {
-        captureLogics[s.opts.captureMethod](
-          <any>path.get('expression'),
-          s.opts.handleNew);
-        return;
+        path.node.appType >= AppType.Tail) {
+
+        // Skip if the right hand-side is a flat call
+        if (path.node.expression.type === 'AssignmentExpression' &&
+          (<any>path.node.expression.right).mark === 'Flat') {
+          // Do Nothing
+        }
+        else {
+          captureLogics[s.opts.captureMethod](
+            <any>path.get('expression'),
+            s.opts.handleNew);
+          return;
+        }
       }
 
       path.replaceWith(t.ifStatement(isNormalMode, path.node));

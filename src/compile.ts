@@ -44,7 +44,8 @@ const opts = {
   }]],
   babelrc: false,
   ast: false,
-  code: true
+  code: true,
+  compact: true
 };
 babel.transformFile(srcPath, opts, (err, result) => {
   if (err !== null) {

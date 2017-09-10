@@ -31,6 +31,7 @@ import * as minimist from 'minimist';
 import * as os from 'os';
 import * as which from 'which';
 import * as g from './generic';
+import * as process from 'process';
 
 const nodeBin = which.sync("node");
 
@@ -198,14 +199,14 @@ function run() {
     if (variance) {
       args.push("--variance");
     }
-    
+
     args.push(src);
-    
+
     let proc = spawnSync(cmd, args,
       { stdio: [ 'none', 'inherit', 'pipe' ], timeout: 5 * 60 * 1000 });
-    
+
     const stdoutStr = String(proc.stdout);
-    
+
     if (proc.status !== 0) {
       console.log(`Error running ${args} ${stdoutStr}`);
       return;
@@ -225,14 +226,32 @@ function compile() {
   const language = path.basename(path.dirname(path.dirname(src)));
   const transform = opts.transform;
   const newMethod = opts.new;
+  const compileFd = fs.openSync(`${wd}/compile.csv`, 'w')
+  const codeSizeFd = fs.openSync(`${wd}/code-size.csv`, 'w')
 
   const dstJs = `${wd}/${transform}-${newMethod}-${language}-${base}.js`;
   const dstHtml = `${wd}/${transform}-${newMethod}-${language}-${base}.html`;
 
+  const olen = fs.readFileSync(src).toString().length
+
+  const stime = process.hrtime()
   creates(dstJs, () =>
     exec(`./bin/compile --transform ${transform} --new ${newMethod} ${src} ${dstJs}`));
+  const time = process.hrtime(stime)
+  const ctime = (time[0] + 1e-9 * time[1]).toString().slice(0, 4)
+  const flen = fs.readFileSync(dstJs).toString().length
+  const blowup = (flen * 1.0)/(olen * 1.0)
+
+  fs.appendFileSync(<any>compileFd,
+    `${transform},${newMethod},${language},${base},${ctime}\n`)
+  fs.appendFileSync(<any>codeSizeFd,
+    `${transform},${newMethod},${language},${base},${blowup}\n`)
+
   creates(dstHtml, () =>
     exec(`./bin/webpack ${dstJs} ${dstHtml}`));
+
+  fs.closeSync(compileFd)
+  fs.closeSync(codeSizeFd)
 }
 
 function csv() {
@@ -245,10 +264,10 @@ function csv() {
     'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,RunningTime,NumYields,AvgLatency,VarLatency\n');
   fs.appendFileSync(<any>varianceFd,
     'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,Index,Variance\n');
-  
+
   for (const outFile of outFiles) {
     let lines = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').split('\n');
-    lines = g.dropWhile(line => line !== "BEGIN STOPIFY BENCHMARK RESULTS", 
+    lines = g.dropWhile(line => line !== "BEGIN STOPIFY BENCHMARK RESULTS",
                         lines);
     if (lines.length < 3) {
       console.log(`Error reading ${outFile}`);
@@ -256,8 +275,8 @@ function csv() {
     }
     const factors = lines[lines.length - 2];
     const timing = lines[lines.length - 3];
-    let variance = 
-      g.takeWhile(line => line !== "END VARIANCE", 
+    let variance =
+      g.takeWhile(line => line !== "END VARIANCE",
         g.dropWhile(line => line !== "BEGIN VARIANCE", lines));
     if (variance.length > 0) {
       variance = variance.slice(1); // Drop the BEGIN VARIANCE
@@ -265,7 +284,7 @@ function csv() {
     fs.appendFileSync(<any>timingFd, `${factors},${timing}\n`);
     for (const v of variance) {
       fs.appendFileSync(<any>varianceFd, `${factors},${v}\n`);
-    }   
+    }
   }
 
   fs.closeSync(timingFd);

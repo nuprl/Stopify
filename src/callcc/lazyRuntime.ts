@@ -1,6 +1,7 @@
 import * as common from './runtime';
 export * from './runtime';
 import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
+import * as assert from 'assert';
 
 export class LazyRuntime extends common.Runtime {
   constructor(yieldInterval: number, estimator: ElapsedTimeEstimator) {
@@ -24,6 +25,7 @@ export class LazyRuntime extends common.Runtime {
   runtime(body: () => any): any {
     try {
       body();
+      assert(this.mode, 'executing completed in restore mode');
     }
     catch (exn) {
       if (exn instanceof common.Capture) {

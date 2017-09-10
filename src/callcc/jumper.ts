@@ -2,14 +2,15 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';
-import { cannotCapture } from '../common/cannotCapture';
 import { letExpression } from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
 import * as generic from '../generic';
+import { getLabels, AppType } from './label';
 
 type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
 type Labeled<T> = T & {
   labels?: number[];
+  appType?: AppType;
   __usesArgs__?: boolean
 }
 type CaptureFun = (path: NodePath<t.AssignmentExpression>, handleNew: NewMethod) => void;
@@ -38,12 +39,6 @@ function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
   };
 }
 
-function getLabels(node: Labeled<t.Node>): number[] {
-  if (node === null) {
-    return [];
-  }
-  return node.labels === undefined ?  [] : node.labels;
-}
 
 const target = t.identifier('target');
 const runtime = t.identifier('$__R');
@@ -437,18 +432,6 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: N
   stmtParent.skip();
 }
 
-function mayCapture(node: t.Expression | null): boolean {
-  if (node === null) {
-    return false;
-  }
-  if (node.type === 'AssignmentExpression') {
-    return mayCapture(node.right);
-  }
-
-  return ((t.isCallExpression(node) || t.isNewExpression(node)) &&
-          !cannotCapture(node));
-}
-
 function isNormalGuarded(stmt: t.Statement): stmt is t.IfStatement {
   return (t.isIfStatement(stmt) &&
     stmt.test === isNormalMode &&
@@ -489,8 +472,8 @@ const jumper = {
         return;
       }
 
-      if (mayCapture(path.node.expression) &&
-          path.node.expression.type === 'AssignmentExpression') {
+      if (path.node.appType !== undefined &&
+          path.node.appType >= AppType.Tail) {
         captureLogics[s.opts.captureMethod](
           <any>path.get('expression'),
           s.opts.handleNew);
@@ -548,25 +531,18 @@ const jumper = {
 
   ReturnStatement: {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
-      if (!mayCapture(path.node.argument)) {
+      if (path.node.appType !== AppType.Mixed) {
         return;
       }
-
-      const funParent = path.findParent(p => p.isFunction());
-
-      if (t.isFunction(funParent)) {
-        // Labels may occur if this return statement occurs in a try block.
-        const labels = getLabels(path.node);
-        const ifReturn = t.ifStatement(
-          isNormalMode, 
-          path.node,
-          bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
-                 t.returnStatement(stackFrameCall)));
-        path.replaceWith(ifReturn);
-        path.skip();
-      } else {
-        throw new Error(`Unexpected 'return' parent of type ${typeof funParent}`);
-      }
+      // Labels may occur if this return statement occurs in a try block.
+      const labels = getLabels(path.node);
+      const ifReturn = t.ifStatement(
+        isNormalMode,
+        path.node,
+        bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
+                t.returnStatement(stackFrameCall)));
+      path.replaceWith(ifReturn);
+      path.skip();
     }
   },
 

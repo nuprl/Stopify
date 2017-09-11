@@ -9,6 +9,7 @@ export class LazyRuntime extends common.Runtime {
   }
 
   captureCC(f: (k: any) => any): void {
+    this.capturing = true;
     throw new common.Capture(f, []);
   }
 
@@ -29,6 +30,7 @@ export class LazyRuntime extends common.Runtime {
     }
     catch (exn) {
       if (exn instanceof common.Capture) {
+        this.capturing = false;
         // Recursive call to runtime addresses nested continuations. The return
         // statement ensures that the invocation is in tail position.
         // At this point, exn.stack is the continuation of callCC, but doesn’t have

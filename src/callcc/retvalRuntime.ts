@@ -7,6 +7,7 @@ class RetValRuntime extends common.Runtime {
   }
 
   captureCC(f: (k: any) => any): common.Capture {
+    this.capturing = true;
     return new common.Capture(f, []);
   }
 
@@ -23,6 +24,7 @@ class RetValRuntime extends common.Runtime {
     if (body instanceof Function) {
       let res = body();
       if (res instanceof common.Capture) {
+        this.capturing = false;
         // Recursive call to runtime addresses nested continuations. The return
         // statement ensures that the invocation is in tail position.
         // At this point, res.stack is the continuation of callCC, but doesn’t have

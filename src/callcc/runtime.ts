@@ -55,7 +55,8 @@ export abstract class Runtime {
 
   constructor(
     public yieldInterval: number,
-    public estimator: ElapsedTimeEstimator
+    public estimator: ElapsedTimeEstimator,
+    public capturing: boolean = false
     ) {
     this.stack = [];
     this.mode = true;

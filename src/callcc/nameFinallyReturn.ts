@@ -23,7 +23,7 @@ const visitor: Visitor = {
       if (path.node.finalizer) {
         const funParent = path.getFunctionParent();
         const bodyPath = <NodePath<t.BlockStatement>>funParent.get('body');
-        const sentinalDecl = letExpression(finallySentinal, sentinal);
+        const sentinalDecl = letExpression(finallySentinal, sentinal, 'var');
         (<any>sentinalDecl).lifted = true;
         bodyPath.node.body.unshift(sentinalDecl);
         path.node.finalizer.body.push(bh.sIf(t.binaryExpression('!==',

@@ -10,6 +10,7 @@ export class EagerRuntime extends common.Runtime {
   }
 
   captureCC(f: (k: any) => any) {
+    this.capturing = true;
     throw new common.Capture(f, [...this.eagerStack]);
   }
 
@@ -30,6 +31,7 @@ export class EagerRuntime extends common.Runtime {
     }
     catch (exn) {
       if (exn instanceof common.Capture) {
+        this.capturing = false;
         // Recursive call to runtime addresses nested continuations. The return
         // statement ensures that the invocation is in tail position.
         // At this point, exn.stack is the continuation of callCC, but doesn’t have

@@ -134,11 +134,16 @@ const markLetBoundFuncExpr: VisitNode<FlatnessMark<t.FunctionExpression>> = {
 
 const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> = {
   enter(path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>) {
+    let paramsBind : any =
+      path.node.params.map(p => [(<t.Identifier>p).name, 'NotFlat'])
     if (path.node.id) {
       globalEnv.addBinding(path.node.id.name, path.node.mark);
-      globalEnv.pushScope(new Scope([[path.node.id.name, path.node.mark]]))
+      // The function name is bound to its own mark and all the params are
+      // marked as not flat.
+      let binds = [ [path.node.id.name, path.node.mark], ...paramsBind ]
+      globalEnv.pushScope(new Scope(binds))
     } else {
-      globalEnv.pushScope(new Scope([]));
+      globalEnv.pushScope(new Scope(paramsBind));
     }
   },
 

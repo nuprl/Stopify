@@ -34,6 +34,8 @@ const reserved = [
   "$opts",
   "$result",
   "target",
+  "SENTINAL",
+  "finally_rv",
 ];
 
 function appCaptureCC(receiver: t.Expression) {

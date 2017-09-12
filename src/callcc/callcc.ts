@@ -19,6 +19,7 @@ import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
+import nameFinallyReturn from './nameFinallyReturn';
 import hygiene from '../common/hygiene';
 import * as freeIds from '../common/freeIds';
 import cleanup from './cleanup';
@@ -52,12 +53,18 @@ const visitor: Visitor = {
     h.transformFromAst(path, [boxAssignables]);
     h.transformFromAst(path, [anf]);
     h.transformFromAst(path, [declVars]);
+    h.transformFromAst(path, [nameFinallyReturn]);
 
     h.transformFromAst(path, [label.plugin]);
     h.transformFromAst(path, [[jumper, {
       captureMethod: captureMethod,
       handleNew: state.opts.handleNew,
     }]]);
+    path.node.body.unshift(
+      h.letExpression(
+        t.identifier("SENTINAL"),
+        t.objectExpression([]),
+        "const"));
     path.node.body.unshift(
       h.letExpression(
         t.identifier("suspendCC"),

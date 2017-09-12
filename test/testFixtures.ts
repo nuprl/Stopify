@@ -10,8 +10,8 @@ export const unitTests = glob.sync('test/should-run/*.js', {})
 export const intTests = glob.sync('test/should-run/source-language/*.js', {})
 export const stopTests = glob.sync('test/should-stop/*.js', {})
 
-export function callCCTest(srcPath: string, transform: string) {
-  const testName = `${srcPath} (${transform})`;
+export function callCCTest(srcPath: string, transform: string, opts: string = "") {
+  const testName = `${srcPath} ${opts} (${transform})`;
 
   // Skip tests we know we can't handle
   if (path.basename(srcPath).indexOf("eval") === 0) {
@@ -21,8 +21,10 @@ export function callCCTest(srcPath: string, transform: string) {
 
   it(testName, () => {
     const basename = path.basename(srcPath, '.js')
-    const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
-    execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
+    const { name: dstPath } =
+      tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
+    execSync(
+      `./bin/compile --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
     try {
       execSync(`./bin/run ${dstPath} --yield 1`, { timeout: 30000 });
     }

@@ -70,7 +70,7 @@ class Env {
   }
 }
 
-const globalEnv = new Env();
+let globalEnv = new Env();
 
 function nodeToString(node: t.Expression | t.LVal): string | null {
   switch(node.type) {
@@ -91,8 +91,8 @@ const markCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
     if (name) {
       const tag: FlatTag = globalEnv.findBinding(name)
       if (debug > 0) {
-        process.stderr.write(`${name} -> ${tag} on line ${path.node.loc ?
-            path.node.loc.start.line : ""}\n`)
+        console.error(`${name} -> ${tag} on line ${path.node.loc ?
+            path.node.loc.start.line : ""}`)
       }
       node.mark = tag
     }
@@ -112,8 +112,8 @@ const programMarkCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
       if (name) {
         const tag: FlatTag = globalEnv.findBinding(name)
         if (debug > 0) {
-          process.stderr.write(`${name} -> ${tag} on line ${path.node.loc ?
-              path.node.loc.start.line : ""}\n`)
+          console.error(`${name} -> ${tag} on line ${path.node.loc ?
+              path.node.loc.start.line : ""}`)
         }
         node.mark = tag
       }
@@ -149,9 +149,9 @@ const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> 
 
   exit(path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>) {
     if(debug > 1) {
-      process.stderr.write(`\n-------${path.node.id.name}----------\n`)
-      process.stderr.write(globalEnv.toString())
-      process.stderr.write(`\n-------------------------\n`)
+      console.error(`\n-------${path.node.id.name}----------`)
+      console.error(globalEnv.toString())
+      console.error(`\n-------------------------`)
     }
     path.traverse(markingVisitor)
     globalEnv.popScope();
@@ -167,19 +167,22 @@ const assign = {
     if (name) {
       const tag = globalEnv.addBinding(name, 'NotFlat')
       if (debug > 0) {
-        process.stderr.write(`${name} -> NotFlat on line ${path.node.loc ?
-            path.node.loc.start.line : ""} because of assignment\n`)
+        console.error(`${name} -> NotFlat on line ${path.node.loc ?
+            path.node.loc.start.line : ""} because of assignment`)
       }
     }
   }
 }
 
 const program: VisitNode<t.Program> = {
+  enter(path) {
+    globalEnv = new Env()
+  },
   exit(path) {
     if (debug > 1) {
-      process.stderr.write(`\n-------program----------\n`)
-      process.stderr.write(globalEnv.toString())
-      process.stderr.write(`\n-------------------------\n`)
+      console.error(`\n-------program----------`)
+      console.error(globalEnv.toString())
+      console.error(`\n-------------------------`)
     }
     path.traverse(programMarkingVisitor);
   }

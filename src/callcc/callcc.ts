@@ -38,7 +38,6 @@ const visitor: Visitor = {
        ? (e: t.Expression) => t.returnStatement(e)
        : (e: t.Expression) => t.expressionStatement(e));
 
-    fastFreshId.init(path);
     if (state.opts.handleNew === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
     }

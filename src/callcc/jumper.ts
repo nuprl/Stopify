@@ -130,7 +130,7 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
     bh.eFalse);
 }
 
-function reapplyExpr(path: NodePath<Labeled<FunctionT>>, handleNew: NewMethod): t.Expression {
+function reapplyExpr(path: NodePath<Labeled<FunctionT>>, handleNew: NewMethod): t.Expression | t.BlockStatement {
   const funId = path.node.id;
   let reapply: t.Expression;
   if (path.node.__usesArgs__) {
@@ -141,10 +141,17 @@ function reapplyExpr(path: NodePath<Labeled<FunctionT>>, handleNew: NewMethod): 
     reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
         [t.thisExpression(), ...<any>path.node.params]);
   }
+  const newObj = fastFreshId.fresh('new');
   return handleNew === 'direct' ?
-    t.conditionalExpression(t.memberExpression(t.identifier('new'), t.identifier('target')),
-      t.sequenceExpression([reapply, t.thisExpression()]),
-      reapply) :
+    t.blockStatement([
+      bh.sIf(t.memberExpression(t.identifier('new'), t.identifier('target')),
+        t.blockStatement([
+          letExpression(newObj, reapply),
+          t.returnStatement(t.conditionalExpression(t.binaryExpression('instanceof',
+            newObj, funId), t.thisExpression(), newObj)),
+        ]),
+        t.returnStatement(reapply)),
+    ]) :
     reapply;
 }
 

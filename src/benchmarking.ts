@@ -264,8 +264,8 @@ function csv() {
     'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,RunningTime,NumYields,AvgLatency,VarLatency\n');
   fs.appendFileSync(<any>varianceFd,
     'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,Index,Variance\n');
-  fs.appendFileSync(<any>compileFd, 'Benchmark,Language,Transform,NewMethod,Time')
-  fs.appendFileSync(<any>codesizeFd, 'Benchmark,Language,Transform,NewMethod,TimesBlowup')
+  fs.appendFileSync(<any>compileFd, 'Benchmark,Language,Transform,NewMethod,Time\n')
+  fs.appendFileSync(<any>codesizeFd, 'Benchmark,Language,Transform,NewMethod,TimesBlowup\n')
 
   // Generate timing.csv
   for (const outFile of outFiles) {
@@ -292,17 +292,19 @@ function csv() {
     }
     else if (outFile.endsWith('.compile')) {
       const data = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').toString();
-      fs.appendFileSync(<any>compileFd, data)
+      fs.appendFileSync(<any>compileFd, data + "\n")
     }
     else if (outFile.endsWith('.codesize')) {
       const data = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').toString();
-      fs.appendFileSync(<any>codesizeFd, data)
+      fs.appendFileSync(<any>codesizeFd, data + "\n")
     }
   }
 
   fs.closeSync(timingFd);
   fs.closeSync(varianceFd);
-  console.log(`Created ${wd}/timing.csv and ${wd}/variance.csv.`);
+  fs.closeSync(compileFd);
+  fs.closeSync(codesizeFd)
+  console.log(`Created ${wd}/timing.csv, ${wd}/variance.csv, ${wd}/compile-time.csv, ${wd}/code-size.csv.`);
 }
 
 if (opts.mode === 'main' || typeof opts.mode === 'undefined') {

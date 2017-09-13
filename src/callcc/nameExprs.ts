@@ -14,13 +14,15 @@ const names: Visitor = {
     if (path.node.id === undefined || path.node.id === null) {
       path.node.id = fastFreshId.fresh('funExpr');
     } else if (path.scope.hasOwnBinding(path.node.id.name)) {
-      path.scope.rename(path.node.id.name);
+      const new_id = fastFreshId.fresh('funExpr');
+      path.scope.rename(path.node.id.name, new_id.name);
     }
   },
 
   FunctionDeclaration: function (path: NodePath<t.FunctionDeclaration>): void {
     if (path.scope.hasOwnBinding(path.node.id.name)) {
-      path.scope.rename(path.node.id.name);
+      const new_id = fastFreshId.fresh('funExpr');
+      path.scope.rename(path.node.id.name, new_id.name);
     }
   },
 };

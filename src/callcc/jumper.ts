@@ -562,6 +562,17 @@ const jumper = {
     }
   },
 
+  TryStatement: {
+    exit(path: NodePath<t.TryStatement>) {
+      if (path.node.finalizer) {
+        path.node.finalizer = t.blockStatement([
+          bh.sIf(t.unaryExpression('!',
+            t.memberExpression(runtime, t.identifier('capturing'))),
+            path.node.finalizer)]);
+      }
+    }
+  },
+
   Program: function (path: NodePath<t.Program>): void {
     path.node.body = [t.functionDeclaration(t.identifier('$program'),
       [], t.blockStatement(path.node.body))];

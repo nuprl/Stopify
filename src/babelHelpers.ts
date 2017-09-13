@@ -2,6 +2,9 @@ import * as babel from 'babel-core';
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 
+export type FunWithBody = t.FunctionDeclaration | t.FunctionExpression |
+  t.ObjectMethod;
+
 export const eTrue = t.booleanLiteral(true);
 
 export const eFalse = t.booleanLiteral(false);

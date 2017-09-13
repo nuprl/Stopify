@@ -2,8 +2,10 @@ import * as helpers from '../src/common/helpers';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-const assert = require('assert');
 import Hygiene from '../src/common/hygiene';
+import * as fastFreshId from '../src/fastFreshId';
+
+const assert = require('assert');
 
 interface Args {
   reserved: Set<string>
@@ -24,13 +26,31 @@ const visitor = {
   }
 };
 
+const initVisitor = {
+  Program(path: NodePath<t.Program>) {
+    fastFreshId.init(path)
+  }
+}
+
+let is_init = false
+
 function check(src: string, ...reserved: string[]) {
+  if (is_init === false) {
+    let { ast: init_ast } = babel.transform(src, {
+      babelrc: false,
+      plugins: []
+    });
+
+    babel.traverse(init_ast!, initVisitor, undefined)
+
+    is_init = true
+  }
+
   const { ast } = babel.transform(src, {
     babelrc: false,
-    plugins: [
-      [ Hygiene, { reserved } ]
-    ]
+    plugins: [ [ Hygiene, { reserved } ] ]
   });
+
   const state = {
     reserved: new Set(reserved)
   };

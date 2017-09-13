@@ -19,6 +19,7 @@ import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
+import nameFinallyReturn from './nameFinallyReturn';
 import hygiene from '../common/hygiene';
 import * as freeIds from '../common/freeIds';
 import cleanup from './cleanup';
@@ -28,6 +29,7 @@ import * as babylon from 'babylon';
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import * as fastFreshId from '../fastFreshId';
+import { timeSlow } from '../generic';
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -38,27 +40,43 @@ const visitor: Visitor = {
        ? (e: t.Expression) => t.returnStatement(e)
        : (e: t.Expression) => t.expressionStatement(e));
 
-    fastFreshId.init(path);
     if (state.opts.handleNew === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
     }
-    h.transformFromAst(path, [singleVarDecls]);
+    timeSlow('singleVarDecl', () =>
+      h.transformFromAst(path, [singleVarDecls]));
+    
+    timeSlow('desugaring passes', () =>
+      h.transformFromAst(path,
+        [makeBlocks, desugarLoop, desugarLabel, desugarSwitch]));
+    timeSlow('desugar logical', () =>
+      h.transformFromAst(path, [desugarLogical]));
+    timeSlow('block scoping, etc.', () =>
+      h.transformFromAst(path,
+        [nameExprs, cleanup]));
+    timeSlow('free ID initialization', () =>
+      freeIds.annotate(path));
+    timeSlow('box assignables', () =>
+      h.transformFromAst(path, [boxAssignables]));
+    timeSlow('ANF', () =>
+      h.transformFromAst(path, [anf]));
+    timeSlow('declVars', () =>
+      h.transformFromAst(path, [declVars]));
+    timeSlow('nameFinally', () =>
+      h.transformFromAst(path, [nameFinallyReturn]));
 
-    h.transformFromAst(path,
-      [makeBlocks, desugarLoop, desugarLabel, desugarSwitch]);
-    h.transformFromAst(path, [desugarLogical]);
-    h.transformFromAst(path,
-      ["transform-es2015-block-scoping", nameExprs, cleanup]);
-    freeIds.annotate(path);
-    h.transformFromAst(path, [boxAssignables]);
-    h.transformFromAst(path, [anf]);
-    h.transformFromAst(path, [declVars]);
-
-    h.transformFromAst(path, [label.plugin]);
-    h.transformFromAst(path, [[jumper, {
-      captureMethod: captureMethod,
-      handleNew: state.opts.handleNew,
-    }]]);
+    timeSlow('label', () =>
+      h.transformFromAst(path, [label.plugin]));
+    timeSlow('jumper', () =>
+      h.transformFromAst(path, [[jumper, {
+        captureMethod: captureMethod,
+        handleNew: state.opts.handleNew,
+      }]]));
+    path.node.body.unshift(
+      h.letExpression(
+        t.identifier("SENTINAL"),
+        t.objectExpression([]),
+        "const"));
     path.node.body.unshift(
       h.letExpression(
         t.identifier("suspendCC"),

@@ -24,7 +24,12 @@ const containsCallVisitor = {
   CallExpression(path: NodePath<t.CallExpression>) {
     this.containsCall = true;
     path.stop();
-  }
+  },
+
+  NewExpression(path: NodePath<t.NewExpression>): void {
+    this.containsCall = true;
+    path.stop();
+  },
 };
 
 function containsCall<T>(path: NodePath<T>) {

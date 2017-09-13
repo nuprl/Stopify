@@ -73,6 +73,7 @@
     "express": "^4.15.2",
     "fs-extra": "^3.0.0",
     "graphlib": "^2.1.1",
+    "immutable": "^3.8.1",
     "selenium-webdriver": "^3.5.0",
     "sprintf": "^0.1.5",
     "stream-to-string": "^1.1.0",

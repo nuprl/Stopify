@@ -226,64 +226,77 @@ function compile() {
   const language = path.basename(path.dirname(path.dirname(src)));
   const transform = opts.transform;
   const newMethod = opts.new;
-  const compileFd = fs.openSync(`${wd}/compile.csv`, 'w')
-  const codeSizeFd = fs.openSync(`${wd}/code-size.csv`, 'w')
 
-  const dstJs = `${wd}/${transform}-${newMethod}-${language}-${base}.js`;
-  const dstHtml = `${wd}/${transform}-${newMethod}-${language}-${base}.html`;
+  const dstBase = `${wd}/${transform}-${newMethod}-${language}-${base}`
+  const dstJs = `${dstBase}.js`
+  const dstHtml = `${dstBase}.html`
+  const compileTime = `${dstBase}.compile`
+  const codesize = `${dstBase}.codesize`
 
+  // NOTE(rachit): Assumes that the benchmark is minified already.
   const olen = fs.readFileSync(src).toString().length
-
   const stime = process.hrtime()
   creates(dstJs, () =>
     exec(`./bin/compile --transform ${transform} --new ${newMethod} ${src} ${dstJs}`));
   const time = process.hrtime(stime)
-  const ctime = (time[0] + 1e-9 * time[1]).toString().slice(0, 4)
+  const ctime = (time[0] + 1e-9 * time[1]).toString()
   const flen = fs.readFileSync(dstJs).toString().length
   const blowup = (flen * 1.0)/(olen * 1.0)
-
-  fs.appendFileSync(<any>compileFd,
-    `${transform},${newMethod},${language},${base},${ctime}\n`)
-  fs.appendFileSync(<any>codeSizeFd,
-    `${transform},${newMethod},${language},${base},${blowup}\n`)
 
   creates(dstHtml, () =>
     exec(`./bin/webpack ${dstJs} ${dstHtml}`));
 
-  fs.closeSync(compileFd)
-  fs.closeSync(codeSizeFd)
+  const spec = `${base},${language},${transform},${newMethod}`
+
+  fs.writeFileSync(compileTime, `${spec},${ctime}`)
+  fs.writeFileSync(codesize, `${spec},${blowup}`)
 }
 
 function csv() {
   const wd = opts.wd;
-  const outFiles = fs.readdirSync(wd).filter(path => path.endsWith('.done'));
+  const outFiles = fs.readdirSync(wd)
   const timingFd = fs.openSync(`${wd}/timing.csv`, 'w');
   const varianceFd = fs.openSync(`${wd}/variance.csv`, 'w');
+  const compileFd = fs.openSync(`${wd}/compile-times.csv`, 'w');
+  const codesizeFd = fs.openSync(`${wd}/code-size.csv`, 'w');
 
   fs.appendFileSync(<any>timingFd,
     'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,RunningTime,NumYields,AvgLatency,VarLatency\n');
   fs.appendFileSync(<any>varianceFd,
     'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,Index,Variance\n');
+  fs.appendFileSync(<any>compileFd, 'Benchmark,Language,Transform,NewMethod,Time')
+  fs.appendFileSync(<any>codesizeFd, 'Benchmark,Language,Transform,NewMethod,TimesBlowup')
 
+  // Generate timing.csv
   for (const outFile of outFiles) {
-    let lines = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').split('\n');
-    lines = g.dropWhile(line => line !== "BEGIN STOPIFY BENCHMARK RESULTS",
-                        lines);
-    if (lines.length < 3) {
-      console.log(`Error reading ${outFile}`);
-      continue;
+    if (outFile.endsWith('.done')) {
+      let lines = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').split('\n');
+      lines = g.dropWhile(line => line !== "BEGIN STOPIFY BENCHMARK RESULTS",
+        lines);
+      if (lines.length < 3) {
+        console.log(`Error reading ${outFile}`);
+        continue;
+      }
+      const factors = lines[lines.length - 2];
+      const timing = lines[lines.length - 3];
+      let variance =
+        g.takeWhile(line => line !== "END VARIANCE",
+          g.dropWhile(line => line !== "BEGIN VARIANCE", lines));
+      if (variance.length > 0) {
+        variance = variance.slice(1); // Drop the BEGIN VARIANCE
+      }
+      fs.appendFileSync(<any>timingFd, `${factors},${timing}\n`);
+      for (const v of variance) {
+        fs.appendFileSync(<any>varianceFd, `${factors},${v}\n`);
+      }
     }
-    const factors = lines[lines.length - 2];
-    const timing = lines[lines.length - 3];
-    let variance =
-      g.takeWhile(line => line !== "END VARIANCE",
-        g.dropWhile(line => line !== "BEGIN VARIANCE", lines));
-    if (variance.length > 0) {
-      variance = variance.slice(1); // Drop the BEGIN VARIANCE
+    else if (outFile.endsWith('.compile')) {
+      const data = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').toString();
+      fs.appendFileSync(<any>compileFd, data)
     }
-    fs.appendFileSync(<any>timingFd, `${factors},${timing}\n`);
-    for (const v of variance) {
-      fs.appendFileSync(<any>varianceFd, `${factors},${v}\n`);
+    else if (outFile.endsWith('.codesize')) {
+      const data = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').toString();
+      fs.appendFileSync(<any>codesizeFd, data)
     }
   }
 

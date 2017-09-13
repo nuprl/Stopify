@@ -53,7 +53,7 @@ const visitor: Visitor = {
       h.transformFromAst(path, [desugarLogical]));
     timeSlow('block scoping, etc.', () =>
       h.transformFromAst(path,
-        ["transform-es2015-block-scoping", nameExprs, cleanup]));
+        [nameExprs, cleanup]));
     timeSlow('free ID initialization', () =>
       freeIds.annotate(path));
     timeSlow('box assignables', () =>

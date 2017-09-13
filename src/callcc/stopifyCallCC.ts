@@ -8,6 +8,7 @@ import * as babylon from 'babylon';
 import cleanupGlobals from '../common/cleanupGlobals';
 import hygiene from '../common/hygiene';
 import markFlatFunctions from '../common/markFlatFunctions';
+import * as fastFreshId from '../fastFreshId';
 
 const top = t.identifier("$top");
 const isStop = t.identifier("$isStop");
@@ -33,6 +34,8 @@ const reserved = [
   "$opts",
   "$result",
   "target",
+  "SENTINAL",
+  "finally_rv",
 ];
 
 function appCaptureCC(receiver: t.Expression) {
@@ -107,6 +110,7 @@ export const visitor: Visitor = {
     path.stop();
     // NOTE(arjun): This is how we pass flags to markFlatFunctions.
     (<any>path.node).options = { optimize: true };
+    fastFreshId.init(path);
     h.transformFromAst(path, [
       [cleanupGlobals, { allowed }],
       [hygiene, { reserved }],

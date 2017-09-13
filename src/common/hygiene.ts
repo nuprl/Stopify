@@ -11,6 +11,7 @@ import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as fs from 'fs';
+import * as fastFreshId from '../fastFreshId';
 
 interface State {
   opts: {
@@ -24,7 +25,8 @@ const visitor: Visitor = {
     const shadows = Object.keys(scope.bindings)
       .filter(x => reserved.includes(x));
     for (const x of shadows) {
-      scope.rename(x);
+      const new_name = fastFreshId.fresh(x)
+      scope.rename(x, new_name.name);
     }
   }
 }

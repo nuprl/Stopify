@@ -28,6 +28,18 @@ export function time<T>(label: string, thunk: () => T): T {
   return result;
 }
 
+export function timeSlow<T>(label: string, thunk: () => T): T {
+  const start = Date.now();
+  const result = thunk();
+  const end = Date.now();
+  const delay = end - start;
+  if (delay > 5000) {
+    console.info(`${label} (${delay} ms)`);
+  }
+  return result;
+}
+
+
 /** Haskell-style span */
 export function span<T>(pred: (elt: T) => boolean, arr: T[]): { prefix: T[], suffix: T[] } {
   let i = 0;

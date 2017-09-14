@@ -1,6 +1,8 @@
 import {NodePath, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import { cannotCapture } from '../common/cannotCapture';
+import * as bh from '../babelHelpers';
+import * as imm from 'immutable';
 
 export enum AppType {
   None = 0,
@@ -10,7 +12,8 @@ export enum AppType {
 
 export type Labeled<T> = T & {
   labels?: number[],
-  appType?: AppType
+  appType?: AppType,
+  localVars?: t.Identifier[]
 }
 
 type VisitorState = {
@@ -68,6 +71,27 @@ function isUnsafeCall(e: t.Expression): boolean {
   return ((t.isCallExpression(e) || t.isNewExpression(e)) && !cannotCapture(e));
 }
 
+const visitFunction = {
+  enter(this: VisitorState, path: NodePath<Labeled<bh.FunWithBody>>) {
+    this.inTryBlockStack.push(this.inTryBlock);
+    this.inTryBlock = false;
+
+    const allVars = imm.Set.of(...Object.keys(path.scope.bindings));
+    let otherVars = imm.Set.of(...path.node.params.map(bh.lvaltoName))
+      .union(path.node.id ? imm.Set.of(path.node.id.name) : imm.Set<string>());
+    path.node.localVars = allVars.subtract(otherVars).toArray()
+      .map(x => t.identifier(x));
+  },
+  exit(this: VisitorState, path: NodePath<Labeled<bh.FunWithBody>>) {
+    this.inTryBlock = this.inTryBlockStack.pop()!;
+
+    if (path.node.type === 'FunctionDeclaration') {
+      path.node.appType = AppType.None;
+    }
+  }
+
+}
+
 const visitor: Visitor = {
   TryStatement: {
     enter(this: VisitorState, path: NodePath<Labeled<t.TryStatement>>) {
@@ -89,16 +113,9 @@ const visitor: Visitor = {
 
   // TODO(arjun): I think an enclosing function will gather labels from
   // an enclosed function.
-  Function: {
-    enter(this: VisitorState, path: NodePath<Labeled<t.Function>>) {
-      this.inTryBlockStack.push(this.inTryBlock);
-      this.inTryBlock = false;
-    },
-    exit(this: VisitorState, path: NodePath<Labeled<t.Function>>) {
-      this.inTryBlock = this.inTryBlockStack.pop()!;
-    }
-  },
-
+  FunctionDeclaration: visitFunction,
+  FunctionExpression: visitFunction,
+  ObjectMethod: visitFunction,
   Program: {
     enter(this: VisitorState, path: NodePath<Labeled<t.Program>>) {
       this.inTryBlock = false;
@@ -133,12 +150,6 @@ const visitor: Visitor = {
   AssignmentExpression: {
     exit(path: NodePath<Labeled<t.AssignmentExpression>>): void {
       path.node.labels = getLabels(path.node.right);
-    }
-  },
-
-  FunctionDeclaration: {
-    exit(path: NodePath<Labeled<t.FunctionDeclaration>>) {
-      path.node.appType = AppType.None;
     }
   },
 

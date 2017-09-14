@@ -90,3 +90,19 @@ export function replaceWithStatements(
     path.replaceWith(t.blockStatement(stmts));
   }
 }
+
+/**
+ * Given an 'LVal' that is an identifier, produces the identifier's name.
+ * Throws an exception if the 'LVal' is not an identifier.
+ *
+ * @param lval an l-value
+ * @returns the name of the identifier, if 'lval' is an identifier
+ */
+export function lvaltoName(lval: t.LVal): string {
+  if (lval.type === 'Identifier') {
+    return lval.name;
+  }
+  else {
+    throw new Error(`Expected Identifier, received ${lval.type}`);
+  }
+}

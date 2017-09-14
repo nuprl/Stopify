@@ -7,7 +7,10 @@ import * as fastFreshId from '../fastFreshId';
 import * as generic from '../generic';
 import { getLabels, AppType } from './label';
 
-type FunctionT = t.FunctionExpression | t.FunctionDeclaration;
+type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
+  localVars: t.Identifier[]
+};
+
 type Labeled<T> = T & {
   labels?: number[];
   appType?: AppType;
@@ -93,28 +96,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(body.body, afterDecls);
 
-  const restoreLocals: t.Identifier[] = [];
-  let i = 0;
-
-  function restore1(x: t.Identifier): void {
-    restoreLocals.push(x);
-  }
-
-
-  // Flatten list of assignments restoring local variables
-  pre.forEach(decls => {
-    if (t.isVariableDeclaration(decls)) {
-      decls.declarations.forEach(x => restore1(<t.Identifier>x.id))
-    }
-  });
-
-  for (const x of Object.keys(path.scope.bindings)) {
-    // Type definition is missing this case.
-    if (<string>(path.scope.getBinding(x)!.kind) !== 'hoisted') {
-      continue;
-    }
-    restore1(path.scope.getBinding(x)!.identifier);
-  }
+  const restoreLocals = path.node.localVars;
 
   const restoreBlock = t.blockStatement([
     t.expressionStatement(t.assignmentExpression('=',
@@ -201,23 +183,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: New
   const funId = funParent.node.id, funParams = funParent.node.params,
   funBody = funParent.node.body;
 
-  const afterDecls = funBody.body.findIndex(e =>
-    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
-  const { pre, post } = split(funBody.body, afterDecls);
-
-  const locals: t.LVal[] = [];
-  pre.forEach(decls => {
-    if (t.isVariableDeclaration(decls)) {
-      decls.declarations.forEach(x => locals.push(x.id))
-    }
-  });
-  for (const x of Object.keys(funParent.scope.bindings)) {
-    // Type definition is missing this case.
-    if (<string>(path.scope.getBinding(x)!.kind) !== 'hoisted') {
-      continue;
-    }
-    locals.push(path.scope.getBinding(x)!.identifier);
-  }
+  const locals = funParent.node.localVars;
 
   const nodeStmt = t.expressionStatement(path.node);
 
@@ -284,19 +250,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: Ne
     !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(funBody.body, afterDecls);
 
-  const locals: t.LVal[] = [];
-  pre.forEach(decls => {
-    if (t.isVariableDeclaration(decls)) {
-      decls.declarations.forEach(x => locals.push(x.id))
-    }
-  });
-  for (const x of Object.keys(funParent.scope.bindings)) {
-    // Type definition is missing this case.
-    if (<string>(path.scope.getBinding(x)!.kind) !== 'hoisted') {
-      continue;
-    }
-    locals.push(path.scope.getBinding(x)!.identifier);
-  }
+  const locals = funParent.node.localVars;
 
   const nodeStmt = t.expressionStatement(path.node);
 
@@ -367,19 +321,7 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: N
     !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(funBody.body, afterDecls);
 
-  const locals: t.LVal[] = [];
-  pre.forEach(decls => {
-    if (t.isVariableDeclaration(decls)) {
-      decls.declarations.forEach(x => locals.push(x.id))
-    }
-  });
-  for (const x of Object.keys(funParent.scope.bindings)) {
-    // Type definition is missing this case.
-    if (<string>(path.scope.getBinding(x)!.kind) !== 'hoisted') {
-      continue;
-    }
-    locals.push(path.scope.getBinding(x)!.identifier);
-  }
+  const locals = funParent.node.localVars;
 
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
@@ -589,8 +531,10 @@ const jumper = {
   },
 
   Program: function (path: NodePath<t.Program>): void {
-    path.node.body = [t.functionDeclaration(t.identifier('$program'),
-      [], t.blockStatement(path.node.body))];
+    const fun = t.functionDeclaration(t.identifier('$program'),
+    [], t.blockStatement(path.node.body));
+    (<FunctionT>fun).localVars = [];
+    path.node.body = [fun];
   }
 };
 

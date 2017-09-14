@@ -9,6 +9,7 @@ import cleanupGlobals from '../common/cleanupGlobals';
 import hygiene from '../common/hygiene';
 import markFlatFunctions from '../common/markFlatFunctions';
 import * as fastFreshId from '../fastFreshId';
+import markFlatApplications from '../common/markFlatApplications'
 
 const top = t.identifier("$top");
 const isStop = t.identifier("$isStop");
@@ -116,6 +117,7 @@ export const visitor: Visitor = {
       [hygiene, { reserved }],
       [markFlatFunctions]
     ]);
+    h.transformFromAst(path, [markFlatApplications])
     h.transformFromAst(path, [() => ({ visitor: insertSuspend })]);
     h.transformFromAst(path,
       [[callcc, {

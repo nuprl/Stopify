@@ -473,11 +473,19 @@ const jumper = {
       }
 
       if (path.node.appType !== undefined &&
-          path.node.appType >= AppType.Tail) {
-        captureLogics[s.opts.captureMethod](
-          <any>path.get('expression'),
-          s.opts.handleNew);
-        return;
+        path.node.appType >= AppType.Tail) {
+
+        // Skip if the right hand-side is a flat call
+        if (path.node.expression.type === 'AssignmentExpression' &&
+          (<any>path.node.expression.right).mark === 'Flat') {
+          // Do Nothing
+        }
+        else {
+          captureLogics[s.opts.captureMethod](
+            <any>path.get('expression'),
+            s.opts.handleNew);
+          return;
+        }
       }
 
       path.replaceWith(t.ifStatement(isNormalMode, path.node));
@@ -534,15 +542,22 @@ const jumper = {
       if (path.node.appType !== AppType.Mixed) {
         return;
       }
-      // Labels may occur if this return statement occurs in a try block.
-      const labels = getLabels(path.node);
-      const ifReturn = t.ifStatement(
-        isNormalMode,
-        path.node,
-        bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
-                t.returnStatement(stackFrameCall)));
-      path.replaceWith(ifReturn);
-      path.skip();
+
+      const funParent = path.findParent(p => p.isFunction());
+
+      if (t.isFunction(funParent)) {
+        // Labels may occur if this return statement occurs in a try block.
+        const labels = getLabels(path.node);
+        const ifReturn = t.ifStatement(
+          isNormalMode,
+          path.node,
+          bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
+                 t.returnStatement(stackFrameCall)));
+        path.replaceWith(ifReturn);
+        path.skip();
+      } else {
+        throw new Error(`Unexpected 'return' parent of type ${typeof funParent}`);
+      }
     }
   },
 

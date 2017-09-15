@@ -53,6 +53,31 @@ const transformed = <T>(t: T) => tag('isTransformed', t, true);
 const kArg = <T>(t: T, v: t.Identifier) => tag('kArg', t, v);
 const newTag = <T>(t: T) => tag('new', t, true);
 
+const containsCallVisitor = {
+  FunctionExpression(path: NodePath<t.FunctionExpression>): void {
+    path.skip();
+  },
+
+  CallExpression(path: NodePath<t.CallExpression>) {
+    this.containsCall = true;
+    path.stop();
+  },
+
+  NewExpression(path: NodePath<t.NewExpression>): void {
+    this.containsCall = true;
+    path.stop();
+  },
+};
+
+/**
+ * Traverses children of `path` and returns true if it contains any applications.
+ */
+export function containsCall<T>(path: NodePath<T>) {
+  let o = { containsCall: false };
+  path.traverse(containsCallVisitor, o);
+  return o.containsCall;
+}
+
 // Object to wrap the state of the stop, onStop, isStop functions
 class StopWrapper {
   private hasStopped: boolean;

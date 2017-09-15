@@ -30,33 +30,46 @@ const anfVisitor : Visitor = {
     });
   },
 
-  CallExpression: function (path: NodePath<t.CallExpression>): void {
-    const p = path.parent;
-
-    if ((!t.isVariableDeclarator(p) &&
-      !t.isReturnStatement(p)) ||
-      (t.isReturnStatement(p) &&
-        withinTryBlock(path))) {
-      // Name the function application if it is not already named.
-      const name = fastFreshId.fresh('app');
-      const bind = h.letExpression(name, path.node);
-      path.getStatementParent().insertBefore(bind);
-
-      if (path.parent.type === 'ExpressionStatement') {
-        path.remove();
+  CallExpression: {
+    enter(path: NodePath<t.CallExpression>): void {
+      if (h.containsCall(path)) {
+        if (t.isCallExpression(path.node.callee)) {
+          const id = fastFreshId.fresh('callee');
+          path.getStatementParent().insertBefore(h.letExpression(id, path.node.callee));
+          path.node.callee = id;
+        }
+        path.node.arguments.forEach((e: t.Expression, i) => {
+          const id = fastFreshId.fresh('arg');
+          path.getStatementParent().insertBefore(h.letExpression(id, e));
+          path.node.arguments[i] = id;
+        });
       }
-      else {
-        path.replaceWith(name);
+    },
+
+    exit(path: NodePath<t.CallExpression>): void {
+      const p = path.parent;
+      if ((!t.isVariableDeclarator(p) &&
+        !t.isReturnStatement(p)) ||
+        (t.isReturnStatement(p) &&
+          withinTryBlock(path))) {
+        // Name the function application if it is not already named.
+        const name = fastFreshId.fresh('app');
+        const bind = h.letExpression(name, path.node);
+        path.getStatementParent().insertBefore(bind);
+
+        if (path.parent.type === 'ExpressionStatement') {
+          path.remove();
+        }
+        else {
+          path.replaceWith(name);
+        }
       }
     }
   },
 
   NewExpression: function (path: NodePath<t.NewExpression>): void {
     const p = path.parent;
-    if ((!t.isVariableDeclarator(p) &&
-      !t.isReturnStatement(p)) ||
-      (t.isReturnStatement(p) &&
-        withinTryBlock(path))) {
+    if (!t.isVariableDeclarator(p)) {
       // Name the function application if it is not already named.
       const name = fastFreshId.fresh('app');
       const bind = h.letExpression(name, path.node);

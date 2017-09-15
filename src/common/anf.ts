@@ -30,6 +30,21 @@ const anfVisitor : Visitor = {
     });
   },
 
+  ObjectExpression: function (path: NodePath<t.ObjectExpression>): void {
+    if (!h.containsCall(path)) {
+      return;
+    }
+    const { properties } = path.node;
+    properties.forEach((p: t.ObjectProperty, i) => {
+      if (!t.isObjectProperty) {
+        throw new Error(`Expected ObjectProperty but got ${p.type}`);
+      }
+      const id = fastFreshId.fresh('element');
+      path.getStatementParent().insertBefore(h.letExpression(id, p.value));
+      (<t.ObjectProperty>path.node.properties[i]).value = id;
+    });
+  },
+
   CallExpression: {
     enter(path: NodePath<t.CallExpression>): void {
       if (h.containsCall(path)) {

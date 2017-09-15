@@ -12,31 +12,9 @@
 import * as babel from 'babel-core';
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {letExpression} from '../common/helpers';
+import {containsCall, letExpression} from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
 import * as bh from '../babelHelpers';
-
-const containsCallVisitor = {
-  FunctionExpression(path: NodePath<t.FunctionExpression>): void {
-    path.skip();
-  },
-
-  CallExpression(path: NodePath<t.CallExpression>) {
-    this.containsCall = true;
-    path.stop();
-  },
-
-  NewExpression(path: NodePath<t.NewExpression>): void {
-    this.containsCall = true;
-    path.stop();
-  },
-};
-
-function containsCall<T>(path: NodePath<T>) {
-  let o = { containsCall: false };
-  path.traverse(containsCallVisitor, o);
-  return o.containsCall;
-}
 
 export const visitor: Visitor = {
   WhileStatement: function (path: NodePath<t.WhileStatement>) {

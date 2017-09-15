@@ -18,6 +18,18 @@ function withinTryBlock(path: NodePath<t.Node>): boolean {
 }
 
 const anfVisitor : Visitor = {
+  ArrayExpression: function (path: NodePath<t.ArrayExpression>): void {
+    if (!h.containsCall(path)) {
+      return;
+    }
+    const { elements } = path.node;
+    elements.forEach((e: t.Expression, i) => {
+      const id = fastFreshId.fresh('element');
+      path.getStatementParent().insertBefore(h.letExpression(id, e));
+      path.node.elements[i] = id;
+    });
+  },
+
   CallExpression: function (path: NodePath<t.CallExpression>): void {
     const p = path.parent;
 

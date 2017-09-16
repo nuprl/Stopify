@@ -1,6 +1,6 @@
 import * as t from 'babel-types';
 
-export const knowns = ['Object',
+const knowns = ['Object',
   'Function',
   'Boolean',
   'Symbol',
@@ -31,13 +31,17 @@ export const knowns = ['Object',
   'Set',
   'WeakMap',
   'WeakSet',
-  '$GeneratorConstructor'
-  ];
+  'ArrayBuffer'
+];
 
-  export function cannotCapture(node: t.CallExpression | t.NewExpression): boolean  {
-    if (node.callee.type !== 'Identifier') {
-      return false;
-    }
-    return knowns.includes(node.callee.name);
+function cannotCapture(node: t.CallExpression | t.NewExpression): boolean  {
+  if (node.callee.type !== 'Identifier') {
+    return false;
   }
-  
+  return knowns.includes(node.callee.name);
+}
+
+export {
+  knowns,
+  cannotCapture
+}

@@ -27,7 +27,7 @@ function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression | null
 
 function getFunctionArgs(path: NodePath<t.Node>): string[] {
   const node = path.node;
-  if (node.type === 'FunctionDeclaration' || 
+  if (node.type === 'FunctionDeclaration' ||
       node.type === 'FunctionExpression') {
     return (<any>node).params.map((x: t.Identifier) => x.name);
   }
@@ -45,11 +45,41 @@ function getBlock(node: t.Node): t.Statement[] {
   } else if (t.isObjectMethod(node)) {
     return node.body.body;
   }else {
+
     throw new Error(`Got ${node.type}`);
   }
 }
 
+const func = {
+  enter(path: NodePath<t.FunctionDeclaration|t.FunctionExpression>) {
+    (<any>path.node).toDecl = []
+  },
+  exit(path: NodePath<t.FunctionDeclaration|t.FunctionExpression>) {
+    const toDecl: t.Identifier[] | undefined = (<any>path.node).toDecl
+    if(toDecl && toDecl.length > 0) {
+      path.node.body.body.unshift(lifted(t.variableDeclaration('var',
+        toDecl.map(d => t.variableDeclarator(d)))))
+    }
+  }
+}
+
+const prog = {
+  enter(path: NodePath<t.Program>) {
+    (<any>path.node).toDecl = []
+  },
+  exit(path: NodePath<t.Program>) {
+    const toDecl: t.Identifier[] | undefined = (<any>path.node).toDecl
+    if(toDecl && toDecl.length > 0) {
+      path.node.body.unshift(lifted(t.variableDeclaration('var',
+        toDecl.map(d => t.variableDeclarator(d)))))
+    }
+  }
+}
+
 const lift: Visitor = {
+  Program: prog,
+  FunctionDeclaration: func,
+  FunctionExpression: func,
   VariableDeclaration(path: NodePath<Lifted<t.VariableDeclaration>>) {
     if (path.node.lifted) {
       return;
@@ -73,9 +103,22 @@ const lift: Visitor = {
         throw new Error(`Destructuring assignment not supported`);
       }
       const id = decl.id.name;
-      const newDecl = t.variableDeclaration(kind, 
-                        [t.variableDeclarator(decl.id)]);
-      getBlock(topScope.node).unshift(lifted(newDecl));
+      // This checks for the following case:
+      //
+      //   function(x) { var x = 10; }
+      //
+      // is the same as:
+      //
+      //   function(x) { x = 10; }
+      //
+      // Therefore, we do not need to lift x. Instead, we eliminate the
+      // declaration and only turn it into an assignment.
+      if ((kind === 'var' && topArgs.includes(id)) === false) {
+        //const newDecl = t.variableDeclaration(kind,
+                          //[t.variableDeclarator(decl.id)]);
+        //getBlock(topScope.node).unshift(lifted(newDecl));
+        (<any>topScope.node).toDecl.push(decl.id)
+      }
       if (decl.init !== null) {
         // If we call path.insertAfter here, we will add assignments in reverse
         // order. Fortunately, path.insertAfter can take an array of nodes.

@@ -37,8 +37,10 @@ const visitor: Visitor = {
   ReturnStatement: {
     exit(this: VisitorState, path: NodePath<t.ReturnStatement>) {
       if (this.inTryWithFinally) {
+        const arg = path.node.argument ||
+          t.unaryExpression('void', t.numericLiteral(0))
         path.insertBefore(t.expressionStatement(t.assignmentExpression('=',
-          finallySentinal, path.node.argument)));
+          finallySentinal, arg)));
         path.replaceWith(t.returnStatement(finallySentinal));
         path.skip();
       }

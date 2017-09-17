@@ -67,10 +67,7 @@ const anfVisitor : Visitor = {
         return
       }
       const p = path.parent;
-      if ((!t.isVariableDeclarator(p) &&
-        !t.isReturnStatement(p)) ||
-        (t.isReturnStatement(p) &&
-          withinTryBlock(path))) {
+      if (!t.isVariableDeclarator(p)) {
         // Name the function application if it is not already named or
         // if it is not a flat application.
         const name = fastFreshId.fresh('app');

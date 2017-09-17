@@ -235,11 +235,11 @@ function compile() {
 
   // NOTE(rachit): Assumes that the benchmark is minified already.
   const olen = fs.readFileSync(src).toString().length
-  const stime = process.hrtime()
+  const stime = Date.now()
   creates(dstJs, () =>
     exec(`./bin/compile --transform ${transform} --new ${newMethod} ${src} ${dstJs}`));
-  const time = process.hrtime(stime)
-  const ctime = (time[0] + 1e-9 * time[1]).toString()
+  const ftime = Date.now()
+  const ctime = ftime - stime
   const flen = fs.readFileSync(dstJs).toString().length
   const blowup = (flen * 1.0)/(olen * 1.0)
 

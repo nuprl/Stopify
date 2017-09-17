@@ -107,6 +107,8 @@ function boxVars(parentPath: NodePath<Parent>, vars: Set<string>) {
           path.node.params,
           path.node.body);
 
+        (<any>fun).mark = (<any>path.node).mark;
+
         // Little hack necessary to preserve annotation left by freeIds.ts
         (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
         const stmt = t.variableDeclaration("var",

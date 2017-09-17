@@ -65,10 +65,6 @@ const isRestoringMode = t.unaryExpression('!', runtimeModeKind);
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);
 
-function isFlat(path: NodePath<t.Node>): boolean {
-  return (<any>path.getFunctionParent().node).mark === 'Flat';
-}
-
 function usesArguments(path: NodePath<t.Function>) {
   let r = false;
   const visitor = {
@@ -410,10 +406,6 @@ const jumper = {
   },
   ExpressionStatement: {
     exit(path: NodePath<Labeled<t.ExpressionStatement>>, s: State) {
-      if (isFlat(path)) {
-        return;
-      }
-
       if (path.node.appType !== undefined &&
         path.node.appType >= AppType.Tail) {
 
@@ -440,13 +432,14 @@ const jumper = {
       path.node.__usesArgs__ = usesArguments(path);
     },
     exit(path: NodePath<Labeled<FunctionT>>): void {
-      return func(path);
+      if((<any>path.node).mark == 'Flat') {
+        return
+      }
+      else return func(path);
     }
   },
 
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
-    // These cannot appear in flat functions, so no check.
-
     path.node.test = bh.or(
       bh.and(isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
       bh.and(isNormalMode, path.node.test));
@@ -454,7 +447,7 @@ const jumper = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      if ((<any>path.node).isTransformed || isFlat(path)) {
+      if ((<any>path.node).isTransformed) {
         return;
       }
       const { test, consequent, alternate } = path.node;
@@ -505,8 +498,7 @@ const jumper = {
 
   CatchClause: {
     exit(path: NodePath<t.CatchClause>, s: State): void {
-      if (isFlat(path) ||
-        s.opts.captureMethod === 'retval') {
+      if (s.opts.captureMethod === 'retval') {
         return;
       }
       const { param, body } = path.node;

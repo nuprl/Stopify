@@ -50,7 +50,8 @@ const anfVisitor : Visitor = {
       if (h.containsCall(path)) {
         if (t.isCallExpression(path.node.callee)) {
           const id = fastFreshId.fresh('callee');
-          path.getStatementParent().insertBefore(h.letExpression(id, path.node.callee));
+          path.getStatementParent().insertBefore(
+            h.letExpression(id, path.node.callee));
           path.node.callee = id;
         }
         path.node.arguments.forEach((e: t.Expression, i) => {
@@ -62,12 +63,16 @@ const anfVisitor : Visitor = {
     },
 
     exit(path: NodePath<t.CallExpression>): void {
+      if ((<any>path.node.callee).mark == 'Flat') {
+        return
+      }
       const p = path.parent;
       if ((!t.isVariableDeclarator(p) &&
         !t.isReturnStatement(p)) ||
         (t.isReturnStatement(p) &&
           withinTryBlock(path))) {
-        // Name the function application if it is not already named.
+        // Name the function application if it is not already named or
+        // if it is not a flat application.
         const name = fastFreshId.fresh('app');
         const bind = h.letExpression(name, path.node);
         path.getStatementParent().insertBefore(bind);

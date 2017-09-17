@@ -88,6 +88,9 @@ const anfVisitor : Visitor = {
   },
 
   NewExpression: function (path: NodePath<t.NewExpression>): void {
+    if ((<any>path.node.callee).mark == 'Flat') {
+      return
+    }
     const p = path.parent;
     if (!t.isVariableDeclarator(p)) {
       // Name the function application if it is not already named.

@@ -58,7 +58,8 @@ const containsCallVisitor = {
     path.skip();
   },
 
-  CallExpression(path: NodePath<t.CallExpression>) {
+  CallExpression(path: NodePath<FlatnessMark<t.CallExpression>>) {
+    if (path.node.mark == 'Flat') return
     this.containsCall = true;
     path.stop();
   },

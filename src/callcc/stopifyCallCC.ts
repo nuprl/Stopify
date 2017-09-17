@@ -109,8 +109,6 @@ const insertSuspend: Visitor = {
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     path.stop();
-    // NOTE(arjun): This is how we pass flags to markFlatFunctions.
-    (<any>path.node).options = { optimize: true };
     fastFreshId.init(path);
     h.transformFromAst(path, [
       [cleanupGlobals, { allowed }],

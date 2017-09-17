@@ -114,12 +114,35 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
   const declTarget = letExpression(target, t.nullLiteral());
   (<any>declTarget).lifted = true;
 
+  const exn = fastFreshId.fresh('exn');
+  const tryStmt = t.tryStatement(t.blockStatement([...post]),
+    t.catchClause(exn, t.blockStatement([
+      t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
+        t.blockStatement([
+          t.expressionStatement(
+            t.callExpression(
+              t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
+            t.objectExpression([
+              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+              t.objectProperty(
+                t.identifier('f'),
+                // TODO(rachit): Abstract over newMethod here
+                t.arrowFunctionExpression([], reapplyExpr(path, 'wrapper'))),
+              t.objectProperty(t.identifier('locals'),
+                t.arrayExpression((<any>path.node).locals)),
+              t.objectProperty(t.identifier('index'), t.identifier('target')),
+            ]),
+          ]))
+        ])),
+      t.throwStatement(exn)
+    ])));
+
   path.get('body').replaceWith(t.blockStatement([
     declTarget,
     ...pre,
     ifRestoring,
     ...mayMatArgs,
-    ...post
+    tryStmt
   ]));
   path.skip();
 };
@@ -172,14 +195,6 @@ function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  */
 function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: NewMethod): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const exn = fastFreshId.fresh('exn');
-
-  const funParent = <NodePath<FunctionT>>path.findParent(p =>
-    p.isFunctionExpression() || p.isFunctionDeclaration());
-  const funId = funParent.node.id, funParams = funParent.node.params,
-  funBody = funParent.node.body;
-
-  const locals = funParent.node.localVars;
 
   const nodeStmt = t.expressionStatement(path.node);
 
@@ -188,32 +203,17 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: New
       path.node.left, stackFrameCall)
   const ifStmt = t.ifStatement(
     isNormalMode,
-    t.blockStatement([nodeStmt]),
+    t.blockStatement([
+      t.expressionStatement(
+        t.assignmentExpression('=', t.identifier('target'), applyLbl)),
+      nodeStmt
+    ]),
     t.ifStatement(
       t.binaryExpression('===', target, applyLbl),
-      t.expressionStatement(restoreNode)));
-
-  const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
-    t.catchClause(exn, t.blockStatement([
-      t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
-        t.blockStatement([
-          t.expressionStatement(t.callExpression(t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
-            t.objectExpression([
-              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-              t.objectProperty(
-                t.identifier('f'),
-                t.arrowFunctionExpression([], reapplyExpr(funParent, handleNew))),
-              t.objectProperty(t.identifier('locals'),
-                t.arrayExpression(<any>locals)),
-              t.objectProperty(t.identifier('index'), applyLbl),
-            ]),
-          ]))
-        ])),
-      t.throwStatement(exn)
-    ])));
+      t.blockStatement([t.expressionStatement(restoreNode)])));
 
   const stmtParent = path.getStatementParent();
-  stmtParent.replaceWith(tryStmt);
+  stmtParent.replaceWith(ifStmt);
   stmtParent.skip();
 }
 

@@ -21,7 +21,9 @@ function box(e: t.Expression): t.ObjectExpression {
 }
 
 function unbox(e: t.Expression): t.Expression {
-  return  t.memberExpression(e, t.identifier('box'));
+  const res = t.memberExpression(e, t.identifier('box'));
+  (<any>res).mark = (<any>e).mark
+  return res
 }
 
 function getParentPath(path: NodePath<t.Node>) {

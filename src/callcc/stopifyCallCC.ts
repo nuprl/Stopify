@@ -10,6 +10,7 @@ import hygiene from '../common/hygiene';
 import markFlatFunctions from '../common/markFlatFunctions';
 import * as fastFreshId from '../fastFreshId';
 import markFlatApplications from '../common/markFlatApplications'
+import { knowns } from '../common/cannotCapture'
 
 const top = t.identifier("$top");
 const isStop = t.identifier("$isStop");
@@ -28,6 +29,7 @@ const allowed = [
 ];
 
 const reserved = [
+  ...knowns,
   "$top",
   "$isStop",
   "$onStop",

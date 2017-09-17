@@ -7,17 +7,18 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {
-  letExpression, transformed, OptimizeMark, NewTag, newTag
+  letExpression, transformed, FlatnessMark, NewTag, newTag
 } from '../common/helpers';
 
 import { knowns } from './cannotCapture';
 
-const newVisit: VisitNode<OptimizeMark<t.NewExpression>> =
-  function (path: NodePath<OptimizeMark<t.NewExpression>>): void {
-    if (path.node.OptimizeMark === 'Untransformed') {
+const newVisit: VisitNode<FlatnessMark<t.NewExpression>> =
+  function (path: NodePath<FlatnessMark<t.NewExpression>>): void {
+    if (path.node.mark === 'Flat') {
       return;
     }
-    if (t.isIdentifier(path.node.callee) && knowns.includes(path.node.callee.name)) {
+    if (t.isIdentifier(path.node.callee) &&
+      knowns.includes(path.node.callee.name)) {
       return;
     }
     const { callee, arguments: args } = path.node;

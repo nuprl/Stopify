@@ -24,9 +24,6 @@ export type FlatnessMark<T> = T & {
 // Used for marking known transformed functions
 export type Tag = 'Transformed' | 'Untransformed' | 'Unknown'
 
-export type OptimizeMark<T> = T & {
-  OptimizeMark: Tag
-}
 export type Break<T> = T & {
   break_label?: t.Identifier;
 }

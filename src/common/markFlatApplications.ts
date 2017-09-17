@@ -94,7 +94,8 @@ const markCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
         console.error(`${name} -> ${tag} on line ${path.node.loc ?
             path.node.loc.start.line : ""}`)
       }
-      node.mark = tag
+      node.mark = tag;
+      (<any>node.callee).mark = tag;
     }
   }
 
@@ -115,7 +116,8 @@ const programMarkCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
           console.error(`${name} -> ${tag} on line ${path.node.loc ?
               path.node.loc.start.line : ""}`)
         }
-        node.mark = tag
+        node.mark = tag;
+        (<any>node.callee).mark = tag;
       }
     }
   }

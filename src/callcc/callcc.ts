@@ -45,7 +45,7 @@ const visitor: Visitor = {
     }
     timeSlow('singleVarDecl', () =>
       h.transformFromAst(path, [singleVarDecls]));
-    
+
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
         [makeBlocks, desugarLoop, desugarLabel, desugarSwitch]));
@@ -72,6 +72,8 @@ const visitor: Visitor = {
         captureMethod: captureMethod,
         handleNew: state.opts.handleNew,
       }]]));
+    timeSlow('flatten variable decls', () =>
+      h.transformFromAst(path, ["transform-merge-sibling-variables"]))
     path.node.body.unshift(
       h.letExpression(
         t.identifier("SENTINAL"),

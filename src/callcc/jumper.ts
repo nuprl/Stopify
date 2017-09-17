@@ -129,7 +129,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
                 // TODO(rachit): Abstract over newMethod here
                 t.arrowFunctionExpression([], reapplyExpr(path, 'wrapper'))),
               t.objectProperty(t.identifier('locals'),
-                t.arrayExpression((<any>path.node).locals)),
+                t.arrayExpression((<any>path.node).localVars)),
               t.objectProperty(t.identifier('index'), t.identifier('target')),
             ]),
           ]))

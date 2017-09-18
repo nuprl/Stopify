@@ -48,6 +48,7 @@ function isFlat(path: NodePath<t.Node>): boolean {
 
 
 const target = t.identifier('target');
+const newTarget = t.identifier('newTarget');
 const runtime = t.identifier('$__R');
 const types = t.identifier('$__T');
 const matArgs = t.identifier('materializedArguments');
@@ -115,11 +116,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
         [t.variableDeclarator(matArgs, t.identifier('arguments'))]));
   }
 
-  const declTarget = letExpression(target, t.nullLiteral());
-  (<any>declTarget).lifted = true;
-
   path.get('body').replaceWith(t.blockStatement([
-    declTarget,
     ...pre,
     ifRestoring,
     ...mayMatArgs,
@@ -148,7 +145,7 @@ function reapplyExpr(path: NodePath<Labeled<FunctionT>>, handleNew: NewMethod): 
   const newObj = fastFreshId.fresh('new');
   return handleNew === 'direct' ?
     t.blockStatement([
-      bh.sIf(t.memberExpression(t.identifier('new'), t.identifier('target')),
+      bh.sIf(newTarget,
         t.blockStatement([
           letExpression(newObj, reapply),
           t.returnStatement(t.conditionalExpression(t.binaryExpression('===',
@@ -442,6 +439,16 @@ const jumper = {
   "FunctionExpression|FunctionDeclaration": {
     enter(path: NodePath<Labeled<FunctionT>>) {
       path.node.__usesArgs__ = usesArguments(path);
+      path.node.localVars.push(newTarget);
+
+      const declTarget = letExpression(target, t.nullLiteral());
+      (<any>declTarget).lifted = true;
+      const declNewTarget = letExpression(newTarget,
+        t.memberExpression(t.identifier('new'), t.identifier('target')));
+      (<any>declNewTarget).lifted = true;
+
+      path.node.body.body.unshift(declTarget);
+      path.node.body.body.unshift(declNewTarget);
     },
     exit(path: NodePath<Labeled<FunctionT>>): void {
       if((<any>path.node).mark == 'Flat') {

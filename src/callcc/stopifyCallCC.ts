@@ -37,6 +37,7 @@ const reserved = [
   "$opts",
   "$result",
   "target",
+  "newTarget",
   "SENTINAL",
   "finally_rv",
 ];

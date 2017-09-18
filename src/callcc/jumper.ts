@@ -147,8 +147,8 @@ function reapplyExpr(path: NodePath<Labeled<FunctionT>>, handleNew: NewMethod): 
       bh.sIf(t.memberExpression(t.identifier('new'), t.identifier('target')),
         t.blockStatement([
           letExpression(newObj, reapply),
-          t.returnStatement(t.conditionalExpression(t.binaryExpression('instanceof',
-            newObj, funId), t.thisExpression(), newObj)),
+          t.returnStatement(t.conditionalExpression(t.binaryExpression('===',
+            newObj, bh.eUndefined), t.thisExpression(), newObj)),
         ]),
         t.returnStatement(reapply)),
     ]) :

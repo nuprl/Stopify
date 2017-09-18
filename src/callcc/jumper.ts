@@ -42,6 +42,10 @@ function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
   };
 }
 
+function isFlat(path: NodePath<t.Node>): boolean {
+  return (<any>path.getFunctionParent().node).mark === 'Flat'
+}
+
 
 const target = t.identifier('target');
 const runtime = t.identifier('$__R');
@@ -406,6 +410,7 @@ const jumper = {
   },
   ExpressionStatement: {
     exit(path: NodePath<Labeled<t.ExpressionStatement>>, s: State) {
+      if (isFlat(path)) return
       if (path.node.appType !== undefined &&
         path.node.appType >= AppType.Tail) {
 
@@ -440,6 +445,7 @@ const jumper = {
   },
 
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
+    // No need for isFlat check here. Loops make functions not flat.
     path.node.test = bh.or(
       bh.and(isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
       bh.and(isNormalMode, path.node.test));
@@ -447,7 +453,7 @@ const jumper = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      if ((<any>path.node).isTransformed) {
+      if ((<any>path.node).isTransformed || isFlat(path)) {
         return;
       }
       const { test, consequent, alternate } = path.node;
@@ -478,27 +484,21 @@ const jumper = {
         return;
       }
 
-      const funParent = path.findParent(p => p.isFunction());
-
-      if (t.isFunction(funParent)) {
-        // Labels may occur if this return statement occurs in a try block.
-        const labels = getLabels(path.node);
-        const ifReturn = t.ifStatement(
-          isNormalMode,
-          path.node,
-          bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
-                 t.returnStatement(stackFrameCall)));
-        path.replaceWith(ifReturn);
-        path.skip();
-      } else {
-        throw new Error(`Unexpected 'return' parent of type ${typeof funParent}`);
-      }
+      // Labels may occur if this return statement occurs in a try block.
+      const labels = getLabels(path.node);
+      const ifReturn = t.ifStatement(
+        isNormalMode,
+        path.node,
+        bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
+          t.returnStatement(stackFrameCall)));
+      path.replaceWith(ifReturn);
+      path.skip();
     }
   },
 
   CatchClause: {
     exit(path: NodePath<t.CatchClause>, s: State): void {
-      if (s.opts.captureMethod === 'retval') {
+      if (s.opts.captureMethod === 'retval' || isFlat(path)) {
         return;
       }
       const { param, body } = path.node;

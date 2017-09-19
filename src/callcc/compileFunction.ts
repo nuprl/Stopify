@@ -21,7 +21,8 @@ type Opts = {
   captureMethod: 'eager' | 'retval' | 'lazy'
 }
 
-export function compileFunction(code: string, opts: Opts): string {
+export function compileFunction(code: string,
+    opts: Opts = {handleNew: 'wrapper', captureMethod: 'lazy'}): string {
   const babelOpts = {
     plugins: [[() => ({ visitor }), {
       ...opts,

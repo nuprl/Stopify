@@ -11,7 +11,7 @@ const trie = require('trie'); // NOTE(arjun): No @types on 08/28/2017
 let isInitialized = false;
 
 // We populate this trie will all the identifiers in the program.
-const prefixes = new trie.Trie();
+let prefixes = new trie.Trie();
 
 interface Known {
   newBase: string,
@@ -39,6 +39,11 @@ export function init(path: NodePath<t.Node>): void {
   known.clear();
   h.transformFromAst(path, [plugin]);
   isInitialized = true;
+}
+
+export function cleanup(): void {
+  prefixes = new trie.Trie();
+  isInitialized = false
 }
 
 export function fresh(base: string): t.Identifier {

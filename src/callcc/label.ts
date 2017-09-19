@@ -134,6 +134,7 @@ const visitor: Visitor = {
         path.node.appType = AppType.Mixed;
       }
       else {
+        // NOTE(rachit): Never happens. Anf names calls even in returns.
         path.node.appType = AppType.Tail;
       }
     }

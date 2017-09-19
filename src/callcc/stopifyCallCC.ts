@@ -94,19 +94,32 @@ export const visitor: Visitor = {
     }
 
     fastFreshId.init(path);
-    h.transformFromAst(path, [
-      [cleanupGlobals, { allowed }],
-      [hygiene, { reserved }],
-      [markFlatFunctions]
-    ]);
+    if (state.opts.compileFunction) {
+      h.transformFromAst(path, [
+        [hygiene, { reserved }],
+        [markFlatFunctions]
+      ]);
+    }
+    else {
+      h.transformFromAst(path, [
+        [cleanupGlobals, { allowed }],
+        [hygiene, { reserved }],
+        [markFlatFunctions]
+      ]);
+    }
     h.transformFromAst(path, [markFlatApplications])
-    h.transformFromAst(path, [() => ({ visitor: insertSuspend })]);
+    h.transformFromAst(path, [
+      [() => ({ visitor: insertSuspend }), {
+        compileFunction: state.opts.compileFunction
+      }]
+    ]);
     h.transformFromAst(path,
       [[callcc, {
         useReturn: true,
         captureMethod: state.opts.captureMethod,
         handleNew: state.opts.handleNew,
-        esMode: esMode
+        esMode: esMode,
+        compileFunction: state.opts.compileFunction
       }]]);
   }
 }

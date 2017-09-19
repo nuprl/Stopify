@@ -121,6 +121,7 @@ export const visitor: Visitor = {
         esMode: esMode,
         compileFunction: state.opts.compileFunction
       }]]);
+    fastFreshId.cleanup()
   }
 }
 

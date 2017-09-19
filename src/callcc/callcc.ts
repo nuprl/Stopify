@@ -51,7 +51,7 @@ const visitor: Visitor = {
     }
     timeSlow('singleVarDecl', () =>
       h.transformFromAst(path, [singleVarDecls]));
-    
+
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
         [makeBlocks, desugarLoop, desugarLabel, desugarSwitch]));
@@ -63,7 +63,9 @@ const visitor: Visitor = {
     timeSlow('free ID initialization', () =>
       freeIds.annotate(path));
     timeSlow('box assignables', () =>
-      h.transformFromAst(path, [boxAssignables]));
+      h.transformFromAst(path, [[boxAssignables, {
+        compileFunction: state.opts.compileFunction
+      }]]));
     timeSlow('ANF', () =>
       h.transformFromAst(path, [anf]));
     timeSlow('declVars', () =>
@@ -79,6 +81,7 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[jumper, {
         captureMethod: captureMethod,
         handleNew: state.opts.handleNew,
+        compileFunction: state.opts.compileFunction
       }]]));
     path.node.body.unshift(
       h.letExpression(t.identifier('target'), t.numericLiteral(0), 'var'));

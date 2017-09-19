@@ -25,6 +25,7 @@ interface State {
   opts: {
     captureMethod: CaptureLogic,
     handleNew: NewMethod,
+    compileFunction: boolean
   };
 }
 

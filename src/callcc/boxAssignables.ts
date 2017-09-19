@@ -1,7 +1,7 @@
 /**
  * This transformation boxes certain assignable variables to preserve
  * reference equality when the stack is reconstructed.
- * 
+ *
  * Preconditions:
  * 1. The freeIds pass has been applied.
  */
@@ -49,7 +49,7 @@ function liftStatement(parentPath: NodePath<Parent>, path: NodePath<t.Node>,
   }
 }
 
-function boxVars(parentPath: NodePath<Parent>, vars: Set<string>) {
+function boxVars(parentPath: NodePath<Parent>, vars: Set<string>, state: any) {
   const visitor = {
     ReferencedIdentifier(path: NodePath<t.Identifier>) {
       path.skip();
@@ -96,14 +96,15 @@ function boxVars(parentPath: NodePath<Parent>, vars: Set<string>) {
       }
 
     },
-    FunctionExpression(path: NodePath<t.FunctionExpression>) {
+    FunctionExpression(path: NodePath<t.FunctionExpression>, state: any) {
       path.skip();
-      initFunction(vars, path);
+      initFunction(vars, path, state);
     },
-    FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
+    FunctionDeclaration(path: NodePath<t.FunctionDeclaration>, state: any) {
       path.skip();
-      initFunction(vars, path);
-      if (vars.includes(path.node.id.name)) {
+      initFunction(vars, path, state);
+      if (vars.includes(path.node.id.name) &&
+          !(state.opts.compileFunction && (<any>path.node).topFunction)) {
         const fun = t.functionExpression(
           fastFreshId.fresh('fun'),
           path.node.params,
@@ -121,7 +122,7 @@ function boxVars(parentPath: NodePath<Parent>, vars: Set<string>) {
     }
   }
 
-  parentPath.traverse(visitor);
+  parentPath.traverse(visitor, state);
 }
 
 /**
@@ -141,7 +142,8 @@ function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
 
 function initFunction(
   enclosingVars: Set<string>,
-  path: NodePath<t.FunctionDeclaration | t.FunctionExpression>) {
+  path: NodePath<t.FunctionDeclaration | t.FunctionExpression>,
+  state: any) {
 
 
   const locals = Set.of(...Object.keys(path.scope.bindings));
@@ -150,7 +152,7 @@ function initFunction(
   // Mutable variables from the inner scope
   const vars1 = locals.filter(x => shouldBox(x!, path)).toSet();
 
-  boxVars(path, vars0.union(vars1));
+  boxVars(path, vars0.union(vars1), state);
 
 
   // Box arguments if necessary. We do this after visiting the function
@@ -170,11 +172,11 @@ function initFunction(
 }
 
 const visitor: Visitor = {
-  Program(path: NodePath<t.Program>) {
+  Program(path: NodePath<t.Program>, state: any) {
     const binds = path.scope.bindings;
     const vars = Object.keys(path.scope.bindings)
       .filter(x => shouldBox(x, path));
-    boxVars(path, Set.of(...vars));
+    boxVars(path, Set.of(...vars), state);
   }
 }
 

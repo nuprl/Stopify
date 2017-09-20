@@ -25,6 +25,8 @@ export class FudgeRuntime extends common.Runtime {
     super(yieldInterval, estimator);
   }
 
+  SENTINAL = {}
+
   captureCC(f: (k: any) => any): void {
     throw new common.Capture(f, []);
   }

@@ -33,6 +33,8 @@ import * as fastFreshId from '../fastFreshId';
 import { timeSlow } from '../generic';
 import * as exposeImplicitApps from '../exposeImplicitApps';
 
+const $__R = t.identifier('$__R')
+
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     let captureMethod = state.opts.captureMethod || 'eager';
@@ -71,10 +73,11 @@ const visitor: Visitor = {
     timeSlow('declVars', () =>
       h.transformFromAst(path, [declVars]));
     timeSlow('delimit', () =>
-      h.transformFromAst(path, [delimitTopLevel]));
+      h.transformFromAst(path, [[delimitTopLevel, {
+        compileFunction: state.opts.compileFunction
+      }]]));
     timeSlow('nameFinally', () =>
       h.transformFromAst(path, [nameFinallyReturn]));
-
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
     timeSlow('jumper', () =>
@@ -83,35 +86,53 @@ const visitor: Visitor = {
         handleNew: state.opts.handleNew,
         compileFunction: state.opts.compileFunction
       }]]));
-    path.node.body.unshift(
+
+    let toShift;
+    if (state.opts.compileFunction) {
+      if (t.isFunctionDeclaration(path.node.body[0])) {
+        toShift = (<t.FunctionDeclaration>path.node.body[0]).body.body
+      }
+      else {
+        throw new Error('Top-level function expected')
+      }
+    }
+    else {
+      toShift = path.node.body
+    }
+
+    toShift.unshift(
       h.letExpression(t.identifier('target'), t.numericLiteral(0), 'var'));
-    path.node.body.unshift(
+
+    toShift.unshift(
       h.letExpression(
         t.identifier("SENTINAL"),
         t.objectExpression([]),
         "const"));
-    path.node.body.unshift(
+    toShift.unshift(
       h.letExpression(
         t.identifier("suspendCC"),
         t.memberExpression(t.identifier("$__R"), t.identifier("suspendCC")),
         "const"));
-    path.node.body.unshift(
+    toShift.unshift(
       h.letExpression(
         t.identifier("captureCC"),
         t.memberExpression(t.identifier("$__R"), t.identifier("captureCC")),
         "const"));
-    path.node.body.unshift(
+    toShift.unshift(
       h.letExpression(
         t.identifier("$handleNew"),
-        t.callExpression(t.memberExpression(t.memberExpression(t.identifier("$__R"),
-          t.identifier("handleNew")), t.identifier('bind')), [t.identifier('$__R')]),
+        t.callExpression(
+          t.memberExpression(t.memberExpression(t.identifier("$__R"),
+            t.identifier("handleNew")), t.identifier('bind')),
+          [t.identifier('$__R')]),
         "const"));
-    path.node.body.unshift(
+    toShift.unshift(
       h.letExpression(
         t.identifier('$__R'),
         t.callExpression(
           t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')), []),
         'const'));
+    if (!state.opts.compileFunction) {
     path.node.body.unshift(
       h.letExpression(
         t.identifier("$__T"),
@@ -119,6 +140,7 @@ const visitor: Visitor = {
           t.identifier('require'),
           [t.stringLiteral('Stopify/built/src/rts')]),
         'const'));
+    }
     path.stop();
   }
 };

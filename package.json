@@ -37,7 +37,8 @@
     "jest-junit": "^2.1.0",
     "path": "^0.12.7",
     "process": "^0.11.10",
-    "typescript": "~2.3"
+    "typescript": "~2.3",
+    "debug": "^3.0.1"
   },
   "scripts": {
     "build": "./bin/build",

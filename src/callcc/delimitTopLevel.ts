@@ -34,7 +34,7 @@ function delimitExpr(e: t.Expression): t.Expression {
 }
 
 const visitor = {
-  Program: function (path: NodePath<t.Program>): void {
+  Program(path: NodePath<t.Program>, state: any): void {
     const body = path.node.body;
     for (let i = 0; i < body.length; i++) {
       const stmt = body[i];
@@ -46,7 +46,11 @@ const visitor = {
         }
       }
       else {
-        body[i] = delimitStmt(body[i]);
+        if (state.opts.compileFunction && (<any>body[i]).topFunction) {
+        }
+        else {
+          body[i] = delimitStmt(body[i]);
+        }
       }
     }
     path.stop();

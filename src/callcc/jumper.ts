@@ -116,12 +116,14 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
         [t.variableDeclarator(matArgs, t.identifier('arguments'))]));
   }
 
-  path.get('body').replaceWith(t.blockStatement([
+  const newBody = t.blockStatement([
     ...pre,
     ifRestoring,
     ...mayMatArgs,
     ...post
-  ]));
+  ]);
+  newBody.directives = path.node.body.directives;
+  path.get('body').replaceWith(newBody);
   path.skip();
 };
 

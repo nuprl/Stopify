@@ -91,6 +91,7 @@ const insertSuspend: Visitor = {
         t.returnStatement(
           t.callExpression(top, [t.stringLiteral("done")])));
       const body = t.blockStatement(path.node.body);
+      body.directives = path.node.directives;
       path.node.body = [
         h.letExpression(
           result, appCaptureCC(t.functionExpression(undefined, [top],

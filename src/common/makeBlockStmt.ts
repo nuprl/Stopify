@@ -17,11 +17,6 @@ const ifStatement : VisitNode<t.IfStatement> = function (path: NodePath<t.IfStat
   if (alternate !== null && t.isBlockStatement(alternate) === false) {
     path.node.alternate = t.blockStatement([alternate]);
   }
-
-  // Make sure if has an else branch.
-  if (alternate === null) {
-    path.node.alternate = t.blockStatement([t.emptyStatement()]);
-  }
 };
 
 const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {

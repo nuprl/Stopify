@@ -59,3 +59,18 @@ export function groupBy<T>(inGroup: (x: T, y: T) => boolean, arr: T[]): T[][] {
     return [[x, ...ys], ...groupBy(inGroup, zs)];
   }
 }
+
+export function parseArg<T>(
+  convert: (arg: string) => T,
+  validate: (parsed: T) => boolean,
+  error: string): (arg: any) => any {
+  return (arg: any) => {
+    const parsed = convert(arg);
+    if (validate(parsed)) {
+      return parsed;
+    }
+    else {
+      throw new Error(error);
+    }
+  };
+}

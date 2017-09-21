@@ -11,6 +11,7 @@ import markFlatFunctions from '../common/markFlatFunctions';
 import * as fastFreshId from '../fastFreshId';
 import markFlatApplications from '../common/markFlatApplications'
 import { knowns } from '../common/cannotCapture'
+import * as exposeImplicitApps from '../exposeImplicitApps';
 
 const top = t.identifier("$top");
 const isStop = t.identifier("$isStop");
@@ -30,6 +31,7 @@ const allowed = [
 
 const reserved = [
   ...knowns,
+  exposeImplicitApps.implicitsIdentifier.name,
   "$opts",
   "$result",
   "target",
@@ -92,7 +94,8 @@ export const visitor: Visitor = {
       [[callcc, {
         useReturn: true,
         captureMethod: state.opts.captureMethod,
-        handleNew: state.opts.handleNew
+        handleNew: state.opts.handleNew,
+        esMode: state.opts.esMode
       }]]);
   }
 }

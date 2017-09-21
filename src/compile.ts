@@ -17,6 +17,7 @@ const srcPath = args._[0];
 const dstPath = args._[1];
 const transform = args.transform;
 const handleNew = args.new ? args.new : 'wrapper';
+const esMode = args.esMode || 'sane';
 
 const validTransforms = [ 'eager', 'lazy', 'retval', 'original', 'fudge' ];
 if (validTransforms.includes(transform) === false) {
@@ -41,6 +42,7 @@ const opts = {
   plugins: [[stopifyCallCC, {
     captureMethod: transform,
     handleNew: handleNew,
+    esMode: esMode
   }]],
   babelrc: false,
   ast: false,

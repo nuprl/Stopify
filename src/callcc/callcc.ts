@@ -31,6 +31,7 @@ import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import * as fastFreshId from '../fastFreshId';
 import { timeSlow } from '../generic';
+import * as exposeImplicitApps from '../exposeImplicitApps';
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -43,6 +44,10 @@ const visitor: Visitor = {
 
     if (state.opts.handleNew === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
+    }
+
+    if (state.opts.esMode === 'es5') {
+      h.transformFromAst(path, [exposeImplicitApps.plugin]);
     }
     timeSlow('singleVarDecl', () =>
       h.transformFromAst(path, [singleVarDecls]));

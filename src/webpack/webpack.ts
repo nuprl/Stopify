@@ -19,7 +19,7 @@ const dstPage = args._[1];
 const mainJs = tmp.fileSync({ postfix: '.js', dir: '.' });
 const stream = fs.createWriteStream(mainJs.name, { fd: mainJs.fd });
 stream.write(
-  `const loader = require('Stopify');
+  `const loader = require('Stopify/built/src/rts');
    function M() {  require("./${srcModule}"); }
    loader.loadInBrowser(M, "./${srcModule}");`);
 stream.close();
@@ -30,7 +30,7 @@ const webpackConfig = {
   entry: "./" + mainJs.name,
   output: { filename: outputJs.name },
   externals: {
-    "Stopify": 'stopify'
+    'Stopify/built/src/rts': 'stopify'
   }
 };
 

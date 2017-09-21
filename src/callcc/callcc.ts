@@ -107,7 +107,7 @@ const visitor: Visitor = {
         t.identifier("$__T"),
         t.callExpression(
           t.identifier('require'),
-          [t.stringLiteral('Stopify')]),
+          [t.stringLiteral('Stopify/built/src/rts')]),
         'const'));
     path.stop();
   }

@@ -169,6 +169,8 @@ export function run(M: (() => void) | undefined, opts: Opts, done: () => void): 
      M();
   }
   else {
+    // This causes a "critical dependency" warning in Webpack. However, it is
+    // never evaluated on the browser.
     require(path.relative(__dirname, path.resolve(opts.filename)));
   }
   rts.delimit(onDone);

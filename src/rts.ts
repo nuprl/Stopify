@@ -7,6 +7,9 @@ import retval from './callcc/retvalRuntime';
 import fudge from './callcc/fudgeRuntime';
 import * as elapsedTimeEstimator from './elapsedTimeEstimator';
 
+export * from './callcc/runtime';
+export * from './loadInBrowser';
+
 function unreachable(): never {
   throw new Error("unreachable code was reached!");
 }

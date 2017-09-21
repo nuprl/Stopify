@@ -36,7 +36,7 @@ function plugin() {
 }
 
 export function init(path: NodePath<t.Node>): void {
-  assert(!isInitialized, 'init() already applied');
+  known.clear();
   h.transformFromAst(path, [plugin]);
   isInitialized = true;
 }

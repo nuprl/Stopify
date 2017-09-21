@@ -2,6 +2,6 @@ export * from './callcc/runtime';
 export { makeRTS, getRTS } from './rts';
 export * from './loadInBrowser';
 
-import CallCC from './callcc/callcc';
+import { plugin } from './callcc/stopifyCallCC';
 
-export default CallCC;
+export default plugin;

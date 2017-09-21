@@ -2,7 +2,7 @@ import * as babel from 'babel-core';
 import * as minimist from 'minimist';
 import * as fs from 'fs';
 import * as path from 'path';
-import toModule from './callcc/toModule';
+import { plugin as stopifyCallCC } from './callcc/stopifyCallCC';
 
 const stderr = process.stderr;
 
@@ -38,7 +38,7 @@ if ((fs.existsSync(srcPath) && fs.statSync(srcPath).isFile()) === false) {
 }
 
 const opts = {
-  plugins: [[toModule, {
+  plugins: [[stopifyCallCC, {
     captureMethod: transform,
     handleNew: handleNew,
   }]],
@@ -48,6 +48,18 @@ const opts = {
   minified: true,
   comments: false
 };
+
+if (transform === 'original') {
+  const src = fs.readFileSync(srcPath, 'utf8')
+  if (dstPath === undefined) {
+    console.log(src);
+  }
+  else {
+    fs.writeFileSync(dstPath, src);
+  }
+  process.exit(0);
+}
+
 babel.transformFile(srcPath, opts, (err, result) => {
   if (err !== null) {
     throw err;

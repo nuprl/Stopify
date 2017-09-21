@@ -537,13 +537,6 @@ const jumper = {
             path.node.finalizer)]);
       }
     }
-  },
-
-  Program: function (path: NodePath<t.Program>): void {
-    const fun = t.functionDeclaration(t.identifier('$program'),
-    [], t.blockStatement(path.node.body));
-    (<FunctionT>fun).localVars = [];
-    path.node.body = [fun];
   }
 };
 

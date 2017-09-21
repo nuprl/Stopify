@@ -4,6 +4,8 @@ import * as minimist from 'minimist';
 import { sum } from '../generic';
 import { sprintf } from 'sprintf';
 import * as commander from 'commander';
+import { makeRTS } from '../rts';
+import * as path from 'path';
 
 function parseArg<T>(
   convert: (arg: string) => T,
@@ -59,6 +61,13 @@ commander.option(
     'invalid --estimator value'),
   'countdown');
 
+commander.option(
+  '-t, --transform <transform>',
+  'the transformation used to compile the program',
+  parseArg(x => x,
+    (x) => /^(eager|retval|lazy|original)$/.test(x),
+    'invalid --transform'));
+
 commander.arguments('<filename>');
 
 
@@ -66,12 +75,13 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
 
   const args = commander.parse(["", "", ...rawArgs]);
 
-  filename = filename || args.args[0];  
+  filename = filename || args.args[0];
   if (typeof filename !== 'string') {
     throw new Error(`Missing filename`);
   }
 
   return {
+    transform: args.transform,
     filename: filename,
     yieldInterval: args.yield,
     estimator: args.estimator,
@@ -83,13 +93,22 @@ export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
   return <any>null;
 }
 
-export function run(M: Stoppable, opts: Opts, done: () => void): void {
+const fakeRTS = {
+  onYield() {
+  },
+  delimit(thunk: () => void) {
+    thunk()
+  }
+}
+
+export function run(M: (() => void) | undefined, opts: Opts, done: () => void): void {
+  const rts = opts.transform === 'original' ? fakeRTS : makeRTS(opts);
   let yields = 0;
   let mustStop = false;
   let lastStopTime: number | undefined;
   let stopIntervals: number[] = [];
 
-  function isStop() {
+  rts.onYield = function() {
     yields++;
     if (opts.variance) {
       const now = Date.now();
@@ -98,11 +117,7 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
       }
       lastStopTime = now;
     }
-    return mustStop;
-  }
-
-  function onStop() {
-    onDone();
+    return !mustStop;
   }
 
   function onDone() {
@@ -138,8 +153,8 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
     console.log = function (str: any) {
       data.value = data.value + str + '\n';
     }
-    window.onerror = () => {
-      data.value = data.value + ',NA\n';
+    window.onerror = (message: any) => {
+      data.value = data.value + '\nAn error occurred:\n' + message + '\n';
       window.document.title = "done"
     }
   }
@@ -150,5 +165,11 @@ export function run(M: Stoppable, opts: Opts, done: () => void): void {
     setTimeout(() => mustStop = true, opts.stop * 1000);
   }
 
-  M(isStop, onStop, onDone, opts);
+  if (M) {
+     M();
+  }
+  else {
+    require(path.relative(__dirname, path.resolve(opts.filename)));
+  }
+  rts.delimit(onDone);
 }

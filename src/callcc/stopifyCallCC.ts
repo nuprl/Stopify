@@ -30,10 +30,6 @@ const allowed = [
 
 const reserved = [
   ...knowns,
-  "$top",
-  "$isStop",
-  "$onStop",
-  "$onDone",
   "$opts",
   "$result",
   "target",
@@ -42,16 +38,11 @@ const reserved = [
   "finally_rv",
 ];
 
-function appCaptureCC(receiver: t.Expression) {
-  return t.callExpression(t.memberExpression(t.identifier('$__R'),
-    t.identifier('captureCC')), [receiver]);
-}
 
 function handleBlock(body: t.BlockStatement) {
   body.body.unshift(t.expressionStatement(
     t.callExpression(
-      t.memberExpression(t.identifier("$__R"), t.identifier("suspend")),
-      [top])));
+      t.memberExpression(t.identifier("$__R"), t.identifier("suspend")), [])));
 }
 
 type BlockBody = {
@@ -83,31 +74,7 @@ const insertSuspend: Visitor = {
       path.node.body = body;
       handleBlock(body);
     }
-  },
-
-  Program: {
-    exit(path: NodePath<t.Program>) {
-      path.node.body.push(
-        t.returnStatement(
-          t.callExpression(top, [t.stringLiteral("done")])));
-      const body = t.blockStatement(path.node.body);
-      body.directives = path.node.directives;
-      path.node.body = [
-        h.letExpression(
-          result, appCaptureCC(t.functionExpression(undefined, [top],
-            body))),
-        t.ifStatement(
-          t.binaryExpression("===", result, t.stringLiteral("done")),
-          t.blockStatement([t.returnStatement(t.callExpression(onDone, []))]),
-          t.ifStatement(
-            t.callExpression(isStop, []),
-            t.blockStatement([t.returnStatement(t.callExpression(onStop, []))]),
-            t.returnStatement(
-              t.callExpression(t.memberExpression(t.identifier("$__R"), t.identifier("resume")), [result]))))
-      ];
-    }
-  },
-
+  }
 }
 
 export const visitor: Visitor = {

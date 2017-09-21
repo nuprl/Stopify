@@ -6,6 +6,7 @@ export type Stoppable = (isStop: () => boolean,
 export type ElapsedTimeEstimatorName = 'exact' | 'reservoir' | 'countdown';
 
 export interface Opts {
+  transform: 'eager' | 'lazy' | 'retval' | 'original',
   filename: string,
   estimator: ElapsedTimeEstimatorName;
   yieldInterval: number,

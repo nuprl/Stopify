@@ -20,8 +20,8 @@ const mainJs = tmp.fileSync({ postfix: '.js', dir: '.' });
 const stream = fs.createWriteStream(mainJs.name, { fd: mainJs.fd });
 stream.write(
   `const loader = require("./built/src/webpack/wrapper");
-   const app = require("./${srcModule}");
-   loader.default(app, "${srcModule}");`);
+   function M() {  require("./${srcModule}"); }
+   loader.default(M, "./${srcModule}");`);
 stream.close();
 
 const outputJs = tmp.fileSync({ postfix: '.js', dir: '.' });

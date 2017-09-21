@@ -1,6 +1,7 @@
 import { setImmediate } from '../setImmediate';
 import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 import { knowns } from '../common/cannotCapture'
+import * as assert from 'assert';
 
 // The type of continuation frames
 export type KFrame = KFrameTop | KFrameRest;
@@ -57,21 +58,58 @@ export abstract class Runtime {
   constructor(
     public yieldInterval: number,
     public estimator: ElapsedTimeEstimator,
-    public capturing: boolean = false
-    ) {
+    public capturing: boolean = false,
+    // true if computation is suspended by 'suspend'
+    private isSuspended: boolean = false,
+    // a queue of computations that need to run
+    private pendingRuns: (() => void)[] = [],
+    /** This function is applied immediately before stopify yields control to
+     *  the browser's event loop. If the function produces 'false', the
+     *  computation terminates.
+     */
+    public onYield = function(): boolean { return true; }) {
     this.stack = [];
     this.mode = true;
   }
 
-  resume(result: any): any {
-    return setImmediate(() => this.runtime(result));
+
+  /**
+   * Evaluates 'thunk' either now or later.
+   */
+  delimit(thunk: () => any): any {
+    if (this.isSuspended === false) {
+      this.runtime(thunk);
+      this.resume();
+    }
+    else {
+      return this.pendingRuns.push(thunk);
+    }
   }
 
-  suspend(top: any): void {
+  resume(): any {
+    if (this.isSuspended) {
+      return;
+    }
+    if (this.pendingRuns.length > 0) {
+      return this.delimit(this.pendingRuns.shift()!);
+    }
+  }
+
+  suspend(): void {
+    assert(!this.isSuspended);
     // If this.yieldInterval is NaN, the condition will be false
     if (this.estimator.elapsedTime() >= this.yieldInterval) {
       this.estimator.reset();
-      return this.captureCC(top);
+      this.isSuspended = true;
+      return this.captureCC((continuation) => {
+        if (this.onYield()) {
+          return setImmediate(() => {
+            this.isSuspended = false;
+            this.runtime(continuation);
+            this.resume();
+          });
+        }
+      });
     }
   }
 

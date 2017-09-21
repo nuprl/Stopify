@@ -20,6 +20,7 @@ import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
 import nameFinallyReturn from './nameFinallyReturn';
+import delimitTopLevel from './delimitTopLevel';
 import hygiene from '../common/hygiene';
 import * as freeIds from '../common/freeIds';
 import cleanup from './cleanup';
@@ -62,6 +63,8 @@ const visitor: Visitor = {
       h.transformFromAst(path, [anf]));
     timeSlow('declVars', () =>
       h.transformFromAst(path, [declVars]));
+    timeSlow('delimit', () =>
+      h.transformFromAst(path, [delimitTopLevel]));
     timeSlow('nameFinally', () =>
       h.transformFromAst(path, [nameFinallyReturn]));
 
@@ -97,9 +100,7 @@ const visitor: Visitor = {
       h.letExpression(
         t.identifier('$__R'),
         t.callExpression(
-          t.memberExpression(t.identifier('$__T'), t.identifier('makeRTS')),
-          [t.stringLiteral(captureMethod),
-           state.opts.useReturn ? t.identifier('$opts') : t.unaryExpression('void', t.numericLiteral(0))]),
+          t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')), []),
         'const'));
     path.node.body.unshift(
       h.letExpression(
@@ -108,24 +109,6 @@ const visitor: Visitor = {
           t.identifier('require'),
           [t.stringLiteral('Stopify')]),
         'const'));
-    path.node.body.push(
-      finalStatement(
-        t.callExpression(
-          t.memberExpression(t.identifier("$__R"), t.identifier("runtime")),
-          [t.identifier("$program")])));
-
-    if (state.opts.useReturn) {
-      const isStop = t.identifier("$isStop");
-      const onStop = t.identifier("$onStop");
-      const onDone = t.identifier("$onDone");
-      const opts = t.identifier("$opts");
-
-      path.node.body = [t.expressionStatement(
-        t.functionExpression(
-          void 0,
-          [isStop, onStop, onDone, opts], t.blockStatement(path.node.body, path.node.directives)))];
-      path.node.directives = undefined;
-    }
     path.stop();
   }
 };

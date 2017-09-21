@@ -6,4 +6,4 @@ import * as runtime from './runtime/default';
 
 const opts = runtime.parseRuntimeOpts(process.argv.slice(2));
 const srcModule = path.relative(__dirname, path.resolve(opts.filename));
-runtime.run(require(srcModule), opts, () => { });
+runtime.run(() => require(srcModule), opts, () => { });

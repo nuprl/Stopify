@@ -123,29 +123,10 @@ type byPlatformResult = {
   src: string
 }
 
-function byPlatform(platform: string, src: string): byPlatformResult {
-  const re = /^(.*)\.(?:js|html)$/;
-  const match = re.exec(src);
-  if (match === null) {
-    throw new Error(`Expected .js or .html file`);
-  }
-
-  switch (platform) {
-    case 'node':
-      return { cmd: './bin/run', src: match[1] + '.js' };
-    case 'chrome':
-      return { cmd: './bin/browser', src: match[1] + '.html' };
-    case 'firefox':
-      return { cmd: './bin/browser', src: match[1] + '.html' };
-    default:
-      throw new Error(`bad platform ${platform}`)
-  }
-}
-
 function run() {
   const platform: string = opts.platform;
   const variance = opts.variance;
-  const { cmd, src } = byPlatform(platform, opts.src);
+  const src = opts.src;
   const estimatorRe = /^(reservoir|exact|countdown)(?:\/(\d+))?(?:\/(\d+))?$/;
   const matchEstimator = estimatorRe.exec(opts.estimator);
   if (matchEstimator === null) {
@@ -204,7 +185,7 @@ function run() {
 
     args.push(src);
 
-    let proc = spawnSync(cmd, args,
+    let proc = spawnSync('./bin/browser', args,
       { stdio: [ 'none', 'inherit', 'pipe' ], timeout: 5 * 60 * 1000 });
 
     const stdoutStr = String(proc.stdout);
@@ -231,7 +212,6 @@ function compile() {
 
   const dstBase = `${wd}/${transform}-${newMethod}-${language}-${base}`
   const dstJs = `${dstBase}.js`
-  const dstHtml = `${dstBase}.html`
   const compileTime = `${dstBase}.compile`
   const codesize = `${dstBase}.codesize`
 
@@ -239,14 +219,11 @@ function compile() {
   const olen = fs.readFileSync(src).toString().length
   const stime = Date.now()
   creates(dstJs, () =>
-    exec(`./bin/compile --transform ${transform} --new ${newMethod} ${src} ${dstJs}`));
+    exec(`./bin/compile --webpack --transform ${transform} --new ${newMethod} ${src} ${dstJs}`));
   const ftime = Date.now()
   const ctime = ftime - stime
   const flen = fs.readFileSync(dstJs).toString().length
   const blowup = (flen * 1.0)/(olen * 1.0)
-
-  creates(dstHtml, () =>
-    exec(`./bin/webpack ${dstJs} ${dstHtml}`));
 
   const spec = `${base},${language},${transform},${newMethod}`
 

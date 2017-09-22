@@ -81,6 +81,8 @@ const visitor: Visitor = {
         handleNew: state.opts.handleNew,
       }]]));
     path.node.body.unshift(
+      h.letExpression(t.identifier('target'), t.numericLiteral(0), 'var'));
+    path.node.body.unshift(
       h.letExpression(
         t.identifier("SENTINAL"),
         t.objectExpression([]),

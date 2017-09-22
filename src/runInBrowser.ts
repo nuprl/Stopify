@@ -3,19 +3,14 @@ import * as chrome from 'selenium-webdriver/chrome';
 import * as path from 'path';
 import * as runtime from './runtime/default';
 import * as os from 'os';
+import { encodeArgs } from './browserLine';
 
 process.env.MOZ_HEADLESS = "1";
 
 const stdout = process.stdout;
 const args = process.argv.slice(2);
 const opts = runtime.parseRuntimeOpts(args);
-
-function suffixAfter(str: string, key: string) {
-  return str.slice(str.indexOf(' ')! + 1);
-}
-
-const src = 'file://' + path.resolve('.', opts.filename) +
-  '#' + encodeURIComponent(JSON.stringify(args));
+const src = encodeArgs();
 
 // NOTE(sam): No typing for `headless()` option as of 8/30/2017.
 // I've opened a PR to DefinitelyTyped to fix this.

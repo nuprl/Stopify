@@ -64,7 +64,7 @@ export class EagerRuntime extends common.Runtime {
       return new constr(...args);
     }
 
-    let obj;
+    let obj, result;
     if (this.mode) {
 
       obj = Object.create(constr.prototype);
@@ -85,13 +85,13 @@ export class EagerRuntime extends common.Runtime {
         locals: [obj],
         index: 0
       });
-      constr.apply(obj, args);
+      result = constr.apply(obj, args);
       this.eagerStack.shift();
     } else {
-      this.stack[this.stack.length - 1].f.apply(obj, []);
+      result = this.stack[this.stack.length - 1].f.apply(obj, []);
       this.eagerStack.shift();
     }
-    return obj;
+    return typeof result === 'object' ? result : obj;
   }
 }
 

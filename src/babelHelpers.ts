@@ -106,3 +106,23 @@ export function lvaltoName(lval: t.LVal): string {
     throw new Error(`Expected Identifier, received ${lval.type}`);
   }
 }
+
+function isPropertyValue(p: t.ObjectProperty | t.ObjectMethod): boolean {
+  return (
+    t.isObjectMethod(p) ||
+    (p.computed === false && isValue(p.value)));
+}
+
+/**
+ * Produces 'true' if 'e' is a value.
+ *
+ * @param e
+ */
+export function isValue(e: t.Expression): boolean {
+  return (
+    t.isLiteral(e) ||
+    t.isFunction(e) ||
+    (t.isArrayExpression(e) && e.elements.every(isValue)) ||
+    (t.isObjectExpression(e) && e.properties.every(isPropertyValue)) ||
+    t.isIdentifier(e));
+}

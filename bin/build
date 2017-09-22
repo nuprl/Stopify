@@ -7,6 +7,8 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
+./node_modules/.bin/webpack
+
 if [ ! -L node_modules/Stopify ]; then
     (cd node_modules; ln -s .. Stopify)
 fi

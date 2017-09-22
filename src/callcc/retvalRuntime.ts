@@ -65,7 +65,7 @@ class RetValRuntime extends common.Runtime {
       return new constr(...args);
     }
 
-    let obj;
+    let obj, result;
     if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
@@ -90,6 +90,8 @@ class RetValRuntime extends common.Runtime {
         return _a;
       } else if (_a instanceof common.Restore) {
         return _a;
+      } else {
+        result = _a
       }
     }
     else {
@@ -104,9 +106,11 @@ class RetValRuntime extends common.Runtime {
         return _a;
       } else if (_a instanceof common.Restore) {
         return _a;
+      } else {
+        result = _a
       }
     }
-    return obj;
+    return typeof result === 'object' ? result : obj;
   }
 }
 

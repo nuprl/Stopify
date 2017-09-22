@@ -26,7 +26,7 @@ export function callCCTest(srcPath: string, transform: string, opts: string = ""
     execSync(
       `./bin/compile --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
     try {
-      execSync(`./bin/run ${dstPath} --yield 1`, { timeout: 30000 });
+      execSync(`./bin/run ${dstPath} --transform ${transform} --yield 1`, { timeout: 30000 });
     }
     finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.
@@ -51,8 +51,8 @@ export function browserTest(srcPath: string, transform: string) {
     const { name: htmlPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.html` });
     execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
     execSync(`./bin/webpack ${dstPath} ${htmlPath}`);
-    execSync(`./bin/browser ${htmlPath} --yield 1000 --env chrome`);
-    execSync(`./bin/browser ${htmlPath} --yield 1000 --env firefox`);
+    execSync(`./bin/browser ${htmlPath}  --transform ${transform} --yield 1000 --env chrome`);
+    execSync(`./bin/browser ${htmlPath}  --transform ${transform} --yield 1000 --env firefox`);
     fs.unlinkSync(dstPath);
     fs.unlinkSync(htmlPath);
   });
@@ -76,7 +76,7 @@ export function stopCallCCTest(srcPath: string, transform: string) {
     const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: ".js" });
     execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
     try {
-      execSync(`./bin/run ${dstPath} --yield 10 --stop 1`, { timeout: 5000 });
+      execSync(`./bin/run ${dstPath} --transform ${transform} --yield 10 --stop 1`, { timeout: 5000 });
     }
     finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.

@@ -200,6 +200,8 @@ function run() {
       args.push("--variance");
     }
 
+    args.push('--transform', transform);
+
     args.push(src);
 
     let proc = spawnSync(cmd, args,

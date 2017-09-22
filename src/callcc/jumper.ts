@@ -16,7 +16,7 @@ type Labeled<T> = T & {
   appType?: AppType;
   __usesArgs__?: boolean
 }
-type CaptureFun = (path: NodePath<t.AssignmentExpression>, handleNew: NewMethod) => void;
+type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
 
 export type CaptureLogic = 'lazy' | 'eager' | 'retval' | 'fudge';
 export type NewMethod = 'direct' | 'wrapper';
@@ -42,8 +42,13 @@ function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
   };
 }
 
+function isFlat(path: NodePath<t.Node>): boolean {
+  return (<any>path.getFunctionParent().node).mark === 'Flat'
+}
+
 
 const target = t.identifier('target');
+const newTarget = t.identifier('newTarget');
 const runtime = t.identifier('$__R');
 const types = t.identifier('$__T');
 const matArgs = t.identifier('materializedArguments');
@@ -111,16 +116,14 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
         [t.variableDeclarator(matArgs, t.identifier('arguments'))]));
   }
 
-  const declTarget = letExpression(target, t.nullLiteral());
-  (<any>declTarget).lifted = true;
-
-  path.get('body').replaceWith(t.blockStatement([
-    declTarget,
+  const newBody = t.blockStatement([
     ...pre,
     ifRestoring,
     ...mayMatArgs,
     ...post
-  ]));
+  ]);
+  newBody.directives = path.node.body.directives;
+  path.get('body').replaceWith(newBody);
   path.skip();
 };
 
@@ -130,7 +133,7 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
     bh.eFalse);
 }
 
-function reapplyExpr(path: NodePath<Labeled<FunctionT>>, handleNew: NewMethod): t.Expression {
+function reapplyExpr(path: NodePath<Labeled<FunctionT>>): t.Expression | t.BlockStatement {
   const funId = path.node.id;
   let reapply: t.Expression;
   if (path.node.__usesArgs__) {
@@ -141,11 +144,7 @@ function reapplyExpr(path: NodePath<Labeled<FunctionT>>, handleNew: NewMethod): 
     reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
         [t.thisExpression(), ...<any>path.node.params]);
   }
-  return handleNew === 'direct' ?
-    t.conditionalExpression(t.memberExpression(t.identifier('new'), t.identifier('target')),
-      t.sequenceExpression([reapply, t.thisExpression()]),
-      reapply) :
-    reapply;
+  return reapply;
 }
 
 function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
@@ -170,7 +169,7 @@ function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  *      throw exn;
  *    }
  */
-function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: NewMethod): void {
+function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const exn = fastFreshId.fresh('exn');
 
@@ -202,7 +201,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: New
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
               t.objectProperty(
                 t.identifier('f'),
-                t.arrowFunctionExpression([], reapplyExpr(funParent, handleNew))),
+                t.arrowFunctionExpression([], reapplyExpr(funParent))),
               t.objectProperty(t.identifier('locals'),
                 t.arrayExpression(<any>locals)),
               t.objectProperty(t.identifier('index'), applyLbl),
@@ -234,7 +233,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: New
  *      eagerStack.shift();
  *    }
  */
-function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: NewMethod): void {
+function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
 
   const funParent = <NodePath<FunctionT>>path.findParent(p =>
@@ -254,7 +253,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: Ne
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(
       t.identifier('f'),
-      t.arrowFunctionExpression([], reapplyExpr(funParent, handleNew))),
+      t.arrowFunctionExpression([], reapplyExpr(funParent))),
     t.objectProperty(t.identifier('locals'),
       t.arrayExpression(<any>locals)),
     t.objectProperty(t.identifier('index'), applyLbl),
@@ -304,7 +303,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: Ne
  *      if (mode === 'normal') x = ret;
  *    }
  */
-function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: NewMethod): void {
+function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const ret = fastFreshId.fresh('ret');
 
@@ -323,7 +322,7 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>, handleNew: N
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(
       t.identifier('f'),
-      t.arrowFunctionExpression([], reapplyExpr(funParent, handleNew))),
+      t.arrowFunctionExpression([], reapplyExpr(funParent))),
     t.objectProperty(t.identifier('locals'),
       t.arrayExpression(<any>locals)),
     t.objectProperty(t.identifier('index'), applyLbl),
@@ -406,6 +405,7 @@ const jumper = {
   },
   ExpressionStatement: {
     exit(path: NodePath<Labeled<t.ExpressionStatement>>, s: State) {
+      if (isFlat(path)) return
       if (path.node.appType !== undefined &&
         path.node.appType >= AppType.Tail) {
 
@@ -416,8 +416,7 @@ const jumper = {
         }
         else {
           captureLogics[s.opts.captureMethod](
-            <any>path.get('expression'),
-            s.opts.handleNew);
+            <any>path.get('expression'));
           return;
         }
       }
@@ -428,8 +427,31 @@ const jumper = {
   },
 
   "FunctionExpression|FunctionDeclaration": {
-    enter(path: NodePath<Labeled<FunctionT>>) {
+    enter(path: NodePath<Labeled<FunctionT>>, s: State) {
       path.node.__usesArgs__ = usesArguments(path);
+
+      if ((<any>path.node).mark === 'Flat') {
+        return;
+      }
+
+      const declTarget = letExpression(target, t.nullLiteral());
+      (<any>declTarget).lifted = true;
+
+      if (s.opts.handleNew === 'direct') {
+        path.node.localVars.push(newTarget);
+        const declNewTarget = letExpression(newTarget,
+          t.memberExpression(t.identifier('new'), t.identifier('target')));
+        (<any>declNewTarget).lifted = true;
+
+        path.node.body.body.unshift(declTarget);
+        path.node.body.body.unshift(declNewTarget);
+
+        const ifConstructor = bh.sIf(newTarget,
+          t.returnStatement(t.thisExpression()));
+        (<any>ifConstructor).isTransformed = true;
+
+        path.node.body.body.push(ifConstructor);
+      }
     },
     exit(path: NodePath<Labeled<FunctionT>>): void {
       if((<any>path.node).mark == 'Flat') {
@@ -440,6 +462,7 @@ const jumper = {
   },
 
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
+    // No need for isFlat check here. Loops make functions not flat.
     path.node.test = bh.or(
       bh.and(isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
       bh.and(isNormalMode, path.node.test));
@@ -447,7 +470,7 @@ const jumper = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      if ((<any>path.node).isTransformed) {
+      if ((<any>path.node).isTransformed || isFlat(path)) {
         return;
       }
       const { test, consequent, alternate } = path.node;
@@ -478,27 +501,21 @@ const jumper = {
         return;
       }
 
-      const funParent = path.findParent(p => p.isFunction());
-
-      if (t.isFunction(funParent)) {
-        // Labels may occur if this return statement occurs in a try block.
-        const labels = getLabels(path.node);
-        const ifReturn = t.ifStatement(
-          isNormalMode,
-          path.node,
-          bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
-                 t.returnStatement(stackFrameCall)));
-        path.replaceWith(ifReturn);
-        path.skip();
-      } else {
-        throw new Error(`Unexpected 'return' parent of type ${typeof funParent}`);
-      }
+      // Labels may occur if this return statement occurs in a try block.
+      const labels = getLabels(path.node);
+      const ifReturn = t.ifStatement(
+        isNormalMode,
+        path.node,
+        bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
+          t.returnStatement(stackFrameCall)));
+      path.replaceWith(ifReturn);
+      path.skip();
     }
   },
 
   CatchClause: {
     exit(path: NodePath<t.CatchClause>, s: State): void {
-      if (s.opts.captureMethod === 'retval') {
+      if (s.opts.captureMethod === 'retval' || isFlat(path)) {
         return;
       }
       const { param, body } = path.node;
@@ -520,13 +537,6 @@ const jumper = {
             path.node.finalizer)]);
       }
     }
-  },
-
-  Program: function (path: NodePath<t.Program>): void {
-    const fun = t.functionDeclaration(t.identifier('$program'),
-    [], t.blockStatement(path.node.body));
-    (<FunctionT>fun).localVars = [];
-    path.node.body = [fun];
   }
 };
 

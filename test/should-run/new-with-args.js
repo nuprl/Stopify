@@ -1,8 +1,15 @@
 const assert = require('assert');
 
+function foo() {
+  while (false) {}
+}
+
 function Point(x, y, z) {
+  foo();
   this.x = x;
+  foo();
   this.y = y;
+  foo();
   this.z = z;
 }
 

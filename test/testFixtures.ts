@@ -46,13 +46,24 @@ export function browserTest(srcPath: string, transform: string) {
     return;
   }
 
-  it(testName, () => {
-    const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
-    execSync(`./bin/compile --webpack --transform ${transform} ${srcPath} ${dstPath}`);
-    execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env chrome`);
-    execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env firefox`);
-    fs.unlinkSync(dstPath);
-  });
+  if (srcPath.endsWith('forever.js')) {
+    test(`${testName} (may run forever)`, () => {
+      const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
+      execSync(`./bin/compile --webpack --transform ${transform} ${srcPath} ${dstPath}`);
+      execSync(`./bin/browser ${dstPath}  --transform ${transform} -y 1 --stop 5 --env chrome`);
+      execSync(`./bin/browser ${dstPath}  --transform ${transform} -y 1 --stop 5 --env firefox`);
+      fs.unlinkSync(dstPath);
+    });
+  }
+  else {
+    it(testName, () => {
+      const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
+      execSync(`./bin/compile --webpack --transform ${transform} ${srcPath} ${dstPath}`);
+      execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env chrome`);
+      execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env firefox`);
+      fs.unlinkSync(dstPath);
+    });
+  }
 }
 
 export function stopCallCCTest(srcPath: string, transform: string) {

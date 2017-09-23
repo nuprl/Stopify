@@ -1,26 +1,11 @@
 
 import { Opts, Stoppable, ElapsedTimeEstimatorName } from '../types';
 import * as minimist from 'minimist';
-import { sum } from '../generic';
+import { sum, parseArg } from '../generic';
 import { sprintf } from 'sprintf';
 import * as commander from 'commander';
 import { makeRTS } from '../rts';
 import * as path from 'path';
-
-function parseArg<T>(
-  convert: (arg: string) => T,
-  validate: (parsed: T) => boolean,
-  error: string): (arg: any) => any {
-  return (arg: any) => {
-    const parsed = convert(arg);
-    if (validate(parsed)) {
-      return parsed;
-    }
-    else {
-      throw new Error(error);
-    }
-  };
-}
 
 commander.option(
   '-y, --yield <interval>',
@@ -169,6 +154,8 @@ export function run(M: (() => void) | undefined, opts: Opts, done: () => void): 
      M();
   }
   else {
+    // This causes a "critical dependency" warning in Webpack. However, it is
+    // never evaluated on the browser.
     require(path.relative(__dirname, path.resolve(opts.filename)));
   }
   rts.delimit(onDone);

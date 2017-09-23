@@ -48,13 +48,10 @@ export function browserTest(srcPath: string, transform: string) {
 
   it(testName, () => {
     const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
-    const { name: htmlPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.html` });
-    execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
-    execSync(`./bin/webpack ${dstPath} ${htmlPath}`);
-    execSync(`./bin/browser ${htmlPath}  --transform ${transform} --yield 1000 --env chrome`);
-    execSync(`./bin/browser ${htmlPath}  --transform ${transform} --yield 1000 --env firefox`);
+    execSync(`./bin/compile --webpack --transform ${transform} ${srcPath} ${dstPath}`);
+    execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env chrome`);
+    execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env firefox`);
     fs.unlinkSync(dstPath);
-    fs.unlinkSync(htmlPath);
   });
 }
 

@@ -6,6 +6,9 @@ import lazy from './callcc/lazyRuntime';
 import retval from './callcc/retvalRuntime';
 import fudge from './callcc/fudgeRuntime';
 import * as elapsedTimeEstimator from './elapsedTimeEstimator';
+import { run } from './runtime/default';
+
+export * from './callcc/runtime';
 
 function unreachable(): never {
   throw new Error("unreachable code was reached!");
@@ -68,4 +71,32 @@ export function getRTS(): Runtime {
   else {
     return rts;
   }
+}
+
+function getOpts(): Opts {
+  const opts = JSON.parse(
+    decodeURIComponent(window.location.hash.slice(1)));
+  // JSON turns undefined into null, which compare differently with numbers.
+  for (const k of Object.keys(opts)) {
+    if (opts[k] === null) {
+      delete opts[k];
+    }
+  }
+  return opts;
+}
+
+export function afterScriptLoad(M : any) {
+  // NOTE(arjun): Idiotic that we are doing this twice
+  const opts = getOpts();
+  run(M, opts,  () => {
+    window.document.title = "done";
+  });
+}
+
+export function loadScript() {
+  const opts = getOpts();
+  // Dynamically load the file
+  const script = document.createElement('script');
+  script.setAttribute('src', opts.filename);
+  document.body.appendChild(script);
 }

@@ -27,6 +27,47 @@ To run a compiled the program in the browser:
    a. Install either [Chromedriver](http://chromedriver.storage.googleapis.com/2.30/chromedriver_linux64.zip) and [Geckodriver](https://github.com/mozilla/geckodriver/releases/download/v0.18.0/geckodriver-v0.18.0-linux64.tar.gz).
    b. Run the program using `./bin/browser <out.html> -e <chrome|firefox> [opts]`. The opts are the same as the CLI options.
 
+## Stopify with Webpack
+
+Stopify is a Babel plugin thus can be used with [babel-loader]. In a new
+project:
+
+1. Add packages `yarn add babel-cli babel-loader webpack`.
+2. Add Stopify: `ln -s <local-stopify> node_modules/Stopify`
+3. Create `webpack.config.js` with the following contents:
+
+```
+module.exports = {
+  entry: <entrypoint-of-web-app>,
+  output: {
+    filename: './dist/bundle.js'
+  },
+  externals: {
+    "Stopify": 'stopify'
+  },  
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /(Stopify|node_modules|bower_components)/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+              plugins: ['Stopify']
+          }
+        }
+      }
+    ]
+  }
+};
+```
+
+Notice that the configuration declares the Stopify module as an external. 
+the HTML for the web app should load `Stopify/built/stopify.bundle.js` before
+the created `dist/bundle.js`.
 
 ## Paws Server
 **TODO**(rachit): Update when paws server is functional again.
+
+
+[babel-loader]: https://github.com/babel/babel-loader

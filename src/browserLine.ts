@@ -1,15 +1,14 @@
 import * as path from 'path';
 import * as runtime from './runtime/default';
-import * as os from 'os';
 
-const args = process.argv.slice(2);
-const opts = runtime.parseRuntimeOpts(args);
-
-function suffixAfter(str: string, key: string) {
-  return str.slice(str.indexOf(' ')! + 1);
+export function encodeArgs() {
+  const args = process.argv.slice(2);
+  const opts = runtime.parseRuntimeOpts(args);
+  opts.filename = 'file://' + path.resolve('.', opts.filename);
+  return 'file://' + path.resolve(__dirname, '../../html/benchmark.html') +
+    '#' + encodeURIComponent(JSON.stringify(opts));
 }
 
-const src = 'file://' + path.resolve('.', opts.filename) +
-  '#' + encodeURIComponent(JSON.stringify(args));
-
-console.log(src);
+if (require.main === module) {
+  console.log(encodeArgs());
+}

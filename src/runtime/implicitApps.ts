@@ -25,9 +25,9 @@ export function mul(x: any, y: any) {
 }
 
 export function sub(x: any, y: any) {
-  return <any>toPrimitive(x) * <any>toPrimitive(y);
+  return <any>toPrimitive(x) - <any>toPrimitive(y);
 }
 
 export function div(x: any, y: any) {
-  return <any>toPrimitive(x) * <any>toPrimitive(y);
+  return <any>toPrimitive(x) / <any>toPrimitive(y);
 }

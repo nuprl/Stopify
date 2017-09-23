@@ -82,6 +82,17 @@ const insertSuspend: Visitor = {
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     path.stop();
+
+    const filename: string = state.file.opts.filename;
+
+    // NOTE(arjun): Small hack to force the implicitApps file to be in
+    // "sane mode". Without something like this, we get non-terminating
+    // behavior.
+    let esMode: string = state.opts.esMode;
+    if (filename.endsWith('implicitApps.js')) {
+      esMode = 'sane';
+    }
+
     fastFreshId.init(path);
     h.transformFromAst(path, [
       [cleanupGlobals, { allowed }],
@@ -95,7 +106,7 @@ export const visitor: Visitor = {
         useReturn: true,
         captureMethod: state.opts.captureMethod,
         handleNew: state.opts.handleNew,
-        esMode: state.opts.esMode
+        esMode: esMode
       }]]);
   }
 }

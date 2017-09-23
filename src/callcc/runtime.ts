@@ -59,6 +59,7 @@ export abstract class Runtime {
     public yieldInterval: number,
     public estimator: ElapsedTimeEstimator,
     public capturing: boolean = false,
+    private delimitDepth: number = 0,
     // true if computation is suspended by 'suspend'
     private isSuspended: boolean = false,
     // a queue of computations that need to run
@@ -72,14 +73,20 @@ export abstract class Runtime {
     this.mode = true;
   }
 
-
+  private runtime_(thunk: () => any) {
+    this.delimitDepth++;
+    this.runtime(thunk);
+    this.delimitDepth--;
+  }
   /**
    * Evaluates 'thunk' either now or later.
    */
   delimit(thunk: () => any): any {
     if (this.isSuspended === false) {
-      this.runtime(thunk);
-      this.resume();
+      this.runtime_(thunk);
+      if (this.delimitDepth === 0) {
+        this.resume();
+      }
     }
     else {
       return this.pendingRuns.push(thunk);
@@ -97,6 +104,12 @@ export abstract class Runtime {
 
   suspend(): void {
     assert(!this.isSuspended);
+
+    // Do not suspend at the top-level of required modules.
+    if (this.delimitDepth > 1) {
+      return;
+    }
+
     // If this.yieldInterval is NaN, the condition will be false
     if (this.estimator.elapsedTime() >= this.yieldInterval) {
       this.estimator.reset();
@@ -105,7 +118,7 @@ export abstract class Runtime {
         if (this.onYield()) {
           return setImmediate(() => {
             this.isSuspended = false;
-            this.runtime(continuation);
+            this.runtime_(continuation);
             this.resume();
           });
         }

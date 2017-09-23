@@ -102,6 +102,9 @@ export function run(M: (() => void) | undefined, opts: Opts, done: () => void): 
       }
       lastStopTime = now;
     }
+    if (mustStop) {
+      onDone();
+    }
     return !mustStop;
   }
 

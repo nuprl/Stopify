@@ -16,6 +16,16 @@ function toPrimitive(x: any): Prim {
   return x;
 }
 
+export function toKey(x: any) {
+  const r = toPrimitive(x)
+  if (typeof r === 'string' || typeof r === 'number') {
+    return r;
+  }
+  else {
+    return String(r);
+  }
+}
+
 export function add(x: any, y: any) {
   return <any>toPrimitive(x) + <any>toPrimitive(y);
 }

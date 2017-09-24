@@ -17,6 +17,8 @@ function implicit(name: string, ...args: t.Expression[]): t.Expression {
     args);
 }
 
+
+
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>) {
     path.node.body.unshift(
@@ -31,8 +33,12 @@ const visitor: Visitor = {
       return;
     }
     path.replaceWith(implicit(fun, path.node.left, path.node.right));
+  },
+  MemberExpression: {
+    exit(path: NodePath<t.MemberExpression>) {
+      path.node.property = implicit('toKey', path.node.property);
+    }
   }
-
 };
 
 export function plugin() {

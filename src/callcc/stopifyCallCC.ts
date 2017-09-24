@@ -106,19 +106,16 @@ export const visitor: Visitor = {
     }
 
     fastFreshId.init(path);
-    if (state.opts.compileFunction) {
-      h.transformFromAst(path, [
-        [hygiene, { reserved }],
-        [markFlatFunctions]
-      ]);
+    const plugs = []
+    // Cleanup globals when not running in `func` compile mode
+    if (!state.opts.compileFunction) {
+      plugs.push([cleanupGlobals, { allowed }])
     }
-    else {
-      h.transformFromAst(path, [
-        [cleanupGlobals, { allowed }],
-        [hygiene, { reserved }],
-        [markFlatFunctions]
-      ]);
-    }
+    h.transformFromAst(path, [
+      ...plugs,
+      [hygiene, { reserved }],
+      [markFlatFunctions]
+    ]);
     h.transformFromAst(path, [markFlatApplications])
     h.transformFromAst(path, [
       [() => ({ visitor: insertSuspend }), {

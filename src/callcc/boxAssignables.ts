@@ -44,7 +44,7 @@ function liftStatement(parentPath: NodePath<Parent>, path: NodePath<t.Node>,
   }
   else {
     throw new assert.AssertionError({
-      message: `liftStatement got ${type_} as parent` 
+      message: `liftStatement got ${type_} as parent`
     });
   }
 }
@@ -103,6 +103,9 @@ function boxVars(parentPath: NodePath<Parent>, vars: Set<string>, state: any) {
     FunctionDeclaration(path: NodePath<t.FunctionDeclaration>, state: any) {
       path.skip();
       initFunction(vars, path, state);
+      // NOTE(rachit): in `func` mode, the input function is marked with
+      // topFunction. It shouldn't be boxed since we want to preserve its
+      // signature.
       if (vars.includes(path.node.id.name) &&
           !(state.opts.compileFunction && (<any>path.node).topFunction)) {
         const fun = t.functionExpression(

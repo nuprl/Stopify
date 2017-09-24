@@ -1,9 +1,20 @@
+/**
+ * `func` compile mode should be used when function bodies need to be compiled
+ * while preserving the function signatures. This is currently being used in
+ * the pyret compiler.
+ *
+ * This passes around information to make sure that:
+ * - the function signature is preserved
+ * - globals are not redeclared (since the input function might capture variables)
+ */
+
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 import * as h from '../common/helpers';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
+import { CaptureMethod, HandleNew } from '../types';
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, { opts }) {
@@ -17,8 +28,8 @@ const visitor: Visitor = {
 }
 
 type Opts = {
-  handleNew: 'direct' | 'wrapper',
-  captureMethod: 'eager' | 'retval' | 'lazy'
+  handleNew: HandleNew,
+  captureMethod: CaptureMethod
 }
 
 export function compileFunction(code: string,

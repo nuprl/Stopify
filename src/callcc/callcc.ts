@@ -124,11 +124,11 @@ const visitor: Visitor = {
         t.callExpression(
           t.memberExpression(t.memberExpression(t.identifier("$__R"),
             t.identifier("handleNew")), t.identifier('bind')),
-          [t.identifier('$__R')]),
+          [$__R]),
         "const"));
     toShift.unshift(
       h.letExpression(
-        t.identifier('$__R'),
+        $__R,
         t.callExpression(
           t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')), []),
         'const'));

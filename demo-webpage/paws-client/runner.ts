@@ -30,6 +30,8 @@ window.addEventListener('message', evt => {
     populateIFrame(running);
   } else if (evt.data === 'stop') {
     stopped = true;
+  } else if (evt.data === 'step') {
+
   }
 });
 

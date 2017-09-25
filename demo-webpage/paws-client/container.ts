@@ -109,3 +109,4 @@ function setupButton(buttonId: string, eventName: string) {
 
 setupButton('stop', 'stop')
 setupButton('run', 'run')
+setupButton('step', 'step')

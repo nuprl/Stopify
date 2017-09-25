@@ -36,6 +36,9 @@ const visitor: Visitor = {
   },
   MemberExpression: {
     exit(path: NodePath<t.MemberExpression>) {
+      if (!path.node.computed) {
+        return;
+      }
       path.node.property = implicit('toKey', path.node.property);
     }
   }

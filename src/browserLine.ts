@@ -1,8 +1,7 @@
 import * as path from 'path';
 import * as runtime from './runtime/default';
 
-export function encodeArgs() {
-  const args = process.argv.slice(2);
+export function encodeArgs(args: string[]) {
   const opts = runtime.parseRuntimeOpts(args);
   opts.filename = 'file://' + path.resolve('.', opts.filename);
   const ret = 'file://' + path.resolve(__dirname, '../../html/benchmark.html') +
@@ -12,5 +11,6 @@ export function encodeArgs() {
 }
 
 if (require.main === module) {
-  console.log(encodeArgs());
+  const args = process.argv.slice(2);
+  console.log(encodeArgs(args));
 }

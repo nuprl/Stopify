@@ -115,7 +115,7 @@ else {
 
   if (args.transform === 'original') {
     const src = fs.readFileSync(srcPath, 'utf8')
-    if (args.dstPath === undefined) {
+    if (dstPath === undefined) {
       console.log(src);
     }
     else {

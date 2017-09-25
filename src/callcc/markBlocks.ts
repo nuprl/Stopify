@@ -49,8 +49,8 @@ const visitor = {
       path.traverse(markingVisitor)
 
       const { body } = path.node
-      const afterDecls = body.findIndex(e =>
-        !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
+      const afterDecls = Math.max(body.findIndex(e =>
+        !(<any>e).__boxVarsInit__ && !(<any>e).lifted), 0);
 
       const groups: t.Statement[][] = [[]];
 

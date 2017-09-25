@@ -37,6 +37,8 @@ const reserved = [
 
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
+    const insertSuspend = state.opts.debug ? suspendStep : suspendStop;
+
     path.stop();
 
     const filename: string = state.file.opts.filename;
@@ -55,13 +57,22 @@ export const visitor: Visitor = {
     if (!state.opts.compileFunction) {
       plugs.push([cleanupGlobals, { allowed }])
     }
-    h.transformFromAst(path, [
-      ...plugs,
-      [hygiene, { reserved }],
-      [markFlatFunctions]
-    ]);
-    h.transformFromAst(path, [markFlatApplications])
-    h.transformFromAst(path, [[suspendStop, {
+    if (state.opts.debug) {
+      h.transformFromAst(path, [
+        ...plugs,
+        [hygiene, { reserved }],
+      ]);
+    } else {
+      h.transformFromAst(path, [
+        ...plugs,
+        [hygiene, { reserved }],
+        [markFlatFunctions],
+      ]);
+      h.transformFromAst(path, [
+        markFlatApplications,
+      ]);
+    }
+    h.transformFromAst(path, [[insertSuspend, {
       compileFunction: state.opts.compileFunction,
       sourceMap: state.opts.sourceMap,
     }]]);

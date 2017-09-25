@@ -10,7 +10,7 @@ process.env.MOZ_HEADLESS = "1";
 const stdout = process.stdout;
 const args = process.argv.slice(2);
 const opts = runtime.parseRuntimeOpts(args);
-const src = encodeArgs();
+const src = encodeArgs(args);
 
 // NOTE(sam): No typing for `headless()` option as of 8/30/2017.
 // I've opened a PR to DefinitelyTyped to fix this.

@@ -179,7 +179,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     isNormalMode,
     t.blockStatement([
       t.expressionStatement(
-        t.assignmentExpression('=', t.identifier('target'), applyLbl)),
+        t.assignmentExpression('=', target, applyLbl)),
         nodeStmt
     ]),
     t.ifStatement(
@@ -371,7 +371,7 @@ const jumper = {
                       t.arrowFunctionExpression([], reapplyExpr(funParent))),
                     t.objectProperty(t.identifier('locals'),
                       t.arrayExpression(<any>locals)),
-                    t.objectProperty(t.identifier('index'), t.identifier('target')),
+                    t.objectProperty(t.identifier('index'), target),
                   ]),
                 ]))
               ])),
@@ -441,14 +441,14 @@ const jumper = {
 
       const declTarget = letExpression(target, t.nullLiteral());
       (<any>declTarget).lifted = true;
+      path.node.body.body.unshift(declTarget);
 
       if (s.opts.handleNew === 'direct') {
         path.node.localVars.push(newTarget);
         const declNewTarget = letExpression(newTarget,
-          t.memberExpression(t.identifier('new'), t.identifier('target')));
+          t.memberExpression(t.identifier('new'), target));
         (<any>declNewTarget).lifted = true;
 
-        path.node.body.body.unshift(declTarget);
         path.node.body.body.unshift(declNewTarget);
 
         const ifConstructor = bh.sIf(newTarget,

@@ -19,6 +19,7 @@ import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
+import markBlocks from './markBlocks'
 import nameFinallyReturn from './nameFinallyReturn';
 import delimitTopLevel from './delimitTopLevel';
 import hygiene from '../common/hygiene';
@@ -80,6 +81,10 @@ const visitor: Visitor = {
       h.transformFromAst(path, [nameFinallyReturn]));
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
+    if (captureMethod === 'lazy') {
+      timeSlow('markBlocks', () =>
+        h.transformFromAst(path, [markBlocks]))
+    }
     timeSlow('jumper', () =>
       h.transformFromAst(path, [[jumper, {
         captureMethod: captureMethod,
@@ -133,13 +138,13 @@ const visitor: Visitor = {
           t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')), []),
         'const'));
     if (!state.opts.compileFunction) {
-    path.node.body.unshift(
-      h.letExpression(
-        t.identifier("$__T"),
-        t.callExpression(
-          t.identifier('require'),
-          [t.stringLiteral('Stopify/built/src/rts')]),
-        'const'));
+      path.node.body.unshift(
+        h.letExpression(
+          t.identifier("$__T"),
+          t.callExpression(
+            t.identifier('require'),
+            [t.stringLiteral('Stopify/built/src/rts')]),
+          'const'));
     }
     path.stop();
   }

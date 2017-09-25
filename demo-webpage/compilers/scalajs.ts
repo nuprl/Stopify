@@ -5,7 +5,7 @@ import * as path from 'path';
 const fsExtra = require('fs-extra');
 
 import { ScalaJSInterface } from './compiler';
-import { makeSpawn, runBrowserify } from './utils';
+import { makeSpawn, runStopify } from './utils';
 
 export let ScalaJS : ScalaJSInterface = {
   compile(compilerDir: string,
@@ -29,7 +29,15 @@ export let ScalaJS : ScalaJSInterface = {
 
       fs.writeFileSync(path.join(compilerDir, "Main.scala"), scalaCode);
 
-      run('sbt', 'fastOptJS').on('exit', runBrowserify(
-        path.join(compilerDir, 'target/scala-2.12/blah-fastopt.js'), jsReceiver));
+      run('sbt', 'fastOptJS').on('exit', npmLink);
+
+      function npmLink() {
+        run('npm', 'link', 'Stopify').on('exit', stopify);
+      }
+
+      function stopify() {
+        return runStopify(path.join(compilerDir,
+          'target/scala-2.12/blah-fastopt.js'), jsReceiver)
+      }
     }
 }

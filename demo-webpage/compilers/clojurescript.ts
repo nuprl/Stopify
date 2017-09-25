@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 const fsExtra = require('fs-extra');
 
-import {makeSpawn, runBrowserify} from './utils';
+import {makeSpawn, runStopify} from './utils';
 import {ClojureScript} from './compiler';
 
 export let Cljs : ClojureScript = {
@@ -14,8 +14,12 @@ export let Cljs : ClojureScript = {
     const run = makeSpawn(tmpDir);
 
     fs.mkdir(tmpDir + '/src', (err: never) => {
-      fs.mkdir(tmpDir + '/src/cljs', writeCljFile);
+      fs.mkdir(tmpDir + '/src/cljs', npmLink);
     });
+
+    function npmLink() {
+      run('npm', 'link', 'Stopify').on('exit', writeCljFile);
+    }
 
     function writeCljFile(exitCode: NodeJS.ErrnoException) {
       fs.writeFile(tmpDir + '/src/cljs/code.cljs',
@@ -28,7 +32,7 @@ export let Cljs : ClojureScript = {
         tmpDir + '/project.clj');
       run('lein',
         'cljsbuild',
-        'once').on('exit', runBrowserify(tmpDir + '/out/main.js', jsReceiver));
+        'once').on('exit', runStopify(tmpDir + '/out/main.js', jsReceiver));
     }
   }
 };

@@ -16,10 +16,10 @@
     "include": [
       "src",
       "test",
-      "demo-webpage"
+      "demo-webpage",
+      "html"
     ],
     "exclude": [
-      "demo-webpage/html",
       "test/should-run",
       "test/should-stop",
       "built"

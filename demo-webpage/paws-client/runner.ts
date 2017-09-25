@@ -1,3 +1,4 @@
+import { encodeArgs } from '../../src/browserLine';
 // This code runs on the right-hand side IFRAME that displays the output
 // from the running program. The code receives two kinds of messages
 // from the container (1) a message containing the JavaScript to run,
@@ -9,7 +10,7 @@ let running: string;
 
 let iframe: any = null;
 
-function populateIFrame(html: string) {
+function populateIFrame(js: string) {
   if (iframe !== null) {
     iframe.parentNode.removeChild(iframe);
   }
@@ -18,7 +19,8 @@ function populateIFrame(html: string) {
   iframe.width = '100%';
   iframe.height = '100%';
   iframe.style.border = 'none';
-  iframe.src = html + '#' + encodeURIComponent(JSON.stringify(['--env', 'chrome']));
+  iframe.src = './benchmark.html' + '#' +
+    encodeArgs(['--env','chrome','-t','lazy',js]);
   document.body.appendChild(iframe);
 }
 

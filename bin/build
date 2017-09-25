@@ -12,3 +12,5 @@ fi
 if [ ! -L node_modules/Stopify ]; then
     (cd node_modules; ln -s .. Stopify)
 fi
+
+cp -R html/* dist/

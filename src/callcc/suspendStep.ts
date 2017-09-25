@@ -14,16 +14,23 @@ const insertSuspend: Visitor = {
   BlockStatement(path: NodePath<t.BlockStatement>, s: { opts: Options }): void {
     const { body } = path.node;
     let j = 0;
-    if (body.length === 0) {
-      path.node.body = [
-        t.expressionStatement(t.callExpression( t.memberExpression(
-          t.identifier("$__R"), t.identifier("suspend")), []))
-      ];
-    } else {
-      body.forEach((v, i) => body.splice(i+(j++), 0, t.expressionStatement(
-        t.callExpression(t.memberExpression(t.identifier("$__R"),
-          t.identifier("suspend")), []))));
-    }
+    body.forEach((v, i) => {
+      const loc = v.loc;
+      let mark;
+      let ln: number | null;
+      if (loc) {
+        ln = s.opts.sourceMap.getLine(loc.start.line, loc.start.column);
+        if (ln) {
+          body.splice(i+(j++), 0,
+            t.expressionStatement(t.assignmentExpression('=',
+              t.memberExpression(t.identifier('$__R'), t.identifier('linenum')),
+              t.numericLiteral(ln))),
+            t.expressionStatement(
+              t.callExpression(t.memberExpression(t.identifier("$__R"),
+                t.identifier("suspend")), [])));
+        }
+      }
+    });
   },
 
   IfStatement(path: NodePath<t.IfStatement>): void {

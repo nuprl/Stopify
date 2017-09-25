@@ -54,6 +54,7 @@ interface RuntimeInterface {
 export abstract class Runtime {
   stack: Stack;
   mode: Mode;
+  linenum: undefined | number;
 
   constructor(
     public yieldInterval: number,

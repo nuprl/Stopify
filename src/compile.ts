@@ -38,6 +38,11 @@ commander.option(
   '');
 
 commander.option(
+  '--debug',
+  'Insert suspensions between every line of code in the source program',
+  false);
+
+commander.option(
   '--cache <dir>',
   'directory to cache object files',
   parseArg(x => x, x => true,
@@ -54,7 +59,8 @@ const plugin: any = [
   {
     captureMethod: args.transform,
     handleNew: args.new,
-    esMode: args.es
+    esMode: args.es,
+    debug: args.debug,
   }
 ];
 
@@ -106,6 +112,11 @@ if (args.webpack) {
   });
 }
 else {
+  const {map} = babel.transformFileSync(srcPath, {
+    babelrc: false,
+    ast: false,
+    code: false,
+  });
   const opts = {
     plugins: [plugin],
     babelrc: false,

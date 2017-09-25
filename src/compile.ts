@@ -7,7 +7,7 @@ import { parseArg } from './generic';
 import * as webpack from 'webpack';
 import * as tmp from 'tmp';
 import { RawSourceMap } from 'source-map';
-import {generateLineMapping} from './common/helpers';
+import { generateLineMapping, LineMapping } from './common/helpers';
 
 const stderr = process.stderr;
 
@@ -54,6 +54,15 @@ const args = commander.parse(process.argv);
 const srcPath = args.args[0];
 const dstPath = args.args[1];
 
+let sourceMap;
+if (args.debug) {
+  const {map} = babel.transformFileSync(srcPath, {
+    babelrc: false,
+    ast: false,
+    code: false,
+  });
+  sourceMap = generateLineMapping(<RawSourceMap>map);
+}
 const plugin: any = [
   stopifyCallCC,
   {
@@ -61,6 +70,7 @@ const plugin: any = [
     handleNew: args.new,
     esMode: args.es,
     debug: args.debug,
+    sourceMap: sourceMap,
   }
 ];
 
@@ -112,11 +122,6 @@ if (args.webpack) {
   });
 }
 else {
-  const {map} = babel.transformFileSync(srcPath, {
-    babelrc: false,
-    ast: false,
-    code: false,
-  });
   const opts = {
     plugins: [plugin],
     babelrc: false,
@@ -124,7 +129,6 @@ else {
     code: true,
     minified: true,
     comments: false,
-    sourceMap: generateLineMapping(<RawSourceMap>map),
   };
 
   if (args.transform === 'original') {

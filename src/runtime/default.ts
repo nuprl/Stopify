@@ -56,11 +56,11 @@ commander.option(
 commander.arguments('<filename>');
 
 
-export function parseRuntimeOpts(rawArgs: string[], filename?: string): Opts {
+export function parseRuntimeOpts(rawArgs: string[]): Opts {
 
   const args = commander.parse(["", "", ...rawArgs]);
 
-  filename = filename || args.args[0];
+  const filename = args.args[0];
   if (typeof filename !== 'string') {
     throw new Error(`Missing filename`);
   }

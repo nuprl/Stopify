@@ -11,14 +11,14 @@ import * as path from 'path';
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, '../html')));
+app.use(express.static(path.join(__dirname, '../../../dist')));
 
 function compileAndSend(compiler: CompilerSupport, url: string): void {
   tmp.dir((_: any, tmpDir: string) => {
     app.post(url, bodyParser.text(), (req: any, res: any) => {
-      compiler.compile(tmpDir, req.body, html => {
-        app.use(express.static(html));
-        res.send(html);
+      compiler.compile(tmpDir, req.body, js => {
+        app.use(express.static(js));
+        res.send(js);
       });
     });
   });

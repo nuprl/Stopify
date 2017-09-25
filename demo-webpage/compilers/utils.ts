@@ -47,13 +47,11 @@ export function runStopify(src: string,
       assert(exitCode === 0);
       tmp.tmpName({ dir: path.dirname(src) }, (err, tmpPath) => {
         creates(tmpPath + '.js', () =>
-          exec(`./bin/compile --transform lazy --new wrapper ${src} ${tmpPath}.js`));
-        creates(tmpPath + '.html', () =>
-          exec(`./bin/webpack ${tmpPath}.js ${tmpPath}.html`));
-        const str = fs.readFileSync(tmpPath + '.html', 'utf-8');
+          exec(`./bin/compile --transform lazy --new wrapper --debug --webpack ${src} ${tmpPath}.js`));
+        const str = fs.readFileSync(tmpPath + '.js', 'utf-8');
         const outFile = path.basename(tmpPath);
-        fs.writeFileSync(`./built/demo-webpage/html/${outFile}.html`, str);
-        jsReceiver(outFile + '.html');
+        fs.writeFileSync(`./dist/${outFile}.js`, str);
+        jsReceiver(outFile + '.js');
       });
     };
   }

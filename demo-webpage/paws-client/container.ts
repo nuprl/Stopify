@@ -50,7 +50,7 @@ editor.getSession().setMode(langs[defaultLang].aceMode);
 editor.setValue(langs[defaultLang].defaultCode);
 
 let iframe: any = null;
-function loadJavaScript(html: string) {
+function loadJavaScript(js: string) {
   if (iframe !== null) {
     iframe.parentNode.removeChild(iframe);
   }
@@ -63,7 +63,7 @@ function loadJavaScript(html: string) {
   iframe.style.border = 'none';
   (<Node>container).appendChild(iframe);
   iframe.onload = () => {
-    iframe.contentWindow.postMessage({ code: html }, '*');
+    iframe.contentWindow.postMessage({ code: js }, '*');
   }
 }
 

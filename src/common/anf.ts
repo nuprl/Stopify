@@ -47,6 +47,12 @@ const anfVisitor : Visitor = {
 
   CallExpression: {
     enter(path: NodePath<t.CallExpression>): void {
+      if (t.isFunctionExpression(path.node.callee)) {
+        const funExpr = fastFreshId.fresh('callee');
+        path.getStatementParent().insertBefore(
+          h.letExpression(funExpr, path.node.callee))
+        path.node.callee = funExpr
+      }
       if (h.containsCall(path)) {
         if (t.isCallExpression(path.node.callee)) {
           const id = fastFreshId.fresh('callee');

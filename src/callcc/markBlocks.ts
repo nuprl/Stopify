@@ -7,9 +7,12 @@ function isTailCall(arg: t.Expression) {
   return (t.isCallExpression(arg) || t.isNewExpression(arg))
 }
 
-const functionMarkingVisitor = function(path: NodePath<t.FunctionExpression|t.FunctionDeclaration>) {
+// NOTE(rachit): This assumes that the functionExpression has been named and
+// does not occur in a call expression. Weird behaviour when function expression
+// is not named.
+function functionMarkingVisitor(path: NodePath<t.FunctionExpression|t.FunctionDeclaration>) {
   (<any>path.node).nomerge = true;
-  let parent: NodePath<t.Node> = path.findParent(t.isStatement)
+  let parent: NodePath<t.Node> = path.findParent(t.isStatement);
   while (parent && !t.isFunction(parent)) {
     (<any>parent.node).nomerge = true
     parent = parent.findParent(t.isStatement)

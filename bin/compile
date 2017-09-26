@@ -1,7 +1,8 @@
 #!/bin/bash
 
-wd=$(readlink -f $0)
+DIR=`dirname $0`
+
 # Why do we need this setting? I believe when Stopify runs via babel-loader,
 # it runs in the Webpack process, which eats too much memory. So, we now need
 # a larger heap. (Node's default is 1.7GB).
-node --max_old_space_size=4096 "$wd/../../built/src/compile" $@
+node --max_old_space_size=4096 $DIR/../built/src/compile $@

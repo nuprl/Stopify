@@ -59,9 +59,6 @@
       "name": "Arjun Guha"
     }
   ],
-  "bin": {
-    "stopify": "./bin/compile"
-  },
   "license": "BSD-3-Clause",
   "dependencies": {
     "@types/detect-browser": "^1.6.0",

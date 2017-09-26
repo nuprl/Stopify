@@ -35,6 +35,13 @@ commander.option(
   '--webpack',
   '');
 
+commander.option(
+  '--cache <dir>',
+  'directory to cache object files',
+  parseArg(x => x, x => true,
+    'invalid --cache, see help'),
+  undefined);
+
 commander.arguments('<srcPath> <dstPath>');
 const args = commander.parse(process.argv);
 const srcPath = args.args[0];
@@ -69,7 +76,8 @@ if (args.webpack) {
       options: {
           plugins: [plugin],
           minified: true,
-          comments: false
+          comments: false,
+          cacheDirectory: args.cache
       }
     });
   }
@@ -107,7 +115,7 @@ else {
 
   if (args.transform === 'original') {
     const src = fs.readFileSync(srcPath, 'utf8')
-    if (args.dstPath === undefined) {
+    if (dstPath === undefined) {
       console.log(src);
     }
     else {

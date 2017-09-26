@@ -5,8 +5,10 @@ export function encodeArgs() {
   const args = process.argv.slice(2);
   const opts = runtime.parseRuntimeOpts(args);
   opts.filename = 'file://' + path.resolve('.', opts.filename);
-  return 'file://' + path.resolve(__dirname, '../../html/benchmark.html') +
+  const ret = 'file://' + path.resolve(__dirname, '../../html/benchmark.html') +
     '#' + encodeURIComponent(JSON.stringify(opts));
+  console.log(ret)
+  return ret;
 }
 
 if (require.main === module) {

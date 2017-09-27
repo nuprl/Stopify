@@ -26,7 +26,9 @@ export function setImmediateT0(thunk: () => void): void {
 function makeSetImmediatePM(): (thunk: () => void) => void {
   const thunks: (() => void)[] = [];
   window.addEventListener('message', (evt) => {
-    return thunks.pop()!();
+    if (evt.data === true) {
+      return thunks.pop()!();
+    }
   });
   return (thunk) => {
     thunks.push(thunk);

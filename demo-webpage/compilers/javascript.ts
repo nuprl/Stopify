@@ -4,7 +4,7 @@ import * as assert from 'assert';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-import { makeSpawn, runStopify } from './utils';
+import { makeSpawn } from './utils';
 import { JavaScriptInterface } from './compiler';
 
 export let JavaScript : JavaScriptInterface = {
@@ -20,7 +20,7 @@ export let JavaScript : JavaScriptInterface = {
       assert(exitCode === 0);
       fs.copySync(__dirname + '/../../../webpack.config.js',
         tmpDir + '/webpack.config.js');
-      runStopify(path.join(tmpDir, 'main.js'), jsReceiver)(0);
+      return jsReceiver(path.join(tmpDir, 'main.js'))(0);
     }
   }
 }

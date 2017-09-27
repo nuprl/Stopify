@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const tmp = require('tmp');
 
 import { BuckleScript } from '../compilers/bucklescript';
@@ -7,7 +6,9 @@ import { Cljs } from '../compilers/clojurescript';
 import { ScalaJS } from '../compilers/scalajs';
 import { JavaScript } from '../compilers/javascript'
 import { CompilerSupport } from '../compilers/compiler';
+import { runStopify } from '../compilers/utils';
 import * as path from 'path';
+import * as bodyParser from 'body-parser';
 
 const app = express();
 
@@ -16,10 +17,12 @@ app.use(express.static(path.join(__dirname, '../../../dist')));
 function compileAndSend(compiler: CompilerSupport, url: string): void {
   tmp.dir((_: any, tmpDir: string) => {
     app.post(url, bodyParser.text(), (req: any, res: any) => {
-      compiler.compile(tmpDir, req.body, js => {
-        app.use(express.static(js));
-        res.send(js);
-      });
+      const json = JSON.parse(req.body);
+      compiler.compile(tmpDir, json.code, src =>
+        runStopify(src, json, js => {
+          app.use(express.static(js));
+          res.send(js);
+        }));
     });
   });
 }

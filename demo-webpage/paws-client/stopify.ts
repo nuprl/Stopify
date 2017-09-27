@@ -1,5 +1,6 @@
 'use strict';
 
+import * as browser from 'detect-browser'
 import * as ace from 'brace';
 import { CompilerClient } from '../compilers/compiler';
 import { BuckleScript } from '../compilers/bucklescript-client';
@@ -62,7 +63,12 @@ function compileRequest() {
   const val = languageSelect.value;
   const xhr = new XMLHttpRequest();
   xhr.open('POST', langs[val].compileUrl);
-  xhr.send(editor.getValue());
+  const data = {
+    code: editor.getValue(),
+    new: browser.name === 'chrome' ? 'wrapper' : 'direct',
+    transform: 'lazy',
+  };
+  xhr.send(JSON.stringify(data));
   xhr.addEventListener('load', () => {
     loadJavaScript(xhr.responseText);
   });

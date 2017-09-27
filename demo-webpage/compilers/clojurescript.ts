@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 const fsExtra = require('fs-extra');
 
-import {makeSpawn, runStopify} from './utils';
+import {makeSpawn} from './utils';
 import {ClojureScript} from './compiler';
 
 export let Cljs : ClojureScript = {
@@ -32,7 +32,7 @@ export let Cljs : ClojureScript = {
         tmpDir + '/project.clj');
       run('lein',
         'cljsbuild',
-        'once').on('exit', runStopify(tmpDir + '/out/main.js', jsReceiver));
+        'once').on('exit', jsReceiver(tmpDir + '/out/main.js'));
     }
   }
 };

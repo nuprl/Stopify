@@ -30,7 +30,10 @@ function editorSetLine(n: number) {
 }
 
 window.addEventListener('message', evt => {
-    editorSetLine(evt.data);
+  if (evt.data.linenum) {
+    // Ace Editor is 0-indexed and source-maps are 1-indexed
+    editorSetLine(evt.data.linenum-1);
+  }
 });
 
 interface supportedLangs {

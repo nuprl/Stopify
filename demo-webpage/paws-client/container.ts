@@ -33,6 +33,8 @@ window.addEventListener('message', evt => {
   if (evt.data.code) {
     console.log("Compilation successful. Hit 'Run' to execute program." )
     preloadIFrame(evt.data.code);
+  } else if (evt.data.linenum) {
+    window.parent.postMessage(evt.data, '*');
   } else {
     postToIFrame(evt.data);
   }

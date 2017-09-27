@@ -1,7 +1,7 @@
 import * as selenium from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
 import * as path from 'path';
-import * as runtime from './runtime/default';
+import { parseRuntimeOpts } from './cli-parse';
 import * as os from 'os';
 import { benchmarkUrl } from './browserLine';
 
@@ -9,7 +9,7 @@ process.env.MOZ_HEADLESS = "1";
 
 const stdout = process.stdout;
 const args = process.argv.slice(2);
-const opts = runtime.parseRuntimeOpts(args);
+const opts = parseRuntimeOpts(args);
 const src = benchmarkUrl(args);
 
 // NOTE(sam): No typing for `headless()` option as of 8/30/2017.

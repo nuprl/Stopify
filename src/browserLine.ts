@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as runtime from './runtime/default';
+import { parseRuntimeOpts } from './cli-parse';
 
 export function benchmarkUrl(args: string[]) {
   const ret = 'file://' + path.resolve(__dirname, '../../dist/benchmark.html') +
@@ -9,7 +9,7 @@ export function benchmarkUrl(args: string[]) {
 }
 
 export function encodeArgs(args: string[]) {
-  const opts = runtime.parseRuntimeOpts(args);
+  const opts = parseRuntimeOpts(args);
   opts.filename = path.resolve('.', opts.filename);
   return encodeURIComponent(JSON.stringify(opts));
 }

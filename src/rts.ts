@@ -105,8 +105,8 @@ export function resumeScript() {
   runtime.resume();
 }
 
-export function stopScript() {
-  runtime.stop();
+export function stopScript(onStop: () => any) {
+  runtime.stop(onStop);
 }
 
 export function stepScript() {

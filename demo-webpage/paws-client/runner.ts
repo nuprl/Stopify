@@ -6,7 +6,13 @@ window.addEventListener('message', evt => {
       stopify.loadScript();
       break;
     case 'stop':
-      stopify.stopScript();
+      const postLineNum = () => {
+        const rts = stopify.getRTS();
+        window.parent.postMessage({
+          linenum: rts.linenum
+        }, '*');
+      };
+      stopify.stopScript(postLineNum);
       break;
     case 'step':
       stopify.stepScript();

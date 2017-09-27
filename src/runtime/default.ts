@@ -23,13 +23,24 @@ class Default {
     this.mustStop = false;
   }
 
+  onYield: () => any;
+
   resume(): void {
     this.mustStop = false;
+    const rts = getRTS();
+    rts.onYield = this.onYield;
     this.step();
   }
 
-  stop(): void {
+  stop(onStop: () => any): void {
     this.mustStop = true;
+    const rts = getRTS();
+    const oldYield = rts.onYield;
+    function onYield() {
+      onStop();
+      return oldYield();
+    };
+    rts.onYield = onYield;
   }
 
   step(): void {
@@ -46,7 +57,7 @@ class Default {
     let lastStopTime: number | undefined;
     let stopIntervals: number[] = [];
 
-    rts.onYield = () => {
+    this.onYield = rts.onYield = () => {
       this.yields++;
       if (opts.variance) {
         const now = Date.now();

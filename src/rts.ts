@@ -100,3 +100,15 @@ export function loadScript() {
   script.setAttribute('src', opts.filename);
   document.body.appendChild(script);
 }
+
+export function resumeScript() {
+  runtime.resume();
+}
+
+export function stopScript() {
+  runtime.stop();
+}
+
+export function stepScript() {
+  runtime.step();
+}

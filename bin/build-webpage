@@ -2,6 +2,7 @@
 
 npm run build
 cp -R html built/
+./node_modules/.bin/browserify built/demo-webpage/paws-client/stopify.js -o dist/stopify.js
 ./node_modules/.bin/browserify built/demo-webpage/paws-client/container.js -o dist/container.js
 ./node_modules/.bin/browserify built/demo-webpage/paws-client/runner.js -o dist/runner.js
 

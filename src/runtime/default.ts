@@ -25,7 +25,7 @@ class Default {
 
   resume(): void {
     this.mustStop = false;
-    getRTS().resume();
+    this.step();
   }
 
   stop(): void {
@@ -33,7 +33,12 @@ class Default {
   }
 
   step(): void {
-    getRTS().resume();
+    const rts = getRTS();
+    rts.isSuspended = false;
+    rts.delimitDepth++;
+    rts.runtime(rts.continuation);
+    rts.delimitDepth--;
+    rts.resume();
   }
 
   run(M: (() => void) | undefined, opts: Opts, done: () => void): void {

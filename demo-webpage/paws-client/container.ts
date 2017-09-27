@@ -1,99 +1,52 @@
+import { encodeArgs } from '../../src/browserLine';
+// This code runs on the right-hand side IFRAME that displays the output
+// from the running program. The code receives two kinds of messages
+// from the container (1) a message containing the JavaScript to run,
+// before it has been stopified and (2) a message directing execution to stop.
 'use strict';
 
-import * as ace from 'brace';
-import { CompilerClient } from '../compilers/compiler';
-import { BuckleScript } from '../compilers/bucklescript-client';
-import { Cljs } from '../compilers/clojurescript-client';
-import { ScalaJS } from '../compilers/scalajs-client';
-import { JavaScript } from '../compilers/javascript-client';
-require('brace/mode/ocaml');
-require('brace/mode/clojure');
-require('brace/mode/scala')
-require('brace/mode/javascript')
-require('brace/theme/monokai');
-const Range = ace.acequire('ace/range').Range;
+let iframe: any = null;
 
-// TODO(rachit): Hack to share the editor with the runner. Should probably
-// be fixed.
-const editor = ace.edit('editor');
-editor.setTheme('ace/theme/monokai');
-editor.setFontSize('15')
+function preloadIFrame(js: string) {
+  if (iframe !== null) {
+    iframe.parentNode.removeChild(iframe);
+  }
 
-let lastLineMarker: number | null = null;
-function editorSetLine(n: number) {
-    if (lastLineMarker !== null) {
-      editor.session.removeMarker(lastLineMarker);
-    }
-    lastLineMarker = editor.session.addMarker(
-        new Range(n, 0, n, 1),
-        "myMarker", "fullLine", false);
+  iframe = document.createElement('iframe');
+  iframe.width = '100%';
+  iframe.height = '100%';
+  iframe.style.border = 'none';
+  iframe.src = './runner.html' + '#' +
+    encodeArgs(['--env','chrome','-t','lazy','--estimator','countdown','-y','1',js]);
+  document.body.appendChild(iframe);
+}
+
+function postToIFrame(msg: string) {
+  if (iframe === null) {
+    throw new Error(`No code loaded in iframe to ${msg}`);
+  }
+
+  iframe.contentWindow.postMessage(msg, '*');
 }
 
 window.addEventListener('message', evt => {
-    editorSetLine(evt.data);
+  if (evt.data.code) {
+    console.log("Compilation successful. Hit 'Run' to execute program." )
+    preloadIFrame(evt.data.code);
+  } else {
+    postToIFrame(evt.data);
+  }
 });
 
-interface supportedLangs {
-  [lang: string]: CompilerClient
+document.body.style.fontFamily = 'Monaco';
+
+const originalConsole = window.console;
+
+window.console.log = function(message: string) {
+  const elt = document.createElement('div');
+  elt.appendChild(document.createTextNode(message.toString()));
+  document.body.appendChild(elt);
+  if (document.body.children.length > 1000) {
+    document.body.removeChild(<Node>document.body.firstChild);
+  }
 }
-
-const defaultLang = 'OCaml';
-
-const langs : supportedLangs = {
-  OCaml: BuckleScript,
-  ClojureScript: Cljs,
-  ScalaJS: ScalaJS,
-  JavaScript: JavaScript,
-};
-
-editor.getSession().setMode(langs[defaultLang].aceMode);
-editor.setValue(langs[defaultLang].defaultCode);
-
-let iframe = <HTMLIFrameElement>document.getElementById('iframeContainer')!;
-function loadJavaScript(js: string) {
-  iframe.contentWindow.postMessage({ code: js }, '*');
-}
-
-function compileRequest() {
-  const languageSelect = <any>document.getElementById("language-selection");
-  const val = languageSelect.value;
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', langs[val].compileUrl);
-  xhr.send(editor.getValue());
-  xhr.addEventListener('load', () => {
-    loadJavaScript(xhr.responseText);
-  });
-}
-
-function setupCompile() {
-  document.getElementById("compile")!.addEventListener('click', () => {
-    compileRequest();
-  });
-}
-
-function selectLanguage() {
-  const languageSelect = <any>document.getElementById("language-selection");
-  languageSelect.addEventListener('input', () => {
-    const val = (<any>document.getElementById("language-selection")).value;
-    console.log(langs[val])
-    editor.getSession().setMode(langs[val].aceMode);
-    editor.setValue(langs[val].defaultCode);
-  });
-}
-
-setupCompile();
-selectLanguage();
-
-function setupButton(buttonId: string, eventName: string) {
-  (<Node>document.getElementById(buttonId)).addEventListener('click', () => {
-    if (iframe === null) {
-      return;
-    }
-
-    iframe.contentWindow.postMessage(eventName, '*');
-  });
-}
-
-setupButton('stop', 'stop')
-setupButton('run', 'run')
-setupButton('step', 'step')

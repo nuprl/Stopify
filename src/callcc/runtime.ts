@@ -60,16 +60,17 @@ export abstract class Runtime {
     public yieldInterval: number,
     public estimator: ElapsedTimeEstimator,
     public capturing: boolean = false,
-    private delimitDepth: number = 0,
+    public delimitDepth: number = 0,
     // true if computation is suspended by 'suspend'
-    private isSuspended: boolean = false,
+    public isSuspended: boolean = false,
     // a queue of computations that need to run
     private pendingRuns: (() => void)[] = [],
     /** This function is applied immediately before stopify yields control to
      *  the browser's event loop. If the function produces 'false', the
      *  computation terminates.
      */
-    public onYield = function(): boolean { return true; }) {
+    public onYield = function(): boolean { return true; },
+    public continuation = function() {}) {
     this.stack = [];
     this.mode = true;
   }
@@ -116,6 +117,7 @@ export abstract class Runtime {
       this.estimator.reset();
       this.isSuspended = true;
       return this.captureCC((continuation) => {
+        this.continuation = continuation;
         if (this.onYield()) {
           return setImmediate(() => {
             this.isSuspended = false;

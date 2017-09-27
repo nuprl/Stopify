@@ -11,26 +11,30 @@ const opts = t.identifier("$opts");
 const result = t.identifier("$result");
 
 const insertSuspend: Visitor = {
-  BlockStatement(path: NodePath<t.BlockStatement>, s: { opts: Options }): void {
-    const { body } = path.node;
-    let j = 0;
-    body.forEach((v, i) => {
-      const loc = v.loc;
-      let mark;
-      let ln: number | null;
-      if (loc) {
-        ln = s.opts.sourceMap.getLine(loc.start.line, loc.start.column);
-        if (ln) {
-          body.splice(i+(j++), 0,
-            t.expressionStatement(t.assignmentExpression('=',
-              t.memberExpression(t.identifier('$__R'), t.identifier('linenum')),
-              t.numericLiteral(ln))),
-            t.expressionStatement(
-              t.callExpression(t.memberExpression(t.identifier("$__R"),
-                t.identifier("suspend")), [])));
+  BlockStatement: {
+    exit(path: NodePath<t.BlockStatement>, s: { opts: Options }): void {
+      const { body } = path.node;
+      const newBody: t.Statement[] = [];
+      body.forEach((v, i) => {
+        const loc = v.loc;
+        let mark;
+        let ln: number | null;
+        if (loc) {
+          ln = s.opts.sourceMap.getLine(loc.start.line, loc.start.column);
+          if (ln) {
+            newBody.push(
+              t.expressionStatement(t.assignmentExpression('=',
+                t.memberExpression(t.identifier('$__R'), t.identifier('linenum')),
+                t.numericLiteral(ln))),
+              t.expressionStatement(
+                t.callExpression(t.memberExpression(t.identifier("$__R"),
+                  t.identifier("suspend")), [])),
+              v);
+          }
         }
-      }
-    });
+      });
+      path.node.body = newBody;
+    }
   },
 
   IfStatement(path: NodePath<t.IfStatement>): void {

@@ -1,7 +1,6 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 import { NodePath, Visitor } from 'babel-traverse';
-import * as b from '../interfaces/steppifyInterface';
 import { SourceMapConsumer, RawSourceMap } from 'source-map';
 import * as smc from 'convert-source-map';
 

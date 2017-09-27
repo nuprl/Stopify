@@ -10,8 +10,7 @@
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "noImplicitAny": true,
-        "strictNullChecks": true,
-        "inlineSourceMap": true
+        "strictNullChecks": true
     },
     "include": [
       "src",

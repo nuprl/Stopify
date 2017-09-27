@@ -49,22 +49,9 @@ const langs : supportedLangs = {
 editor.getSession().setMode(langs[defaultLang].aceMode);
 editor.setValue(langs[defaultLang].defaultCode);
 
-let iframe: any = null;
+let iframe = <HTMLIFrameElement>document.getElementById('iframeContainer')!;
 function loadJavaScript(js: string) {
-  if (iframe !== null) {
-    iframe.parentNode.removeChild(iframe);
-  }
-
-  const container = document.getElementById('iframeContainer');
-  iframe = document.createElement('iframe');
-  iframe.src = 'runner.html';
-  iframe.width = '100%';
-  iframe.height = '100%';
-  iframe.style.border = 'none';
-  (<Node>container).appendChild(iframe);
-  iframe.onload = () => {
-    iframe.contentWindow.postMessage({ code: js }, '*');
-  }
+  iframe.contentWindow.postMessage({ code: js }, '*');
 }
 
 function compileRequest() {

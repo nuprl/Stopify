@@ -6,7 +6,7 @@ import lazy from './callcc/lazyRuntime';
 import retval from './callcc/retvalRuntime';
 import fudge from './callcc/fudgeRuntime';
 import * as elapsedTimeEstimator from './elapsedTimeEstimator';
-import { run } from './runtime/default';
+import runtime from './runtime/default';
 
 export * from './callcc/runtime';
 
@@ -88,7 +88,7 @@ function getOpts(): Opts {
 export function afterScriptLoad(M : any) {
   // NOTE(arjun): Idiotic that we are doing this twice
   const opts = getOpts();
-  run(M, opts,  () => {
+  runtime.run(M, opts,  () => {
     window.document.title = "done";
   });
 }

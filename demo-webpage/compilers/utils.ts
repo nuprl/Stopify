@@ -41,13 +41,13 @@ export function makeSpawn(wd: string) {
  * webpack the stopify runtime along with the compiled source.
  * `src` is expected to be an absolute path to the compiler output in a tmp dir
  */
-export function runStopify(src: string,
+export function runStopify(src: string, opts: any,
   jsReceiver: (code: string) => any): (exitCode: number) => void {
     return function (exitCode: number): void {
       assert(exitCode === 0);
       tmp.tmpName({ dir: path.dirname(src) }, (err, tmpPath) => {
         creates(tmpPath + '.js', () =>
-          exec(`./bin/compile --transform lazy --new wrapper --debug --webpack ${src} ${tmpPath}.js`));
+          exec(`./bin/compile --transform ${opts.transform} --new ${opts.new} --debug --webpack ${src} ${tmpPath}.js`));
         const str = fs.readFileSync(tmpPath + '.js', 'utf-8');
         const outFile = path.basename(tmpPath);
         fs.writeFileSync(`./dist/${outFile}.js`, str);

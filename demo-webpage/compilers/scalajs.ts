@@ -5,7 +5,7 @@ import * as path from 'path';
 const fsExtra = require('fs-extra');
 
 import { ScalaJSInterface } from './compiler';
-import { makeSpawn, runStopify } from './utils';
+import { makeSpawn } from './utils';
 
 export let ScalaJS : ScalaJSInterface = {
   compile(compilerDir: string,
@@ -32,12 +32,11 @@ export let ScalaJS : ScalaJSInterface = {
       run('sbt', 'fastOptJS').on('exit', npmLink);
 
       function npmLink() {
-        run('npm', 'link', 'Stopify').on('exit', stopify);
+        run('npm', 'link', 'Stopify').on('exit', callback);
       }
 
-      function stopify() {
-        return runStopify(path.join(compilerDir,
-          'target/scala-2.12/blah-fastopt.js'), jsReceiver)
+      function callback() {
+        return jsReceiver(path.join(compilerDir, 'target/scala-2.12/blah-fastopt.js'));
       }
     }
 }

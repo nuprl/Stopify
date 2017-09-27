@@ -1,3 +1,4 @@
+import * as browser from 'detect-browser'
 import { encodeArgs } from '../../src/browserLine';
 // This code runs on the right-hand side IFRAME that displays the output
 // from the running program. The code receives two kinds of messages
@@ -17,7 +18,7 @@ function preloadIFrame(js: string) {
   iframe.height = '100%';
   iframe.style.border = 'none';
   iframe.src = './runner.html' + '#' +
-    encodeArgs(['--env','chrome','-t','lazy','--estimator','countdown','-y','1',js]);
+    encodeArgs(['--env',browser.name,'-t','lazy','--estimator','countdown','-y','1',js]);
   document.body.appendChild(iframe);
 }
 

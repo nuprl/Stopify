@@ -3,7 +3,7 @@
 import * as assert from 'assert';
 const fs = require('fs-extra');
 
-import {makeSpawn, runStopify} from './utils';
+import {makeSpawn} from './utils';
 import {OCaml} from './compiler';
 
 export let BuckleScript : OCaml = {
@@ -21,7 +21,7 @@ export let BuckleScript : OCaml = {
         assert(exitCode === 0);
         fs.copySync(__dirname + '/../../../data/bsconfig.json',
           tmpDir + '/bsconfig.json');
-        run('bsb').on('exit', runStopify(tmpDir + '/lib/js/main.js', jsReceiver));
+        run('bsb').on('exit', jsReceiver(tmpDir + '/lib/js/main.js'));
       }
   }
 };

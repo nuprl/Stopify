@@ -32,11 +32,8 @@ export let ScalaJS : ScalaJSInterface = {
       run('sbt', 'fastOptJS').on('exit', npmLink);
 
       function npmLink() {
-        run('npm', 'link', 'Stopify').on('exit', callback);
-      }
-
-      function callback() {
-        return jsReceiver(path.join(compilerDir, 'target/scala-2.12/blah-fastopt.js'));
+        run('npm', 'link', 'Stopify').on('exit',
+          jsReceiver(path.join(compilerDir, 'target/scala-2.12/blah-fastopt.js')));
       }
     }
 }

@@ -82,6 +82,9 @@ function compileRequest() {
 
 function setupCompile() {
   document.getElementById("compile")!.addEventListener('click', () => {
+    if (lastLineMarker !== null) {
+      editor.session.removeMarker(lastLineMarker);
+    }
     compileRequest();
   });
 }
@@ -91,6 +94,9 @@ function selectLanguage() {
   languageSelect.addEventListener('input', () => {
     const val = (<any>document.getElementById("language-selection")).value;
     console.log(langs[val])
+    if (lastLineMarker !== null) {
+      editor.session.removeMarker(lastLineMarker);
+    }
     editor.getSession().setMode(langs[val].aceMode);
     editor.setValue(langs[val].defaultCode);
   });

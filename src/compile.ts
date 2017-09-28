@@ -59,7 +59,8 @@ let sourceMap;
 if (args.debug) {
   const src = fs.readFileSync(srcPath, 'utf-8');
   const mapConverter = smc.fromSource(src)!;
-  sourceMap = generateLineMapping(<RawSourceMap>mapConverter.toObject());
+  const map = mapConverter ? mapConverter.toObject() : null;
+  sourceMap = generateLineMapping(<RawSourceMap>map);
 }
 const plugin: any = [
   stopifyCallCC,

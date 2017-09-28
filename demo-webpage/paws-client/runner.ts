@@ -1,21 +1,37 @@
 declare const stopify: any;
 
+let loaded = false;
+
+function notifyStop() {
+  const postLineNum = () => {
+    const rts = stopify.getRTS();
+    window.parent.postMessage({
+      linenum: rts.linenum
+    }, '*');
+  };
+  stopify.stopScript(postLineNum);
+}
+
 window.addEventListener('message', evt => {
   switch (evt.data) {
     case 'run':
-      stopify.loadScript();
+      if (loaded) {
+        stopify.resumeScript();
+      } else {
+        loaded = true;
+        stopify.loadScript();
+      }
       break;
     case 'stop':
-      const postLineNum = () => {
-        const rts = stopify.getRTS();
-        window.parent.postMessage({
-          linenum: rts.linenum
-        }, '*');
-      };
-      stopify.stopScript(postLineNum);
+      notifyStop();
       break;
     case 'step':
-      stopify.stepScript();
+      if (loaded) {
+        stopify.stepScript();
+      } else {
+        loaded = true;
+        stopify.loadScript(() => notifyStop());
+      }
       break;
     default:
       return;

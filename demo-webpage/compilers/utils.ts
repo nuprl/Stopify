@@ -51,7 +51,7 @@ export function runStopify(src: string, opts: any,
         const str = fs.readFileSync(tmpPath + '.js', 'utf-8');
         const outFile = path.basename(tmpPath);
         fs.writeFileSync(`./dist/${outFile}.js`, str);
-        jsReceiver(outFile + '.js');
+        return jsReceiver(outFile + '.js');
       });
     };
   }

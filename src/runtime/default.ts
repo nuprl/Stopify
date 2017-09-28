@@ -36,9 +36,10 @@ class Default {
     this.mustStop = true;
     const rts = getRTS();
     const oldYield = rts.onYield;
-    function onYield() {
+    const onYield = () => {
+      const pause = oldYield();
       onStop();
-      return oldYield();
+      return pause;
     };
     rts.onYield = onYield;
   }
@@ -111,7 +112,7 @@ class Default {
     const startTime = Date.now();
 
     if (typeof opts.stop !== 'undefined') {
-      setTimeout(() => this.mustStop = true, opts.stop * 1000);
+      setTimeout(() => this.stop(() => onDone()), opts.stop * 1000);
     }
 
     if (M) {

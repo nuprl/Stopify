@@ -14,6 +14,8 @@ require('brace/mode/javascript')
 require('brace/theme/monokai');
 const Range = ace.acequire('ace/range').Range;
 
+let iframe = <HTMLIFrameElement>document.getElementById('iframeContainer')!;
+
 // TODO(rachit): Hack to share the editor with the runner. Should probably
 // be fixed.
 const editor = ace.edit('editor');
@@ -21,17 +23,22 @@ editor.setTheme('ace/theme/monokai');
 editor.setFontSize('15')
 
 let lastLineMarker: number | null = null;
+let lastLine: number | null = null;
 function editorSetLine(n: number) {
-    if (lastLineMarker !== null) {
-      editor.session.removeMarker(lastLineMarker);
-    }
-    lastLineMarker = editor.session.addMarker(
-        new Range(n, 0, n, 1),
-        "myMarker", "fullLine", false);
+  if (lastLineMarker !== null) {
+    editor.session.removeMarker(lastLineMarker);
+  }
+  lastLineMarker = editor.session.addMarker(
+    new Range(n, 0, n, 1),
+    "myMarker", "fullLine", false);
+  lastLine = n;
 }
 
 window.addEventListener('message', evt => {
-  if (evt.data.linenum) {
+  if (evt.data.linenum && evt.data.linenum-1 === lastLine) {
+    console.log('foo');
+    iframe.contentWindow.postMessage('step', '*');
+  } else {
     // Ace Editor is 0-indexed and source-maps are 1-indexed
     editorSetLine(evt.data.linenum-1);
   }
@@ -41,19 +48,18 @@ interface supportedLangs {
   [lang: string]: CompilerClient
 }
 
-const defaultLang = 'OCaml';
+const defaultLang = 'ScalaJS';
 
 const langs : supportedLangs = {
+  ScalaJS: ScalaJS,
   OCaml: BuckleScript,
   ClojureScript: Cljs,
-  ScalaJS: ScalaJS,
   JavaScript: JavaScript,
 };
 
 editor.getSession().setMode(langs[defaultLang].aceMode);
 editor.setValue(langs[defaultLang].defaultCode);
 
-let iframe = <HTMLIFrameElement>document.getElementById('iframeContainer')!;
 function loadJavaScript(js: string) {
   iframe.contentWindow.postMessage({ code: js }, '*');
 }

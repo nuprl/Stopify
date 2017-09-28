@@ -30,7 +30,11 @@ const insertSuspend: Visitor = {
                 t.callExpression(t.memberExpression(t.identifier("$__R"),
                   t.identifier("suspend")), [])),
               v);
+          } else {
+            newBody.push(v);
           }
+        } else {
+          newBody.push(v);
         }
       });
       path.node.body = newBody;

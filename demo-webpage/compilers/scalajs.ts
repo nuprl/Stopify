@@ -5,7 +5,7 @@ import * as path from 'path';
 const fsExtra = require('fs-extra');
 
 import { ScalaJSInterface } from './compiler';
-import { makeSpawn } from './utils';
+import { makeSpawn, inlineSourceMapFile } from './utils';
 
 export let ScalaJS : ScalaJSInterface = {
   compile(compilerDir: string,
@@ -31,9 +31,12 @@ export let ScalaJS : ScalaJSInterface = {
 
       run('sbt', 'fastOptJS').on('exit', npmLink);
 
+      const srcPath = path.join(compilerDir, 'target/scala-2.12/blah-fastopt.js');
+      const mapPath = srcPath + '.map';
       function npmLink() {
         run('npm', 'link', 'Stopify').on('exit',
-          jsReceiver(path.join(compilerDir, 'target/scala-2.12/blah-fastopt.js')));
+          inlineSourceMapFile(srcPath, mapPath, () =>
+            jsReceiver(srcPath)(0)));
       }
     }
 }

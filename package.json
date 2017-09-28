@@ -78,7 +78,6 @@
     "immutable": "^3.8.1",
     "selenium-webdriver": "^3.5.0",
     "sprintf": "^0.1.5",
-    "stream-to-string": "^1.1.0",
     "tmp": "0.0.31",
     "trie": "^0.2.1",
     "webpack": "^3.4.1",

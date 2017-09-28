@@ -3,8 +3,9 @@ import * as fs from 'fs';
 import * as tmp from 'tmp';
 import * as path from 'path';
 const browserify = require('browserify');
-const streamToString = require('stream-to-string');
 import { spawn, execSync } from 'child_process';
+import { SourceMapConsumer } from 'source-map';
+import * as smc from 'convert-source-map';
 
 /**
  * Simple wrapper around child_process.execSync. We need to use 'bash'
@@ -57,16 +58,17 @@ export function runStopify(src: string, opts: any,
   }
 
 /**
- * Wrapper to browserify single source file output by compiler toolchains.
- * `src` is expected to be an absolute path to the compiler output in a tmp dir
+ * Given a source-map file at `mapPath`, parse it, generate an inline sourcemap
+ * string, and append it to the end of `srcPath`.
  */
-export function runBrowserify(src: string,
-  jsReceiver: (code: string) => any): (exitCode: number) => void {
-    return function (exitCode: number): void {
-      assert(exitCode === 0);
-      const outJs = browserify(src, { debug: true }).bundle();
-      streamToString(outJs, 'utf8', (err: any, str: string) => {
-        jsReceiver(str);
-      });
-    };
+export function inlineSourceMapFile(srcPath: string, mapPath: string, cb: () => any): (exitCode: number) => void {
+  return function (exitCode: number): void {
+    const mapConverter = smc.fromMapFileComment(`//# sourceMappingURL=${mapPath}`, path.dirname(mapPath))!;
+    const inline = mapConverter.toComment();
+    let src = fs.readFileSync(srcPath, 'utf-8');
+    src = smc.removeMapFileComments(src);
+    fs.writeFileSync(srcPath, src, 'utf-8');
+    fs.appendFileSync(srcPath, inline, 'utf-8');
+    return cb();
   }
+}

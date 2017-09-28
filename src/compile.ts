@@ -6,7 +6,8 @@ import * as commander from 'commander';
 import { parseArg } from './generic';
 import * as webpack from 'webpack';
 import * as tmp from 'tmp';
-import { RawSourceMap } from 'source-map';
+import { SourceMapConsumer, RawSourceMap } from 'source-map';
+import * as smc from 'convert-source-map';
 import { generateLineMapping, LineMapping } from './common/helpers';
 
 const stderr = process.stderr;
@@ -56,12 +57,9 @@ const dstPath = args.args[1];
 
 let sourceMap;
 if (args.debug) {
-  const {map} = babel.transformFileSync(srcPath, {
-    babelrc: false,
-    ast: false,
-    code: false,
-  });
-  sourceMap = generateLineMapping(<RawSourceMap>map);
+  const src = fs.readFileSync(srcPath, 'utf-8');
+  const mapConverter = smc.fromSource(src)!;
+  sourceMap = generateLineMapping(<RawSourceMap>mapConverter.toObject());
 }
 const plugin: any = [
   stopifyCallCC,

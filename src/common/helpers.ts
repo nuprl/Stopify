@@ -194,6 +194,7 @@ export {
   letExpression,
   flatBodyStatement,
   generateLineMapping,
+  parseMapping,
   StopWrapper,
 };
 

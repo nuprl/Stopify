@@ -1,22 +1,21 @@
 import * as browser from 'detect-browser'
 
 
-const chan = (typeof MessageChannel !== 'undefined') ? 
-  new MessageChannel() : undefined;
+function makeSetImmediateMC(): (thunk: () => void) => void {
+  const chan = new MessageChannel();
 
-// We can't send closures over MessageChannels.
-const chanThunks: (() => void)[] = [];
+  // We can't send closures over MessageChannels.
+  const chanThunks: (() => void)[] = [];
 
-if (typeof chan !== 'undefined') {
   chan.port2.onmessage = function(evt) {
-    // Assumes that there is a function to apply.
+     // Assumes that there is a function to apply.
     return chanThunks.pop()!();
   }
-}
 
-export function setImmediateMC(thunk: () => void): void {
-  chanThunks.push(thunk);
-  return chan!.port1.postMessage(true);
+  return (thunk) => {
+    chanThunks.push(thunk);
+    return chan.port1.postMessage(true);
+  }
 }
 
 export function setImmediateT0(thunk: () => void): void {
@@ -41,13 +40,16 @@ function makeSetImmediate(): (thunk: () => void) => void {
     return setImmediateT0;
   }
   else if (browser.name === 'safari') {
-    return setImmediateMC;
+    return makeSetImmediateMC();
   }
   else if (browser.name === 'firefox') {
-    return setImmediateMC;
+    return makeSetImmediateMC();
   }
   else if (browser.name === 'chrome') {
     return makeSetImmediatePM();
+  }
+  else if (browser.name === 'edge') {
+    return makeSetImmediateMC();
   }
   else {
     console.warn(`Stopify has not been benchmarked with ${browser.name}.`);

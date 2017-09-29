@@ -1,0 +1,66 @@
+<html>
+
+  <body>
+
+    <p>This page sends 1 million messages using MessageChannels and
+    postMessage to see which is faster. In addition, it runs a timer in the
+    background. If no timer events trigger, then the mechanism doesn't yield
+    control and cannot be used.
+    </p>
+
+    <textarea id="log"></textarea>
+
+
+  <script>
+  
+  function time(text, callback) {
+    return new Promise((resolve) => {
+      const start = Date.now();
+      var timerEvents = 0;
+      const timerID = setInterval(() => timerEvents++, 100);
+      callback(function () {
+        const end = Date.now();
+        clearInterval(timerID);
+        document.getElementById('log').value +=
+          `${text} took ${end - start} ms and ${timerEvents} timer events occured.\n`;
+        resolve();
+      });
+    });
+  }
+
+  time('MessageChannel performance test', (onComplete) => {
+    var chan = new MessageChannel();
+    var i = 0;
+    chan.port2.onmessage = function(evt) {
+      if (++i === 1000000) {
+        onComplete();
+      }
+      else {
+        chan.port1.postMessage(true);
+      }
+    };
+    chan.port1.postMessage(true);
+  }).then(() => {
+    time('postMessage performance test', (onComplete) => {
+      var i = 0;
+      function callback() {
+        if (++i  === 1000000) {
+          window.removeEventListener('message', callback);
+          onComplete();
+        }
+        else {
+          window.postMessage(true, '*');
+        }
+      }
+
+      window.addEventListener('message', callback);
+
+      window.postMessage(true, '*');
+    });
+  });
+
+  </script>
+
+  </body>
+
+</html>

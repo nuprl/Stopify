@@ -46,11 +46,7 @@ class Default {
 
   step(): void {
     const rts = getRTS();
-    rts.isSuspended = false;
-    rts.delimitDepth++;
-    rts.runtime(rts.continuation);
-    rts.delimitDepth--;
-    rts.resume();
+    rts.resumeFromCaptured();
   }
 
   run(M: (() => void) | undefined, opts: Opts, done: () => void): void {

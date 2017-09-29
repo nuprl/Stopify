@@ -12,8 +12,8 @@ commander.option(
   '-e, --env <env>',
   'the runtime environment (default: node)',
   parseArg(x => x,
-    (x) => /^(chrome|firefox|node)$/.test(x),
-    '--env must be chrome, firefox, or node'),
+    (x) => /^(chrome|firefox|node|safari|MicrosoftEdge)$/.test(x),
+    '--env must be chrome, firefox, safari, MicrosoftEdge, or node'),
   'node');
 
 commander.option(
@@ -48,6 +48,18 @@ commander.option(
     (x) => /^(eager|retval|lazy|original)$/.test(x),
     'invalid --transform'));
 
+commander.option('--remote <url>',
+  'URL of a remote WebDriver server (usually http://<hostname>:4444/wd/hub)');
+
+commander.option('--local-host <hostname>',
+  'The host name of this host (default: localhost)',
+  x => x,
+  'localhost');
+
+commander.option('--local-port <port>',
+  'the port to use on this host (default: OS chooses)',
+  parseArg(parseInt, (x) => x > 0 && x < 65536, 'bad --local-port'));
+
 commander.arguments('<filename>');
 
 
@@ -68,7 +80,10 @@ export function parseRuntimeOpts(rawArgs: string[]): Opts {
     timePerElapsed: args.timePerElapsed,
     stop: args.stop,
     env: args.env,
-    variance: args.variance
+    variance: args.variance,
+    remoteWebDriverUrl: args.remote,
+    testHost: args.localHost,
+    testPort: args.localPort
   };
   return <any>null;
 }

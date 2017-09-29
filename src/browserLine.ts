@@ -1,11 +1,17 @@
 import * as path from 'path';
 import { parseRuntimeOpts } from './cli-parse';
 
-export function benchmarkUrl(args: string[]) {
+export function localBenchmarkUrl(args: string[]) {
   const ret = 'file://' + path.resolve(__dirname, '../../dist/benchmark.html') +
     '#' + encodeArgs(args);
-  console.log(ret);
   return ret;
+}
+
+export function benchmarkUrl(args: string[]) {
+  const opts = parseRuntimeOpts(args);
+  opts.filename = path.basename(opts.filename);
+  console.log(`To run locally: ${localBenchmarkUrl(args)}`);
+  return encodeURIComponent(JSON.stringify(opts)); 
 }
 
 export function encodeArgs(args: string[]) {
@@ -16,5 +22,5 @@ export function encodeArgs(args: string[]) {
 
 if (require.main === module) {
   const args = process.argv.slice(2);
-  console.log(benchmarkUrl(args));
+  console.log(localBenchmarkUrl(args));
 }

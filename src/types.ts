@@ -15,5 +15,11 @@ export interface Opts {
   timePerElapsed: number,
   stop: number | undefined,
   variance: boolean,
-  env: 'firefox' | 'chrome' | 'node',
+  /** These are strings that Selenium recognizes, which is why it says
+   * 'MicrosoftEdge' instead of 'edge'.
+   */
+  env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari',
+  remoteWebDriverUrl?: string,
+  testHost?: string,
+  testPort?: number
 }

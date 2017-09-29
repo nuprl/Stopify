@@ -2,6 +2,11 @@ declare const stopify: any;
 
 let loaded = false;
 
+const textarea = document.getElementById('data')!;
+textarea.onchange = function () {
+  textarea.scrollTop = textarea.scrollHeight;
+}
+
 function notifyStop() {
   const postLineNum = () => {
     const rts = stopify.getRTS();

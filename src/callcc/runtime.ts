@@ -60,9 +60,9 @@ export abstract class Runtime {
     public yieldInterval: number,
     public estimator: ElapsedTimeEstimator,
     public capturing: boolean = false,
-    public delimitDepth: number = 0,
+    private delimitDepth: number = 0,
     // true if computation is suspended by 'suspend'
-    public isSuspended: boolean = false,
+    private isSuspended: boolean = false,
     // a queue of computations that need to run
     private pendingRuns: (() => void)[] = [],
     /** This function is applied immediately before stopify yields control to
@@ -70,7 +70,7 @@ export abstract class Runtime {
      *  computation terminates.
      */
     public onYield = function(): boolean { return true; },
-    public continuation = function() {}) {
+    private continuation = function() {}) {
     this.stack = [];
     this.mode = true;
   }
@@ -80,6 +80,17 @@ export abstract class Runtime {
     this.runtime(thunk);
     this.delimitDepth--;
   }
+
+  resumeFromSuspension(thunk: () => any): any {
+    this.isSuspended = false;
+    this.runtime_(thunk);
+    this.resume();
+  }
+
+  resumeFromCaptured(): any {
+    this.resumeFromSuspension(this.continuation);
+  }
+
   /**
    * Evaluates 'thunk' either now or later.
    */
@@ -120,9 +131,7 @@ export abstract class Runtime {
         this.continuation = continuation;
         if (this.onYield()) {
           return setImmediate(() => {
-            this.isSuspended = false;
-            this.runtime_(continuation);
-            this.resume();
+            this.resumeFromSuspension(continuation);
           });
         }
       });

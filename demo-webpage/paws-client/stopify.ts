@@ -31,12 +31,12 @@ function editorSetLine(n: number) {
   lastLineMarker = editor.session.addMarker(
     new Range(n, 0, n, 1),
     "myMarker", "fullLine", false);
+  editor.scrollToLine(n, true, false, function () {});
   lastLine = n;
 }
 
 window.addEventListener('message', evt => {
   if (evt.data.linenum && evt.data.linenum-1 === lastLine) {
-    console.log('foo');
     iframe.contentWindow.postMessage('step', '*');
   } else {
     // Ace Editor is 0-indexed and source-maps are 1-indexed

@@ -1,6 +1,6 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {letExpression} from '../common/helpers';
+import {letExpression} from '../callcc/helpers';
 
 const opts = t.identifier("$opts");
 const result = t.identifier("$result");

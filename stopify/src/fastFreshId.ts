@@ -3,7 +3,7 @@
  * own functions to do so.
  */
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
-import * as h from './common/helpers';
+import * as h from './callcc/helpers';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 const trie = require('trie'); // NOTE(arjun): No @types on 08/28/2017

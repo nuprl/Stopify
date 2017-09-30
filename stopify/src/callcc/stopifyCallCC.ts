@@ -4,15 +4,15 @@ import suspendStep from './suspendStep';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as h from '../common/helpers';
+import * as h from '../callcc/helpers';
 import * as fs from 'fs';
 import * as babylon from 'babylon';
-import cleanupGlobals from '../common/cleanupGlobals';
-import hygiene from '../common/hygiene';
-import markFlatFunctions from '../common/markFlatFunctions';
+import cleanupGlobals from '../callcc/cleanupGlobals';
+import hygiene from '../callcc/hygiene';
+import markFlatFunctions from '../callcc/markFlatFunctions';
 import * as fastFreshId from '../fastFreshId';
-import markFlatApplications from '../common/markFlatApplications'
-import { knowns } from '../common/cannotCapture'
+import markFlatApplications from '../callcc/markFlatApplications'
+import { knowns } from '../callcc/cannotCapture'
 import * as exposeImplicitApps from '../exposeImplicitApps';
 
 const allowed = [

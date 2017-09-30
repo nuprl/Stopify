@@ -10,7 +10,7 @@
 
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
-import * as h from '../common/helpers';
+import * as h from '../callcc/helpers';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';

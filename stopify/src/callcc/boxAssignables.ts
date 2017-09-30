@@ -9,7 +9,7 @@ import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import * as assert from 'assert';
 import { NodePath, Visitor } from 'babel-traverse';
-import * as freeIds from '../common/freeIds';
+import * as freeIds from '../callcc/freeIds';
 import * as fastFreshId from '../fastFreshId';
 import * as bh from '../babelHelpers';
 import { Set } from 'immutable';

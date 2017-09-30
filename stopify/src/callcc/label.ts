@@ -1,6 +1,6 @@
 import {NodePath, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import { cannotCapture } from '../common/cannotCapture';
+import { cannotCapture } from '../callcc/cannotCapture';
 import * as bh from '../babelHelpers';
 import * as imm from 'immutable';
 

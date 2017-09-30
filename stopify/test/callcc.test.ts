@@ -1,4 +1,4 @@
-import * as helpers from '../src/common/helpers';
+import * as helpers from '../src/callcc/helpers';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';

@@ -35,7 +35,7 @@
  */
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {letExpression, Break, breakLbl} from '../common/helpers';
+import {letExpression, Break, breakLbl} from '../callcc/helpers';
 
 function ifTest(e: t.Expression,
   discriminant: t.Identifier,

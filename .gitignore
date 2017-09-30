@@ -9,4 +9,4 @@ built
 package-lock.json
 auth-trial/html/src-noconflict
 /benchmarks
-/dist
+dist

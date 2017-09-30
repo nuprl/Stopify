@@ -1,0 +1,14 @@
+#!/bin/bash
+
+./node_modules/.bin/tsc
+
+if [[ $? -ne 0 ]]; then
+  echo 'Typescipt compilation failed!'
+  exit 1
+fi
+
+./node_modules/.bin/webpack
+
+if [ ! -L node_modules/Stopify ]; then
+    (cd node_modules; ln -s .. Stopify)
+fi

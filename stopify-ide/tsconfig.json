@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "outDir": "./dist",
+        "allowUnreachableCode": true,
+        "lib": ["es2016", "dom"],
+        "target": "es6",
+        "pretty": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true
+    },
+    "include": [
+      "ts"
+    ]
+}

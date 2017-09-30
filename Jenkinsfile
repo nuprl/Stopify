@@ -5,11 +5,11 @@ pipeline {
     stage('Test') {
       steps {
         sh 'yarn install'
-        sh 'yarn run test:integration'
+        sh 'cd stopify && yarn run test:integration'
       }
       post {
         always {
-          junit 'results.xml'
+          junit 'stopify/results.xml'
         }
       }
     }

@@ -1,6 +1,6 @@
-import * as h from '../src/common/helpers';
-import markFunc from '../src/common/markFlatFunctions'
-import markApp from '../src/common/markFlatApplications'
+import * as h from '../src/callcc/helpers';
+import markFunc from '../src/callcc/markFlatFunctions'
+import markApp from '../src/callcc/markFlatApplications'
 import * as babel from 'babel-core';
 import {NodePath, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';

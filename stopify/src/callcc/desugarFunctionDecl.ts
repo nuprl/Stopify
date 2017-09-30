@@ -1,6 +1,6 @@
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {letExpression} from '../common/helpers';
+import {letExpression} from '../callcc/helpers';
 
 const functionDecl: Visitor = {
   FunctionDeclaration: function (path: NodePath<t.FunctionDeclaration>) {

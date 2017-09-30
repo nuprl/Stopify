@@ -7,7 +7,7 @@
  */
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {tag, letExpression} from '../common/helpers';
+import {tag, letExpression} from '../callcc/helpers';
 
 type Lifted<T> = T & {
   lifted?: boolean
@@ -27,7 +27,7 @@ function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression | null
 
 function getFunctionArgs(path: NodePath<t.Node>): string[] {
   const node = path.node;
-  if (node.type === 'FunctionDeclaration' || 
+  if (node.type === 'FunctionDeclaration' ||
       node.type === 'FunctionExpression') {
     return (<any>node).params.map((x: t.Identifier) => x.name);
   }
@@ -73,7 +73,7 @@ const lift: Visitor = {
         throw new Error(`Destructuring assignment not supported`);
       }
       const id = decl.id.name;
-      const newDecl = t.variableDeclaration(kind, 
+      const newDecl = t.variableDeclaration(kind,
                         [t.variableDeclarator(decl.id)]);
       getBlock(topScope.node).unshift(lifted(newDecl));
       if (decl.init !== null) {

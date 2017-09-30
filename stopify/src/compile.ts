@@ -8,7 +8,7 @@ import * as webpack from 'webpack';
 import * as tmp from 'tmp';
 import { SourceMapConsumer, RawSourceMap } from 'source-map';
 import * as smc from 'convert-source-map';
-import { generateLineMapping, LineMapping } from './common/helpers';
+import { generateLineMapping, LineMapping } from './callcc/helpers';
 
 const stderr = process.stderr;
 

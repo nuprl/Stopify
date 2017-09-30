@@ -1,6 +1,6 @@
 import * as t from 'babel-types';
 import { NodePath } from 'babel-traverse';
-import * as h from '../common/helpers';
+import * as h from '../callcc/helpers';
 import * as path from 'path';
 import { IsEval } from "./helpers";
 

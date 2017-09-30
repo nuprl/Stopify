@@ -1,8 +1,8 @@
-import * as helpers from '../src/common/helpers';
+import * as helpers from '../src/callcc/helpers';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import Hygiene from '../src/common/hygiene';
+import Hygiene from '../src/callcc/hygiene';
 import * as fastFreshId from '../src/fastFreshId';
 
 const assert = require('assert');

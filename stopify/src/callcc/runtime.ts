@@ -1,6 +1,6 @@
 import { setImmediate } from '../setImmediate';
 import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
-import { knowns } from '../common/cannotCapture'
+import { knowns } from '../callcc/cannotCapture'
 import * as assert from 'assert';
 
 // The type of continuation frames

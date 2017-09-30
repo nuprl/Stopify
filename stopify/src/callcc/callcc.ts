@@ -6,25 +6,25 @@
  *
  * node built/src/callcc/callcc <filename.js>
  */
-import * as desugarLoop from '../common/desugarLoop';
-import * as desugarLabel from '../common/desugarLabel';
-import * as desugarSwitch from '../common/desugarSwitch';
-import * as desugarLogical from '../common/desugarLogical';
-import * as singleVarDecls from '../common/singleVarDecls';
-import * as makeBlocks from '../common/makeBlockStmt';
+import * as desugarLoop from '../callcc/desugarLoop';
+import * as desugarLabel from '../callcc/desugarLabel';
+import * as desugarSwitch from '../callcc/desugarSwitch';
+import * as desugarLogical from '../callcc/desugarLogical';
+import * as singleVarDecls from '../callcc/singleVarDecls';
+import * as makeBlocks from '../callcc/makeBlockStmt';
 import * as boxAssignables from './boxAssignables';
-import * as desugarNew from '../common/desugarNew';
-import * as anf from '../common/anf';
+import * as desugarNew from '../callcc/desugarNew';
+import * as anf from '../callcc/anf';
 import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
 import nameFinallyReturn from './nameFinallyReturn';
 import delimitTopLevel from './delimitTopLevel';
-import hygiene from '../common/hygiene';
-import * as freeIds from '../common/freeIds';
+import hygiene from '../callcc/hygiene';
+import * as freeIds from '../callcc/freeIds';
 import cleanup from './cleanup';
-import * as h from '../common/helpers';
+import * as h from '../callcc/helpers';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as babylon from 'babylon';
 import * as t from 'babel-types';

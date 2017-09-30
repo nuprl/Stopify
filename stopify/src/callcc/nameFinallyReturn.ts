@@ -1,6 +1,6 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {letExpression} from '../common/helpers';
+import {letExpression} from '../callcc/helpers';
 import * as bh from '../babelHelpers';
 
 const finallySentinal = t.identifier('finally_rv');

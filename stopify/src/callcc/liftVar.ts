@@ -7,7 +7,7 @@
  */
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import {tag, letExpression} from '../common/helpers';
+import {tag, letExpression} from '../callcc/helpers';
 
 type Hoisted<T> = T & {
   hoisted?: boolean

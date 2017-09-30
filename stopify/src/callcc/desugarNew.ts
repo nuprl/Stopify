@@ -8,7 +8,7 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import {
   letExpression, transformed, FlatnessMark, NewTag, newTag
-} from '../common/helpers';
+} from '../callcc/helpers';
 
 import { knowns } from './cannotCapture';
 

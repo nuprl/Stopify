@@ -79,10 +79,7 @@ export const visitor: Visitor = {
     h.transformFromAst(path,
       [[callcc, {
         useReturn: true,
-        captureMethod: state.opts.captureMethod,
-        handleNew: state.opts.handleNew,
-        esMode: esMode,
-        compileFunction: state.opts.compileFunction
+        ...state.opts
       }]]);
     fastFreshId.cleanup()
   }

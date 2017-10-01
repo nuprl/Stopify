@@ -33,10 +33,9 @@ class Env {
 
     // TODO(rachit): Add more known globals here.
     // This is not correct in presence of renaming.
-    [
-      'WeakMap', 'Map', 'Set', 'WeakSet', 'String', 'Number', 'Function',
-      'Object', 'Array', 'Date', 'RegExp', 'Error', 'Object.create',
-      'console.log', 'console.dir', 'Object.assign'
+    [ 'WeakMap', 'Map', 'Set', 'WeakSet', 'String', 'Number', 'Function',
+      'Object', 'Array', 'Date', 'RegExp', 'Error', 
+      'console.*', 'Object.*', 'Math.*'
     ].map(e => this.addBinding(e, 'Flat'))
   }
   toString(): string {
@@ -46,6 +45,10 @@ class Env {
     for(let iter in this.scopes) {
       let scope = this.scopes[iter]
       let res = scope.bindings.get(id)
+      // This is member expression of the form a.b
+      if(id.split(".").length == 2) {
+        res = scope.bindings.get(id.split(".")[0] + "." + "*")
+      }
       if(res) return res;
     }
     // NOTE(rachit): If can't find the tag, be conservative and return notflat.
@@ -75,6 +78,11 @@ let globalEnv = new Env();
 function nodeToString(node: t.Expression | t.LVal): string | null {
   switch(node.type) {
     case 'Identifier': return node.name;
+    case 'MemberExpression': {
+      const oname = nodeToString(node.object)
+      const pname = nodeToString(node.property)
+      return oname && pname ? oname + "." + pname : null
+    }
     default: {
       return null
     }

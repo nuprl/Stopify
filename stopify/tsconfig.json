@@ -10,7 +10,8 @@
         "noImplicitReturns": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
-        "declaration": true
+        "declaration": true,
+        "inlineSourceMap": true
     },
     "include": [
       "src",

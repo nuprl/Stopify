@@ -88,7 +88,6 @@ function usesArguments(path: NodePath<t.Function>) {
   return r;
 }
 
-
 function func(path: NodePath<Labeled<FunctionT>>): void {
   if ((<any>path.node).mark === 'Flat') {
     return;
@@ -153,67 +152,26 @@ function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 }
 
 /**
- * Wrap callsites in try/catch block, lazily building the stack on catching a
- * Capture exception, then rethrowing.
- *
- *  jumper [[ x = f_n(...args) ]] =
- *    try {
- *      if (mode === 'normal') {
- *        x = f_n(...args);
- *      } else if (mode === restoring && target === n) {
- *        x = R.stack[R.stack.length-1].f();
- *      }
- *    } catch (exn) {
- *      if (exn instanceof Capture) {
- *        exn.stack.push(stackFrame);
- *      }
- *      throw exn;
- *    }
+ * Add the restore logic at the top of the function.
  */
 function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const exn = fastFreshId.fresh('exn');
-
-  const funParent = <NodePath<FunctionT>>path.findParent(p =>
-    p.isFunctionExpression() || p.isFunctionDeclaration());
-  const funId = funParent.node.id, funParams = funParent.node.params,
-  funBody = funParent.node.body;
-
-  const locals = funParent.node.localVars;
-
   const nodeStmt = t.expressionStatement(path.node);
-
   const restoreNode =
     t.assignmentExpression(path.node.operator,
       path.node.left, stackFrameCall)
   const ifStmt = t.ifStatement(
     isNormalMode,
-    t.blockStatement([nodeStmt]),
+    t.blockStatement([
+      t.expressionStatement(
+        t.assignmentExpression('=', target, applyLbl)),
+        nodeStmt
+    ]),
     t.ifStatement(
       t.binaryExpression('===', target, applyLbl),
       t.expressionStatement(restoreNode)));
-
-  const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
-    t.catchClause(exn, t.blockStatement([
-      t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
-        t.blockStatement([
-          t.expressionStatement(t.callExpression(t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
-            t.objectExpression([
-              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-              t.objectProperty(
-                t.identifier('f'),
-                t.arrowFunctionExpression([], reapplyExpr(funParent))),
-              t.objectProperty(t.identifier('locals'),
-                t.arrayExpression(<any>locals)),
-              t.objectProperty(t.identifier('index'), applyLbl),
-            ]),
-          ]))
-        ])),
-      t.throwStatement(exn)
-    ])));
-
   const stmtParent = path.getStatementParent();
-  stmtParent.replaceWith(tryStmt);
+  stmtParent.replaceWith(ifStmt);
   stmtParent.skip();
 }
 
@@ -377,8 +335,57 @@ function isNormalGuarded(stmt: t.Statement): stmt is t.IfStatement {
 }
 
 const jumper = {
+/**
+ * If transforming with 'lazy' mode:
+ * Wrap callsites in try/catch block, lazily building the stack on catching a
+ * Capture exception, then rethrowing.
+ *
+ *  jumper [[ x = f_n(...args) ]] =
+ *    try {
+ *      if (mode === 'normal') {
+ *        x = f_n(...args);
+ *      } else if (mode === restoring && target === n) {
+ *        x = R.stack[R.stack.length-1].f();
+ *      }
+ *    } catch (exn) {
+ *      if (exn instanceof Capture) {
+ *        exn.stack.push(stackFrame);
+ *      }
+ *      throw exn;
+ *    }
+ */
   BlockStatement: {
-    exit(path: NodePath<Labeled<t.BlockStatement>>) {
+    exit(path: NodePath<Labeled<t.BlockStatement>>, s: State) {
+      if(s.opts.captureMethod === 'lazy' && (<any>path.node).merge) {
+        // Since we're re-using the block, set merge to false.
+        (<any>path.node).merge = false
+        const funParent = <NodePath<FunctionT>>path.findParent(p => 
+          t.isFunctionDeclaration(p) || t.isFunctionExpression(p))
+        const locals = funParent.node.localVars
+        const exn = fastFreshId.fresh('exn')
+        const tryStmt = t.tryStatement(path.node,
+          t.catchClause(exn, t.blockStatement([
+            t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
+              t.blockStatement([
+                t.expressionStatement(t.callExpression(t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
+                  t.objectExpression([
+                    t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+                    t.objectProperty(
+                      t.identifier('f'),
+                      t.arrowFunctionExpression([], reapplyExpr(funParent))),
+                    t.objectProperty(t.identifier('locals'),
+                      t.arrayExpression(<any>locals)),
+                    t.objectProperty(t.identifier('index'), target),
+                  ]),
+                ]))
+              ])),
+            t.throwStatement(exn)
+          ])));
+
+          path.replaceWith(tryStmt)
+          path.skip()
+          return
+      }
       const stmts = path.node.body;
       if (stmts.length === 1) {
         return;
@@ -404,6 +411,7 @@ const jumper = {
       path.node.body = result;
     }
   },
+
   ExpressionStatement: {
     exit(path: NodePath<Labeled<t.ExpressionStatement>>, s: State) {
       if (isFlat(path)) return
@@ -437,14 +445,14 @@ const jumper = {
 
       const declTarget = letExpression(target, t.nullLiteral());
       (<any>declTarget).lifted = true;
+      path.node.body.body.unshift(declTarget);
 
       if (s.opts.handleNew === 'direct') {
         path.node.localVars.push(newTarget);
         const declNewTarget = letExpression(newTarget,
-          t.memberExpression(t.identifier('new'), t.identifier('target')));
+          t.memberExpression(t.identifier('new'), target));
         (<any>declNewTarget).lifted = true;
 
-        path.node.body.body.unshift(declTarget);
         path.node.body.body.unshift(declNewTarget);
 
         const ifConstructor = bh.sIf(newTarget,
@@ -462,7 +470,7 @@ const jumper = {
     }
   },
 
-  WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
+  WhileStatement(path: NodePath<Labeled<t.WhileStatement>>) {
     // No need for isFlat check here. Loops make functions not flat.
     path.node.test = bh.or(
       bh.and(isRestoringMode, labelsIncludeTarget(getLabels(path.node))),

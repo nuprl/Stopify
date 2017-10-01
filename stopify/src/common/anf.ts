@@ -62,15 +62,13 @@ const anfVisitor : Visitor = {
       }
     },
 
-    exit(path: NodePath<t.CallExpression>): void {
+    exit(path: NodePath<t.CallExpression>, state): void {
       if ((<any>path.node.callee).mark == 'Flat') {
         return
       }
       const p = path.parent;
-      if ((!t.isVariableDeclarator(p) &&
-        !t.isReturnStatement(p)) ||
-        (t.isReturnStatement(p) &&
-          withinTryBlock(path))) {
+      if ((!t.isVariableDeclarator(p) && (state.opts.oneTry || !t.isReturnStatement(p))) ||
+        (t.isReturnStatement(p) && withinTryBlock(path))) {
         // Name the function application if it is not already named or
         // if it is not a flat application.
         const name = fastFreshId.fresh('app');

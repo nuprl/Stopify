@@ -36,7 +36,8 @@ function makeSetImmediatePM(): (thunk: () => void) => void {
 }
 
 function makeSetImmediate(): (thunk: () => void) => void {
-  if (<any>browser.name === 'node') {
+  // browser can be null
+  if (!browser || <any>browser.name === 'node') {
     return setImmediateT0;
   }
   else if (browser.name === 'safari') {

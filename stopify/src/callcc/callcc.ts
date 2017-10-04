@@ -108,9 +108,6 @@ const visitor: Visitor = {
     }
 
     toShift.unshift(
-      h.letExpression(t.identifier('target'), t.numericLiteral(0), 'var'));
-
-    toShift.unshift(
       h.letExpression(
         t.identifier("SENTINAL"),
         t.objectExpression([]),

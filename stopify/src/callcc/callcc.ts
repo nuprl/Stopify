@@ -22,8 +22,6 @@ import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
-import markBlocks from './markBlocks';
-import oneTry from './oneTry';
 import nameFinallyReturn from './nameFinallyReturn';
 import delimitTopLevel from './delimitTopLevel';
 import cleanup from './cleanup';
@@ -82,13 +80,6 @@ const visitor: Visitor = {
       h.transformFromAst(path, [nameFinallyReturn]));
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
-    if (captureMethod === 'lazy') {
-      state.opts.oneTry ?
-        timeSlow('oneTry', () =>
-          h.transformFromAst(path, [oneTry])) :
-        timeSlow('markBlocks', () =>
-          h.transformFromAst(path, [markBlocks]))
-    }
     timeSlow('jumper', () =>
       h.transformFromAst(path, [[jumper, {
         ...state.opts
@@ -137,13 +128,13 @@ const visitor: Visitor = {
           t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')), []),
         'const'));
     if (!state.opts.compileFunction) {
-      path.node.body.unshift(
-        h.letExpression(
-          t.identifier("$__T"),
-          t.callExpression(
-            t.identifier('require'),
-            [t.stringLiteral('Stopify/built/src/rts')]),
-          'const'));
+    path.node.body.unshift(
+      h.letExpression(
+        t.identifier("$__T"),
+        t.callExpression(
+          t.identifier('require'),
+          [t.stringLiteral('Stopify/built/src/rts')]),
+        'const'));
     }
     path.stop();
   }

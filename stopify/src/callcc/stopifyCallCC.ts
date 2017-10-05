@@ -31,6 +31,8 @@ const reserved = [
   "$result",
   "target",
   "newTarget",
+  "captureLocals",
+  "frame",
   "SENTINAL",
   "finally_rv",
 ];

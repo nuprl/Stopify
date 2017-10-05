@@ -50,6 +50,8 @@ function isFlat(path: NodePath<t.Node>): boolean {
 
 const target = t.identifier('target');
 const newTarget = t.identifier('newTarget');
+const captureLocals = t.identifier('captureLocals');
+const captureFrameId = t.identifier('frame');
 const runtime = t.identifier('$__R');
 const types = t.identifier('$__T');
 const matArgs = t.identifier('materializedArguments');
@@ -110,6 +112,14 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
   ]);
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
 
+  const captureBody = t.blockStatement([
+    t.expressionStatement(t.assignmentExpression('=',
+      t.memberExpression(captureFrameId, t.identifier('locals')),
+      t.arrayExpression(restoreLocals))),
+  ]);
+  const captureClosure = t.functionDeclaration(captureLocals,
+    [captureFrameId], captureBody);
+
   const mayMatArgs: t.Statement[] = [];
   if (path.node.__usesArgs__) {
     mayMatArgs.push(
@@ -120,6 +130,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
   const newBody = t.blockStatement([
     ...pre,
     ifRestoring,
+    captureClosure,
     ...mayMatArgs,
     ...post
   ]);
@@ -179,8 +190,6 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const funId = funParent.node.id, funParams = funParent.node.params,
   funBody = funParent.node.body;
 
-  const locals = funParent.node.localVars;
-
   const nodeStmt = t.expressionStatement(path.node);
 
   const restoreNode =
@@ -193,21 +202,26 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
       t.binaryExpression('===', target, applyLbl),
       t.expressionStatement(restoreNode)));
 
+  const exnStack = t.memberExpression(exn, t.identifier('stack'));
+
   const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
     t.catchClause(exn, t.blockStatement([
       t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
         t.blockStatement([
-          t.expressionStatement(t.callExpression(t.memberExpression(t.memberExpression(exn, t.identifier('stack')), t.identifier('push')), [
+          t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
             t.objectExpression([
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
               t.objectProperty(
                 t.identifier('f'),
                 t.arrowFunctionExpression([], reapplyExpr(funParent))),
-              t.objectProperty(t.identifier('locals'),
-                t.arrayExpression(<any>locals)),
               t.objectProperty(t.identifier('index'), applyLbl),
             ]),
-          ]))
+          ])),
+          t.expressionStatement(t.callExpression(captureLocals, [
+            t.memberExpression(exnStack, t.binaryExpression('-',
+              t.memberExpression(exnStack, t.identifier('length')),
+              t.numericLiteral(1)), true)
+          ])),
         ])),
       t.throwStatement(exn)
     ])));
@@ -246,8 +260,6 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(funBody.body, afterDecls);
 
-  const locals = funParent.node.localVars;
-
   const nodeStmt = t.expressionStatement(path.node);
 
   const stackFrame = t.objectExpression([
@@ -255,8 +267,6 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     t.objectProperty(
       t.identifier('f'),
       t.arrowFunctionExpression([], reapplyExpr(funParent))),
-    t.objectProperty(t.identifier('locals'),
-      t.arrayExpression(<any>locals)),
     t.objectProperty(t.identifier('index'), applyLbl),
   ]);
 
@@ -268,6 +278,9 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     t.blockStatement([
       t.expressionStatement(t.callExpression(pushEagerStack, [
         stackFrame,
+      ])),
+      t.expressionStatement(t.callExpression(captureLocals, [
+        t.memberExpression(eagerStack, t.numericLiteral(0), true),
       ])),
       nodeStmt,
       t.expressionStatement(t.callExpression(shiftEagerStack, [])),
@@ -317,26 +330,27 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
   const { pre, post } = split(funBody.body, afterDecls);
 
-  const locals = funParent.node.localVars;
-
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(
       t.identifier('f'),
       t.arrowFunctionExpression([], reapplyExpr(funParent))),
-    t.objectProperty(t.identifier('locals'),
-      t.arrayExpression(<any>locals)),
     t.objectProperty(t.identifier('index'), applyLbl),
   ]);
 
+  const retStack = t.memberExpression(ret, t.identifier('stack'));
   const restoreBlock: t.IfStatement =
   t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
     t.blockStatement([
       t.expressionStatement(t.callExpression(
-        t.memberExpression(t.memberExpression(ret,
-          t.identifier('stack')), t.identifier('push')), [
+        t.memberExpression(retStack, t.identifier('push')), [
             stackFrame,
           ])),
+      t.expressionStatement(t.callExpression(captureLocals, [
+        t.memberExpression(retStack, t.binaryExpression('-',
+          t.memberExpression(retStack, t.identifier('length')),
+          t.numericLiteral(1)), true)
+      ])),
       t.returnStatement(ret),
     ]),
     t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),

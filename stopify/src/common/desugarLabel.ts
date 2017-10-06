@@ -16,7 +16,7 @@ const labelVisitor : Visitor = {
       path.replaceWith(breakStatement);
     } else {
       const loopParent : NodePath<While<t.Node>> =
-        path.findParent(p => p.isWhileStatement() || p.isSwitchStatement());
+        path.findParent(p => p.isWhileStatement());
       const continueLabel = loopParent.node.continue_label;
 
       const breakStatement = t.breakStatement(continueLabel);

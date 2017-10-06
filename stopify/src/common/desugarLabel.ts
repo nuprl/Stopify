@@ -10,12 +10,18 @@ import {While, Break, continueLbl} from '../common/helpers';
 
 const labelVisitor : Visitor = {
   ContinueStatement: function (path: NodePath<t.ContinueStatement>): void {
-    const loopParent : NodePath<While<t.Node>> =
-      path.findParent(p => p.isWhileStatement() || p.isSwitchStatement());
-    const continueLabel = loopParent.node.continue_label;
+    const { label } = path.node;
+    if (label) {
+      const breakStatement = t.breakStatement(label);
+      path.replaceWith(breakStatement);
+    } else {
+      const loopParent : NodePath<While<t.Node>> =
+        path.findParent(p => p.isWhileStatement() || p.isSwitchStatement());
+      const continueLabel = loopParent.node.continue_label;
 
-    const breakStatement = t.breakStatement(continueLabel);
-    path.replaceWith(breakStatement);
+      const breakStatement = t.breakStatement(continueLabel);
+      path.replaceWith(breakStatement);
+    }
   },
 
   BreakStatement: function (path: NodePath<Break<t.BreakStatement>>): void {

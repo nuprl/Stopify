@@ -31,6 +31,8 @@ const reserved = [
   "$result",
   "target",
   "newTarget",
+  "captureLocals",
+  "frame",
   "SENTINAL",
   "finally_rv",
 ];
@@ -79,7 +81,10 @@ export const visitor: Visitor = {
     h.transformFromAst(path,
       [[callcc, {
         useReturn: true,
-        ...state.opts
+        captureMethod: state.opts.captureMethod,
+        handleNew: state.opts.handleNew,
+        esMode: esMode,
+        compileFunction: state.opts.compileFunction
       }]]);
     fastFreshId.cleanup()
   }

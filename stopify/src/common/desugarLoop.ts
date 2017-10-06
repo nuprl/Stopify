@@ -53,6 +53,7 @@ const loopVisitor : Visitor = {
     ]);
     if (path.node.continue_label) {
       newBody = t.labeledStatement(path.node.continue_label, newBody);
+      (<any>newBody).skip = true;
     }
 
     path.replaceWith(h.continueLbl(t.whileStatement(t.binaryExpression('!==',
@@ -74,9 +75,11 @@ const loopVisitor : Visitor = {
 
     const loopContinue = path.node.continue_label ||
       fastFreshId.fresh('loop_continue');
+    const labelContinue = t.labeledStatement(loopContinue, wBody);
+    (<any>labelContinue).skip = true;
 
     wBody = t.blockStatement([
-      t.labeledStatement(loopContinue, wBody),
+      labelContinue,
       nupdate,
     ]);
 
@@ -111,6 +114,7 @@ const loopVisitor : Visitor = {
     body = h.flatBodyStatement([runOnceSetFalse, body]);
     if (path.node.continue_label) {
       body = t.labeledStatement(path.node.continue_label, body);
+      (<any>body).skip = true;
     }
 
     test = t.logicalExpression('||', runOnce, test);
@@ -120,21 +124,22 @@ const loopVisitor : Visitor = {
         <any>path.node.continue_label));
   },
 
-  WhileStatement: {
-    exit(path: NodePath<h.While<h.Break<t.WhileStatement>>>): void {
-      if (!path.node.continue_label) {
-        const loopContinue = fastFreshId.fresh('loop_continue');
-        // Wrap the body in a labeled continue block.
-        path.node = h.continueLbl(path.node, loopContinue);
-        path.node.body = t.labeledStatement(loopContinue, path.node.body);
-      }
+  WhileStatement(path: NodePath<h.While<h.Break<t.WhileStatement>>>): void {
+    if (!path.node.continue_label) {
+      const loopContinue = fastFreshId.fresh('loop_continue');
+      // Wrap the body in a labeled continue block.
+      path.node = h.continueLbl(path.node, loopContinue);
+      path.node.body = t.labeledStatement(loopContinue, path.node.body);
+      (<any>path.node.body).skip = true;
+    }
 
-      // Wrap the loop in labeled break block.
+    // Wrap the loop in labeled break block.
+    if (!path.node.break_label) {
       const loopBreak = fastFreshId.fresh('loop_break');
       path.node = h.breakLbl(path.node, loopBreak);
       const labeledStatement = t.labeledStatement(loopBreak, path.node);
+      (<any>labeledStatement).skip = true;
       path.replaceWith(labeledStatement);
-      path.skip();
     }
   },
 

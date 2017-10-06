@@ -66,7 +66,7 @@ const server = app.listen(opts.testPort!, '0.0.0.0', 100, () => {
   const url = `http://${opts.testHost}:${port}/benchmark.html#${src}`;
   console.log(`GET ${url}`);
   driver.get(url);
-  driver.wait(selenium.until.titleIs('done'), 5 * 60 * 1000);
+  driver.wait(selenium.until.titleIs('done'), 8 * 60 * 1000);
 
   driver.findElement(selenium.By.id('data'))
     .then(e => e.getAttribute("value"))

@@ -186,7 +186,7 @@ function run() {
     args.push(src);
 
     let proc = spawnSync('./bin/browser', args,
-      { stdio: [ 'none', 'inherit', 'pipe' ], timeout: 5 * 60 * 1000 });
+      { stdio: [ 'none', 'inherit', 'pipe' ], timeout: 8 * 60 * 1000 });
 
     const stdoutStr = String(proc.stdout);
 

@@ -36,11 +36,6 @@ commander.option(
   'sane');
 
 commander.option(
-  '--onetry',
-  'Wrap each function with a single try block (breaks tail calls, only works with -t lazy)',
-  false)
-
-commander.option(
   '--webpack',
   '');
 
@@ -61,16 +56,6 @@ const args = commander.parse(process.argv);
 const srcPath = args.args[0];
 const dstPath = args.args[1];
 
-if (!srcPath) {
-  console.error(`No file provided`)
-  commander.help()
-  process.exit(1)
-}
-
-if (args.onetry && (args.transform !== 'lazy')) {
-  console.log(`onetry without lazy doesn't make sense. Will be ignored.`)
-}
-
 let sourceMap;
 if (args.debug) {
   const src = fs.readFileSync(srcPath, 'utf-8');
@@ -79,12 +64,12 @@ if (args.debug) {
   sourceMap = generateLineMapping(<RawSourceMap>map);
 }
 const plugin: any = [
-  stopifyCallCC, {
+  stopifyCallCC,
+  {
     captureMethod: args.transform,
     handleNew: args.new,
     esMode: args.es,
     debug: args.debug,
-    oneTry: args.onetry,
     sourceMap: sourceMap,
   }
 ];

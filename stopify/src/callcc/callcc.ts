@@ -39,11 +39,6 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     let captureMethod = state.opts.captureMethod || 'eager';
 
-    const finalStatement =
-      (state.opts.useReturn
-       ? (e: t.Expression) => t.returnStatement(e)
-       : (e: t.Expression) => t.expressionStatement(e));
-
     if (state.opts.handleNew === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
     }

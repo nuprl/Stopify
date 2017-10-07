@@ -19,7 +19,7 @@ import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
-import nameFinallyReturn from './nameFinallyReturn';
+import jumperizeTry from './jumperizeTry';
 import delimitTopLevel from './delimitTopLevel';
 import hygiene from '../common/hygiene';
 import * as freeIds from '../common/freeIds';
@@ -71,8 +71,8 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[delimitTopLevel, {
         compileFunction: state.opts.compileFunction
       }]]));
-    timeSlow('nameFinally', () =>
-      h.transformFromAst(path, [nameFinallyReturn]));
+    timeSlow('jumperizeTry', () =>
+      h.transformFromAst(path, [jumperizeTry]));
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
     timeSlow('jumper', () =>

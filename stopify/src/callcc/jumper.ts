@@ -545,6 +545,13 @@ const jumper = {
 
   TryStatement: {
     exit(path: NodePath<t.TryStatement>) {
+      // To understand what's happening here, see jumperizeTry.ts
+      if (path.node.handler) {
+        path.node.block.body.unshift(
+          bh.sIf(bh.and(isRestoringMode,
+            labelsIncludeTarget(getLabels(path.node.handler.body))),
+            t.throwStatement(<t.Identifier>(<any>path.node.handler).eVar)));
+      }
       if (path.node.finalizer) {
         path.node.finalizer = t.blockStatement([
           bh.sIf(t.unaryExpression('!',

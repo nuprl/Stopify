@@ -65,10 +65,9 @@ const server = app.listen(opts.testPort!, '0.0.0.0', 100, () => {
   const port = server.address().port
   const url = `http://${opts.testHost}:${port}/benchmark.html#${src}`;
   console.log(`GET ${url}`);
-  driver.get(url);
-  driver.wait(selenium.until.titleIs('done'), 8 * 60 * 1000);
-
-  driver.findElement(selenium.By.id('data'))
+  driver.get(url)
+    .then(_ => driver.wait(selenium.until.titleIs('done'), 8 * 60 * 1000))
+    .then(_ => driver.findElement(selenium.By.id('data')))
     .then(e => e.getAttribute("value"))
     .then(s => stdout.write(s))
     .catch(exn => stdout.write(`Got an exception from Selenium: ${exn}`))

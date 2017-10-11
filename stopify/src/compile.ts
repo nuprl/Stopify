@@ -107,6 +107,8 @@ if (args.webpack) {
       rules: rules
     },
     node: {
+      global: false,
+      Buffer: false,
       'fs': 'empty',
       'path': 'empty',
     },

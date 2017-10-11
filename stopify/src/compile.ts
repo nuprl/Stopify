@@ -105,7 +105,11 @@ if (args.webpack) {
     externals: { 'Stopify/built/src/rts': 'stopify' },
     module: {
       rules: rules
-    }
+    },
+    node: {
+      'fs': 'empty',
+      'path': 'empty',
+    },
   };
 
   webpack(webpackConfig, (err, stats) => {

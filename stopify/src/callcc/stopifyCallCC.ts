@@ -21,6 +21,8 @@ const allowed = [
   "require",
   "console",
   "global",
+  "window",
+  "document",
   "setTimeout"
 ];
 

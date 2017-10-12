@@ -108,7 +108,9 @@ const visitor: Visitor = {
     toShift.unshift(
       h.letExpression(
         t.identifier("captureCC"),
-        t.memberExpression(t.identifier("$__R"), t.identifier("captureCC")),
+        t.callExpression(
+          t.memberExpression(t.memberExpression(t.identifier("$__R"),
+            t.identifier("captureCC")), t.identifier("bind")), [$__R]),
         "const"));
     toShift.unshift(
       h.letExpression(

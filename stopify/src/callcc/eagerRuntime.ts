@@ -83,7 +83,8 @@ export class EagerRuntime extends common.Runtime {
         kind: "rest",
         f: () => this.handleNew(constr, ...args) ,
         locals: [obj],
-        index: 0
+        index: 0,
+        value: undefined
       });
       result = constr.apply(obj, args);
       this.eagerStack.shift();

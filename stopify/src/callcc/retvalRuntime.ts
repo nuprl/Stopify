@@ -85,7 +85,8 @@ class RetValRuntime extends common.Runtime {
           kind: "rest",
           f: () => this.handleNew(constr, ...args) ,
           locals: [obj],
-          index: 0
+          index: 0,
+          value: undefined
         });
         return _a;
       } else if (_a instanceof common.Restore) {
@@ -101,7 +102,8 @@ class RetValRuntime extends common.Runtime {
           kind: "rest",
           f: () => this.handleNew(constr, ...args) ,
           locals: [obj],
-          index: 0
+          index: 0,
+          value: undefined
         });
         return _a;
       } else if (_a instanceof common.Restore) {

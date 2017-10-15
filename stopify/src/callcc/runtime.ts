@@ -9,6 +9,7 @@ export type KFrame = KFrameTop | KFrameRest;
 export interface KFrameTop {
   kind: 'top';
   f: () => any;
+  value: any;
 }
 
 export interface KFrameRest {
@@ -16,6 +17,7 @@ export interface KFrameRest {
   f: () => any;   // The function we are in
   locals: any[];  // All locals and parameters
   index: number;  // At this application index
+  value: any;     // value to restore from
 }
 
 export type Stack = KFrame[];
@@ -145,7 +147,8 @@ export abstract class Runtime {
         this.stack = [];
         this.mode = true;
         return f();
-      }
+      },
+      value: undefined
     };
   }
 

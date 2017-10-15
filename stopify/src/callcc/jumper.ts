@@ -62,6 +62,8 @@ const topOfRuntimeStack = t.memberExpression(runtimeStack,
   t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
 const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
+const unshiftRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
+  t.identifier('shift')), [])
 const pushRuntimeStack = t.memberExpression(runtimeStack, t.identifier('push'));
 const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
 const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
@@ -69,9 +71,11 @@ const captureExn = t.memberExpression(types, t.identifier('Capture'));
 const restoreExn = t.memberExpression(types, t.identifier('Restore'));
 const isNormalMode = runtimeModeKind;
 const isRestoringMode = t.unaryExpression('!', runtimeModeKind);
-
+const $value = t.identifier('$value')
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);
+
+const stackBottom = t.memberExpression(runtimeStack, t.identifier("0"), true)
 
 function usesArguments(path: NodePath<t.Function>) {
   let r = false;
@@ -90,7 +94,6 @@ function usesArguments(path: NodePath<t.Function>) {
   return r;
 }
 
-
 function func(path: NodePath<Labeled<FunctionT>>): void {
   if ((<any>path.node).mark === 'Flat') {
     return;
@@ -104,11 +107,13 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
 
   const restoreBlock = t.blockStatement([
     t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), t.memberExpression(topOfRuntimeStack,
+      t.arrayPattern(restoreLocals), t.memberExpression(stackBottom,
         t.identifier('locals')))),
     t.expressionStatement(t.assignmentExpression('=', target,
-      t.memberExpression(topOfRuntimeStack, t.identifier('index')))),
-    t.expressionStatement(popRuntimeStack)
+      t.memberExpression(stackBottom, t.identifier('index')))),
+    t.expressionStatement(t.assignmentExpression('=', $value,
+      t.memberExpression(stackBottom, t.identifier('value')))),
+    t.expressionStatement(unshiftRuntimeStack)
   ]);
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
 
@@ -129,6 +134,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
 
   const newBody = t.blockStatement([
     ...pre,
+    letExpression($value, t.nullLiteral()),
     ifRestoring,
     captureClosure,
     ...mayMatArgs,
@@ -145,7 +151,7 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
     bh.eFalse);
 }
 
-function reapplyExpr(path: NodePath<Labeled<FunctionT>>): t.Expression | t.BlockStatement {
+function reapplyExpr(path: NodePath<Labeled<FunctionT>>): t.Expression {
   const funId = path.node.id;
   let reapply: t.Expression;
   if (path.node.__usesArgs__) {
@@ -194,21 +200,30 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 
   const restoreNode =
     t.assignmentExpression(path.node.operator,
-      path.node.left, stackFrameCall)
+      path.node.left, $value)
   const ifStmt = t.ifStatement(
     isNormalMode,
     t.blockStatement([nodeStmt]),
     t.ifStatement(
       t.binaryExpression('===', target, applyLbl),
-      t.expressionStatement(restoreNode)));
+      t.blockStatement([
+        t.expressionStatement(restoreNode),
+        t.expressionStatement(
+          t.assignmentExpression('=',
+            runtimeModeKind,
+            t.booleanLiteral(true)))])));
 
   const exnStack = t.memberExpression(exn, t.identifier('stack'));
+
+  const rFunc = t.functionExpression(
+    funId, [], t.blockStatement([t.returnStatement(reapplyExpr(funParent))]))
 
   const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
     t.catchClause(exn, t.blockStatement([
       t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
         t.blockStatement([
-          t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
+          t.expressionStatement(
+            t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
             t.objectExpression([
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
               t.objectProperty(

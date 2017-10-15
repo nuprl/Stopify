@@ -54,7 +54,12 @@ export class LazyRuntime extends common.Runtime {
           exn.f.call(
             global, this.makeCont([...exn.stack, ...this.stack]), exn.stack))
       }
-      throw exn // user exception
+      else if (exn instanceof common.Discard) {
+        return this.runtime(() => exn.f());
+      }
+      else {
+        throw exn // user exception
+      }
     }
   }
 

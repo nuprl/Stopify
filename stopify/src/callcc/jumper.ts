@@ -135,6 +135,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
   const newBody = t.blockStatement([
     ...pre,
     letExpression($value, t.nullLiteral()),
+    letExpression(target, t.nullLiteral()),
     ifRestoring,
     captureClosure,
     ...mayMatArgs,

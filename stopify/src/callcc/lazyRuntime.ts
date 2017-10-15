@@ -40,6 +40,7 @@ export class LazyRuntime extends common.Runtime {
     } catch(exn) {
       if (exn instanceof common.Restore) {
         return this.runtime(() => {
+          //console.dir(exn.stack)
           if (exn.stack.length === 0) {
             throw new Error(`Can't restore from empty stack`);
           }

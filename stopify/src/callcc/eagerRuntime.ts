@@ -4,8 +4,9 @@ import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 export class EagerRuntime extends common.Runtime {
   eagerStack: common.Stack;
 
-  constructor(yieldInterval: number, estimator: ElapsedTimeEstimator) {
-    super(yieldInterval, estimator);
+  constructor(
+    stackSize: number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
+    super(stackSize, yieldInterval, estimator);
     this.eagerStack = [];
   }
 
@@ -83,7 +84,8 @@ export class EagerRuntime extends common.Runtime {
         kind: "rest",
         f: () => this.handleNew(constr, ...args) ,
         locals: [obj],
-        index: 0
+        index: 0,
+        value: undefined
       });
       result = constr.apply(obj, args);
       this.eagerStack.shift();

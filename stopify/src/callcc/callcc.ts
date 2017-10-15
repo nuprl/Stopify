@@ -119,13 +119,13 @@ const visitor: Visitor = {
           t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')), []),
         'const'));
     if (!state.opts.compileFunction) {
-    path.node.body.unshift(
-      h.letExpression(
-        t.identifier("$__T"),
-        t.callExpression(
-          t.identifier('require'),
-          [t.stringLiteral('Stopify/built/src/rts')]),
-        'const'));
+      path.node.body.unshift(
+        h.letExpression(
+          t.identifier("$__T"),
+          t.callExpression(
+            t.identifier('require'),
+            [t.stringLiteral('Stopify/built/src/rts')]),
+          'const'));
     }
     path.stop();
   }

@@ -45,7 +45,7 @@ commander.option(
   '-t, --transform <transform>',
   'the transformation used to compile the program',
   parseArg(x => x,
-    (x) => /^(eager|retval|lazy|original)$/.test(x),
+    (x) => /^(eager|retval|lazy|lazyDeep|original)$/.test(x),
     'invalid --transform'));
 
 commander.option('--remote <url>',
@@ -56,12 +56,18 @@ commander.option('--local-host <hostname>',
   x => x,
   'localhost');
 
+commander.option(
+  '-d, --deepstacks <stack size>',
+  'Enable deep stacks with value',
+  parseArg(parseInt, (x) => x > 0,
+    '--deepstacks expects a positive integer'),
+  NaN)
+
 commander.option('--local-port <port>',
   'the port to use on this host (default: OS chooses)',
   parseArg(parseInt, (x) => x > 0 && x < 65536, 'bad --local-port'));
 
 commander.arguments('<filename>');
-
 
 export function parseRuntimeOpts(rawArgs: string[]): Opts {
 
@@ -78,6 +84,7 @@ export function parseRuntimeOpts(rawArgs: string[]): Opts {
     yieldInterval: args.yield,
     estimator: args.estimator,
     timePerElapsed: args.timePerElapsed,
+    deepstacks: args.deepstacks,
     stop: args.stop,
     env: args.env,
     variance: args.variance,

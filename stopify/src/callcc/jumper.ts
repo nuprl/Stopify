@@ -20,19 +20,21 @@ type Labeled<T> = T & {
 }
 type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
 
-export type CaptureLogic = 'lazy' | 'eager' | 'retval' | 'fudge';
+export type CaptureLogic = 'lazyDeep' | 'lazy' | 'eager' | 'retval' | 'fudge';
 export type NewMethod = 'direct' | 'wrapper';
 
 interface State {
   opts: {
     captureMethod: CaptureLogic,
     handleNew: NewMethod,
-    compileFunction: boolean
+    compileFunction: boolean,
+    argMode: string
   };
 }
 
 const captureLogics: { [key: string]: CaptureFun } = {
   lazy: lazyCaptureLogic,
+  lazyDeep: lazyDeepCaptureLogic,
   eager: eagerCaptureLogic,
   retval: retvalCaptureLogic,
   fudge: fudgeCaptureLogic,
@@ -65,6 +67,8 @@ const topOfRuntimeStack = t.memberExpression(runtimeStack,
   t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
 const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
+const unshiftRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
+  t.identifier('shift')), [])
 const pushRuntimeStack = t.memberExpression(runtimeStack, t.identifier('push'));
 const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
 const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
@@ -72,9 +76,25 @@ const captureExn = t.memberExpression(types, t.identifier('Capture'));
 const restoreExn = t.memberExpression(types, t.identifier('Restore'));
 const isNormalMode = runtimeModeKind;
 const isRestoringMode = t.unaryExpression('!', runtimeModeKind);
-
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);
+
+// $value
+const $value = t.identifier('$value')
+
+// $__R.stack[0]
+const stackBottom = t.memberExpression(runtimeStack, t.identifier("0"), true)
+
+// $__R.throwing
+const isThrowing = t.memberExpression(runtime, t.identifier('throwing'))
+
+// $__R.remainingStack++
+const increaseStackSize = t.expressionStatement(t.updateExpression('++',
+  t.memberExpression(runtime, t.identifier('remainingStack'))))
+
+// $__R.remainingStack--
+const decreaseStackSize = t.expressionStatement(t.updateExpression('--',
+  t.memberExpression(runtime, t.identifier('remainingStack'))))
 
 function usesArguments(path: NodePath<t.Function>) {
   let r = false;
@@ -93,8 +113,8 @@ function usesArguments(path: NodePath<t.Function>) {
   return r;
 }
 
-
-function func(path: NodePath<Labeled<FunctionT>>, argMode: string): void {
+function func(path: NodePath<Labeled<FunctionT>>, s: State): void {
+  const argMode = s.opts.argMode;
   if ((<any>path.node).mark === 'Flat') {
     return;
   }
@@ -104,15 +124,32 @@ function func(path: NodePath<Labeled<FunctionT>>, argMode: string): void {
   const { pre, post } = split(body.body, afterDecls);
 
   const restoreLocals = path.node.localVars;
+  let restoreBlock;
 
-  const restoreBlock = t.blockStatement([
-    t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), t.memberExpression(topOfRuntimeStack,
-        t.identifier('locals')))),
-    t.expressionStatement(t.assignmentExpression('=', target,
-      t.memberExpression(topOfRuntimeStack, t.identifier('index')))),
-    t.expressionStatement(popRuntimeStack)
-  ]);
+  // For lazy, the stack is restored in the reverse order.
+  if (s.opts.captureMethod === 'lazyDeep') {
+    restoreBlock = t.blockStatement([
+      t.expressionStatement(t.assignmentExpression('=',
+        t.arrayPattern(restoreLocals), t.memberExpression(stackBottom,
+          t.identifier('locals')))),
+      t.expressionStatement(t.assignmentExpression('=', target,
+        t.memberExpression(stackBottom, t.identifier('index')))),
+      t.expressionStatement(t.assignmentExpression('=', $value,
+        t.memberExpression(stackBottom, t.identifier('value')))),
+      t.expressionStatement(unshiftRuntimeStack)
+    ]);
+  }
+  else {
+    restoreBlock = t.blockStatement([
+      t.expressionStatement(t.assignmentExpression('=',
+        t.arrayPattern(restoreLocals), t.memberExpression(topOfRuntimeStack,
+          t.identifier('locals')))),
+      t.expressionStatement(t.assignmentExpression('=', target,
+        t.memberExpression(topOfRuntimeStack, t.identifier('index')))),
+      t.expressionStatement(popRuntimeStack)
+    ]);
+  }
+
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
 
   const captureBody = t.blockStatement([
@@ -162,6 +199,9 @@ function func(path: NodePath<Labeled<FunctionT>>, argMode: string): void {
 
   const newBody = t.blockStatement([
     ...pre,
+    letExpression($value, t.nullLiteral()),
+    // Decrease stack size when entering a function in lazy.
+    s.opts.captureMethod === 'lazyDeep' ? decreaseStackSize : t.emptyStatement(),
     ifRestoring,
     captureClosure,
     reenterClosure,
@@ -177,6 +217,20 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
   return labels.reduce((acc: t.Expression, lbl) =>
     bh.or(t.binaryExpression('===',  target, t.numericLiteral(lbl)), acc),
     bh.eFalse);
+}
+
+function reapplyExpr(path: NodePath<Labeled<FunctionT>>): t.Expression {
+  const funId = path.node.id;
+  let reapply: t.Expression;
+  if (path.node.__usesArgs__) {
+    reapply = t.callExpression(t.memberExpression(funId, t.identifier('apply')),
+        [t.thisExpression(), matArgs]);
+  }
+  else {
+    reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
+        [t.thisExpression(), ...<any>path.node.params]);
+  }
+  return reapply;
 }
 
 function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
@@ -224,6 +278,91 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
       t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
         t.blockStatement([
           t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
+            t.objectExpression([
+              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+              t.objectProperty(t.identifier('f'), restoreNextFrame),
+              t.objectProperty(t.identifier('index'), applyLbl),
+            ]),
+          ])),
+          t.expressionStatement(t.callExpression(captureLocals, [
+            t.memberExpression(exnStack, t.binaryExpression('-',
+              t.memberExpression(exnStack, t.identifier('length')),
+              t.numericLiteral(1)), true)
+          ])),
+        ])),
+      t.throwStatement(exn)
+    ])));
+
+  const stmtParent = path.getStatementParent();
+  stmtParent.replaceWith(tryStmt);
+  stmtParent.skip();
+}
+
+/**
+ * Wrap callsites in try/catch block, lazily building the stack on catching a
+ * Capture exception, then rethrowing.
+ *
+ *  jumper [[ x = f_n(...args) ]] =
+ *    try {
+ *      if (mode === 'normal') {
+ *        x = f_n(...args);
+ *      } else if (mode === restoring && target === n && $__R.throwing) {
+ *        $__R.mode = 'normal'
+ *        $__R.throwing = false
+ *        throw $value
+ *      } else if (mode === restoring && target === n && !$__R.throwing) {
+ *        $__R.mode = 'normal'
+ *        x = $value                  // result of running the frame above
+ *      }
+ *    } catch (exn) {
+ *      if (exn instanceof Capture) {
+ *        exn.stack.push(stackFrame);
+ *      }
+ *      throw exn;
+ *    }
+ */
+function lazyDeepCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
+  const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
+  const exn = fastFreshId.fresh('exn');
+
+  const nodeStmt = t.expressionStatement(path.node);
+
+  const restoreNode =
+    t.assignmentExpression(path.node.operator,
+      path.node.left, $value)
+
+  const setRestoreMode = t.expressionStatement(
+    t.assignmentExpression('=',
+      runtimeModeKind,
+      t.booleanLiteral(true)))
+
+  const ifStmt = t.ifStatement(
+    isNormalMode,
+    t.blockStatement([nodeStmt]),
+    t.ifStatement(
+      t.logicalExpression('&&',
+        t.binaryExpression('===', target, applyLbl),
+        isThrowing),
+      t.blockStatement([
+        setRestoreMode,
+        t.expressionStatement(
+          t.assignmentExpression('=', isThrowing, t.booleanLiteral(false))),
+        t.throwStatement($value)]),
+      t.ifStatement(
+        t.logicalExpression('&&',
+          t.binaryExpression('===', target, applyLbl),
+          t.binaryExpression('===', isThrowing, t.booleanLiteral(false))),
+        t.blockStatement([
+          t.expressionStatement(restoreNode), setRestoreMode]))))
+
+  const exnStack = t.memberExpression(exn, t.identifier('stack'));
+
+  const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
+    t.catchClause(exn, t.blockStatement([
+      t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
+        t.blockStatement([
+          t.expressionStatement(
+            t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
             t.objectExpression([
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
               t.objectProperty(t.identifier('f'), restoreNextFrame),
@@ -458,11 +597,11 @@ const jumper = {
         path.node.body.body.push(ifConstructor);
       }
     },
-    exit(path: NodePath<Labeled<FunctionT>>, state: any): void {
+    exit(path: NodePath<Labeled<FunctionT>>, s: State): void {
       if((<any>path.node).mark == 'Flat') {
         return
       }
-      else return func(path, state.opts);
+      else return func(path, s);
     }
   },
 
@@ -502,6 +641,10 @@ const jumper = {
 
   ReturnStatement: {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
+
+      // Increment remaining stack right before returning.
+      path.insertBefore(increaseStackSize)
+
       if (path.node.appType !== AppType.Mixed) {
         return;
       }
@@ -523,12 +666,15 @@ const jumper = {
       if (s.opts.captureMethod === 'retval' || isFlat(path)) {
         return;
       }
+
       const { param, body } = path.node;
+
       body.body.unshift(t.ifStatement(
         bh.or(
           t.binaryExpression('instanceof', param, captureExn),
           t.binaryExpression('instanceof', param, restoreExn)),
         t.throwStatement(param)));
+
       path.skip();
     }
   },

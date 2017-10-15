@@ -23,7 +23,8 @@ const allowed = [
   "global",
   "window",
   "document",
-  "setTimeout"
+  "setTimeout",
+  "captureCC",
 ];
 
 const reserved = [
@@ -38,6 +39,8 @@ const reserved = [
   "SENTINAL",
   "finally_rv",
   "$value"
+  "captureCC",
+
 ];
 
 export const visitor: Visitor = {

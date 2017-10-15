@@ -49,6 +49,7 @@ export class LazyRuntime extends common.Runtime {
         }, exn.stack);
       }
       else if (exn instanceof common.Capture) {
+        this.capturing = false;
         return this.runtime(() =>
           exn.f.call(
             global, this.makeCont([...exn.stack, ...this.stack]), exn.stack))

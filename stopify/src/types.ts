@@ -9,6 +9,7 @@ export type HandleNew = 'direct' | 'wrapper'
 
 export interface Opts {
   transform: CaptureMethod,
+  deepstacks: number,
   filename: string,
   estimator: ElapsedTimeEstimatorName;
   yieldInterval: number,

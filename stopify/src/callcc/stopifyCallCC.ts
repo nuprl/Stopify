@@ -38,9 +38,8 @@ const reserved = [
   "frame",
   "SENTINAL",
   "finally_rv",
-  "$value"
+  "$value",
   "captureCC",
-
 ];
 
 export const visitor: Visitor = {

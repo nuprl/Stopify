@@ -4,7 +4,8 @@ import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 import * as assert from 'assert';
 
 export class LazyRuntime extends common.Runtime {
-  constructor(yieldInterval: number, estimator: ElapsedTimeEstimator) {
+  constructor(
+    deepstacks: number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
     super(yieldInterval, estimator);
   }
 
@@ -25,7 +26,6 @@ export class LazyRuntime extends common.Runtime {
 
   runtime(body: () => any, stack: common.Stack = []): any {
     try {
-      debugger;
       let $ret = body();
       if (stack.length > 0) {
         stack[0].value = $ret;

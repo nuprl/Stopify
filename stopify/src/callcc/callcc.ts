@@ -76,7 +76,7 @@ const visitor: Visitor = {
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
     timeSlow('jumper', () =>
-      h.transformFromAst(path, [[jumper, {
+      h.transformFromAst(path, [[jumper.plugin, {
         captureMethod: captureMethod,
         handleNew: state.opts.handleNew,
         compileFunction: state.opts.compileFunction

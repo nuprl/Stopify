@@ -51,6 +51,7 @@ function isFlat(path: NodePath<t.Node>): boolean {
 const target = t.identifier('target');
 const newTarget = t.identifier('newTarget');
 const captureLocals = t.identifier('captureLocals');
+export const restoreNextFrame = t.identifier('restoreNextFrame');
 const captureFrameId = t.identifier('frame');
 const runtime = t.identifier('$__R');
 const types = t.identifier('$__T');
@@ -120,6 +121,15 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
   const captureClosure = t.functionDeclaration(captureLocals,
     [captureFrameId], captureBody);
 
+  // A local function to restore the next stack frame
+  const reenterExpr = path.node.__usesArgs__
+    ? t.callExpression(t.memberExpression(path.node.id, t.identifier('apply')),
+        [t.thisExpression(), matArgs])
+    : t.callExpression(t.memberExpression(path.node.id, t.identifier('call')),
+      [t.thisExpression(), ...<any>path.node.params]);
+  const reenterClosure = t.variableDeclaration('var', [
+    t.variableDeclarator(restoreNextFrame, t.arrowFunctionExpression([], reenterExpr))]);
+
   const mayMatArgs: t.Statement[] = [];
   if (path.node.__usesArgs__) {
     mayMatArgs.push(
@@ -131,6 +141,7 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
     ...pre,
     ifRestoring,
     captureClosure,
+    reenterClosure,
     ...mayMatArgs,
     ...post
   ]);
@@ -143,20 +154,6 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
   return labels.reduce((acc: t.Expression, lbl) =>
     bh.or(t.binaryExpression('===',  target, t.numericLiteral(lbl)), acc),
     bh.eFalse);
-}
-
-function reapplyExpr(path: NodePath<Labeled<FunctionT>>): t.Expression | t.BlockStatement {
-  const funId = path.node.id;
-  let reapply: t.Expression;
-  if (path.node.__usesArgs__) {
-    reapply = t.callExpression(t.memberExpression(funId, t.identifier('apply')),
-        [t.thisExpression(), matArgs]);
-  }
-  else {
-    reapply = t.callExpression(t.memberExpression(funId, t.identifier("call")),
-        [t.thisExpression(), ...<any>path.node.params]);
-  }
-  return reapply;
 }
 
 function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
@@ -211,9 +208,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
           t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
             t.objectExpression([
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-              t.objectProperty(
-                t.identifier('f'),
-                t.arrowFunctionExpression([], reapplyExpr(funParent))),
+              t.objectProperty(t.identifier('f'), restoreNextFrame),
               t.objectProperty(t.identifier('index'), applyLbl),
             ]),
           ])),
@@ -264,9 +259,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-    t.objectProperty(
-      t.identifier('f'),
-      t.arrowFunctionExpression([], reapplyExpr(funParent))),
+    t.objectProperty(t.identifier('f'), restoreNextFrame),
     t.objectProperty(t.identifier('index'), applyLbl),
   ]);
 
@@ -332,9 +325,7 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-    t.objectProperty(
-      t.identifier('f'),
-      t.arrowFunctionExpression([], reapplyExpr(funParent))),
+    t.objectProperty(t.identifier('f'), restoreNextFrame),
     t.objectProperty(t.identifier('index'), applyLbl),
   ]);
 
@@ -562,6 +553,6 @@ const jumper = {
   }
 };
 
-module.exports = function () {
+export function plugin(): any {
   return { visitor: jumper };
 }

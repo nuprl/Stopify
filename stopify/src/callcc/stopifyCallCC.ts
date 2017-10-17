@@ -14,6 +14,7 @@ import * as fastFreshId from '../fastFreshId';
 import markFlatApplications from '../common/markFlatApplications'
 import { knowns } from '../common/cannotCapture'
 import * as exposeImplicitApps from '../exposeImplicitApps';
+import * as jumper from './jumper';
 
 const allowed = [
   "Object",
@@ -35,6 +36,7 @@ const reserved = [
   "target",
   "newTarget",
   "captureLocals",
+  jumper.restoreNextFrame.name,
   "frame",
   "SENTINAL",
   "finally_rv",

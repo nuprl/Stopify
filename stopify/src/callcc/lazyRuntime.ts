@@ -4,6 +4,7 @@ import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 import * as assert from 'assert';
 
 export class LazyRuntime extends common.Runtime {
+  throwing: boolean = false;
   constructor(
     deepstacks: number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
     super(yieldInterval, estimator);
@@ -20,34 +21,34 @@ export class LazyRuntime extends common.Runtime {
 
   makeCont(stack: common.Stack) {
     return (v: any) => {
-      throw new common.Restore([...stack]);
+      throw new common.Restore(stack);
     };
   }
 
-  runtime(body: () => any, stack: common.Stack = []): any {
+  runtime(body: () => any): any {
+    //console.dir(this.stack)
     try {
       let $ret = body();
-      if (stack.length > 0) {
-        stack[0].value = $ret;
+      if (this.stack.length > 0) {
+        this.stack[0].value = $ret;
         return this.runtime(() => {
           this.mode = false;
-          this.stack = stack;
-          return this.stack[0].f()
-        }, this.stack)
-      } else {
+          return this.stack[0].f();
+        });
+      }
+      else {
         return $ret
       }
     } catch(exn) {
       if (exn instanceof common.Restore) {
         return this.runtime(() => {
-          //console.dir(exn.stack)
           if (exn.stack.length === 0) {
             throw new Error(`Can't restore from empty stack`);
           }
           this.mode = false;
           this.stack = exn.stack;
           return this.stack[0].f();
-        }, exn.stack);
+        });
       }
       else if (exn instanceof common.Capture) {
         this.capturing = false;
@@ -58,8 +59,18 @@ export class LazyRuntime extends common.Runtime {
       else if (exn instanceof common.Discard) {
         return this.runtime(() => exn.f());
       }
+      else if (this.stack.length === 0) {
+        // We have threaded the user exception through the rest of the stack
+        throw exn
+      }
       else {
-        throw exn // user exception
+        // thread exception through the rest of the stacks.
+        this.throwing = true;
+        this.stack[0].value = exn;
+        return this.runtime(() => {
+          this.mode = false;
+          return this.stack[0].f();
+        });
       }
     }
   }

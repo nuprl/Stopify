@@ -77,6 +77,8 @@ const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
 
 const stackBottom = t.memberExpression(runtimeStack, t.identifier("0"), true)
 
+const isThrowing = t.memberExpression(runtime, t.identifier('throwing'))
+
 function usesArguments(path: NodePath<t.Function>) {
   let r = false;
   const visitor = {
@@ -201,17 +203,30 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const restoreNode =
     t.assignmentExpression(path.node.operator,
       path.node.left, $value)
+
+  const setRestoreMode = t.expressionStatement(
+    t.assignmentExpression('=',
+      runtimeModeKind,
+      t.booleanLiteral(true)))
+
   const ifStmt = t.ifStatement(
     isNormalMode,
     t.blockStatement([nodeStmt]),
     t.ifStatement(
-      t.binaryExpression('===', target, applyLbl),
+      t.logicalExpression('&&',
+        t.binaryExpression('===', target, applyLbl),
+        isThrowing),
       t.blockStatement([
-        t.expressionStatement(restoreNode),
+        setRestoreMode,
         t.expressionStatement(
-          t.assignmentExpression('=',
-            runtimeModeKind,
-            t.booleanLiteral(true)))])));
+          t.assignmentExpression('=', isThrowing, t.booleanLiteral(false))),
+        t.throwStatement($value)]),
+      t.ifStatement(
+        t.logicalExpression('&&',
+          t.binaryExpression('===', target, applyLbl),
+          t.binaryExpression('===', isThrowing, t.booleanLiteral(false))),
+        t.blockStatement([
+          t.expressionStatement(restoreNode), setRestoreMode]))))
 
   const exnStack = t.memberExpression(exn, t.identifier('stack'));
 

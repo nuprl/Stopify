@@ -4,7 +4,9 @@ import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 import * as assert from 'assert';
 
 export class LazyRuntime extends common.Runtime {
-  constructor(yieldInterval: number, estimator: ElapsedTimeEstimator) {
+  throwing: boolean = false;
+  constructor(
+    deepstacks: number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
     super(yieldInterval, estimator);
   }
 
@@ -19,41 +21,56 @@ export class LazyRuntime extends common.Runtime {
 
   makeCont(stack: common.Stack) {
     return (v: any) => {
-      throw new common.Restore([this.topK(() => v), ...stack]);
+      throw new common.Restore(stack);
     };
   }
 
   runtime(body: () => any): any {
+    //console.dir(this.stack)
     try {
-      body();
-      assert(this.mode, 'executing completed in restore mode');
-    }
-    catch (exn) {
-      if (exn instanceof common.Capture) {
-        this.capturing = false;
-        // Recursive call to runtime addresses nested continuations. The return
-        // statement ensures that the invocation is in tail position.
-        // At this point, exn.stack is the continuation of callCC, but doesn’t have
-        // a top-of-stack frame that actually restores the saved continuation. We
-        // need to apply the function passed to callCC to the stack here, because
-        // this is the only point where the whole stack is ready.
-        // Doing exn.f makes "this" wrong.
-        return this.runtime(() => exn.f.call(global, this.makeCont(exn.stack)));
-      } else if (exn instanceof common.Discard) {
-        return this.runtime(() => exn.f());
-      } else if (exn instanceof common.Restore) {
-        // The current continuation has been discarded and we now restore the
-        // continuation in exn.
+      let $ret = body();
+      if (this.stack.length > 0) {
+        this.stack[0].value = $ret;
+        return this.runtime(() => {
+          this.mode = false;
+          return this.stack[0].f();
+        });
+      }
+      else {
+        return $ret
+      }
+    } catch(exn) {
+      if (exn instanceof common.Restore) {
         return this.runtime(() => {
           if (exn.stack.length === 0) {
             throw new Error(`Can't restore from empty stack`);
           }
           this.mode = false;
           this.stack = exn.stack;
-          this.stack[this.stack.length - 1].f();
+          return this.stack[0].f();
         });
-      } else {
-        throw exn; // userland exception
+      }
+      else if (exn instanceof common.Capture) {
+        this.capturing = false;
+        return this.runtime(() =>
+          exn.f.call(
+            global, this.makeCont([...exn.stack, ...this.stack]), exn.stack))
+      }
+      else if (exn instanceof common.Discard) {
+        return this.runtime(() => exn.f());
+      }
+      else if (this.stack.length === 0) {
+        // We have threaded the user exception through the rest of the stack
+        throw exn
+      }
+      else {
+        // thread exception through the rest of the stacks.
+        this.throwing = true;
+        this.stack[0].value = exn;
+        return this.runtime(() => {
+          this.mode = false;
+          return this.stack[0].f();
+        });
       }
     }
   }
@@ -63,17 +80,18 @@ export class LazyRuntime extends common.Runtime {
       return new constr(...args);
     }
 
-    let obj;
+    let obj, $value;
     if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
-      const frame = this.stack[this.stack.length - 1];
+      const frame = this.stack[0];
       if (frame.kind === "rest") {
         [obj] = frame.locals;
+        $value = frame.value;
       } else {
         throw "bad";
       }
-      this.stack.pop();
+      this.stack.shift();
     }
 
     let result: any;
@@ -82,7 +100,7 @@ export class LazyRuntime extends common.Runtime {
         result = constr.apply(obj, args);
       }
       else {
-        result = this.stack[this.stack.length - 1].f.apply(obj, []);
+        result = $value
       }
     }
     catch (exn) {
@@ -91,7 +109,8 @@ export class LazyRuntime extends common.Runtime {
           kind: "rest",
           f: () => this.handleNew(constr, ...args) ,
           locals: [obj],
-          index: 0
+          index: 0,
+          value: undefined // TODO: Fill this.
         });
       }
       throw exn;

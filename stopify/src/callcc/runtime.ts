@@ -9,6 +9,7 @@ export type KFrame = KFrameTop | KFrameRest;
 export interface KFrameTop {
   kind: 'top';
   f: () => any;
+  value: any;
 }
 
 export interface KFrameRest {
@@ -16,6 +17,7 @@ export interface KFrameRest {
   f: () => any;   // The function we are in
   locals: any[];  // All locals and parameters
   index: number;  // At this application index
+  value: any;     // value to restore from
 }
 
 export type Stack = KFrame[];
@@ -55,10 +57,17 @@ export abstract class Runtime {
   stack: Stack;
   mode: Mode;
   linenum: undefined | number;
+  remainingStack: number;
+  /* Enable deep stack. Turn off if your language doesn't need deep stacks
+   * for improved performance
+   */
+  deepStacks: boolean;
 
   constructor(
     public yieldInterval: number,
     public estimator: ElapsedTimeEstimator,
+    /* The default is 500 from Pyret */
+    public stackSize: number = 500,
     public capturing: boolean = false,
     private delimitDepth: number = 0,
     // true if computation is suspended by 'suspend'
@@ -73,6 +82,9 @@ export abstract class Runtime {
     private continuation = function() {}) {
     this.stack = [];
     this.mode = true;
+    this.deepStacks = isNaN(stackSize) === false;
+    this.stackSize = stackSize;
+    this.remainingStack = this.stackSize;
   }
 
   private runtime_(thunk: () => any) {
@@ -123,10 +135,13 @@ export abstract class Runtime {
       return;
     }
 
+    --this.remainingStack;
     // If this.yieldInterval is NaN, the condition will be false
-    if (this.estimator.elapsedTime() >= this.yieldInterval) {
+    if (this.estimator.elapsedTime() >= this.yieldInterval ||
+        (this.deepStacks && this.remainingStack <= 0)) {
       this.estimator.reset();
       this.isSuspended = true;
+      this.remainingStack = this.stackSize;
       return this.captureCC((continuation) => {
         this.continuation = continuation;
         if (this.onYield()) {
@@ -145,7 +160,8 @@ export abstract class Runtime {
         this.stack = [];
         this.mode = true;
         return f();
-      }
+      },
+      value: undefined
     };
   }
 

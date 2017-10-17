@@ -57,7 +57,7 @@ export function makeRTS(opts: Opts): Runtime {
   assert(rts === undefined, 'runtime already initialized');
   const estimator = makeEstimator(opts);
   const base = modeToBase(opts.transform);
-  rts = new base(opts.yieldInterval, estimator);
+  rts = new base(opts.deepstacks, opts.yieldInterval, estimator);
   return rts;
 }
 

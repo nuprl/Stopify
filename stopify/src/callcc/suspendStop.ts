@@ -6,9 +6,12 @@ const opts = t.identifier("$opts");
 const result = t.identifier("$result");
 
 function handleBlock(body: t.BlockStatement) {
-  body.body.unshift(t.expressionStatement(
-    t.callExpression( t.memberExpression(t.identifier("$__R"),
-      t.identifier("suspend")), [])));
+  const suspend = t.callExpression(t.memberExpression(t.identifier("$__R"),
+    t.identifier("suspend")), []);
+
+  (<any>suspend).isSuspend = true
+
+  body.body.unshift(t.expressionStatement(suspend));
 }
 
 type BlockBody = {

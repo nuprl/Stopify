@@ -38,6 +38,7 @@ const reserved = [
   "frame",
   "SENTINAL",
   "finally_rv",
+  "$value",
   "captureCC",
 ];
 

@@ -182,11 +182,6 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const exn = fastFreshId.fresh('exn');
 
-  const funParent = <NodePath<FunctionT>>path.findParent(p =>
-    p.isFunctionExpression() || p.isFunctionDeclaration());
-  const funId = funParent.node.id, funParams = funParent.node.params,
-  funBody = funParent.node.body;
-
   const nodeStmt = t.expressionStatement(path.node);
 
   const restoreNode =
@@ -245,16 +240,6 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  */
 function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-
-  const funParent = <NodePath<FunctionT>>path.findParent(p =>
-    p.isFunctionExpression() || p.isFunctionDeclaration());
-  const funId = funParent.node.id, funParams = funParent.node.params,
-  funBody = funParent.node.body;
-
-  const afterDecls = funBody.body.findIndex(e =>
-    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
-  const { pre, post } = split(funBody.body, afterDecls);
-
   const nodeStmt = t.expressionStatement(path.node);
 
   const stackFrame = t.objectExpression([
@@ -313,15 +298,6 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const ret = fastFreshId.fresh('ret');
-
-  const funParent = <NodePath<FunctionT>>path.findParent(p =>
-    p.isFunctionExpression() || p.isFunctionDeclaration());
-  const funId = funParent.node.id, funParams = funParent.node.params,
-  funBody = funParent.node.body;
-
-  const afterDecls = funBody.body.findIndex(e =>
-    !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
-  const { pre, post } = split(funBody.body, afterDecls);
 
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),

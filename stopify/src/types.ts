@@ -12,6 +12,7 @@ export interface Opts {
   filename: string,
   estimator: ElapsedTimeEstimatorName;
   yieldInterval: number,
+  resampleInterval: number,
   timePerElapsed: number,
   stop: number | undefined,
   variance: boolean,

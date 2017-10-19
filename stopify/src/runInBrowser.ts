@@ -39,7 +39,9 @@ const src = benchmarkUrl(args);
 // NOTE(sam): No typing for `headless()` option as of 8/30/2017.
 // I've opened a PR to DefinitelyTyped to fix this.
 // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/19463
-const chromeOpts = (<any>new chrome.Options()).headless();
+const chromeOpts = (<any>new chrome.Options())
+  .headless()
+  .addArguments(['--js-flags', '--harmony_tailcalls']);
 
 const loggingPrefs = new selenium.logging.Preferences();
 loggingPrefs.setLevel('browser', 'all');

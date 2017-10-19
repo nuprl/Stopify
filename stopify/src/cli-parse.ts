@@ -36,8 +36,8 @@ commander.option(
 
 commander.option(
   '--estimator <estimator>',
-  `one of exact, reservoir, or countdown (default: countdown)`,
-  parseArg(x => x, x => /^(exact|reservoir|countdown)$/.test(x),
+  `one of exact, reservoir, velocity, or countdown (default: countdown)`,
+  parseArg(x => x, x => /^(exact|reservoir|countdown|velocity)$/.test(x),
     'invalid --estimator value'),
   'countdown');
 

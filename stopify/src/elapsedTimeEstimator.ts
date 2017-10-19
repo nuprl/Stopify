@@ -65,7 +65,7 @@ function geom(p: number): number {
 }
 
 class SampleAverageTimeEstimator implements ElapsedTimeEstimator {
-  
+
   constructor(
     // total calls to elapsedTime
     private i = 1,
@@ -109,4 +109,48 @@ class SampleAverageTimeEstimator implements ElapsedTimeEstimator {
  */
 export function makeSampleAverage(): ElapsedTimeEstimator {
   return new SampleAverageTimeEstimator();
+}
+
+class VelocityEstimator implements ElapsedTimeEstimator {
+
+  constructor(
+    // total calls to elapsedTime
+    private i = 1,
+    // last value produced by Date.now()
+    private last = Date.now(),
+    // time between successive calls to elapsedTime
+    private timePerElapsed = 100,
+    // these many calls to elapsedTime between observations of time
+    private countDownFrom = 1,
+    // countdown until we re-observe the time
+    private countDown = countDownFrom,
+    // number of times elapsedTime has been invoked since last reset
+    private elapsedTimeCounter = 0) {
+  }
+
+  elapsedTime() {
+    this.i = (this.i + 1) | 0;
+    this.elapsedTimeCounter = (this.elapsedTimeCounter + 1) | 0;
+    if (this.countDown-- === 0) {
+      const now = Date.now();
+      this.timePerElapsed = (now - this.last) / this.countDownFrom;
+      this.last = now;
+      this.countDownFrom = Math.max((10 / this.timePerElapsed) | 0, 10);
+      this.countDown = this.countDownFrom;
+    }
+    const r =  this.timePerElapsed * this.elapsedTimeCounter;
+    return r;
+  }
+
+  reset() {
+    this.elapsedTimeCounter = 0;
+  }
+}
+
+/**
+ * Estimates 'elapsedTime' by sampling the current time when 'elapsedTime'
+ * is applied.
+ */
+export function makeVelocityEstimator(): ElapsedTimeEstimator {
+  return new VelocityEstimator();
 }

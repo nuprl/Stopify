@@ -24,6 +24,9 @@ function makeEstimator(opts: Opts): elapsedTimeEstimator.ElapsedTimeEstimator {
   else if (opts.estimator === 'reservoir') {
     return elapsedTimeEstimator.makeSampleAverage();
   }
+  else if (opts.estimator === 'velocity') {
+    return elapsedTimeEstimator.makeVelocityEstimator();
+  }
   else {
     return unreachable();
   }

@@ -23,7 +23,7 @@ function makeEstimator(opts: Opts): elapsedTimeEstimator.ElapsedTimeEstimator {
     return elapsedTimeEstimator.makeSampleAverage();
   }
   else if (opts.estimator === 'velocity') {
-    return elapsedTimeEstimator.makeVelocityEstimator();
+    return elapsedTimeEstimator.makeVelocityEstimator(opts.resampleInterval);
   }
   else {
     return unreachable();

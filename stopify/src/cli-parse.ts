@@ -29,6 +29,12 @@ function (default: 1)`,
    1);
 
 commander.option(
+  '-r, --resample-interval <interval>',
+  `interval between resamples. Only valid with --estimator=velocity. Default: \
+same as -y if -y is specified, otherwise 100.`,
+  parseArg(parseInt, (x) => x > 0, 'invalid --resample-interval'));
+
+commander.option(
   '--stop <duration>',
   'the time after which the program should be terminated (default: never stop)',
   parseArg(parseInt, (x) => x > 0,
@@ -72,10 +78,16 @@ export function parseRuntimeOpts(rawArgs: string[]): Opts {
     throw new Error(`Missing filename`);
   }
 
+  let resampleInterval = args.resampleInterval || args.yield;
+  if (isNaN(resampleInterval)) {
+    resampleInterval = 100;
+  }
+
   return {
     transform: args.transform,
     filename: filename,
     yieldInterval: args.yield,
+    resampleInterval: args.resampleInterval,
     estimator: args.estimator,
     timePerElapsed: args.timePerElapsed,
     stop: args.stop,

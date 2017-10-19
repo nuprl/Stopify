@@ -114,43 +114,47 @@ export function makeSampleAverage(): ElapsedTimeEstimator {
 class VelocityEstimator implements ElapsedTimeEstimator {
 
   constructor(
+    // Expected distance between resamples (units: time)
+    public resample: number,
     // total calls to elapsedTime
     private i = 1,
-    // last value produced by Date.now()
-    private last = Date.now(),
-    // time between successive calls to elapsedTime
-    private timePerElapsed = 100,
-    // these many calls to elapsedTime between observations of time
-    private countDownFrom = 1,
+    // Units: time
+    private lastPosition = Date.now(),
+    // Units: time / #elapsedTime
+    private velocityEstimate = 100000,
+    // Units: #elapsedTime;
+    private resampleTimespanEstimate = 1,
     // countdown until we re-observe the time
-    private countDown = countDownFrom,
-    // number of times elapsedTime has been invoked since last reset
-    private elapsedTimeCounter = 0) {
+    private countDown = resampleTimespanEstimate,
+    // Distance since last reset. Units: #elapsedTime
+    private distance = 0) {
   }
 
   elapsedTime() {
     this.i = (this.i + 1) | 0;
-    this.elapsedTimeCounter = (this.elapsedTimeCounter + 1) | 0;
+    this.distance = (this.distance + 1) | 0;
     if (this.countDown-- === 0) {
-      const now = Date.now();
-      this.timePerElapsed = (now - this.last) / this.countDownFrom;
-      this.last = now;
-      this.countDownFrom = Math.max((10 / this.timePerElapsed) | 0, 10);
-      this.countDown = this.countDownFrom;
+      const currentPosition = Date.now();
+      // NOTE(arjun): This is a small float. It may be a good idea to scale
+      // everything up to an integer.
+      this.velocityEstimate = ((currentPosition - this.lastPosition) / this.resampleTimespanEstimate);
+      this.lastPosition = currentPosition;
+      this.resampleTimespanEstimate = Math.max((this.resample / this.velocityEstimate) | 0, 10);
+      this.countDown = this.resampleTimespanEstimate;
     }
-    const r =  this.timePerElapsed * this.elapsedTimeCounter;
-    return r;
+    return (this.distance  * this.velocityEstimate) | 0;
   }
 
   reset() {
-    this.elapsedTimeCounter = 0;
+    this.distance = 0;
   }
 }
 
 /**
- * Estimates 'elapsedTime' by sampling the current time when 'elapsedTime'
- * is applied.
+ * Estimates 'elapsedTime' by periodically resampling the current time.
+ *
+ * @param resample Period between resamples.
  */
-export function makeVelocityEstimator(): ElapsedTimeEstimator {
-  return new VelocityEstimator();
+export function makeVelocityEstimator(resample: number = 100): ElapsedTimeEstimator {
+  return new VelocityEstimator(resample);
 }

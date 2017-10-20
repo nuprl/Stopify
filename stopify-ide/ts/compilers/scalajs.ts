@@ -28,15 +28,11 @@ export let ScalaJS : ScalaJSInterface = {
         })
 
       fs.writeFileSync(path.join(compilerDir, "Main.scala"), scalaCode);
-
-      run('sbt', 'fastOptJS').on('exit', npmLink);
-
       const srcPath = path.join(compilerDir, 'target/scala-2.12/blah-fastopt.js');
       const mapPath = srcPath + '.map';
-      function npmLink() {
-        run('npm', 'link', 'Stopify').on('exit',
-          inlineSourceMapFile(srcPath, mapPath, () =>
-            jsReceiver(srcPath)(0)));
-      }
+
+      run('sbt', 'fastOptJS').on('exit',
+        inlineSourceMapFile(srcPath, mapPath, () =>
+          jsReceiver(srcPath)(0)));
     }
 }

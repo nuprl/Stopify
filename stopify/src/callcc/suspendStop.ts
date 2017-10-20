@@ -11,10 +11,28 @@ const directSuspendVisitor: Visitor = {
   },
   Loop(path: NodePath<t.Loop>) {
     this.directSuspend = true;
+    path.stop();
+  },
+  ReturnStatement(path: NodePath<t.ReturnStatement>) {
+    this.directSuspend = true;
+    path.stop();
+  },
+  ThrowStatement(path: NodePath<t.ThrowStatement>) {
+    this.directStatement = true;
+    path.stop();
+  },
+  TryStatement(path: NodePath<t.TryStatement>) {
     path.skip();
   },
   IfStatement(path: NodePath<t.IfStatement>) {
-    path.skip();
+    if (directSuspend(path.get('consequent')) &&
+        (path.node.alternate === null || directSuspend(path.get('alternate')))) {
+      this.directSuspend = true;
+      path.stop();
+    }
+    else {
+      path.skip();
+    }
   },
   SwitchStatement(path: NodePath<t.SwitchStatement>) {
     path.skip();
@@ -60,10 +78,10 @@ const insertSuspend: Visitor = {
   },
 
   Loop(path: NodePath<t.Loop>) {
+    if (directSuspend(path.get('body'))) {
+      return;
+    }
     if (path.node.body.type === "BlockStatement") {
-      if (directSuspend(path.get('body'))) {
-        return;
-      }
       handleBlock(path.node.body);
     }
     else {

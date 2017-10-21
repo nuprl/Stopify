@@ -35,6 +35,24 @@ function editorSetLine(n: number) {
   lastLine = n;
 }
 
+function updateBreakpoints(e: any) {
+  const target = e.domEvent.target;
+  if (target.className.indexOf("ace_gutter-cell") == -1) {
+    return;
+  }
+
+  const row = e.getDocumentPosition().row;
+  const breakpoints = editor.session.getBreakpoints();
+  if(breakpoints[row] === undefined) {
+    editor.session.setBreakpoint(row,'ace_breakpoint');
+  } else {
+    editor.session.clearBreakpoint(row);
+  }
+  editor.renderer.updateBreakpoints();
+  e.stop();
+}
+editor.on("guttermousedown", updateBreakpoints);
+
 window.addEventListener('message', evt => {
   if (evt.data.linenum && evt.data.linenum-1 === lastLine) {
     iframe.contentWindow.postMessage('step', '*');

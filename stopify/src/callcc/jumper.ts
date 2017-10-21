@@ -418,6 +418,7 @@ const jumper = {
 
       const declTarget = letExpression(target, t.nullLiteral());
       (<any>declTarget).lifted = true;
+      path.node.body.body.unshift(declTarget);
 
       if (s.opts.handleNew === 'direct') {
         path.node.localVars.push(newTarget);
@@ -425,7 +426,6 @@ const jumper = {
           t.memberExpression(t.identifier('new'), t.identifier('target')));
         (<any>declNewTarget).lifted = true;
 
-        path.node.body.body.unshift(declTarget);
         path.node.body.body.unshift(declNewTarget);
 
         const ifConstructor = bh.sIf(newTarget,

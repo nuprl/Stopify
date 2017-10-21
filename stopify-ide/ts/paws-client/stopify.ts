@@ -22,6 +22,7 @@ const editor = ace.edit('editor');
 editor.setTheme('ace/theme/monokai');
 editor.setFontSize('15')
 
+let breakpoints: number[] = [];
 let lastLineMarker: number | null = null;
 let lastLine: number | null = null;
 function editorSetLine(n: number) {
@@ -42,11 +43,12 @@ function updateBreakpoints(e: any) {
   }
 
   const row = e.getDocumentPosition().row;
-  const breakpoints = editor.session.getBreakpoints();
-  if(breakpoints[row] === undefined) {
-    editor.session.setBreakpoint(row,'ace_breakpoint');
-  } else {
+  if(breakpoints.includes(row+1)) {
     editor.session.clearBreakpoint(row);
+    breakpoints.splice(breakpoints.lastIndexOf(row+1), 1);
+  } else {
+    editor.session.setBreakpoint(row,'ace_breakpoint');
+    breakpoints.push(row+1);
   }
   editor.renderer.updateBreakpoints();
   e.stop();
@@ -129,7 +131,14 @@ function setupButton(buttonId: string, eventName: string) {
       return;
     }
 
-    iframe.contentWindow.postMessage(eventName, '*');
+    switch (eventName) {
+      case 'run':
+        lastLine = null;
+        iframe.contentWindow.postMessage({ [eventName]: breakpoints }, '*');
+        break;
+      default:
+        iframe.contentWindow.postMessage(eventName, '*');
+    }
   });
 }
 

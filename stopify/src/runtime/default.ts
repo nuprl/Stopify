@@ -6,17 +6,21 @@ import { sprintf } from 'sprintf';
 import { makeRTS, getRTS } from '../rts';
 import * as path from 'path';
 
-const fakeRTS = {
+const fakeRTS: any = {
   onYield() {
   },
   delimit(thunk: () => void) {
     thunk()
+  },
+  hitBreakpoint() {
+    return false;
   }
 }
 
 export class Default {
   yields: number;
   mustStop: boolean;
+  isStopped: boolean;
 
   constructor() {
     this.yields = 0;
@@ -24,24 +28,25 @@ export class Default {
   }
 
   onYield: () => any;
+  onStop: () => any;
+
+  setOnStop(onStop: () => any): void {
+    this.onStop = onStop;
+  }
 
   resume(): void {
     this.mustStop = false;
+    this.isStopped = false;
     const rts = getRTS();
-    rts.onYield = this.onYield;
     this.step();
   }
 
-  stop(onStop: () => any): void {
+  stop(): void {
+    if (this.isStopped) {
+      return;
+    }
     this.mustStop = true;
-    const rts = getRTS();
-    const oldYield = rts.onYield;
-    const onYield = () => {
-      const pause = oldYield();
-      onStop();
-      return pause;
-    };
-    rts.onYield = onYield;
+    this.isStopped = true;
   }
 
   step(): void {
@@ -53,6 +58,8 @@ export class Default {
     const rts = opts.transform === 'original' ? fakeRTS : makeRTS(opts);
     let lastStopTime: number | undefined;
     let stopIntervals: number[] = [];
+    this.mustStop = false;
+    this.isStopped = false;
 
     this.onYield = rts.onYield = () => {
       this.yields++;
@@ -62,6 +69,13 @@ export class Default {
           stopIntervals.push(now - lastStopTime);
         }
         lastStopTime = now;
+      }
+      const hit = rts.hitBreakpoint();
+      if (hit) {
+        this.stop();
+      }
+      if (this.mustStop) {
+        this.onStop();
       }
       return !this.mustStop;
     }
@@ -112,7 +126,8 @@ export class Default {
     const startTime = Date.now();
 
     if (typeof opts.stop !== 'undefined') {
-      setTimeout(() => this.stop(() => onDone()), opts.stop * 1000);
+      this.setOnStop(onDone)
+      setTimeout(this.stop, opts.stop * 1000);
     }
 
     if (M) {

@@ -11,11 +11,8 @@ export let JavaScript : JavaScriptInterface = {
   compile(tmpDir: string, code: string, jsReceiver: (code: string) => any) {
     console.log('Running javascript compiler')
     const run = makeSpawn(tmpDir);
-    fs.writeFile(path.join(tmpDir, 'main.js'), code, npmLink);
+    fs.writeFile(path.join(tmpDir, 'main.js'), code, () => copyWebpack(0));
 
-    function npmLink() {
-      run('npm', 'link', 'stopify').on('exit', copyWebpack);
-    }
     function copyWebpack(exitCode: number) {
       assert(exitCode === 0);
       fs.copySync(__dirname + '/../../data/webpack.config.js',

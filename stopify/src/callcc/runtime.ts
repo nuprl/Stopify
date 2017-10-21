@@ -55,6 +55,7 @@ export abstract class Runtime {
   stack: Stack;
   mode: Mode;
   linenum: undefined | number;
+  breakpoints: number[];
 
   constructor(
     public yieldInterval: number,
@@ -124,7 +125,8 @@ export abstract class Runtime {
     }
 
     // If this.yieldInterval is NaN, the condition will be false
-    if (this.estimator.elapsedTime() >= this.yieldInterval) {
+    if (this.hitBreakpoint() ||
+      this.estimator.elapsedTime() >= this.yieldInterval) {
       this.estimator.reset();
       this.isSuspended = true;
       return this.captureCC((continuation) => {
@@ -147,6 +149,14 @@ export abstract class Runtime {
         return f();
       }
     };
+  }
+
+  setBreakpoints(breaks: number[]): void {
+    this.breakpoints = breaks;
+  }
+
+  hitBreakpoint(): boolean {
+    return this.breakpoints && this.breakpoints.includes(<number>this.linenum);
   }
 
   abstract captureCC(f: (k: any) => any): void;

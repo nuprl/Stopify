@@ -7,38 +7,38 @@ textarea.onchange = function () {
   textarea.scrollTop = textarea.scrollHeight;
 }
 
-function notifyStop() {
-  const postLineNum = () => {
-    const rts = stopify.getRTS();
-    window.parent.postMessage({
-      linenum: rts.linenum
-    }, '*');
-  };
-  stopify.stopScript(postLineNum);
-}
+const postLineNum = () => {
+  const rts = stopify.getRTS();
+  window.parent.postMessage({
+    linenum: rts.linenum
+  }, '*');
+};
+stopify.setOnStop(postLineNum);
 
 window.addEventListener('message', evt => {
-  switch (evt.data) {
-    case 'run':
-      if (loaded) {
-        stopify.resumeScript();
-      } else {
-        loaded = true;
-        stopify.loadScript();
-      }
-      break;
-    case 'stop':
-      notifyStop();
-      break;
-    case 'step':
-      if (loaded) {
-        stopify.stepScript();
-      } else {
-        loaded = true;
-        stopify.loadScript(() => notifyStop());
-      }
-      break;
-    default:
-      return;
+  if (evt.data.run) {
+    if (loaded) {
+      stopify.setBreakpoints(evt.data.run);
+      stopify.resumeScript();
+    } else {
+      loaded = true;
+      stopify.loadScript(() => stopify.setBreakpoints(evt.data.run));
+    }
+  } else {
+    switch (evt.data) {
+      case 'stop':
+        stopify.stopScript();
+        break;
+      case 'step':
+        if (loaded) {
+          stopify.stepScript();
+        } else {
+          loaded = true;
+          stopify.loadScript(stopify.stopScript);
+        }
+        break;
+      default:
+        return;
+    }
   }
 });

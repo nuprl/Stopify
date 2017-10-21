@@ -7,8 +7,6 @@ import { makeRTS, getRTS } from '../rts';
 import * as path from 'path';
 
 const fakeRTS: any = {
-  onYield() {
-  },
   delimit(thunk: () => void) {
     thunk()
   },
@@ -27,7 +25,6 @@ export class Default {
     this.mustStop = false;
   }
 
-  onYield: () => any;
   onStop: () => any;
 
   setOnStop(onStop: () => any): void {
@@ -37,7 +34,6 @@ export class Default {
   resume(): void {
     this.mustStop = false;
     this.isStopped = false;
-    const rts = getRTS();
     this.step();
   }
 
@@ -61,7 +57,7 @@ export class Default {
     this.mustStop = false;
     this.isStopped = false;
 
-    this.onYield = rts.onYield = () => {
+    rts.onYield = () => {
       this.yields++;
       if (opts.variance) {
         const now = Date.now();
@@ -127,7 +123,7 @@ export class Default {
 
     if (typeof opts.stop !== 'undefined') {
       this.setOnStop(onDone)
-      setTimeout(this.stop, opts.stop * 1000);
+      setTimeout(() => this.stop(), opts.stop * 1000);
     }
 
     if (M) {

@@ -20,5 +20,6 @@
                                    :parallel-build true
                                    :optimizations :advanced
                                    :output-to "out/main.js"
+                                   :source-map "out/main.js.map"
                                    :output-dir "out"
                                    :static-fns true}}]})

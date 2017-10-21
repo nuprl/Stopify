@@ -105,12 +105,20 @@ export function loadScript(onload: () => any) {
   document.body.appendChild(script);
 }
 
+export function setOnStop(onStop: () => any): void {
+  runtime.onStop = onStop;
+}
+
+export function setBreakpoints(breaks: number[]): void {
+  getRTS().setBreakpoints(breaks);
+}
+
 export function resumeScript() {
   runtime.resume();
 }
 
-export function stopScript(onStop: () => any) {
-  runtime.stop(onStop);
+export function stopScript() {
+  runtime.stop();
 }
 
 export function stepScript() {

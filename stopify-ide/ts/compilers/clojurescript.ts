@@ -1,10 +1,11 @@
 'use strict';
 
 import * as fs from 'fs';
-const fsExtra = require('fs-extra');
+import * as path from 'path';
+import * as fsExtra from 'fs-extra';
 
-import {makeSpawn} from './utils';
-import {ClojureScript} from './compiler';
+import { makeSpawn, inlineSourceMapFile } from './utils';
+import { ClojureScript } from './compiler';
 
 export let Cljs : ClojureScript = {
   compile(tmpDir: string,
@@ -14,25 +15,25 @@ export let Cljs : ClojureScript = {
     const run = makeSpawn(tmpDir);
 
     fs.mkdir(tmpDir + '/src', (err: never) => {
-      fs.mkdir(tmpDir + '/src/cljs', npmLink);
+      fs.mkdir(tmpDir + '/src/paws', writeCljFile);
     });
 
-    function npmLink() {
-      run('npm', 'link', 'Stopify').on('exit', writeCljFile);
-    }
-
     function writeCljFile(exitCode: NodeJS.ErrnoException) {
-      fs.writeFile(tmpDir + '/src/cljs/code.cljs',
-        '(ns cljs.code)\n(enable-console-print!)\n' + clojureCode,
+      fs.writeFile(tmpDir + '/src/paws/code.cljs',
+        '(ns paws.code)\n(enable-console-print!)\n' + clojureCode,
         copyJarAndBuild);
     }
 
     function copyJarAndBuild(exitCode: NodeJS.ErrnoException) {
       fsExtra.copySync(__dirname + '/../../data/project.clj',
         tmpDir + '/project.clj');
+      const srcPath = path.join(tmpDir, 'out/main.js');
+      const mapPath = srcPath + '.map';
       run('lein',
         'cljsbuild',
-        'once').on('exit', jsReceiver(tmpDir + '/out/main.js'));
+        'once').on('exit',
+          inlineSourceMapFile(srcPath, mapPath, () =>
+            jsReceiver(srcPath)(0)));
     }
   }
 };

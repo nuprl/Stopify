@@ -163,8 +163,10 @@ function generateLineMapping(map: RawSourceMap | undefined): LineMapping {
     return new LineMapping((line: number, column: number) => {
       const mapping = sourceMap.originalPositionFor({ line, column });
       if (mapping.source === null ||
-        mapping.source.includes('node_modules') ||
+        mapping.source.includes('node_modules/') ||
         mapping.source.includes('https://') ||
+        mapping.source.includes('goog/') ||
+        mapping.source.includes('cljs/') ||
         mapping.line === null) {
         return null;
       } else {

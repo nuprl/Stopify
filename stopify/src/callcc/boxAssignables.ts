@@ -14,7 +14,7 @@ import * as fastFreshId from '../fastFreshId';
 import * as bh from '../babelHelpers';
 import { Set } from 'immutable';
 
-function box(e: t.Expression): t.ObjectExpression {
+export function box(e: t.Expression): t.ObjectExpression {
   return t.objectExpression([t.objectProperty(t.identifier('box'),
     e === null || e === undefined ?
     t.unaryExpression('void', t.numericLiteral(0)) : e)]);
@@ -114,6 +114,7 @@ function boxVars(parentPath: NodePath<Parent>, vars: Set<string>, state: any) {
           path.node.body);
 
         (<any>fun).mark = (<any>path.node).mark;
+        (<any>fun).boxedArgs = (<any>path.node).boxedArgs;
 
         // Little hack necessary to preserve annotation left by freeIds.ts
         (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
@@ -155,23 +156,23 @@ function initFunction(
   // Mutable variables from the inner scope
   const vars1 = locals.filter(x => shouldBox(x!, path)).toSet();
 
+  const params = <t.Identifier[]>path.node.params;
+  const boxedArgs = Set.of(...params.filter(x => vars1.includes(x.name))
+    .map(x => x.name));
+
+  (<any>path.node).boxedArgs = boxedArgs;
   boxVars(path, vars0.union(vars1), state);
 
 
   // Box arguments if necessary. We do this after visiting the function
   // body or the initialization statements get messed up.
-  for(let param of path.node.params) {
-    if (param.type !== 'Identifier' || !vars1.includes(param.name)) {
-      continue;
-    }
-    const x = param.name;
+  boxedArgs.valueSeq().forEach(x => {
     const init = t.expressionStatement(
       t.assignmentExpression(
-        "=", t.identifier(x), box(t.identifier(x))));
+        "=", t.identifier(x), box(t.identifier(x!))));
     (<any>init).__boxVarsInit__ = true;
     path.node.body.body.unshift(init);
-  }
-
+  });
 }
 
 const visitor: Visitor = {
@@ -183,7 +184,7 @@ const visitor: Visitor = {
   }
 }
 
-module.exports = function() {
+export function plugin() {
   return { visitor };
 }
 

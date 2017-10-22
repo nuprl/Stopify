@@ -60,7 +60,7 @@ const visitor: Visitor = {
     timeSlow('free ID initialization', () =>
       freeIds.annotate(path));
     timeSlow('box assignables', () =>
-      h.transformFromAst(path, [[boxAssignables, {
+      h.transformFromAst(path, [[boxAssignables.plugin, {
         compileFunction: state.opts.compileFunction
       }]]));
     timeSlow('ANF', () =>

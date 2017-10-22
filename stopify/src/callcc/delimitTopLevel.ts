@@ -6,6 +6,7 @@ import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';
 import * as fastFreshId from '../fastFreshId';
+import * as imm from 'immutable';
 
 const runtime = t.identifier('$__R');
 
@@ -16,6 +17,7 @@ function delimitStmt(stmt: t.Statement): t.Statement {
   const fun = t.functionExpression(fastFreshId.fresh('delimit'), [],
     t.blockStatement([stmt]));
   (<any>fun).localVars = [];
+  (<any>fun).boxedArgs = imm.Set.of();
 
   return t.expressionStatement(t.callExpression(
     t.memberExpression(runtime, t.identifier('delimit')), [fun]));
@@ -28,6 +30,7 @@ function delimitExpr(e: t.Expression): t.Expression {
   const fun = t.functionExpression(fastFreshId.fresh('delimit'), [],
     t.blockStatement([t.returnStatement(e)]));
   (<any>fun).localVars = [];
+  (<any>fun).boxedArgs = imm.Set.of();
 
   return t.callExpression(
     t.memberExpression(runtime, t.identifier('delimit')), [fun]);

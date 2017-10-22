@@ -126,3 +126,13 @@ export function isValue(e: t.Expression): boolean {
     (t.isObjectExpression(e) && e.properties.every(isPropertyValue)) ||
     t.isIdentifier(e));
 }
+
+export function arrayPrototypeSliceCall(e: t.Expression): t.Expression {
+  return t.callExpression(
+    t.memberExpression(
+      t.memberExpression(
+          t.memberExpression(t.identifier('Array'), t.identifier('prototype')),
+          t.identifier('slice')),
+      t.identifier('call')),
+    [e]);
+}

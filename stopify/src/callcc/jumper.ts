@@ -6,6 +6,8 @@ import { letExpression } from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
 import * as generic from '../generic';
 import { getLabels, AppType } from './label';
+import * as imm from 'immutable';
+import { box } from './boxAssignables';
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
   localVars: t.Identifier[]
@@ -134,7 +136,22 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
   if (path.node.__usesArgs__) {
     mayMatArgs.push(
       t.variableDeclaration('const',
-        [t.variableDeclarator(matArgs, t.identifier('arguments'))]));
+        [t.variableDeclarator(matArgs,
+          bh.arrayPrototypeSliceCall(t.identifier('arguments')))]));
+    const boxedArgs = <imm.Set<string>>(<any>path.node).boxedArgs;
+    const argLen = t.memberExpression(t.identifier('arguments'),
+      t.identifier('length'));
+    (<t.Identifier[]>path.node.params).forEach((x, i) => {
+      if (boxedArgs.contains(x.name)) {
+        const cond = t.binaryExpression('<', argLen, t.numericLiteral(i + 1));
+        const cons =  t.assignmentExpression('=',
+          t.memberExpression(matArgs, t.numericLiteral(i), true),
+          box(t.identifier(x.name)));
+        mayMatArgs.push(bh.sIf(cond, t.expressionStatement(cons)));
+      }
+    });
+
+
   }
 
   const newBody = t.blockStatement([

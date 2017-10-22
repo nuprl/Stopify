@@ -8,7 +8,7 @@ function G() {  while(false) {} };
  */
 function F(x) {
   G();
-  z = arguments;
+  const z = arguments;
   function H() {
     x = 10;
   }

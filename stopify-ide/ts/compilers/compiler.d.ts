@@ -25,9 +25,11 @@ export interface OCaml extends CompilerSupport {}
 export interface ClojureScript extends CompilerSupport {}
 export interface ScalaJSInterface extends CompilerSupport {}
 export interface JavaScriptInterface extends CompilerSupport {}
+export interface Emscripten extends CompilerSupport {}
 
 // Supported languages implementing the client interface:
 export interface OCamlClient extends CompilerClient {}
 export interface ClojureScriptClient extends CompilerClient {}
 export interface ScalaJSClientInterface extends CompilerClient {}
 export interface JavaScriptClientInterface extends CompilerClient {}
+export interface EmscriptenClient extends CompilerClient {}

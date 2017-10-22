@@ -2,6 +2,7 @@ const express = require('express');
 const tmp = require('tmp');
 
 import { BuckleScript } from '../compilers/bucklescript';
+import { Emcc } from '../compilers/emscripten';
 import { Cljs } from '../compilers/clojurescript';
 import { ScalaJS } from '../compilers/scalajs';
 import { JavaScript } from '../compilers/javascript'
@@ -28,6 +29,7 @@ function compileAndSend(compiler: CompilerSupport, url: string): void {
 }
 
 compileAndSend(BuckleScript, '/compile/ocaml')
+compileAndSend(Emcc, '/compile/emcc')
 compileAndSend(Cljs, '/compile/cljs')
 compileAndSend(ScalaJS, '/compile/scala')
 compileAndSend(JavaScript, '/compile/js')

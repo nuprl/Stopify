@@ -5,9 +5,11 @@ import * as ace from 'brace';
 import { CompilerClient } from '../compilers/compiler';
 import { BuckleScript } from '../compilers/bucklescript-client';
 import { Cljs } from '../compilers/clojurescript-client';
+import { Emcc } from '../compilers/emscripten-client';
 import { ScalaJS } from '../compilers/scalajs-client';
 import { JavaScript } from '../compilers/javascript-client';
 require('brace/mode/ocaml');
+require('brace/mode/c_cpp');
 require('brace/mode/clojure');
 require('brace/mode/scala')
 require('brace/mode/javascript')
@@ -73,6 +75,7 @@ const defaultLang = 'ScalaJS';
 const langs : supportedLangs = {
   ScalaJS: ScalaJS,
   OCaml: BuckleScript,
+  Cpp: Emcc,
   ClojureScript: Cljs,
   JavaScript: JavaScript,
 };

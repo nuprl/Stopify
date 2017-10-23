@@ -71,14 +71,18 @@ export const visitor: Visitor = {
     h.transformFromAst(path, [
       ...plugs,
       [hygiene, { reserved }],
-      [markAnnotated]
     ]);
-    h.transformFromAst(path, [
-      [markFlatFunctions],
-    ])
-    h.transformFromAst(path, [
-      markFlatApplications,
-    ]);
+    if (!state.opts.debug) {
+      h.transformFromAst(path, [
+        markAnnotated
+      ])
+      h.transformFromAst(path, [
+        [markFlatFunctions],
+      ])
+      h.transformFromAst(path, [
+        markFlatApplications,
+      ]);
+    }
     h.transformFromAst(path, [[insertSuspend, {
       compileFunction: state.opts.compileFunction,
       sourceMap: state.opts.sourceMap,

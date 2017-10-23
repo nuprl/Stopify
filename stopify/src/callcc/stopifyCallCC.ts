@@ -10,6 +10,7 @@ import * as babylon from 'babylon';
 import cleanupGlobals from '../common/cleanupGlobals';
 import hygiene from '../common/hygiene';
 import markFlatFunctions from '../common/markFlatFunctions';
+import markAnnotated from '../common/markAnnotated'
 import * as fastFreshId from '../fastFreshId';
 import markFlatApplications from '../common/markFlatApplications'
 import { knowns } from '../common/cannotCapture'
@@ -67,23 +68,29 @@ export const visitor: Visitor = {
     if (!state.opts.compileFunction) {
       plugs.push([cleanupGlobals, { allowed }])
     }
-    if (state.opts.debug) {
-      h.transformFromAst(path, [
-        ...plugs,
-        [hygiene, { reserved }],
-      ]);
-    } else {
-      h.transformFromAst(path, [
-        ...plugs,
-        [hygiene, { reserved }],
-        [markFlatFunctions],
-      ]);
-      h.transformFromAst(path, [
-        markFlatApplications,
-      ]);
-    }
-    h.transformFromAst(path, [[insertSuspend, opts]]);
-    h.transformFromAst(path, [[callcc, opts]]);
+    h.transformFromAst(path, [
+      ...plugs,
+      [hygiene, { reserved }],
+      [markAnnotated]
+    ]);
+    h.transformFromAst(path, [
+      [markFlatFunctions],
+    ])
+    h.transformFromAst(path, [
+      markFlatApplications,
+    ]);
+    h.transformFromAst(path, [[insertSuspend, {
+      compileFunction: state.opts.compileFunction,
+      sourceMap: state.opts.sourceMap,
+    }]]);
+    h.transformFromAst(path,
+      [[callcc, {
+        useReturn: true,
+        captureMethod: state.opts.captureMethod,
+        handleNew: state.opts.handleNew,
+        esMode: esMode,
+        compileFunction: state.opts.compileFunction
+      }]]);
     fastFreshId.cleanup()
   }
 }

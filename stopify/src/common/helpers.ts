@@ -17,6 +17,12 @@ export function tag<T, V>(tag: string, t: T, v: V) {
   return tagged;
 }
 
+export type StopifyAnnotation = '@stopify flat'
+
+export function isStopifyAnnotation(v: string): v is StopifyAnnotation {
+  return /^@stopify flat$/.test(v)
+}
+
 export type FlatTag = 'NotFlat' | 'Flat'
 
 export type FlatnessMark<T> = T & {

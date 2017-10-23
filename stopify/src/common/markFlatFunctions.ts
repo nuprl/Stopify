@@ -11,7 +11,7 @@ import { FlatTag, FlatnessMark } from './helpers'
 let debug = false;
 
 const prog = {
-  // Mark the untransformed function.
+  // Mark the untransformed functions after running call expression markers.
   exit(path: NodePath<t.Program>) {
     path.traverse(markUntransformed)
   }
@@ -46,11 +46,14 @@ const markUntransformed: Visitor = {
 }
 
 const callExpr = {
-  enter(path: NodePath<t.CallExpression|t.NewExpression|t.Loop>) {
+  enter(path: NodePath<FlatnessMark<t.CallExpression|t.NewExpression|t.Loop>>) {
+    if (path.node.mark === 'Flat') {
+      return
+    }
     const fParent: FlatnessMark<any> =
       path.findParent(p => t.isFunctionDeclaration(p) || t.isFunctionExpression(p))
 
-    if (fParent !== null) {
+    if (fParent !== null && !fParent.node.mark) {
       fParent.node.mark = 'NotFlat'
     }
   }

@@ -10,12 +10,12 @@
 Stopify supports mutliple stack-saving strategies. Compile a JavaScript file by navigating the project root and:
 1. Run `./bin/compile -t <lazy|eager|retval|original|fudge> <intput> <output>`.
 2. To run the compiled file, use `./bin/run <input> [opts]`. Available options:
-   a. `-y | --yield <interval>`: yield interval in ms.
-   b. `-e | --env <chrome|firefox|node>`: For CLI, only `node` is a valid option.
-   c. `--variance`: Measure variance.
-   d. `--time-per-elapsed`: Estimate to the internal b/w internal suspend calls.
-   e. `--stop`: Time (in ms) after which program should be stopped.
-   f. `--estimator <exact|countdown|resevoir`
+    * `-y | --yield <interval>`: yield interval in ms.
+    * `-e | --env <chrome|firefox|node>`: For CLI, only `node` is a valid option.
+    * `--variance`: Measure variance.
+    * `--time-per-elapsed`: Estimate to the internal b/w internal suspend calls.
+    * `--stop`: Time (in ms) after which program should be stopped.
+    * `--estimator <exact|countdown|resevoir`
 
 
 ### Running in the browser
@@ -44,7 +44,7 @@ module.exports = {
   },
   externals: {
     "Stopify": 'stopify'
-  },  
+  },
   module: {
     rules: [
       {
@@ -62,7 +62,7 @@ module.exports = {
 };
 ```
 
-Notice that the configuration declares the Stopify module as an external. 
+Notice that the configuration declares the Stopify module as an external.
 the HTML for the web app should load `Stopify/built/stopify.bundle.js` before
 the created `dist/bundle.js`.
 

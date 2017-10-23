@@ -94,7 +94,7 @@ function usesArguments(path: NodePath<t.Function>) {
 }
 
 
-function func(path: NodePath<Labeled<FunctionT>>): void {
+function func(path: NodePath<Labeled<FunctionT>>, argMode: string): void {
   if ((<any>path.node).mark === 'Flat') {
     return;
   }
@@ -134,23 +134,30 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
 
   const mayMatArgs: t.Statement[] = [];
   if (path.node.__usesArgs__) {
+    const argExpr = argMode === 'faithful'
+      ? bh.arrayPrototypeSliceCall(t.identifier('arguments'))
+      : t.identifier('arguments');
+
     mayMatArgs.push(
       t.variableDeclaration('const',
-        [t.variableDeclarator(matArgs,
-          bh.arrayPrototypeSliceCall(t.identifier('arguments')))]));
+        [t.variableDeclarator(matArgs, argExpr)]));
+
     const boxedArgs = <imm.Set<string>>(<any>path.node).boxedArgs;
-    const argLen = t.memberExpression(t.identifier('arguments'),
-      t.identifier('length'));
-    const initMatArgs: t.Statement[] = [];
-    (<t.Identifier[]>path.node.params).forEach((x, i) => {
-      if (boxedArgs.contains(x.name)) {
-        const cons =  t.assignmentExpression('=',
-          t.memberExpression(matArgs, t.numericLiteral(i), true),
-          box(t.identifier(x.name)));
-          initMatArgs.push(t.expressionStatement(cons));
-      }
-    });
-    mayMatArgs.push(bh.sIf(isNormalMode, t.blockStatement(initMatArgs)));
+
+    if (argMode === 'faithful') {
+      const argLen = t.memberExpression(t.identifier('arguments'),
+        t.identifier('length'));
+      const initMatArgs: t.Statement[] = [];
+      (<t.Identifier[]>path.node.params).forEach((x, i) => {
+        if (boxedArgs.contains(x.name)) {
+          const cons =  t.assignmentExpression('=',
+            t.memberExpression(matArgs, t.numericLiteral(i), true),
+            box(t.identifier(x.name)));
+            initMatArgs.push(t.expressionStatement(cons));
+        }
+      });
+      mayMatArgs.push(bh.sIf(isNormalMode, t.blockStatement(initMatArgs)));
+    }
   }
 
   const newBody = t.blockStatement([
@@ -451,11 +458,11 @@ const jumper = {
         path.node.body.body.push(ifConstructor);
       }
     },
-    exit(path: NodePath<Labeled<FunctionT>>): void {
+    exit(path: NodePath<Labeled<FunctionT>>, state: any): void {
       if((<any>path.node).mark == 'Flat') {
         return
       }
-      else return func(path);
+      else return func(path, state.opts);
     }
   },
 

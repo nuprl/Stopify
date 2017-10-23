@@ -36,6 +36,13 @@ commander.option(
   'sane');
 
 commander.option(
+  '--js-args <mode>',
+  'either simple or faithful (default: simple)',
+  parseArg(x => x, x => /^(simple|faithful)$/.test(x),
+    'invalid --js-args, see --help'),
+  'simple');
+
+commander.option(
   '--webpack',
   '');
 
@@ -70,7 +77,8 @@ const plugin: any = [
     handleNew: args.new,
     esMode: args.es,
     debug: args.debug,
-    sourceMap: sourceMap,
+    jsArgs: args.jsArgs,
+    sourceMap: sourceMap
   }
 ];
 

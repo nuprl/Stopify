@@ -37,7 +37,7 @@ const $__R = t.identifier('$__R')
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
-    let captureMethod = state.opts.captureMethod || 'eager';
+    const opts = state.opts;
 
     if (state.opts.handleNew === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
@@ -60,27 +60,19 @@ const visitor: Visitor = {
     timeSlow('free ID initialization', () =>
       freeIds.annotate(path));
     timeSlow('box assignables', () =>
-      h.transformFromAst(path, [[boxAssignables.plugin, {
-        compileFunction: state.opts.compileFunction
-      }]]));
+      h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
     timeSlow('ANF', () =>
       h.transformFromAst(path, [anf]));
     timeSlow('declVars', () =>
       h.transformFromAst(path, [declVars]));
     timeSlow('delimit', () =>
-      h.transformFromAst(path, [[delimitTopLevel, {
-        compileFunction: state.opts.compileFunction
-      }]]));
+      h.transformFromAst(path, [[delimitTopLevel, opts]]));
     timeSlow('jumperizeTry', () =>
       h.transformFromAst(path, [jumperizeTry]));
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
     timeSlow('jumper', () =>
-      h.transformFromAst(path, [[jumper.plugin, {
-        captureMethod: captureMethod,
-        handleNew: state.opts.handleNew,
-        compileFunction: state.opts.compileFunction
-      }]]));
+      h.transformFromAst(path, [[jumper.plugin, opts]]));
 
     let toShift;
     if (state.opts.compileFunction) {

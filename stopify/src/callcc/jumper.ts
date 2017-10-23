@@ -141,17 +141,16 @@ function func(path: NodePath<Labeled<FunctionT>>): void {
     const boxedArgs = <imm.Set<string>>(<any>path.node).boxedArgs;
     const argLen = t.memberExpression(t.identifier('arguments'),
       t.identifier('length'));
+    const initMatArgs: t.Statement[] = [];
     (<t.Identifier[]>path.node.params).forEach((x, i) => {
       if (boxedArgs.contains(x.name)) {
-        const cond = t.binaryExpression('<', argLen, t.numericLiteral(i + 1));
         const cons =  t.assignmentExpression('=',
           t.memberExpression(matArgs, t.numericLiteral(i), true),
           box(t.identifier(x.name)));
-        mayMatArgs.push(bh.sIf(cond, t.expressionStatement(cons)));
+          initMatArgs.push(t.expressionStatement(cons));
       }
     });
-
-
+    mayMatArgs.push(bh.sIf(isNormalMode, t.blockStatement(initMatArgs)));
   }
 
   const newBody = t.blockStatement([

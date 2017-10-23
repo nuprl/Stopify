@@ -149,7 +149,6 @@ function initFunction(
   path: NodePath<t.FunctionDeclaration | t.FunctionExpression>,
   state: any) {
 
-
   const locals = Set.of(...Object.keys(path.scope.bindings));
   // Mutable variables from this scope that are not shadowed
   const vars0 = enclosingVars.subtract(locals);
@@ -173,6 +172,26 @@ function initFunction(
     (<any>init).__boxVarsInit__ = true;
     path.node.body.body.unshift(init);
   });
+
+  // NOTE(arjun): The following implements non-strict semantics, where
+  // arguments[i] and the ith formal argument are aliased. Recall that:
+  //
+  // > function F(x) { 'use strict'; arguments[0] = 100; return x }; F(200)
+  // 200
+  // > function F(x) { arguments[0] = 100; return x }; F(200)
+  // 100
+  //
+  // if (usesArgs) {
+  //   params.forEach((x, i) => {
+  //     if (boxedArgs.contains(x.name)) {
+  //       const arg = t.identifier('argument');
+  //       const init = t.assignmentExpression('=',
+  //         t.memberExpression(arg, t.numericLiteral(i), true),
+  //         x);
+  //       path.node.body.body.unshift(t.expressionStatement(init));
+  //     }
+  //   });
+  // }
 }
 
 const visitor: Visitor = {

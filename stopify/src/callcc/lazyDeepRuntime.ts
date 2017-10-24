@@ -30,64 +30,71 @@ export class LazyDeepRuntime extends common.Runtime {
   }
 
   runtime(body: () => any): any {
-    let $ret;
-
-    try {
-      $ret = body();
-    } catch(exn) {
-      if (exn instanceof common.Restore) {
-        return this.runtime(() => {
-          if (exn.stack.length === 0) {
-            throw new Error(`Can't restore from empty stack`);
+    let $ret, toRun: (() => any) | undefined = body
+    while(toRun) {
+      try {
+        $ret = toRun();
+        toRun = undefined;
+      } catch(exn) {
+        if (exn instanceof common.Restore) {
+          toRun = () => {
+            if (exn.stack.length === 0) {
+              throw new Error(`Can't restore from empty stack`);
+            }
+            this.mode = false;
+            // Restore the stack when the continuation is applied.
+            this.stack = exn.stack;
+            //console.log(this.stack.length)
+            return this.stack[this.stack.length - 1].f();
+          };
+          continue;
+        }
+        else if (exn instanceof common.Capture) {
+          this.capturing = false;
+          toRun = () => {
+            for(var i = exn.stack.length - 1; i >= 0; i -= 1) {
+              this.stack.push(exn.stack[i]);
+            }
+            let except = exn.f.call(
+              global, this.makeCont(this.stack))
+            // Clear the stack here. This is because we only want to start
+            // running the rest of the computation once the continuation is
+            // applied.
+            this.stack = []
+            return except;
           }
+          continue;
+        }
+        else if (exn instanceof common.Discard) {
+          toRun = () => exn.f();
+          continue;
+        }
+        else if (this.stack.length === 0) {
+          // We have threaded the user exception through the rest of the stack
+          throw exn
+        }
+        else {
+          // Since the top most stack frame is throwing the error, we have to
+          // thread the exception through the lower stack frames to make sure
+          // that catch handlers are invoked correctly.
+          this.throwing = true;
+          $ret = exn;
+        }
+      }
+
+      if (this.stack.length > 0) {
+        // The result of running the top most stack frame will be used by the
+        // frame below it.
+        this.stack[this.stack.length - 1].value = $ret;
+        toRun = () => {
           this.mode = false;
-          // Restore the stack when the continuation is applied.
-          this.stack = exn.stack;
-          //console.log(this.stack.length)
-          return this.stack[0].f();
-        });
-      }
-      else if (exn instanceof common.Capture) {
-        //console.log(exn.stack.length)
-        this.capturing = false;
-        return this.runtime(() => {
-          this.stack.unshift(...exn.stack)
-          let except = exn.f.call(
-            global, this.makeCont(this.stack))
-          // Clear the stack here. This is because we only want to start
-          // running the rest of the computation once the continuation is
-          // applied.
-          this.stack = []
-          return except;
-        })
-      }
-      else if (exn instanceof common.Discard) {
-        return this.runtime(() => exn.f());
-      }
-      else if (this.stack.length === 0) {
-        // We have threaded the user exception through the rest of the stack
-        throw exn
+          return this.stack[this.stack.length- 1].f();
+        };
+        continue;
       }
       else {
-        // Since the top most stack frame is throwing the error, we have to
-        // thread the exception through the lower stack frames to make sure
-        // that catch handlers are invoked correctly.
-        this.throwing = true;
-        $ret = exn;
+        return $ret
       }
-    }
-
-    if (this.stack.length > 0) {
-      // The result of running the top most stack frame will be used by the
-      // frame below it.
-      this.stack[0].value = $ret;
-      return this.runtime(() => {
-        this.mode = false;
-        return this.stack[0].f();
-      });
-    }
-    else {
-      return $ret
     }
   }
 
@@ -100,14 +107,14 @@ export class LazyDeepRuntime extends common.Runtime {
     if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
-      const frame = this.stack[0];
+      const frame = this.stack[this.stack.length - 1];
       if (frame.kind === "rest") {
         [obj] = frame.locals;
         $value = frame.value;
       } else {
         throw "bad";
       }
-      this.stack.shift();
+      this.stack.pop();
     }
 
     let result: any;

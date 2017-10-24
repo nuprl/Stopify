@@ -77,14 +77,16 @@ const captureExn = t.memberExpression(types, t.identifier('Capture'));
 const restoreExn = t.memberExpression(types, t.identifier('Restore'));
 const isNormalMode = runtimeModeKind;
 const isRestoringMode = t.unaryExpression('!', runtimeModeKind);
+
+// $__R.stack[0]
+const stackBottom = t.memberExpression(runtimeStack, t.identifier("0"), true)
+
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);
 
 // $value
 const $value = t.identifier('$value')
 
-// $__R.stack[0]
-const stackBottom = t.memberExpression(runtimeStack, t.identifier("0"), true)
 
 // $__R.throwing
 const isThrowing = t.memberExpression(runtime, t.identifier('throwing'))
@@ -125,30 +127,21 @@ function func(path: NodePath<Labeled<FunctionT>>, s: State): void {
   const { pre, post } = split(body.body, afterDecls);
 
   const restoreLocals = path.node.localVars;
-  let restoreBlock;
 
-  // For lazy, the stack is restored in the reverse order.
+  let restoreBlock = t.blockStatement([
+    t.expressionStatement(t.assignmentExpression('=',
+      t.arrayPattern(restoreLocals), t.memberExpression(topOfRuntimeStack,
+        t.identifier('locals')))),
+    t.expressionStatement(t.assignmentExpression('=', target,
+      t.memberExpression(topOfRuntimeStack, t.identifier('index')))),
+    t.expressionStatement(popRuntimeStack)
+  ]);
+
+  // Need to restore $value in lazyDeep
   if (s.opts.captureMethod === 'lazyDeep') {
-    restoreBlock = t.blockStatement([
-      t.expressionStatement(t.assignmentExpression('=',
-        t.arrayPattern(restoreLocals), t.memberExpression(stackBottom,
-          t.identifier('locals')))),
-      t.expressionStatement(t.assignmentExpression('=', target,
-        t.memberExpression(stackBottom, t.identifier('index')))),
+    restoreBlock.body.unshift(
       t.expressionStatement(t.assignmentExpression('=', $value,
-        t.memberExpression(stackBottom, t.identifier('value')))),
-      t.expressionStatement(unshiftRuntimeStack)
-    ]);
-  }
-  else {
-    restoreBlock = t.blockStatement([
-      t.expressionStatement(t.assignmentExpression('=',
-        t.arrayPattern(restoreLocals), t.memberExpression(topOfRuntimeStack,
-          t.identifier('locals')))),
-      t.expressionStatement(t.assignmentExpression('=', target,
-        t.memberExpression(topOfRuntimeStack, t.identifier('index')))),
-      t.expressionStatement(popRuntimeStack)
-    ]);
+        t.memberExpression(topOfRuntimeStack, t.identifier('value')))))
   }
 
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);

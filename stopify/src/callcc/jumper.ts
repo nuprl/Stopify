@@ -8,6 +8,7 @@ import * as generic from '../generic';
 import { getLabels, AppType } from './label';
 import * as imm from 'immutable';
 import { box } from './boxAssignables';
+import { CaptureMethod, HandleNew } from '../types'
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
   localVars: t.Identifier[]
@@ -20,8 +21,8 @@ type Labeled<T> = T & {
 }
 type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
 
-export type CaptureLogic = 'lazyDeep' | 'lazy' | 'eager' | 'retval' | 'fudge';
-export type NewMethod = 'direct' | 'wrapper';
+type CaptureLogic = CaptureMethod
+type NewMethod = HandleNew
 
 interface State {
   opts: {

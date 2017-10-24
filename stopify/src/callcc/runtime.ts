@@ -1,6 +1,7 @@
 import { setImmediate } from '../setImmediate';
 import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 import { knowns } from '../common/cannotCapture'
+import { CaptureMethod } from '../types'
 import * as assert from 'assert';
 
 // The type of continuation frames
@@ -65,6 +66,7 @@ export abstract class Runtime {
   remainingStack: number;
 
   constructor(
+    public name: CaptureMethod,
     public stackSize: number,
     public yieldInterval: number,
     public estimator: ElapsedTimeEstimator,

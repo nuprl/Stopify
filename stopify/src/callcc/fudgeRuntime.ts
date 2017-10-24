@@ -23,7 +23,7 @@ class FudgedContinuationError {
 export class FudgeRuntime extends common.Runtime {
   constructor(
     stackSize: number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
-    super(stackSize, yieldInterval, estimator);
+    super('fudge', stackSize, yieldInterval, estimator);
   }
 
   captureCC(f: (k: any) => any): void {

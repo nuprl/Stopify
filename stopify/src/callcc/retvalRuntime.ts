@@ -4,7 +4,7 @@ import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 class RetValRuntime extends common.Runtime {
   constructor(
     stackSize:number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
-    super(stackSize, yieldInterval, estimator);
+    super('retval', stackSize, yieldInterval, estimator);
   }
 
   captureCC(f: (k: any) => any): common.Capture {

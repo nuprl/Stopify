@@ -10,7 +10,7 @@ export class LazyDeepRuntime extends common.Runtime {
   throwing: boolean = false;
   constructor(
     stackSize: number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
-    super(stackSize, yieldInterval, estimator);
+    super('lazyDeep', stackSize, yieldInterval, estimator);
     this.deepStacks = isNaN(this.stackSize) === false;
   }
 

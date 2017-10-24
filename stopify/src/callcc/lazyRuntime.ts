@@ -6,7 +6,7 @@ import * as assert from 'assert';
 export class LazyRuntime extends common.Runtime {
   constructor(
     stackSize:number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
-    super(stackSize, yieldInterval, estimator);
+    super('lazy', stackSize, yieldInterval, estimator);
   }
 
   captureCC(f: (k: any) => any): void {

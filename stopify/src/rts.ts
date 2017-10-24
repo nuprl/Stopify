@@ -71,11 +71,13 @@ export function makeRTS(opts: Opts): Runtime {
 /**
  * Produces a reference to the runtime system, assuming it is initialized.
  */
-export function getRTS(): Runtime {
+export function getRTS(name?: string): Runtime {
   if (rts === undefined) {
     throw new assert.AssertionError({ message: 'runtime not initialized' });
   }
   else {
+    assert(name ? rts.name === name : true,
+      `Compiled with ${name}, but using runtime for ${rts.name}`)
     return rts;
   }
 }

@@ -6,7 +6,7 @@ export class EagerRuntime extends common.Runtime {
 
   constructor(
     stackSize: number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
-    super(stackSize, yieldInterval, estimator);
+    super('eager', stackSize, yieldInterval, estimator);
     this.eagerStack = [];
   }
 

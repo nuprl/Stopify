@@ -4,7 +4,7 @@ export type Stoppable = (isStop: () => boolean,
                          opts: Opts) => void
 
 export type ElapsedTimeEstimatorName = 'exact' | 'reservoir' | 'countdown';
-export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'lazyDeep';
+export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'lazyDeep' | 'fudge'
 export type HandleNew = 'direct' | 'wrapper'
 
 export interface Opts {

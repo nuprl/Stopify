@@ -200,7 +200,8 @@ function func(path: NodePath<Labeled<FunctionT>>, s: State): void {
     captureClosure,
     reenterClosure,
     ...mayMatArgs,
-    ...post
+    ...post,
+    s.opts.captureMethod === 'lazyDeep' ? increaseStackSize : t.emptyStatement(),
   ]);
   newBody.directives = path.node.body.directives;
   path.get('body').replaceWith(newBody);

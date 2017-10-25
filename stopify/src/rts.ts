@@ -9,6 +9,7 @@ import lazyDeep from './callcc/lazyDeepRuntime'
 import * as elapsedTimeEstimator from './elapsedTimeEstimator';
 import runtime from './runtime/default';
 
+export * from './runtime/implicitApps';
 export * from './callcc/runtime';
 
 function unreachable(): never {

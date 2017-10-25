@@ -110,7 +110,10 @@ if (args.webpack) {
   const webpackConfig = {
     entry: './' + path.relative('.', mainJs.name),
     output: { filename: './' + path.relative('.', dstPath) },
-    externals: { 'Stopify/built/src/rts': 'stopify' },
+    externals: {
+      'Stopify/built/src/rts': 'stopify',
+      'Stopify/built/src/runtime/implicitApps': 'stopify',
+    },
     module: {
       rules: rules
     },

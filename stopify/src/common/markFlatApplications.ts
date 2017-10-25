@@ -34,7 +34,7 @@ class Env {
     // TODO(rachit): Add more known globals here.
     // This is not correct in presence of renaming.
     [ 'WeakMap', 'Map', 'Set', 'WeakSet', 'String', 'Number', 'Function',
-      'Object', 'Array', 'Date', 'RegExp', 'Error', 
+      'Object', 'Array', 'Date', 'RegExp', 'Error',
       'console.*', 'Object.*', 'Math.*'
     ].map(e => this.addBinding(e, 'Flat'))
   }
@@ -94,6 +94,7 @@ function nodeToString(node: t.Expression | t.LVal): string | null {
  */
 const markCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
   function (path: NodePath<FlatnessMark<t.CallExpression>>): void {
+    if (path.node.mark === 'Flat') { return }
     const node = path.node
     const name = nodeToString(node.callee)
     if (name) {
@@ -109,6 +110,7 @@ const markCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
 
 const programMarkCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
   function (path: NodePath<FlatnessMark<t.CallExpression>>) {
+    if (path.node.mark === 'Flat') { return }
     const fParent = path.findParent(p => t.isFunctionDeclaration(p) ||
       t.isFunctionExpression(p))
     if (fParent === null || fParent === undefined) {

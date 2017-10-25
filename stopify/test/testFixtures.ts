@@ -24,7 +24,7 @@ export function callCCTest(srcPath: string, transform: string, opts: string = ""
     const { name: dstPath } =
       tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
     execSync(
-      `./bin/compile --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
+      `./bin/compile --js-args=faithful --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
     try {
       execSync(`./bin/run ${dstPath} --transform ${transform} --yield 1`, { timeout: 30000 });
     }

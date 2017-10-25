@@ -5,7 +5,8 @@ import { StopifyAnnotation, isStopifyAnnotation, FlatnessMark } from './helpers'
 function markerVisitor(path: NodePath<FlatnessMark<t.CallExpression|t.NewExpression|t.FunctionDeclaration|t.FunctionExpression>>) {
     const { leadingComments } = path.node
     if (leadingComments && leadingComments.length > 0 &&
-        isStopifyAnnotation(leadingComments[leadingComments.length - 1].value.trim())) {
+        isStopifyAnnotation(
+          leadingComments[leadingComments.length - 1].value.trim())) {
       path.node.mark = 'Flat';
     }
 }

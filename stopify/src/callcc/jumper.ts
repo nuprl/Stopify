@@ -27,7 +27,8 @@ interface State {
   opts: {
     captureMethod: CaptureLogic,
     handleNew: NewMethod,
-    compileFunction: boolean
+    compileFunction: boolean,
+    jsArgs: 'faithful' | 'simple',
   };
 }
 
@@ -94,7 +95,8 @@ function usesArguments(path: NodePath<t.Function>) {
 }
 
 
-function func(path: NodePath<Labeled<FunctionT>>, argMode: string): void {
+function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
+  const jsArgs = state.opts.jsArgs;
   if ((<any>path.node).mark === 'Flat') {
     return;
   }
@@ -134,7 +136,7 @@ function func(path: NodePath<Labeled<FunctionT>>, argMode: string): void {
 
   const mayMatArgs: t.Statement[] = [];
   if (path.node.__usesArgs__) {
-    const argExpr = argMode === 'faithful'
+    const argExpr = jsArgs === 'faithful'
       ? bh.arrayPrototypeSliceCall(t.identifier('arguments'))
       : t.identifier('arguments');
 
@@ -144,7 +146,7 @@ function func(path: NodePath<Labeled<FunctionT>>, argMode: string): void {
 
     const boxedArgs = <imm.Set<string>>(<any>path.node).boxedArgs;
 
-    if (argMode === 'faithful') {
+    if (jsArgs === 'faithful') {
       const argLen = t.memberExpression(t.identifier('arguments'),
         t.identifier('length'));
       const initMatArgs: t.Statement[] = [];
@@ -458,11 +460,11 @@ const jumper = {
         path.node.body.body.push(ifConstructor);
       }
     },
-    exit(path: NodePath<Labeled<FunctionT>>, state: any): void {
+    exit(path: NodePath<Labeled<FunctionT>>, state: State): void {
       if((<any>path.node).mark == 'Flat') {
         return
       }
-      else return func(path, state.opts);
+      else return func(path, state);
     }
   },
 

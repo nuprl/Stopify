@@ -83,18 +83,8 @@ export const visitor: Visitor = {
         markFlatApplications,
       ]);
     }
-    h.transformFromAst(path, [[insertSuspend, {
-      compileFunction: state.opts.compileFunction,
-      sourceMap: state.opts.sourceMap,
-    }]]);
-    h.transformFromAst(path,
-      [[callcc, {
-        useReturn: true,
-        captureMethod: state.opts.captureMethod,
-        handleNew: state.opts.handleNew,
-        esMode: esMode,
-        compileFunction: state.opts.compileFunction
-      }]]);
+    h.transformFromAst(path, [[insertSuspend, opts]]);
+    h.transformFromAst(path, [[callcc, opts]]);
     fastFreshId.cleanup()
   }
 }

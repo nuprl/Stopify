@@ -636,8 +636,10 @@ const jumper = {
   ReturnStatement: {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
 
-      // Increment remaining stack right before returning.
-      path.insertBefore(increaseStackSize)
+      if (!isFlat(path)) {
+        // Increment remaining stack right before returning.
+        path.insertBefore(increaseStackSize)
+      }
 
       if (path.node.appType !== AppType.Mixed) {
         return;

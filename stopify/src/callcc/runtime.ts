@@ -137,13 +137,21 @@ export abstract class Runtime {
       return;
     }
 
-    // If this.yieldInterval is NaN, the condition will be false
-    if (this.hitBreakpoint() ||
-        this.estimator.elapsedTime() >= this.yieldInterval ||
-       (this.deepStacks && this.remainingStack <= 0)) {
+    if (this.deepStacks && this.remainingStack <= 0) {
+      this.remainingStack = this.stackSize;
+      this.isSuspended = true;
+      return this.captureCC((continuation) => {
+        this.continuation = continuation;
+        if (this.onYield()) {
+          return this.resumeFromSuspension(continuation);
+        }
+      });
+    }
+
+    else if (this.hitBreakpoint() ||
+             this.estimator.elapsedTime() >= this.yieldInterval) {
       this.estimator.reset();
       this.isSuspended = true;
-      this.remainingStack = this.stackSize;
       return this.captureCC((continuation) => {
         this.continuation = continuation;
         if (this.onYield()) {

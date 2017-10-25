@@ -117,8 +117,8 @@ function usesArguments(path: NodePath<t.Function>) {
   return r;
 }
 
-function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
-  const jsArgs = state.opts.jsArgs;
+function func(path: NodePath<Labeled<FunctionT>>, s: State): void {
+  const jsArgs = s.opts.jsArgs;
   const argMode = s.opts.argMode;
   if ((<any>path.node).mark === 'Flat') {
     return;

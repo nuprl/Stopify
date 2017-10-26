@@ -143,7 +143,8 @@ export abstract class Runtime {
       return this.captureCC((continuation) => {
         this.continuation = continuation;
         if (this.onYield()) {
-          return this.resumeFromSuspension(continuation);
+          this.isSuspended = false
+          return this.runtime(continuation);
         }
       });
     }

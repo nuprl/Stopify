@@ -9,9 +9,11 @@ const glob = require('glob');
 export const unitTests = glob.sync('test/should-run/*.js', {})
 export const intTests = glob.sync('test/should-run/source-language/*.js', {})
 export const stopTests = glob.sync('test/should-stop/*.js', {})
+export const deepTests = glob.sync('test/deep-stacks/*.js')
 
-export function callCCTest(srcPath: string, transform: string, opts: string = "") {
-  const testName = `${srcPath} ${opts} (${transform})`;
+export function callCCTest(
+  srcPath: string, transform: string, copts: string = "", ropts: string = "--yield 1") {
+  const testName = `${srcPath} ${copts} (${transform})`;
 
   // Skip tests we know we can't handle
   if (path.basename(srcPath).indexOf("eval") === 0) {
@@ -24,9 +26,11 @@ export function callCCTest(srcPath: string, transform: string, opts: string = ""
     const { name: dstPath } =
       tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
     execSync(
-      `./bin/compile --js-args=faithful --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
+      `./bin/compile --js-args=faithful --transform ${transform} ${copts} ${srcPath} ${dstPath}`);
     try {
-      execSync(`./bin/run ${dstPath} --transform ${transform} --yield 1`, { timeout: 30000 });
+      execSync(
+        `./bin/run ${dstPath} --transform ${transform} ${ropts}`,
+        { timeout: 30000 });
     }
     finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.

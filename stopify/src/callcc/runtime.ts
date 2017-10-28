@@ -144,7 +144,7 @@ export abstract class Runtime {
         this.continuation = continuation;
         if (this.onYield()) {
           this.isSuspended = false
-          return this.runtime(continuation);
+          continuation();
         }
       });
     }

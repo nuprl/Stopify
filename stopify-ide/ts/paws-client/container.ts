@@ -4,7 +4,6 @@ import { encodeArgs } from 'stopify/built/src/browserLine';
 // from the running program. The code receives two kinds of messages
 // from the container (1) a message containing the JavaScript to run,
 // before it has been stopified and (2) a message directing execution to stop.
-'use strict';
 
 let iframe: any = null;
 

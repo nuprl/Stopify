@@ -90,17 +90,17 @@ function loadJavaScript(js: string) {
 function compileRequest() {
   const languageSelect = <any>document.getElementById("language-selection");
   const val = languageSelect.value;
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', langs[val].compileUrl);
   const data = {
     code: editor.getValue(),
     new: browser.name === 'chrome' ? 'wrapper' : 'direct',
     transform: 'lazy',
   };
-  xhr.send(JSON.stringify(data));
-  xhr.addEventListener('load', () => {
-    loadJavaScript(xhr.responseText);
-  });
+  fetch(new Request(langs[val].compileUrl, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }))
+  .then(resp => resp.text())
+  .then(loadJavaScript);
 }
 
 function setupCompile() {

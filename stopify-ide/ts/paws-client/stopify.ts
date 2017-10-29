@@ -14,15 +14,30 @@ require('brace/mode/clojure');
 require('brace/mode/scala')
 require('brace/mode/javascript')
 require('brace/theme/monokai');
+import { encodeArgs } from 'stopify/built/src/browserLine';
 const Range = ace.acequire('ace/range').Range;
 
-let iframe = <HTMLIFrameElement>document.getElementById('iframeContainer')!;
+// True if buffer has changed since the last compile.
+let dirtyEditor = true;
+// stopped : no program loaded, though last program's output may be visible.
+//           May transition to 'compiling'
+// 'compiling' : may transition to 'running' or 'stopped', if an error occurs
+let ideMode : 'stopped' | 'paused' | 'compiling' | 'running' = 'stopped';
+
+
+const iframeContainer = <HTMLDivElement>document.getElementById('iframeContainer');
+let iframe : HTMLIFrameElement | undefined;
 
 // TODO(rachit): Hack to share the editor with the runner. Should probably
 // be fixed.
 const editor = ace.edit('editor');
+
 editor.setTheme('ace/theme/monokai');
-editor.setFontSize('15')
+editor.setFontSize('15');
+
+editor.onDocumentChange = () => {
+  dirtyEditor = true;
+}
 
 let breakpoints: number[] = [];
 let lastLineMarker: number | null = null;
@@ -58,8 +73,17 @@ function updateBreakpoints(e: any) {
 editor.on("guttermousedown", updateBreakpoints);
 
 window.addEventListener('message', evt => {
-  if (evt.data.linenum && evt.data.linenum-1 === lastLine) {
-    iframe.contentWindow.postMessage('step', '*');
+  if (evt.data.type === 'ready') {
+    if (ideMode === 'compiling') {
+      ideMode = 'running';
+      iframe!.contentWindow.postMessage({
+        type: 'start',
+        breakpoints: breakpoints
+      }, '*');
+    }
+  }
+  else  if (evt.data.linenum && evt.data.linenum-1 === lastLine) {
+    iframe!.contentWindow.postMessage('step', '*');
   } else {
     // Ace Editor is 0-indexed and source-maps are 1-indexed
     editorSetLine(evt.data.linenum-1);
@@ -70,7 +94,7 @@ interface supportedLangs {
   [lang: string]: CompilerClient
 }
 
-const defaultLang = 'ScalaJS';
+const defaultLang = 'JavaScript';
 
 const langs : supportedLangs = {
   ScalaJS: ScalaJS,
@@ -83,11 +107,11 @@ const langs : supportedLangs = {
 editor.getSession().setMode(langs[defaultLang].aceMode);
 editor.setValue(langs[defaultLang].defaultCode);
 
-function loadJavaScript(js: string) {
-  iframe.contentWindow.postMessage({ code: js }, '*');
-}
-
-function compileRequest() {
+function compile() {
+  ideMode = 'compiling';
+  if (lastLineMarker !== null) {
+    editor.session.removeMarker(lastLineMarker);
+  }
   const languageSelect = <any>document.getElementById("language-selection");
   const val = languageSelect.value;
   const data = {
@@ -100,15 +124,25 @@ function compileRequest() {
     body: JSON.stringify(data)
   }))
   .then(resp => resp.text())
-  .then(loadJavaScript);
-}
-
-function setupCompile() {
-  document.getElementById("compile")!.addEventListener('click', () => {
-    if (lastLineMarker !== null) {
-      editor.session.removeMarker(lastLineMarker);
+  .then(path => {
+    if (iframe) {
+      iframe.remove();
     }
-    compileRequest();
+    const fragment = encodeArgs(['--env', browser.name, '-t', 'lazy',
+      '--estimator', 'countdown', '-y', '1', path]);
+    const url = `./container.html#${fragment}`;
+    iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.width = "50%";
+    iframe.height = "100%";
+    iframe.style.border = 'none';
+    iframeContainer.appendChild(iframe);
+  }).catch(reason => {
+    alert(reason);
+    if (iframe) {
+      iframe.remove();
+    }
+    ideMode = 'stopped';
   });
 }
 
@@ -116,7 +150,6 @@ function selectLanguage() {
   const languageSelect = <any>document.getElementById("language-selection");
   languageSelect.addEventListener('input', () => {
     const val = (<any>document.getElementById("language-selection")).value;
-    console.log(langs[val])
     if (lastLineMarker !== null) {
       editor.session.removeMarker(lastLineMarker);
     }
@@ -125,26 +158,47 @@ function selectLanguage() {
   });
 }
 
-setupCompile();
-selectLanguage();
-
-function setupButton(buttonId: string, eventName: string) {
-  (<Node>document.getElementById(buttonId)).addEventListener('click', () => {
-    if (iframe === null) {
+document.getElementById('playPause')!.addEventListener('click', () => {
+  switch (ideMode) {
+    case 'compiling':
       return;
-    }
+    case 'stopped':
+      return compile();
+    case 'running':
+      ideMode = 'paused';
+      iframe!.contentWindow.postMessage({ type: 'pause' }, '*');
+      return;
+    case 'paused':
+      iframe!.contentWindow.postMessage({ 
+        type: 'continue', 
+        breakpoints: breakpoints
+      }, '*');
+      return;
+  }
+});
 
-    switch (eventName) {
-      case 'run':
-        lastLine = null;
-        iframe.contentWindow.postMessage({ [eventName]: breakpoints }, '*');
-        break;
-      default:
-        iframe.contentWindow.postMessage(eventName, '*');
-    }
-  });
-}
+document.getElementById('step')!.addEventListener('click', () => {
+  if (ideMode !== 'paused') {
+    return;
+  }
+  iframe!.contentWindow.postMessage({ type: 'step' }, '*');
+});
 
-setupButton('stop', 'stop')
-setupButton('run', 'run')
-setupButton('step', 'step')
+document.getElementById('stop')!.addEventListener('click', () => {
+  switch (ideMode) {
+    case 'compiling':
+      if (iframe) {
+        iframe.remove();
+        iframe = undefined;
+      }
+      break;
+    case 'running':
+      iframe!.contentWindow.postMessage({ type: 'pause' }, '*');
+      break;
+    case 'stopped':
+    case 'paused':
+  }
+  ideMode = 'stopped';
+});
+
+selectLanguage();

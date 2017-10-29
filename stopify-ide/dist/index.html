@@ -13,8 +13,7 @@
           <option value="ClojureScript">ClojureScript</option>
           <option value="JavaScript">JavaScript</option>
         </select>
-        <button id="compile" type="button">Compile</button>
-        <button id="run" type="button">Run</button>
+        <button id="playPause" type="button">Play / Pause</button>
         <button id="step" type="button">Step</button>
         <button id="stop" type="button">Stop</button>
       </div>
@@ -22,7 +21,8 @@
         <div style="height: 100%; width: 100%" id="editor"></div>
       </div>
     </div>
-    <iframe id="iframeContainer" src="container.html" width="50%" height="100%" style="border: none;">
+    <div id="iframeContainer">
+    </div>
     </iframe>
     <script src="stopify.js"></script>
   </body>

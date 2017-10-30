@@ -1,7 +1,7 @@
 import {ClojureScriptClient} from './compiler';
 
 export let Cljs : ClojureScriptClient = {
-  aceMode: 'ace/mode/clojure',
+  aceMode: 'clojure',
   defaultCode:
     `
 (defn tail_sum [n acc]

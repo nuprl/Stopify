@@ -1,7 +1,7 @@
 import { ScalaJSClientInterface } from './compiler';
 
 export let ScalaJS : ScalaJSClientInterface = {
-  aceMode: 'ace/mode/scala',
+  aceMode: 'scala',
   defaultCode:
   `
 import scala.scalajs.js.JSApp

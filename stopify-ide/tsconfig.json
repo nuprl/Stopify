@@ -9,7 +9,9 @@
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "noImplicitAny": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "jsx": "react",
+        "sourceMap": true
     },
     "include": [
       "ts"

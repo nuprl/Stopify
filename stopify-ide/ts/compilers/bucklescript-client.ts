@@ -1,7 +1,7 @@
 import {OCamlClient} from './compiler';
 
 export let BuckleScript : OCamlClient = {
-  aceMode: 'ace/mode/ocaml',
+  aceMode: 'ocaml',
   defaultCode:
     `
 let rec tail_sum n acc =

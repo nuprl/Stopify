@@ -1,7 +1,7 @@
 import {EmscriptenClient} from './compiler';
 
 export let Emcc : EmscriptenClient = {
-  aceMode: 'ace/mode/c_cpp',
+  aceMode: 'c_cpp',
   defaultCode:
     `#include <stdio.h>
 

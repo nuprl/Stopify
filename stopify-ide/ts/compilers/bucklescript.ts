@@ -1,28 +1,15 @@
-'use strict';
+import * as fs from 'fs-extra';
+import * as utils from './utils';
+import { OCaml } from './compiler';
 
-import * as assert from 'assert';
-const fs = require('fs-extra');
-
-import {makeSpawn} from './utils';
-import {OCaml} from './compiler';
+const bsconfigJson = __dirname + '/../../data/bsconfig.json'
 
 export let BuckleScript : OCaml = {
-  compile(tmpDir: string,
-    ocamlCode: string,
-    jsReceiver: (code: string) => any): void {
-      const run = makeSpawn(tmpDir);
-      fs.writeFile(tmpDir + '/main.ml', ocamlCode, npmLink);
-
-      function npmLink() {
-        run('npm', 'link', 'bs-platform', 'Stopify').on('exit', copyBsConfig);
-      }
-
-      function copyBsConfig(exitCode: number) {
-        assert(exitCode === 0);
-        fs.copySync(__dirname + '/../../data/bsconfig.json',
-          tmpDir + '/bsconfig.json');
-        run('bsb').on('exit', jsReceiver(tmpDir + '/lib/js/main.js'));
-      }
+  compile(tmpDir: string, ocamlCode: string): Promise<string> {
+    return fs.writeFile(`${tmpDir}/main.ml`, ocamlCode)
+      .then(() => utils.exec('npm link bs-platform', tmpDir))
+      .then(() => fs.copy(bsconfigJson, `${tmpDir}/bsconfig.json`))
+      .then(() => utils.exec('bsb', tmpDir))
+      .then(() => `${tmpDir}/lib/js/main.js`);
   }
-};
-
+}

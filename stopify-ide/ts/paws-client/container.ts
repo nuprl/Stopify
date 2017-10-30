@@ -10,6 +10,9 @@ declare const stopify: any;
 // before it has been stopified and (2) a message directing execution to stop.
 
 window.addEventListener('message', evt => {
+  if (evt.source !== window.parent) {
+    return;
+  }
   const message = evt.data;
   const { type } = message;
   switch (type) {
@@ -19,7 +22,7 @@ window.addEventListener('message', evt => {
     case 'pause':
       stopify.stopScript();
       break;
-    case 'resume':
+    case 'continue':
       stopify.setBreakpoints(message.breakpoints);
       stopify.resumeScript();
       break;

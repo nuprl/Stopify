@@ -1,7 +1,7 @@
 import { JavaScriptClientInterface } from './compiler';
 
 export const JavaScript : JavaScriptClientInterface = {
-  aceMode: 'ace/mode/javascript',
+  aceMode: 'javascript',
   defaultCode:
   `
 function sum(n) {

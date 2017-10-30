@@ -7,8 +7,7 @@ function exec(line) {
 const browserify = './node_modules/.bin/browserify';
 exec('./node_modules/.bin/tsc');
 
-exec(`${browserify} dist/paws-client/stopify.js -o dist/stopify.js`);
-exec(`${browserify} dist/paws-client/container.js -o dist/container.js`);
-exec(`${browserify} dist/paws-client/runner.js -o dist/runner.js`);
+exec(`${browserify} -d dist/paws-client/stopify.js -o dist/stopify.js`);
+exec(`${browserify} -d dist/paws-client/container.js -o dist/container.js`);
 
 copySync('../stopify/dist/stopify.bundle.js', 'dist/stopify.bundle.js');

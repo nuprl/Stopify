@@ -1,30 +1,18 @@
-'use strict';
-
 import * as path from 'path';
-import * as assert from 'assert';
 import * as fs from 'fs-extra';
+import * as utils from './utils';
 
-import { makeSpawn, inlineSourceMapFile } from './utils';
 import { Emscripten } from './compiler';
 
+const makefile = path.join(__dirname, '../../data/Makefile');
+
 export let Emcc : Emscripten = {
-  compile(tmpDir: string,
-    code: string,
-    jsReceiver: (str: string) => any): void {
-      const run = makeSpawn(tmpDir);
-      console.log(tmpDir);
-      fs.writeFile(tmpDir + '/main.cpp', code, () => copyMakefile(0));
-
-      function copyMakefile(exitCode: number) {
-        assert(exitCode === 0);
-        fs.copySync(path.join(__dirname, '../../data/Makefile'),
-          path.join(tmpDir, 'Makefile'));
-        const srcPath = path.join(tmpDir, 'main.js');
-        const mapPath = srcPath + '.map';
-        run('make').on('exit',
-          inlineSourceMapFile(srcPath, mapPath, () =>
-            jsReceiver(srcPath)(0)));
-      }
+  compile(tmpDir: string, code: string): Promise<string> {
+    const srcPath = path.join(tmpDir, 'main.js');
+    const mapPath = srcPath + '.map';
+    return fs.writeFile(`${tmpDir}/main.cpp`, code)
+      .then(() => fs.copy(makefile, `${tmpDir}/Makefile`))
+      .then(() => utils.exec('make', tmpDir))
+      .then(() => utils.inlineSourceMapFile(srcPath, mapPath));
   }
-};
-
+}

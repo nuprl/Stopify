@@ -3,9 +3,7 @@ export interface CompilerSupport {
   // `compilerDir` is to be set as the working directory for the compiler
   // `code` is the source code received from a client
   // `jsReceiver` responds to the request with the compiler output
-  compile(compilerDir: string,
-    code: string,
-    jsReceiver: (code: string) => any): void;
+  compile(compilerDir: string, code: string): Promise<string>
 }
 
 // Interface providing paws-client support to a language.

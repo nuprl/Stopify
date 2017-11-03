@@ -2719,7 +2719,7 @@ ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
 
-nan@>=2.0.0, nan@^2.3.0:
+nan@^2.3.0:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.6.2.tgz#e4ff34e6c95fdfb5aecc08de6596f43605a7db45"
 
@@ -3507,12 +3507,6 @@ signal-exit@^3.0.0:
 slash@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/slash/-/slash-1.0.0.tgz#c41f2f6c39fc16d1cd17ad4b5d896114ae470d55"
-
-sleep@3.0.x:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/sleep/-/sleep-3.0.1.tgz#be4d17c579360e07e04ed8172ba2b10a69054df3"
-  dependencies:
-    nan ">=2.0.0"
 
 sntp@1.x.x:
   version "1.0.9"

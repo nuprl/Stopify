@@ -1,3 +1,19 @@
+Stopify: CPS and Yield End-of-Life
+==================================
+
+This repository has Stopify's CPS and generator based implementations of
+continuations.  We find that they are significantly slower than the approach
+that Stopify now uses. To observe this, run the following script to time CPS
+and generator based continuations:
+
+    yarn install
+    yarn run build
+    ./compare.sh
+
+The script builds and runs `./triangle.js` without ever yielding. You'll find
+that it is 3x (CPS) or 2x (generator) slower than compiling with Stopify
+"jumper"-based strategies.
+
 ## Stopify [![Build Status](http://23.20.114.147:5000/buildStatus/icon?job=stopify-build/master)](http://23.20.114.147:5000/job/stopify-build/job/master/)
 
 Web-based programming environments lack many basic features that programmers

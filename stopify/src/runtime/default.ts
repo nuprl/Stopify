@@ -113,9 +113,14 @@ export class Default {
       }
       console.error = (message: any) => {
         data.value = data.value + '\nAn error occurred:\n' + message + '\n';
-        window.document.title = "done"
         const evt = new Event('change');
         data.dispatchEvent(evt);
+      }
+      window.onerror = (message) => {
+        data.value = data.value + '\nAn error occurred:\n' + message + '\n';
+        const evt = new Event('change');
+        data.dispatchEvent(evt);
+        window.document.title = "done";
       }
     }
 

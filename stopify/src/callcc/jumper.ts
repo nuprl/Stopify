@@ -74,8 +74,12 @@ const restoreExn = t.memberExpression(types, t.identifier('Restore'));
 const isNormalMode = runtimeModeKind;
 const isRestoringMode = t.unaryExpression('!', runtimeModeKind);
 
-const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
-  t.identifier('f')), []);
+const stackFrameCall =
+  t.callExpression(t.memberExpression(t.memberExpression(topOfRuntimeStack,
+    t.identifier('f')), t.identifier('apply')), [
+      t.memberExpression(topOfRuntimeStack, t.identifier('this')),
+      t.memberExpression(topOfRuntimeStack, t.identifier('args'))
+    ]);
 
 function usesArguments(path: NodePath<t.Function>) {
   let r = false;
@@ -125,14 +129,9 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const captureClosure = t.functionDeclaration(captureLocals,
     [captureFrameId], captureBody);
 
-  // A local function to restore the next stack frame
-  const reenterExpr = path.node.__usesArgs__
-    ? t.callExpression(t.memberExpression(path.node.id, t.identifier('apply')),
-        [t.thisExpression(), matArgs])
-    : t.callExpression(t.memberExpression(path.node.id, t.identifier('call')),
-      [t.thisExpression(), ...<any>path.node.params]);
-  const reenterClosure = t.variableDeclaration('var', [
-    t.variableDeclarator(restoreNextFrame, t.arrowFunctionExpression([], reenterExpr))]);
+  const reenterDecls = t.variableDeclaration('var', [
+    t.variableDeclarator(restoreNextFrame, path.node.id),
+  ]);
 
   const mayMatArgs: t.Statement[] = [];
   if (path.node.__usesArgs__) {
@@ -166,7 +165,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     ...pre,
     ifRestoring,
     captureClosure,
-    reenterClosure,
+    reenterDecls,
     ...mayMatArgs,
     ...post
   ]);
@@ -211,7 +210,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 
   const restoreNode =
     t.assignmentExpression(path.node.operator,
-      path.node.left, stackFrameCall)
+      path.node.left, stackFrameCall);
   const ifStmt = t.ifStatement(
     isNormalMode,
     t.blockStatement([nodeStmt]),
@@ -229,6 +228,8 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
             t.objectExpression([
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
               t.objectProperty(t.identifier('f'), restoreNextFrame),
+              t.objectProperty(t.identifier('this'), t.thisExpression()),
+              t.objectProperty(t.identifier('args'), t.identifier('arguments')),
               t.objectProperty(t.identifier('index'), applyLbl),
             ]),
           ])),
@@ -270,6 +271,8 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(t.identifier('f'), restoreNextFrame),
+    t.objectProperty(t.identifier('this'), t.thisExpression()),
+    t.objectProperty(t.identifier('args'), t.identifier('arguments')),
     t.objectProperty(t.identifier('index'), applyLbl),
   ]);
 
@@ -327,6 +330,8 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(t.identifier('f'), restoreNextFrame),
+    t.objectProperty(t.identifier('this'), t.thisExpression()),
+    t.objectProperty(t.identifier('args'), t.identifier('arguments')),
     t.objectProperty(t.identifier('index'), applyLbl),
   ]);
 

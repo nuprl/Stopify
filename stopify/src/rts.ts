@@ -1,9 +1,9 @@
 import { Opts } from './types';
 import { Runtime } from './callcc/runtime';
 import * as assert from 'assert';
-import eager from './callcc/eagerRuntime';
+//import eager from './callcc/eagerRuntime';
 import lazy from './callcc/lazyRuntime';
-import retval from './callcc/retvalRuntime';
+//import retval from './callcc/retvalRuntime';
 import fudge from './callcc/fudgeRuntime';
 import * as elapsedTimeEstimator from './elapsedTimeEstimator';
 import runtime from './runtime/default';
@@ -34,15 +34,15 @@ function makeEstimator(opts: Opts): elapsedTimeEstimator.ElapsedTimeEstimator {
 }
 
 function modeToBase(transform: string) {
- if (transform === 'eager') {
+/* if (transform === 'eager') {
     return eager;
   }
-  else if (transform === 'lazy') {
+  else */if (transform === 'lazy') {
     return lazy;
   }
-  else if (transform === 'retval') {
-    return retval;
-  }
+//  else if (transform === 'retval') {
+//    return retval;
+//  }
   else if (transform === 'fudge') {
     return fudge;
   }

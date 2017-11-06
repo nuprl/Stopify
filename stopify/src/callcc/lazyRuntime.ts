@@ -50,7 +50,8 @@ export class LazyRuntime extends common.Runtime {
           }
           this.mode = false;
           this.stack = exn.stack;
-          this.stack[this.stack.length - 1].f();
+          const frame = this.stack[this.stack.length - 1];
+          frame.f.apply(frame.this, frame.args);
         });
       } else {
         throw exn; // userland exception
@@ -82,14 +83,16 @@ export class LazyRuntime extends common.Runtime {
         result = constr.apply(obj, args);
       }
       else {
-        result = this.stack[this.stack.length - 1].f.apply(obj, []);
+        result = constr.apply(obj, this.stack[this.stack.length-1].args);
       }
     }
     catch (exn) {
       if (exn instanceof common.Capture) {
         exn.stack.push({
           kind: "rest",
-          f: () => this.handleNew(constr, ...args) ,
+          f: this.handleNew,
+          this: this,
+          args: <any>arguments,
           locals: [obj],
           index: 0
         });

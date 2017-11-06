@@ -9,11 +9,15 @@ export type KFrame = KFrameTop | KFrameRest;
 export interface KFrameTop {
   kind: 'top';
   f: () => any;
+  this: object;
+  args: any[];
 }
 
 export interface KFrameRest {
   kind: 'rest';
-  f: () => any;   // The function we are in
+  f: (args?: any[]) => any;   // The function we are in
+  this: object;
+  args: any[];
   locals: any[];  // All locals and parameters
   index: number;  // At this application index
 }
@@ -70,8 +74,8 @@ export abstract class Runtime {
      *  the browser's event loop. If the function produces 'false', the
      *  computation terminates.
      */
-    public onYield = function(): boolean { return true; },
-    private continuation = function() {}) {
+    public onYield = () => true,
+    private continuation = () => undefined) {
     this.stack = [];
     this.mode = true;
   }
@@ -147,7 +151,9 @@ export abstract class Runtime {
         this.stack = [];
         this.mode = true;
         return f();
-      }
+      },
+      this: this,
+      args: [],
     };
   }
 

@@ -116,16 +116,17 @@ const visitor: Visitor = {
       h.letExpression(
         $__R,
         t.callExpression(
-          t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')), []),
+          t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')),
+          [t.stringLiteral(state.opts.captureMethod)]),
         'const'));
     if (!state.opts.compileFunction) {
-    path.node.body.unshift(
-      h.letExpression(
-        t.identifier("$__T"),
-        t.callExpression(
-          t.identifier('require'),
-          [t.stringLiteral('Stopify/built/src/rts')]),
-        'const'));
+      path.node.body.unshift(
+        h.letExpression(
+          t.identifier("$__T"),
+          t.callExpression(
+            t.identifier('require'),
+            [t.stringLiteral('Stopify/built/src/rts')]),
+          'const'));
     }
     path.stop();
   }

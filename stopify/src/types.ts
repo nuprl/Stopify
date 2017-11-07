@@ -4,11 +4,12 @@ export type Stoppable = (isStop: () => boolean,
                          opts: Opts) => void
 
 export type ElapsedTimeEstimatorName = 'exact' | 'reservoir' | 'countdown';
-export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original'
+export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'lazyDeep' | 'fudge'
 export type HandleNew = 'direct' | 'wrapper'
 
 export interface Opts {
   transform: CaptureMethod,
+  deepstacks: number,
   filename: string,
   estimator: ElapsedTimeEstimatorName;
   yieldInterval: number,

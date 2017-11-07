@@ -21,8 +21,9 @@ class FudgedContinuationError {
  * transformation still helps with debugging.
  */
 export class FudgeRuntime extends common.Runtime {
-  constructor(yieldInterval: number, estimator: ElapsedTimeEstimator) {
-    super(yieldInterval, estimator);
+  constructor(
+    stackSize: number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
+    super('fudge', stackSize, yieldInterval, estimator);
   }
 
   captureCC(f: (k: any) => any): void {

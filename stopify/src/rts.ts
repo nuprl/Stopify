@@ -5,6 +5,7 @@ import eager from './callcc/eagerRuntime';
 import lazy from './callcc/lazyRuntime';
 import retval from './callcc/retvalRuntime';
 import fudge from './callcc/fudgeRuntime';
+import lazyDeep from './callcc/lazyDeepRuntime'
 import * as elapsedTimeEstimator from './elapsedTimeEstimator';
 import runtime from './runtime/default';
 
@@ -34,8 +35,11 @@ function makeEstimator(opts: Opts): elapsedTimeEstimator.ElapsedTimeEstimator {
 }
 
 function modeToBase(transform: string) {
- if (transform === 'eager') {
+  if (transform === 'eager') {
     return eager;
+  }
+  else if (transform === 'lazyDeep') {
+    return lazyDeep;
   }
   else if (transform === 'lazy') {
     return lazy;
@@ -61,18 +65,20 @@ export function makeRTS(opts: Opts): Runtime {
   assert(rts === undefined, 'runtime already initialized');
   const estimator = makeEstimator(opts);
   const base = modeToBase(opts.transform);
-  rts = new base(opts.yieldInterval, estimator);
+  rts = new base(opts.deepstacks, opts.yieldInterval, estimator);
   return rts;
 }
 
 /**
  * Produces a reference to the runtime system, assuming it is initialized.
  */
-export function getRTS(): Runtime {
+export function getRTS(name?: string): Runtime {
   if (rts === undefined) {
     throw new assert.AssertionError({ message: 'runtime not initialized' });
   }
   else {
+    assert(name ? rts.name === name : true,
+      `Compiled with ${name}, but using runtime for ${rts.name}`)
     return rts;
   }
 }

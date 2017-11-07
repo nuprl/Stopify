@@ -33,7 +33,7 @@ export type Opts = {
 }
 
 export function compileFunction(code: string,
-    opts: Opts = {handleNew: 'wrapper', captureMethod: 'lazy'}): string {
+    opts: Opts = {handleNew: 'wrapper', captureMethod: 'lazyDeep'}): string {
   const babelOpts = {
     plugins: [[() => ({ visitor }), {
       ...opts,

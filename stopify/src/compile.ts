@@ -17,7 +17,7 @@ commander.option(
   '-t, --transform <transformation>',
   'either eager, lazy, retval, original, or fudge',
   parseArg(x => x,
-    (x) => /^(eager|lazy|retval|original|fudge)$/.test(x),
+    (x) => /^(eager|lazy|lazyDeep|retval|original|fudge)$/.test(x),
     'invalid --transform, see --help'),
   'lazy');
 

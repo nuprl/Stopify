@@ -2,8 +2,9 @@ import * as common from './runtime';
 import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 
 class RetValRuntime extends common.Runtime {
-  constructor(yieldInterval: number, estimator: ElapsedTimeEstimator) {
-    super(yieldInterval, estimator);
+  constructor(
+    stackSize:number, yieldInterval: number, estimator: ElapsedTimeEstimator) {
+    super('retval', stackSize, yieldInterval, estimator);
   }
 
   captureCC(f: (k: any) => any): common.Capture {
@@ -85,7 +86,8 @@ class RetValRuntime extends common.Runtime {
           kind: "rest",
           f: () => this.handleNew(constr, ...args) ,
           locals: [obj],
-          index: 0
+          index: 0,
+          value: undefined
         });
         return _a;
       } else if (_a instanceof common.Restore) {
@@ -101,7 +103,8 @@ class RetValRuntime extends common.Runtime {
           kind: "rest",
           f: () => this.handleNew(constr, ...args) ,
           locals: [obj],
-          index: 0
+          index: 0,
+          value: undefined
         });
         return _a;
       } else if (_a instanceof common.Restore) {

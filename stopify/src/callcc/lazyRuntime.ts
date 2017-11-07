@@ -13,10 +13,6 @@ export class LazyRuntime extends common.Runtime {
     throw new common.Capture(f, []);
   }
 
-  abortCC(f: () => any) {
-    throw new common.Discard(f);
-  }
-
   makeCont(stack: common.Stack) {
     return (v: any) => {
       throw new common.Restore([this.topK(() => v), ...stack]);
@@ -39,8 +35,6 @@ export class LazyRuntime extends common.Runtime {
         // this is the only point where the whole stack is ready.
         // Doing exn.f makes "this" wrong.
         return this.runtime(() => exn.f.call(global, this.makeCont(exn.stack)));
-      } else if (exn instanceof common.Discard) {
-        return this.runtime(() => exn.f());
       } else if (exn instanceof common.Restore) {
         // The current continuation has been discarded and we now restore the
         // continuation in exn.

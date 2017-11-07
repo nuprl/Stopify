@@ -29,10 +29,6 @@ export class FudgeRuntime extends common.Runtime {
     throw new common.Capture(f, []);
   }
 
-  abortCC(f: () => any) {
-    throw new common.Discard(f);
-  }
-
   makeCont(stack: common.Stack) {
     return (v: any) => {
       throw new FudgedContinuationError(v);
@@ -46,8 +42,6 @@ export class FudgeRuntime extends common.Runtime {
     catch (exn) {
       if (exn instanceof common.Capture) {
         return this.runtime(() => exn.f.call(global, this.makeCont(exn.stack)));
-      } else if (exn instanceof common.Discard) {
-        return this.runtime(() => exn.f());
       } else {
         throw exn; // userland exception
       }

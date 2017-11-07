@@ -164,25 +164,28 @@ export abstract class Runtime {
   }
 
   runtime(body: () => any): any {
-    const result = this.abstractRun(body)
-    if (result.type === 'normal') {
-      assert(this.mode, 'executing completed in restore mode');
-    }
-    else if (result.type === 'capture') {
-      return this.runtime(() => result.f.call(global, this.makeCont(result.stack)));
-    }
-    else if (result.type === 'restore') {
-      return this.runtime(() => {
-        this.mode = false;
-        this.stack = result.stack;
-        return this.stack[this.stack.length - 1].f();
-      });
-    }
-    else if (result.type === 'exception') {
-      throw result.value; // userland exception
-    }
-    else {
-      return unreachable();
+    while (true) {
+      const result = this.abstractRun(body)
+      if (result.type === 'normal') {
+        assert(this.mode, 'executing completed in restore mode');
+        return;
+      }
+      else if (result.type === 'capture') {
+        body = () => result.f.call(global, this.makeCont(result.stack));
+      }
+      else if (result.type === 'restore') {
+        body = () => {
+          this.mode = false;
+          this.stack = result.stack;
+          return this.stack[this.stack.length - 1].f();
+        };
+      }
+      else if (result.type === 'exception') {
+        throw result.value; // userland exception
+      }
+      else {
+        return unreachable();
+      }
     }
   }
 

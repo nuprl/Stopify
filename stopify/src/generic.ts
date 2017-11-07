@@ -74,3 +74,7 @@ export function parseArg<T>(
     }
   };
 }
+
+export function unreachable(): never {
+  throw new Error("unreachable code was reached!");
+}

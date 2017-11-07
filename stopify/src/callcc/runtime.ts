@@ -1,7 +1,14 @@
 import { setImmediate } from '../setImmediate';
 import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 import { knowns } from '../common/cannotCapture'
+import { unreachable } from '../generic';
 import * as assert from 'assert';
+
+export type RunResult =
+  { type: 'normal', value: any } |
+  { type: 'exception', value: any } |
+  { type: 'capture', stack: Stack, f: (value: any) => any } |
+  { type: 'restore', stack: Stack }
 
 // The type of continuation frames
 export type KFrame = KFrameTop | KFrameRest;
@@ -45,6 +52,7 @@ interface RuntimeInterface {
   makeCont(stack: Stack): (v: any) => any;
   runtime(body: () => any): any;
   handleNew(constr: any, ...args: any[]): any;
+  abstractRun(body: () => any): RunResult;
 }
 
 export abstract class Runtime {
@@ -155,13 +163,36 @@ export abstract class Runtime {
     return this.breakpoints && this.breakpoints.includes(<number>this.linenum);
   }
 
+  runtime(body: () => any): any {
+    const result = this.abstractRun(body)
+    if (result.type === 'normal') {
+      assert(this.mode, 'executing completed in restore mode');
+    }
+    else if (result.type === 'capture') {
+      return this.runtime(() => result.f.call(global, this.makeCont(result.stack)));
+    }
+    else if (result.type === 'restore') {
+      return this.runtime(() => {
+        this.mode = false;
+        this.stack = result.stack;
+        return this.stack[this.stack.length - 1].f();
+      });
+    }
+    else if (result.type === 'exception') {
+      throw result.value; // userland exception
+    }
+    else {
+      return unreachable();
+    }
+  }
+
   abstract captureCC(f: (k: any) => any): void;
   // Wraps a stack in a function that throws an exception to discard the current
   // continuation. The exception carries the provided stack with a final frame
   // that returns the supplied value.
   abstract makeCont(stack: Stack): (v: any) => any;
-  abstract runtime(body: () => any): any;
   abstract handleNew(constr: any, ...args: any[]): any;
+  abstract abstractRun(body: () => any): RunResult;
 }
 
 export const knownBuiltIns = knowns.map(o => eval(o))

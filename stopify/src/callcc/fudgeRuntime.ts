@@ -35,15 +35,18 @@ export class FudgeRuntime extends common.Runtime {
     };
   }
 
-  runtime(body: () => any): any {
+  abstractRun(body: () => any): common.RunResult {
     try {
-      body();
+      const v = body();
+      return { type: 'normal', value: v };
     }
     catch (exn) {
       if (exn instanceof common.Capture) {
-        return this.runtime(() => exn.f.call(global, this.makeCont(exn.stack)));
-      } else {
-        throw exn; // userland exception
+        this.capturing = false;
+        return { type: 'capture', stack: exn.stack, f: exn.f };
+      }
+      else {
+        return { type: 'exception', value: exn };
       }
     }
   }

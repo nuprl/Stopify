@@ -16,43 +16,22 @@ class RetValRuntime extends common.Runtime {
       new common.Restore([this.topK(() => v), ...stack]);
   }
 
-  runtime(body: any): any {
-    if (body instanceof Function) {
-      let res = body();
-      if (res instanceof common.Capture) {
+  abstractRun(body: () => any): common.RunResult {
+    try {
+      const v = body();
+      if (v instanceof common.Capture) {
         this.capturing = false;
-        // Recursive call to runtime addresses nested continuations. The return
-        // statement ensures that the invocation is in tail position.
-        // At this point, res.stack is the continuation of callCC, but doesn’t have
-        // a top-of-stack frame that actually restores the saved continuation. We
-        // need to apply the function passed to callCC to the stack here, because
-        // this is the only point where the whole stack is ready.
-        // Doing res.f makes "this" wrong.
-        return this.runtime(() => res.f.call(global, this.makeCont(res.stack)));
-      } else if (res instanceof common.Restore) {
-        // The current continuation has been discarded and we now restore the
-        // continuation in res.
-        return this.runtime(() => {
-          if (res.stack.length === 0) {
-            throw new Error(`Can't restore from empty stack`);
-          }
-          this.mode = false;
-          this.stack = res.stack;
-          return this.stack[this.stack.length - 1].f();
-        });
+        return { type: 'capture', stack: v.stack, f: v.f };
       }
-      return res;
-    } else if (body instanceof common.Restore) {
-      // The current continuation has been discarded and we now restore the
-      // continuation in body.
-      return this.runtime(() => {
-        if (body.stack.length === 0) {
-          throw new Error(`Can't restore from empty stack`);
-        }
-        this.mode = false;
-        this.stack = body.stack;
-        return this.stack[this.stack.length - 1].f();
-      });
+      else if (v instanceof common.Restore) {
+        return { type: 'restore', stack: v.stack };
+      }
+      else {
+        return { type: 'normal', value: v };
+      }
+    }
+    catch (exn) {
+      return { type: 'exception', value: exn };
     }
   }
 

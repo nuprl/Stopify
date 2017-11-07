@@ -6,14 +6,11 @@ import lazy from './callcc/lazyRuntime';
 import retval from './callcc/retvalRuntime';
 import fudge from './callcc/fudgeRuntime';
 import * as elapsedTimeEstimator from './elapsedTimeEstimator';
+import { unreachable } from './generic';
 import runtime from './runtime/default';
 
 export * from './runtime/implicitApps';
 export * from './callcc/runtime';
-
-function unreachable(): never {
-  throw new Error("unreachable code was reached!");
-}
 
 function makeEstimator(opts: Opts): elapsedTimeEstimator.ElapsedTimeEstimator {
   if (opts.estimator === 'exact') {

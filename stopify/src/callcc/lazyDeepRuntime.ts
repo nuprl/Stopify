@@ -25,7 +25,15 @@ export class LazyDeepRuntime extends common.Runtime {
 
   makeCont(stack: common.Stack) {
     return (v: any) => {
-      throw new common.Restore(stack);
+      var frame = {
+        kind: 'top',
+        f: () => {
+          this.stack.pop();
+          return v;
+        },
+        value: undefined
+      };
+      throw new common.Restore([...stack, frame]);
     };
   }
 

@@ -97,7 +97,7 @@ if (args.webpack) {
       test: /\.js$/,
       // NOTE(arjun): This is a small hack. We don't transform files
       // that end with .exclude.js, such as the loader created above.
-      exclude: /(\.exclude\.js$|node_modules)/,
+      exclude: /(\.exclude\.js$)/,
       loader: 'babel-loader',
       options: {
           plugins: [plugin],

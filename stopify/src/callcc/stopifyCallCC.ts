@@ -15,6 +15,7 @@ import * as fastFreshId from '../fastFreshId';
 import markFlatApplications from '../common/markFlatApplications'
 import { knowns } from '../common/cannotCapture'
 import * as exposeImplicitApps from '../exposeImplicitApps';
+import * as exposeHOFs from '../exposeHOFs';
 import * as jumper from './jumper';
 
 const allowed = [
@@ -32,6 +33,7 @@ const allowed = [
 const reserved = [
   ...knowns,
   exposeImplicitApps.implicitsIdentifier.name,
+  exposeHOFs.hofIdentifier.name,
   "$opts",
   "$result",
   "target",
@@ -57,9 +59,13 @@ export const visitor: Visitor = {
     // NOTE(arjun): Small hack to force the implicitApps file to be in
     // "sane mode". Without something like this, we get non-terminating
     // behavior.
-    let esMode: string = state.opts.esMode;
     if (filename.endsWith('implicitApps.js')) {
-      esMode = 'sane';
+      state.opts.esMode = 'sane';
+    }
+
+    let hofs: string = state.opts.hofs;
+    if (filename.endsWith('hofs.js')) {
+      state.opts.hofs = 'builtin';
     }
 
     fastFreshId.init(path);

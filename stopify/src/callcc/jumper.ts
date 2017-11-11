@@ -344,9 +344,7 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
           t.numericLiteral(1)), true)
       ])),
       t.returnStatement(ret),
-    ]),
-    t.ifStatement(t.binaryExpression('instanceof', ret, restoreExn),
-      t.returnStatement(ret)));
+    ]));
 
   const ifStmt = t.ifStatement(
     isNormalMode,

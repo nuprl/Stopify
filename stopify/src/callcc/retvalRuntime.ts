@@ -54,37 +54,22 @@ class RetValRuntime extends common.Runtime {
     }
 
     if (this.mode) {
-      let _a = constr.apply(obj, args);
-      if (_a instanceof common.Capture) {
-        _a.stack.push({
-          kind: "rest",
-          f: () => this.handleNew(constr, ...args) ,
-          locals: [obj],
-          index: 0
-        });
-        return _a;
-      } else if (_a instanceof common.Restore) {
-        return _a;
-      } else {
-        result = _a
-      }
+      result = constr.apply(obj, args);
+    } else {
+      result = this.stack[this.stack.length-1].f.apply(obj, []);
     }
-    else {
-      let _a = this.stack[this.stack.length - 1].f.apply(obj, []);
-      if (_a instanceof common.Capture) {
-        _a.stack.push({
-          kind: "rest",
-          f: () => this.handleNew(constr, ...args) ,
-          locals: [obj],
-          index: 0
-        });
-        return _a;
-      } else if (_a instanceof common.Restore) {
-        return _a;
-      } else {
-        result = _a
-      }
+    if (result instanceof common.Capture) {
+      result.stack.push({
+        kind: "rest",
+        f: () => this.handleNew(constr, ...args) ,
+        locals: [obj],
+        index: 0
+      });
+      return result;
+    } else if (result instanceof common.Restore) {
+      return result;
     }
+
     return typeof result === 'object' ? result : obj;
   }
 }

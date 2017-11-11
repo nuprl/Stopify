@@ -25,7 +25,7 @@ export class LazyDeepRuntime extends common.Runtime {
 
   makeCont(stack: common.Stack) {
     return (v: any) => {
-      var frame = {
+      var frame: common.KFrameTop = {
         kind: 'top',
         f: () => {
           this.stack.pop();

@@ -322,7 +322,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  */
 function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const ret = fastFreshId.fresh('ret');
+  const left: any = path.node.left;
 
   const stackFrame = t.objectExpression([
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
@@ -330,9 +330,9 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     t.objectProperty(t.identifier('index'), applyLbl),
   ]);
 
-  const retStack = t.memberExpression(ret, t.identifier('stack'));
+  const retStack = t.memberExpression(left, t.identifier('stack'));
   const restoreBlock: t.IfStatement =
-  t.ifStatement(t.binaryExpression('instanceof', ret, captureExn),
+  t.ifStatement(t.binaryExpression('instanceof', left, captureExn),
     t.blockStatement([
       t.expressionStatement(t.callExpression(
         t.memberExpression(retStack, t.identifier('push')), [
@@ -343,29 +343,22 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
           t.memberExpression(retStack, t.identifier('length')),
           t.numericLiteral(1)), true)
       ])),
-      t.returnStatement(ret),
+      t.returnStatement(left),
     ]));
 
   const ifStmt = t.ifStatement(
     isNormalMode,
-    t.expressionStatement(t.assignmentExpression('=', ret, path.node.right)),
+    t.expressionStatement(path.node),
     t.ifStatement(
       t.binaryExpression('===', target, applyLbl),
       t.expressionStatement(t.assignmentExpression('=',
-        ret, stackFrameCall))));
-
-  const reassign = t.ifStatement(isNormalMode,
-    t.expressionStatement(t.assignmentExpression(
-      path.node.operator,
-      path.node.left, ret)));
+        left, stackFrameCall))));
 
   const replace = t.ifStatement(
     bh.or(isNormalMode, t.binaryExpression('===', target, applyLbl)),
     t.blockStatement([
-      t.variableDeclaration('let', [t.variableDeclarator(ret)]),
       ifStmt,
       restoreBlock,
-      reassign,
     ]));
   (<any>replace).isTransformed = true;
 

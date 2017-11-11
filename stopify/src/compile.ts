@@ -36,6 +36,13 @@ commander.option(
   'sane');
 
 commander.option(
+  '--hofs <mode>',
+  'either builtin or fill (default: builtin)',
+  parseArg(x => x, x => /^(builtin|fill)$/.test(x),
+    'invalid --hofs, see --help'),
+  'builtin');
+
+commander.option(
   '--js-args <mode>',
   'either simple or faithful (default: simple)',
   parseArg(x => x, x => /^(simple|faithful)$/.test(x),
@@ -76,6 +83,7 @@ const plugin: any = [
     captureMethod: args.transform,
     handleNew: args.new,
     esMode: args.es,
+    hofs: args.hofs,
     debug: args.debug,
     jsArgs: args.jsArgs,
     sourceMap: sourceMap
@@ -91,7 +99,7 @@ if (args.webpack) {
   fs.writeFileSync(mainJs.name,
     `function M() {  require("./${srcModule}"); }
      require('Stopify/built/src/rts').afterScriptLoad(M);`);
-  const rules: any[] = []
+  const rules: any[] = [];
   if (args.transform !== 'original') {
     rules.push({
       test: /\.js$/,
@@ -100,13 +108,14 @@ if (args.webpack) {
       exclude: /(\.exclude\.js$)/,
       loader: 'babel-loader',
       options: {
-          plugins: [plugin],
-          minified: true,
-          comments: false,
-          cacheDirectory: args.cache
-      }
+        plugins: [plugin],
+        minified: true,
+        comments: false,
+        cacheDirectory: args.cache
+      },
     });
-  }
+  };
+
   const webpackConfig = {
     entry: './' + path.relative('.', mainJs.name),
     output: { filename: './' + path.relative('.', dstPath) },
@@ -122,6 +131,12 @@ if (args.webpack) {
       Buffer: false,
       'fs': 'empty',
       'path': 'empty',
+    },
+    resolve: {
+      modules: [
+        path.resolve('node_modules'),
+        path.resolve('../node_modules'),
+      ],
     },
   };
 

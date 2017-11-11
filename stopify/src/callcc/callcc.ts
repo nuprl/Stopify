@@ -32,6 +32,7 @@ import * as babel from 'babel-core';
 import * as fastFreshId from '../fastFreshId';
 import { timeSlow } from '../generic';
 import * as exposeImplicitApps from '../exposeImplicitApps';
+import * as exposeHOFs from '../exposeHOFs';
 
 const $__R = t.identifier('$__R')
 
@@ -46,6 +47,11 @@ const visitor: Visitor = {
     if (state.opts.esMode === 'es5') {
       h.transformFromAst(path, [exposeImplicitApps.plugin]);
     }
+
+    if (state.opts.hofs === 'fill') {
+      h.transformFromAst(path, [exposeHOFs.plugin]);
+    }
+
     timeSlow('singleVarDecl', () =>
       h.transformFromAst(path, [singleVarDecls]));
 

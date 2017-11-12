@@ -19,7 +19,7 @@ const visitor: Visitor = {
       t.variableDeclaration('var',
       [t.variableDeclarator(hofIdentifier,
         t.callExpression(t.identifier('require'),
-          [t.stringLiteral('Stopify/stopify/built/src/runtime/hofs')]))]));
+          [t.stringLiteral('Stopify/built/src/runtime/hofs')]))]));
   },
   CallExpression(path: NodePath<t.CallExpression>): void {
     const { callee, arguments: args } = path.node;

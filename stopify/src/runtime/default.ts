@@ -116,6 +116,7 @@ export class Default {
         window.document.title = "done"
         const evt = new Event('change');
         data.dispatchEvent(evt);
+        throw new Error(message);
       }
     }
 

@@ -111,7 +111,8 @@ export class Default {
         const evt = new Event('change');
         data.dispatchEvent(evt);
       }
-      window.onerror = (message: any) => {
+      window.onerror = (message: any, src: any, lineno: any, colno: any, error: Error) => {
+        console.log(error.stack);
         data.value = data.value + '\nAn error occurred:\n' + message + '\n';
         window.document.title = "done"
         const evt = new Event('change');

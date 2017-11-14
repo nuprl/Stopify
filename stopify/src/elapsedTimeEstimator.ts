@@ -123,9 +123,9 @@ class VelocityEstimator implements ElapsedTimeEstimator {
     // Units: time / #elapsedTime
     private velocityEstimate = 100000,
     // Units: #elapsedTime;
-    private resampleTimespanEstimate = 1,
+    private resampleTimespanEstimate = velocityEstimate,
     // countdown until we re-observe the time
-    private countDown = resampleTimespanEstimate,
+    private countDown = 1,
     // Distance since last reset. Units: #elapsedTime
     private distance = 0) {
   }
@@ -137,12 +137,12 @@ class VelocityEstimator implements ElapsedTimeEstimator {
       const currentPosition = Date.now();
       // NOTE(arjun): This is a small float. It may be a good idea to scale
       // everything up to an integer.
-      this.velocityEstimate = ((currentPosition - this.lastPosition) / this.resampleTimespanEstimate);
+      this.velocityEstimate = this.resampleTimespanEstimate / (currentPosition - this.lastPosition);
       this.lastPosition = currentPosition;
-      this.resampleTimespanEstimate = Math.max((this.resample / this.velocityEstimate) | 0, 10);
+      this.resampleTimespanEstimate = Math.max((this.resample * this.velocityEstimate) | 0, 10);
       this.countDown = this.resampleTimespanEstimate;
     }
-    return (this.distance  * this.velocityEstimate) | 0;
+    return (this.distance / this.velocityEstimate) | 0;
   }
 
   reset() {

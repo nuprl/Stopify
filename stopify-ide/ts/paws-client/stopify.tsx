@@ -11,6 +11,7 @@ import { Emcc } from '../compilers/emscripten-client';
 import { ScalaJS } from '../compilers/scalajs-client';
 import { JavaScript } from '../compilers/javascript-client';
 import { encodeArgs } from 'stopify/built/src/browserLine';
+import { SSL_OP_TLS_BLOCK_PADDING_BUG } from "constants";
 
 interface supportedLangs {
   [lang: string]: CompilerClient
@@ -87,7 +88,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     // }
     this.state = {
       mode: 'stopped',
-      program: '',
+      program: langs[props.language].defaultCode,
       breakpoints: [],
       line: null
     };
@@ -115,12 +116,6 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
           line: evt.data.linenum - 1 || null
         });
       }
-    });
-  }
-
-  setProgram(program: string) {
-    this.setState({
-      program: program,
     });
   }
 
@@ -215,6 +210,9 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     // When the language changes, we stop the program and clear the output
     // and breakpoints.
     this.setState({ mode: 'stopped', iframeUrl: undefined, breakpoints: [] });
+    if (this.props.language !== nextProps.language) {
+      this.setState({ program: langs[nextProps.language].defaultCode });
+    }
   }
 
   // componentWillUpdate(nextProps: { language: string }, nextState: StopifyEditorState) {
@@ -290,8 +288,9 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
           text=""></GlyphButton>
         </div>
         <StopifyAce line={this.state.line}
-          onChange={this.setProgram.bind(this)}
+          onChange={(code) => this.setState({ program: code })}
           onBreakpoints={this.setBreakpoints.bind(this)}
+          value={this.state.program}
           language={this.props.language}>
         </StopifyAce>
       </div>

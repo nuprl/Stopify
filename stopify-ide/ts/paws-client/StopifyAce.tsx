@@ -30,6 +30,7 @@ const langs : supportedLangs = {
 export interface StopifyAceProps {
   language: string;
   line: number | null;
+  value: string,
   onChange: (text: string) => void,
   onBreakpoints: (breakpoints: number[]) => void
 }
@@ -86,9 +87,9 @@ export class StopifyAce extends React.Component<StopifyAceProps, {}> {
     }
     this.editor = editor.editor as ace.Editor;
     this.editor.$blockScrolling = Infinity;
-    const code = langs[this.props.language].defaultCode;
-    this.editor.setValue(code);
-    this.props.onChange(code);
+    // const code = langs[this.props.language].defaultCode;
+    // this.editor.setValue(code);
+    // this.props.onChange(code);
     this.editor.on("guttermousedown", (evt) => this.updateBreakpoints(evt));
   }
 
@@ -99,7 +100,7 @@ export class StopifyAce extends React.Component<StopifyAceProps, {}> {
       width="100%"
       theme="monokai"
       name="the_editor"
-
+      value={this.props.value}
       mode={langs[this.props.language].aceMode}>
       </AceEditor>;
   }

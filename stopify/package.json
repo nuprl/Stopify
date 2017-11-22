@@ -1,6 +1,6 @@
 {
   "name": "stopify",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "A language agnostic compiler for debugging abstractions",
   "main": "built/src/index.js",
   "devDependencies": {
@@ -41,8 +41,10 @@
     "process": "^0.11.10",
     "typescript": "~2.3"
   },
+  "bin": {
+    "stopify": "bin/stopify"
+  },
   "scripts": {
-    "postinstall": "yarn run build",
     "build": "./bin/build",
     "test": "./node_modules/.bin/jest",
     "test:integration": "./bin/test -int",

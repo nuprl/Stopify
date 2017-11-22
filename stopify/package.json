@@ -1,6 +1,6 @@
 {
   "name": "stopify",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A language agnostic compiler for debugging abstractions",
   "main": "built/src/index.js",
   "devDependencies": {
@@ -48,7 +48,6 @@
     "build": "./bin/build",
     "test": "./node_modules/.bin/jest",
     "test:integration": "./bin/test -int",
-    "link:global": "ln -s `pwd`/. `npm -g root`/Stopify",
     "bench": "./bin/benchmark --wd=perf"
   },
   "contributors": [

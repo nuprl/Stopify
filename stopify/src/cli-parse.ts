@@ -95,7 +95,8 @@ export function parseRuntimeOpts(rawArgs: string[]): Opts {
     variance: args.variance,
     remoteWebDriverUrl: args.remote,
     testHost: args.localHost,
-    testPort: args.localPort
+    testPort: args.localPort,
+    externalRTS: false
   };
   return <any>null;
 }

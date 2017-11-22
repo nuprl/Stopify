@@ -92,6 +92,17 @@ export const visitor: Visitor = {
     h.transformFromAst(path, [[insertSuspend, opts]]);
     h.transformFromAst(path, [[callcc, opts]]);
     fastFreshId.cleanup()
+
+    if (opts.externalRTS) {
+      const body = path.node.body;
+      path.node.body = [
+        t.expressionStatement(
+          t.callExpression(
+            t.memberExpression(t.identifier('stopify'),
+              t.identifier('afterScriptLoad')),
+            [t.functionExpression(undefined, [], t.blockStatement(body))]))
+      ];
+    }
   }
 }
 

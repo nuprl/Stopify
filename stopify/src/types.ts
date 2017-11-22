@@ -22,5 +22,6 @@ export interface Opts {
   env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari',
   remoteWebDriverUrl?: string,
   testHost?: string,
-  testPort?: number
+  testPort?: number,
+  externalRTS: boolean,
 }

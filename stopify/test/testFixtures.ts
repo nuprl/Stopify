@@ -49,7 +49,7 @@ export function browserTest(srcPath: string, transform: string) {
   if (srcPath.endsWith('forever.js')) {
     test(`${testName} (may run forever)`, () => {
       const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
-      execSync(`./bin/compile --webpack --transform ${transform} ${srcPath} ${dstPath}`);
+      execSync(`./bin/compile --external-rts --transform ${transform} ${srcPath} ${dstPath}`);
       execSync(`./bin/browser ${dstPath}  --transform ${transform} -y 1 --stop 5 --env chrome`);
       execSync(`./bin/browser ${dstPath}  --transform ${transform} -y 1 --stop 5 --env firefox`);
       fs.unlinkSync(dstPath);
@@ -58,7 +58,7 @@ export function browserTest(srcPath: string, transform: string) {
   else {
     it(testName, () => {
       const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
-      execSync(`./bin/compile --webpack --transform ${transform} ${srcPath} ${dstPath}`);
+      execSync(`./bin/compile  --external-rts --transform ${transform} ${srcPath} ${dstPath}`);
       execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env chrome`);
       execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env firefox`);
       fs.unlinkSync(dstPath);

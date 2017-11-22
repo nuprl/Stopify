@@ -53,6 +53,9 @@ commander.option(
   '--webpack',
   '');
 
+commander.option('--external-rts',
+  'expects a global variable called stopify');
+
 commander.option(
   '--debug',
   'Insert suspensions between every line of code in the source program',
@@ -86,7 +89,8 @@ const plugin: any = [
     hofs: args.hofs,
     debug: args.debug,
     jsArgs: args.jsArgs,
-    sourceMap: sourceMap
+    sourceMap: sourceMap,
+    externalRTS: args.externalRts
   }
 ];
 

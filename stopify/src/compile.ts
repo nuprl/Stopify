@@ -91,13 +91,13 @@ const plugin: any = [
 ];
 
 if (args.webpack) {
-  const srcModule = './' + path.relative(process.cwd(), srcPath);
-  const mainJs = tmp.fileSync({ postfix: '.exclude.js', dir: process.cwd() });
+  const mainJs = tmp.fileSync({ postfix: '.exclude.js' });
+  const srcModule = path.relative(mainJs.name, path.resolve(srcPath));
   // NOTE(arjun): This is a small hack. By putting the require() in a thunk, we
   // (1) delay loading the program before the RTS and (2) ensure that Webpack
   // can statically resolve the module.
   fs.writeFileSync(mainJs.name,
-    `function M() {  require("./${srcModule}"); }
+    `function M() {  require("${srcModule}"); }
      require('Stopify/built/src/rts').afterScriptLoad(M);`);
   const rules: any[] = [];
   if (args.transform !== 'original') {
@@ -117,8 +117,8 @@ if (args.webpack) {
   };
 
   const webpackConfig = {
-    entry: './' + path.relative('.', mainJs.name),
-    output: { filename: './' + path.relative('.', dstPath) },
+    entry:  mainJs.name,
+    output: { filename: dstPath },
     externals: {
       'Stopify/built/src/rts': 'stopify',
       'Stopify/built/src/runtime/implicitApps': 'stopify',

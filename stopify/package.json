@@ -1,6 +1,6 @@
 {
   "name": "stopify",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A language agnostic compiler for debugging abstractions",
   "main": "built/src/index.js",
   "devDependencies": {
@@ -42,7 +42,7 @@
     "typescript": "~2.3"
   },
   "bin": {
-    "stopify": "bin/compile"
+    "stopify": "bin/stopify.js"
   },
   "scripts": {
     "build": "./bin/build",

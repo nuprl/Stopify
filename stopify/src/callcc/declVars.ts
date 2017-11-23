@@ -25,32 +25,34 @@ function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression | null
   }
 }
 
-function getFunctionArgs(path: NodePath<t.Node>): string[] {
-  const node = path.node;
-  if (node.type === 'FunctionDeclaration' || 
-      node.type === 'FunctionExpression') {
-    return (<any>node).params.map((x: t.Identifier) => x.name);
-  }
-  else {
-    return [];
-  }
+type State = {
+  parentBlock: t.Statement[],
+  parentBlockStack: t.Statement[][]
 }
 
-function getBlock(node: t.Node): t.Statement[] {
-  if (t.isFunctionDeclaration(node) ||
-    t.isFunctionExpression(node)) {
-    return node.body.body;
-  } else if (t.isProgram(node)) {
-    return node.body;
-  } else if (t.isObjectMethod(node)) {
-    return node.body.body;
-  }else {
-    throw new Error(`Got ${node.type}`);
-  }
-}
-
-const lift: Visitor = {
-  VariableDeclaration(path: NodePath<Lifted<t.VariableDeclaration>>) {
+const lift = {
+  Program(this: State, path: NodePath<t.Program>) {
+    this.parentBlock = path.node.body;
+    this.parentBlockStack = [];
+  },
+  Function: {
+    enter(this: State, path: NodePath<t.Program>) {
+      this.parentBlockStack.push(this.parentBlock);
+      const node = path.node;
+      if (t.isFunctionDeclaration(node) ||
+          t.isFunctionExpression(node) ||
+          t.isObjectMethod(node)) {
+        this.parentBlock = node.body.body;
+      }
+      else {
+        throw new Error(`Got ${node.type}`);
+      }
+    },
+    exit(this: State, path: NodePath<t.Program>) {
+      this.parentBlock = this.parentBlockStack.pop()!;
+    },
+  },
+  VariableDeclaration(this: State, path: NodePath<Lifted<t.VariableDeclaration>>) {
     if (path.node.lifted) {
       return;
     }
@@ -60,8 +62,6 @@ const lift: Visitor = {
       kind = 'let';
     }
 
-    const topScope = path.getFunctionParent();
-    const topArgs = getFunctionArgs(topScope); // [] if topScope is a program
     const assignments: t.Statement[] = [];
 
     if ((<any>declarations[0]).__boxVarsInit__) {
@@ -75,7 +75,7 @@ const lift: Visitor = {
       const id = decl.id.name;
       const newDecl = t.variableDeclaration(kind, 
                         [t.variableDeclarator(decl.id)]);
-      getBlock(topScope.node).unshift(lifted(newDecl));
+      this.parentBlock.unshift(lifted(newDecl));
       if (decl.init !== null) {
         // If we call path.insertAfter here, we will add assignments in reverse
         // order. Fortunately, path.insertAfter can take an array of nodes.

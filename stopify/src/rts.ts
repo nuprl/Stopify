@@ -94,11 +94,11 @@ export function afterScriptLoad(M : any) {
   });
 }
 
-export function loadScript(onload: () => any) {
+export function loadScript(onload: () => any, prefix?: string) {
   const opts = getOpts();
   // Dynamically load the file
   const script = document.createElement('script');
-  script.setAttribute('src', opts.filename);
+  script.setAttribute('src', (prefix || '') + opts.filename);
   script.onload = onload;
   document.body.appendChild(script);
 }

@@ -66,11 +66,11 @@ const visitor: Visitor = {
     },
     exit(this: VisitorState, path: NodePath<t.TryStatement>): void {
       if (path.node.finalizer) {
-        const funParent = path.getFunctionParent();
-        const bodyPath = <NodePath<t.BlockStatement>>funParent.get('body');
+        // NOTE(arjun): If we have several finally blocks in the same scope,
+        // this probably creates duplicate declarations.
         const sentinalDecl = letExpression(finallySentinal, sentinal, 'var');
         (<any>sentinalDecl).lifted = true;
-        bodyPath.node.body.unshift(sentinalDecl);
+        bh.enclosingScopeBlock(path).unshift(sentinalDecl);
         path.node.finalizer.body.push(bh.sIf(t.binaryExpression('!==',
           finallySentinal, sentinal),
           t.returnStatement(finallySentinal)));

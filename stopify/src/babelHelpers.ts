@@ -11,6 +11,21 @@ export const eFalse = t.booleanLiteral(false);
 
 export const eUndefined = t.identifier('undefined');
 
+export function enclosingScopeBlock(path: NodePath<t.Node>): t.Statement[] {
+  const parent = path.getFunctionParent().node;
+  if (t.isProgram(parent)) {
+    return parent.body;
+  }
+  else if (t.isFunctionExpression(parent) ||
+           t.isFunctionDeclaration(parent) ||
+           t.isObjectMethod(parent)) {
+    return parent.body.body;
+  }
+  else {
+    throw new Error(`parent is a ${parent.type}`);
+  }
+}
+
 /** Constructs an 'e1 && e2', but simplifies when either sub-expression is
  *  a literal.
  */

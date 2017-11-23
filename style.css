@@ -1,0 +1,20 @@
+.myMarker {
+  position:absolute;
+  background:rgba(100,200,100,0.5);
+  z-index:20
+}
+
+.ace_gutter-cell.ace_breakpoint{
+  border-radius: 20px 20px 20px 20px;
+  box-shadow: 0px 0px 3px 3px red inset;
+}
+
+
+.row.display-flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+.row.display-flex > [class*='col-'] {
+  display: flex;
+  flex-direction: column;
+}

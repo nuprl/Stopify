@@ -66,10 +66,10 @@ const visitor: Visitor = {
       freeIds.annotate(path));
     timeSlow('box assignables', () =>
       h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
-    timeSlow('ANF', () =>
-      h.transformFromAst(path, [anf]));
     timeSlow('declVars', () =>
       h.transformFromAst(path, [declVars]));
+    timeSlow('ANF', () =>
+      h.transformFromAst(path, [anf]));
     timeSlow('delimit', () =>
       h.transformFromAst(path, [[delimitTopLevel, opts]]));
     timeSlow('label', () =>

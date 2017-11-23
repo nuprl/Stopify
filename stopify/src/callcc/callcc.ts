@@ -33,12 +33,13 @@ import * as fastFreshId from '../fastFreshId';
 import { timeSlow } from '../generic';
 import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeHOFs from '../exposeHOFs';
+import * as types from '../types';
 
 const $__R = t.identifier('$__R')
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
-    const opts = state.opts;
+    const opts: types.Opts  = state.opts;
 
     if (state.opts.handleNew === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
@@ -125,13 +126,13 @@ const visitor: Visitor = {
           t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')), []),
         'const'));
     if (!state.opts.compileFunction) {
-    path.node.body.unshift(
-      h.letExpression(
-        t.identifier("$__T"),
-        t.callExpression(
-          t.identifier('require'),
-          [t.stringLiteral('Stopify/built/src/rts')]),
-        'const'));
+      path.node.body.unshift(
+        h.letExpression(
+          t.identifier("$__T"),
+          opts.externalRTS ? t.identifier('stopify')
+            : t.callExpression(t.identifier('require'),
+                [t.stringLiteral('Stopify/built/src/rts')]),
+          'const'));
     }
     path.stop();
   }

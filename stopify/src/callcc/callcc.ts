@@ -58,12 +58,10 @@ const visitor: Visitor = {
 
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
-        [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, jumperizeTry]));
+        [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, jumperizeTry,
+         nameExprs, cleanup]));
     timeSlow('desugar logical', () =>
       h.transformFromAst(path, [desugarLogical]));
-    timeSlow('block scoping, etc.', () =>
-      h.transformFromAst(path,
-        [nameExprs, cleanup]));
     timeSlow('free ID initialization', () =>
       freeIds.annotate(path));
     timeSlow('box assignables', () =>

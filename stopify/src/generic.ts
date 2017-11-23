@@ -39,25 +39,27 @@ export function timeSlow<T>(label: string, thunk: () => T): T {
   return result;
 }
 
-
-/** Haskell-style span */
-export function span<T>(pred: (elt: T) => boolean, arr: T[]): { prefix: T[], suffix: T[] } {
-  let i = 0;
-  while (i < arr.length && pred(arr[i])) {
-    i = i + 1;
-  }
-  return { prefix: arr.slice(0, i), suffix: arr.slice(i) }
-}
-
 export function groupBy<T>(inGroup: (x: T, y: T) => boolean, arr: T[]): T[][] {
   if (arr.length === 0) {
     return [];
   }
-  else {
-    const [x, ...xs]  = arr;
-    const { prefix: ys, suffix: zs } = span((y) => inGroup(x, y), xs);
-    return [[x, ...ys], ...groupBy(inGroup, zs)];
+
+  const groups = [[arr[0]]];
+  let currentGroup = groups[0];
+  let last = arr[0];
+  for (let i = 1; i < arr.length; i++) {
+    const current = arr[i];
+    if (inGroup(last, current)) {
+      currentGroup.push(current);
+      last = current;
+    }
+    else {
+      currentGroup = [current];
+      groups.push(currentGroup);
+      last = current;
+    }
   }
+  return groups;
 }
 
 export function parseArg<T>(

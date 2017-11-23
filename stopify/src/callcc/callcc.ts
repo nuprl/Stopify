@@ -58,7 +58,7 @@ const visitor: Visitor = {
 
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
-        [makeBlocks, desugarLoop, desugarLabel, desugarSwitch]));
+        [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, jumperizeTry]));
     timeSlow('desugar logical', () =>
       h.transformFromAst(path, [desugarLogical]));
     timeSlow('block scoping, etc.', () =>
@@ -74,8 +74,6 @@ const visitor: Visitor = {
       h.transformFromAst(path, [declVars]));
     timeSlow('delimit', () =>
       h.transformFromAst(path, [[delimitTopLevel, opts]]));
-    timeSlow('jumperizeTry', () =>
-      h.transformFromAst(path, [jumperizeTry]));
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
     timeSlow('jumper', () =>

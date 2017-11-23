@@ -4,7 +4,9 @@ set -x
 
 DIR=`dirname $0`
 URL=`jq -r .url $DIR/../config.json`
+BUCKET=`jq -r '.["output-bucket"]' $DIR/../config.json`
 LANG=$1
 SRC=$2
 
-curl -X POST -d @$SRC -H 'Content-Type: text/plain' $URL/$1
+OUTFILE=`curl -X POST -d @$SRC -H 'Content-Type: text/plain' $URL/$1`
+curl "https://storage.googleapis.com/$BUCKET/$OUTFILE"

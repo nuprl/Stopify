@@ -1,0 +1,4 @@
+{
+  "url": "https://us-central1-arjun-umass.cloudfunctions.net/stopify",
+  "output-bucket": "stopify-compiler-output"
+}

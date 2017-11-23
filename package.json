@@ -3,6 +3,7 @@
   "private": true,
   "workspaces": [
       "stopify",
-      "stopify-ide"
+      "stopify-third-party-compile-server",
+      "stopify-static-website"
   ]
 }

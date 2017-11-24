@@ -30,7 +30,6 @@
   },
   "scripts": {
     "build": "node install.js",
-    "postinstall": "yarn run build",
     "serve": "node dist/paws-server/main"
   },
   "contributors": [
@@ -60,7 +59,7 @@
     "react-ace": "^5.4.0",
     "react-dom": "^16.0.0",
     "sprintf": "^0.1.5",
-    "stopify": "^0.0.1",
+    "stopify": "^0.0.11",
     "tmp": "0.0.31",
     "webpack": "^3.4.1",
     "which": "^1.3.0"

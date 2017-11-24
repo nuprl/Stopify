@@ -5,7 +5,7 @@ pipeline {
     stage('Test') {
       steps {
         sh 'yarn install'
-        sh 'cd stopify && yarn run test:integration'
+        sh 'cd stopify && yarn run build && yarn run test:integration'
       }
       post {
         always {

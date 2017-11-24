@@ -1,6 +1,6 @@
 {
   "name": "stopify",
-  "version": "0.1.0",
+  "version": "0.0.11",
   "description": "Stopify makes JavaScript a better target language for high-level languages and web-based programming tools",
   "main": "built/src/index.js",
   "devDependencies": {
@@ -34,11 +34,14 @@
     "typescript": "~2.3",
     "@types/express": "^4.0.37"
   },
+  "bin": {
+    "stopify": "bin/stopify.js",
+    "stopify-url": "bin/stopify-url.js"
+  },
   "scripts": {
     "build": "./bin/build",
     "test": "./node_modules/.bin/jest",
     "test:integration": "./bin/test -int",
-    "link:global": "ln -s `pwd`/. `npm -g root`/Stopify",
     "bench": "./bin/benchmark --wd=perf"
   },
   "contributors": [

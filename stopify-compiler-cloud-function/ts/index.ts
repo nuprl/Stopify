@@ -17,7 +17,7 @@ export const stopify = express();
 
 stopify.use(cors());
 
-const stopifyCompiler = './node8/bin/node ./node_modules/stopify/built/src/compile.js';
+const stopifyCompiler = '/nodejs/bin/node ./node_modules/stopify/built/src/compile.js';
 
 const headers = { 'Content-Type': 'text/plain' };
 
@@ -40,7 +40,7 @@ function runStopify(response: express.Response, jsCode: string, filename: string
     const jsPath = `${dir}/original.js`;
     const stopifiedJsPath = `${dir}/output.js`
     return fs.writeFile(jsPath, jsCode)
-      .then(_ => exec(`${stopifyCompiler} --external-rts -t lazy ${jsPath} ${stopifiedJsPath}`))
+      .then(_ => exec(`${stopifyCompiler} --debug --external-rts -t lazy ${jsPath} ${stopifiedJsPath}`))
       .then(_ => fs.readFile(stopifiedJsPath))
   })
   .then(stopifiedJsCode => bucket.file(filename).save(stopifiedJsCode))

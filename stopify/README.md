@@ -1,32 +1,8 @@
-# The Stopify Compilers
+Stopify is a JavaScript-to-JavaScript compiler that makes JavaScript a better
+target language for high-level languages and web-based programming tools.
+Stopify enhances JavaScript with debugging abstractions, blocking operations,
+and support for long-running computations.
 
-Stopify is a collection of compilers. This file contains the documentation
-for the various compiler flags and modes.
+Please visit the [README] at the root of the Stopify repository.
 
-
-**TODO**
-
-
-### Optimization annotations
-Stopify supports comment based annotations to tell the compiler to optimize
-certain functions and call sites. In order to tell the compiler that
-a particular function shouldn't be instrumented, output:
-
-```javascript
-/* @stopify flat */
-function foo() { ... }
-```
-
-**WARNING**: If such a function calls another function that tried to capture
-the stack, this function won't be properly restored.
-
-In order to tell the compiler that a call site shouldn't be instrumented,
-output:
-
-```javascript
-let a = /* @stopify flat */ foo()
-```
-
-When doing this, we need to be careful that the comment is directly before
-the call. To ensure that stopify recognizes the annotation, [check the AST](astexplorer.net) and make sure that the annotation is present as a
-`leadingComment` for the desired CallExpression.
+[README]: https://github.com/plasma-umass/Stopify/blob/master/README.md

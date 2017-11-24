@@ -55,6 +55,11 @@ const visitor: Visitor = {
 
     timeSlow('singleVarDecl', () =>
       h.transformFromAst(path, [singleVarDecls]));
+    timeSlow('free ID initialization', () =>
+      freeIds.annotate(path));
+    timeSlow('box assignables', () =>
+      h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
+
 
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
@@ -64,10 +69,6 @@ const visitor: Visitor = {
     timeSlow('block scoping, etc.', () =>
       h.transformFromAst(path,
         [nameExprs, cleanup]));
-    timeSlow('free ID initialization', () =>
-      freeIds.annotate(path));
-    timeSlow('box assignables', () =>
-      h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
     timeSlow('ANF', () =>
       h.transformFromAst(path, [anf]));
     timeSlow('declVars', () =>

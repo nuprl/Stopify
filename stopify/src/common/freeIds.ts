@@ -56,7 +56,9 @@ const visitor = {
   },
   ReferencedIdentifier(this: State, path: NodePath<t.Identifier>) {
     const parentType = path.parent.type;
-    if (parentType === "BreakStatement" || parentType === "LabeledStatement") {
+    if (parentType === "BreakStatement" ||
+        parentType === 'ContinueStatement' ||
+        parentType === "LabeledStatement") {
       return;
     }
     this.refIds.add(path.node.name);

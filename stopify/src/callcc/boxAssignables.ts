@@ -14,6 +14,15 @@ import * as fastFreshId from '../fastFreshId';
 import * as bh from '../babelHelpers';
 import { Set } from 'immutable';
 
+type Parent = t.Program | t.FunctionDeclaration | t.FunctionExpression;
+
+type State = {
+  parentPath: NodePath<Parent>,
+  vars: Set<string>,
+  parentPathStack: NodePath<Parent>[],
+  varsStack: Set<string>[]
+}
+
 export function box(e: t.Expression): t.ObjectExpression {
   return t.objectExpression([t.objectProperty(t.identifier('box'),
     e === null || e === undefined ?
@@ -26,11 +35,21 @@ function unbox(e: t.Expression): t.Expression {
   return res
 }
 
-function getParentPath(path: NodePath<t.Node>) {
-  const parents = [ "FunctionDeclaration", "FunctionExpression", "Program" ];
-  return path.findParent(p => parents.includes(p.node.type));
+/**
+ * Produces 'true' if the identifier should be boxed.
+ *
+ * @param x an identifier
+ * @param path the path to the enclosing Function or Program
+ */
+function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
+  const binds = path.scope.bindings;
+  if (path.node.type === 'FunctionExpression' &&
+      path.node.id &&
+      path.node.id.name === x) {
+    return false;
+  }
+  return (<any>binds[x].kind === "hoisted" || freeIds.isNestedFree(path, x));
 }
-type Parent = t.Program | t.FunctionDeclaration | t.FunctionExpression;
 
 function liftStatement(parentPath: NodePath<Parent>, path: NodePath<t.Node>,
   stmt: t.Statement) {
@@ -49,60 +68,131 @@ function liftStatement(parentPath: NodePath<Parent>, path: NodePath<t.Node>,
   }
 }
 
-function boxVars(parentPath: NodePath<Parent>, vars: Set<string>, state: any) {
-  const visitor = {
-    ReferencedIdentifier(path: NodePath<t.Identifier>) {
-      path.skip();
-      // NOTE(arjun): The parent type tests are because labels are
-      // categorized as ReferencedIdentifiers, which is a bug in
-      // Babel, in my opinion.
-      if (path.parent.type === "BreakStatement" ||
-          path.parent.type === "LabeledStatement") {
-        return;
-      }
-      if (vars.includes(path.node.name)) {
-        path.replaceWith(unbox(path.node));
-      }
-    },
 
-    VariableDeclaration(path: NodePath<t.VariableDeclaration>) {
-      assert(path.node.declarations.length === 1,
-        'variable declarations must have exactly one binding');
-      const decl = path.node.declarations[0];
-      if (decl.id.type !== "Identifier") {
-        throw new assert.AssertionError({
-          message: 'destructuring not supported'
-        });
-      }
-      if (vars.includes(decl.id.name)) {
-        liftStatement(parentPath, path,
-          t.variableDeclaration('var',
-            [t.variableDeclarator(decl.id, box(bh.eUndefined))]));
-        if (decl.init === null) {
-          path.remove();
-        }
-        else {
-          path.replaceWith(t.assignmentExpression('=', decl.id, decl.init));
-        }
-      }
-    },
-    BindingIdentifier(path: NodePath<t.Identifier>) {
-      path.skip();
-      if (path.parent.type !== "AssignmentExpression") {
-        return;
-      }
-      if (vars.includes(path.node.name)) {
-        path.replaceWith(unbox(path.node))
-      }
+  // NOTE(arjun): The following implements non-strict semantics, where
+  // arguments[i] and the ith formal argument are aliased. Recall that:
+  //
+  // > function F(x) { 'use strict'; arguments[0] = 100; return x }; F(200)
+  // 200
+  // > function F(x) { arguments[0] = 100; return x }; F(200)
+  // 100
+  //
+  // if (usesArgs) {
+  //   params.forEach((x, i) => {
+  //     if (boxedArgs.contains(x.name)) {
+  //       const arg = t.identifier('argument');
+  //       const init = t.assignmentExpression('=',
+  //         t.memberExpression(arg, t.numericLiteral(i), true),
+  //         x);
+  //       path.node.body.body.unshift(t.expressionStatement(init));
+  //     }
+  //   });
+  // }
 
+
+function enterFunction(self: State, path: NodePath<t.FunctionExpression>) {
+    const locals = Set.of(...Object.keys(path.scope.bindings));
+    // Mutable variables from this scope that are not shadowed
+    const vars0 = self.vars.subtract(locals);
+    // Mutable variables from the inner scope
+    const vars1 = locals.filter(x => shouldBox(x!, path)).toSet();
+
+    const params = <t.Identifier[]>path.node.params;
+    const boxedArgs = Set.of(...params.filter(x => vars1.includes(x.name))
+      .map(x => x.name));
+
+   (<any>path.node).boxedArgs = boxedArgs;
+    self.parentPathStack.push(self.parentPath);
+    self.varsStack.push(self.vars);
+    self.parentPath = path;
+    self.vars = vars0.union(vars1);
+}
+
+function exitFunction(self: State, path: NodePath<t.FunctionExpression>) {
+  // Box arguments if necessary. We do this after visiting the function
+  // body or the initialization statements get messed up.
+  (<any>path.node).boxedArgs.valueSeq().forEach((x: string) => {
+    const init = t.expressionStatement(
+      t.assignmentExpression(
+        "=", t.identifier(x), box(t.identifier(x!))));
+    (<any>init).__boxVarsInit__ = true;
+    path.node.body.body.unshift(init);
+  });
+  self.vars = self.varsStack.pop()!;
+  self.parentPath = self.parentPathStack.pop()!;
+}
+
+const visitor = {
+  Program(this: State, path: NodePath<t.Program>, state: any) {
+    const binds = path.scope.bindings;
+    const vars = Object.keys(path.scope.bindings)
+      .filter(x => shouldBox(x, path));
+    this.parentPathStack = [];
+    this.varsStack = [];
+    this.parentPath = path;
+    this.vars = Set.of(...vars);
+  },
+  ReferencedIdentifier(this: State, path: NodePath<t.Identifier>) {
+    path.skip();
+    // NOTE(arjun): The parent type tests are because labels are
+    // categorized as ReferencedIdentifiers, which is a bug in
+    // Babel, in my opinion.
+    if (path.parent.type === "BreakStatement" ||
+        path.parent.type === 'ContinueStatement' ||
+        path.parent.type === "LabeledStatement") {
+      return;
+    }
+    if (this.vars.includes(path.node.name)) {
+      path.replaceWith(unbox(path.node));
+    }
+  },
+
+  VariableDeclaration(this: State, path: NodePath<t.VariableDeclaration>) {
+    assert(path.node.declarations.length === 1,
+      'variable declarations must have exactly one binding');
+    const decl = path.node.declarations[0];
+    if (decl.id.type !== "Identifier") {
+      throw new assert.AssertionError({
+        message: 'destructuring not supported'
+      });
+    }
+    if (this.vars.includes(decl.id.name)) {
+      liftStatement(this.parentPath, path,
+        t.variableDeclaration('var',
+          [t.variableDeclarator(decl.id, box(bh.eUndefined))]));
+      if (decl.init === null) {
+        path.remove();
+      }
+      else {
+        path.replaceWith(t.assignmentExpression('=', decl.id, decl.init));
+      }
+    }
+  },
+  BindingIdentifier(this: State, path: NodePath<t.Identifier>) {
+    path.skip();
+    if (path.parent.type !== "AssignmentExpression") {
+      return;
+    }
+    if (this.vars.includes(path.node.name)) {
+      path.replaceWith(unbox(path.node))
+    }
+  },
+  FunctionExpression: {
+    enter(this: State, path: NodePath<t.FunctionExpression>, state: any) {
+      enterFunction(this, path);
     },
-    FunctionExpression(path: NodePath<t.FunctionExpression>, state: any) {
-      path.skip();
-      initFunction(vars, path, state);
+    exit(this: State, path: NodePath<t.FunctionExpression>, state: any) {
+      exitFunction(this, path);
+    }
+  },
+  FunctionDeclaration: {
+    enter(this: State, path: NodePath<t.FunctionExpression>, state: any) {
+      enterFunction(this, path);
     },
-    FunctionDeclaration(path: NodePath<t.FunctionDeclaration>, state: any) {
-      path.skip();
-      initFunction(vars, path, state);
+    exit(this: State, path: NodePath<t.FunctionExpression>, state: any) {
+      exitFunction(this, path);
+      const vars = this.vars;
+      const parentPath = this.parentPath;
       // NOTE(rachit): in `func` mode, the input function is marked with
       // topFunction. It shouldn't be boxed since we want to preserve its
       // signature.
@@ -124,82 +214,6 @@ function boxVars(parentPath: NodePath<Parent>, vars: Set<string>, state: any) {
         path.remove();
       }
     }
-  }
-
-  parentPath.traverse(visitor, state);
-}
-
-/**
- * Produces 'true' if the identifier should be boxed.
- *
- * @param x an identifier
- * @param path the path to the enclosing Function or Program
- */
-function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
-  const binds = path.scope.bindings;
-  if (path.node.type === 'FunctionExpression' && path.node.id.name === x) {
-    return false;
-  }
-  return (<any>binds[x].kind === "hoisted" || freeIds.isNestedFree(path, x));
-}
-
-
-function initFunction(
-  enclosingVars: Set<string>,
-  path: NodePath<t.FunctionDeclaration | t.FunctionExpression>,
-  state: any) {
-
-  const locals = Set.of(...Object.keys(path.scope.bindings));
-  // Mutable variables from this scope that are not shadowed
-  const vars0 = enclosingVars.subtract(locals);
-  // Mutable variables from the inner scope
-  const vars1 = locals.filter(x => shouldBox(x!, path)).toSet();
-
-  const params = <t.Identifier[]>path.node.params;
-  const boxedArgs = Set.of(...params.filter(x => vars1.includes(x.name))
-    .map(x => x.name));
-
-  (<any>path.node).boxedArgs = boxedArgs;
-  boxVars(path, vars0.union(vars1), state);
-
-
-  // Box arguments if necessary. We do this after visiting the function
-  // body or the initialization statements get messed up.
-  boxedArgs.valueSeq().forEach(x => {
-    const init = t.expressionStatement(
-      t.assignmentExpression(
-        "=", t.identifier(x), box(t.identifier(x!))));
-    (<any>init).__boxVarsInit__ = true;
-    path.node.body.body.unshift(init);
-  });
-
-  // NOTE(arjun): The following implements non-strict semantics, where
-  // arguments[i] and the ith formal argument are aliased. Recall that:
-  //
-  // > function F(x) { 'use strict'; arguments[0] = 100; return x }; F(200)
-  // 200
-  // > function F(x) { arguments[0] = 100; return x }; F(200)
-  // 100
-  //
-  // if (usesArgs) {
-  //   params.forEach((x, i) => {
-  //     if (boxedArgs.contains(x.name)) {
-  //       const arg = t.identifier('argument');
-  //       const init = t.assignmentExpression('=',
-  //         t.memberExpression(arg, t.numericLiteral(i), true),
-  //         x);
-  //       path.node.body.body.unshift(t.expressionStatement(init));
-  //     }
-  //   });
-  // }
-}
-
-const visitor: Visitor = {
-  Program(path: NodePath<t.Program>, state: any) {
-    const binds = path.scope.bindings;
-    const vars = Object.keys(path.scope.bindings)
-      .filter(x => shouldBox(x, path));
-    boxVars(path, Set.of(...vars), state);
   }
 }
 

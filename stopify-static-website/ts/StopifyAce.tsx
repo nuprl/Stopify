@@ -7,7 +7,7 @@ require('brace/mode/c_cpp');
 require('brace/mode/clojure');
 require('brace/mode/scala')
 require('brace/mode/javascript')
-require('brace/theme/monokai');
+require('brace/theme/eclipse');
 const Range = ace.acequire('ace/range').Range;
 
 export interface StopifyAceProps {
@@ -70,6 +70,9 @@ export class StopifyAce extends React.Component<StopifyAceProps, {}> {
     }
     this.editor = editor.editor as ace.Editor;
     this.editor.$blockScrolling = Infinity;
+    this.editor.setOptions({
+      fontSize: "12pt"
+    })
     // const code = langs[this.props.language].defaultCode;
     // this.editor.setValue(code);
     // this.props.onChange(code);
@@ -81,7 +84,7 @@ export class StopifyAce extends React.Component<StopifyAceProps, {}> {
       ref={(editor) => this.setupEditor(editor)}
       onChange = { (text) => this.props.onChange(text) }
       width="100%"
-      theme="monokai"
+      theme="eclipse"
       name="the_editor"
       value={this.props.value}
       mode={langs[this.props.language].aceMode}>

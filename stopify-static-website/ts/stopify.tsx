@@ -14,7 +14,7 @@ class MultilingualStopifyEditor extends React.Component<{}, {language: string}> 
   constructor(props: { language: string }) {
     super(props);
     this.state = {
-      language: 'JavaScript'
+      language: 'ScalaJS'
     };
   }
 
@@ -25,10 +25,11 @@ class MultilingualStopifyEditor extends React.Component<{}, {language: string}> 
   render() {
     return [
       <div key="chooseLang" className="row">
-        <div className="col-md-12">
+        <h3 className="stopify-heading col-md-3">What is Stopify?</h3>
+        <div className="col-md-5">
           <span className="dropdown">
             <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-              Language
+              Choose a Language
               <span className="caret"></span>
             </button>
             <ul className="dropdown-menu">
@@ -36,11 +37,10 @@ class MultilingualStopifyEditor extends React.Component<{}, {language: string}> 
               <li><a href="#" onClick={() => this.setState({ language: 'OCaml' })}>OCaml</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'Cpp' })}>C++</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'ClojureScript' })}>Clojure</a></li>
-              <li><a href="#" onClick={() => this.setState({ language: 'JavaScript' })}>JavaScript</a></li>
             </ul>
           </span>
-          Choose a programming language to use.    
         </div>
+        <div className="col-md-3"></div>
       </div>,
       <StopifyEditor key="editor" language={this.state.language}></StopifyEditor>
     ];
@@ -58,6 +58,7 @@ interface StopifyEditorState {
 class StopifyEditor extends React.Component<{ language: string }, StopifyEditorState> {
 
   private iframe: HTMLIFrameElement | null = null;
+  language: string
 
   constructor(props: { language: string }) {
     super(props);
@@ -71,6 +72,8 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
       breakpoints: [],
       line: null
     };
+
+    this.language = props.language
 
     window.addEventListener('message', evt => {
       // Message could be from somethign else, e.g., React DevTools
@@ -191,10 +194,10 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
 
   // componentWillUpdate(nextProps: { language: string }, nextState: StopifyEditorState) {
   //   if (this.props.language !=== this.props.language) {
-      
+
   //   if (this.state.mode !===
   // }
-  
+
   shouldComponentUpdate(nextProps: { language: string }, nextState: StopifyEditorState): boolean {
     return (
       this.state.mode !== nextState.mode ||
@@ -206,10 +209,10 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
   playPauseText() {
     const mode = this.state.mode;
     if (mode === 'stopped' || mode === 'paused') {
-      return 'glyphicon glyphicon-play';
+      return 'Run';
     }
     else {
-      return 'glyphicon glyphicon-pause';
+      return 'Pause'
     }
   }
 
@@ -222,11 +225,11 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
            src={this.state.iframeUrl}
            width='100%'
            height='100%'
-           style={{border: 'none'}}>
+           style={{border: 'none', overflow: 'hidden'}}>
         </iframe>
-      : <div>Click <span className='glyphicon glyphicon-play'></span> to run.</div>;
+      : <div>Click "Run" to compile and run</div>;
     return <div className="row display-flex">
-      <div className="col-md-3">
+      <div className="col-md-3 information">
         <p>This is an experimental, web-based code editor that lets you run
         programs, gracefully stop non-terminating programs, set breakpoints, and
         step through code <i>entirely in the browser</i>.</p>
@@ -247,19 +250,22 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
         <div>
         <GlyphButton
           onclick={this.onPlayPause.bind(this)}
-          glyph={this.playPauseText()}
+          glyph=""
           disabled={this.state.mode === 'compiling'}
-          text=""></GlyphButton>
+          text={this.playPauseText()}
+          kind="btn-primary"></GlyphButton>
         <GlyphButton
           onclick={this.onStep.bind(this)}
-          glyph="glyphicon-step-forward"
+          glyph=""
           disabled={this.state.mode !== 'paused'}
-          text=""></GlyphButton>
+          text="Step"
+          kind="btn-warning"></GlyphButton>
         <GlyphButton
           onclick={this.onStop.bind(this)}
-          glyph="glyphicon-stop"
+          glyph=""
           disabled={this.state.mode === 'stopped'}
-          text=""></GlyphButton>
+          text="Stop"
+          kind="btn-danger"></GlyphButton>
         </div>
         <StopifyAce line={this.state.line}
           onChange={(code) => this.setState({ program: code })}
@@ -268,7 +274,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
           language={this.props.language}>
         </StopifyAce>
       </div>
-      <div className="col-md-3">
+      <div className="col-md-3" id="output" style={{overflow: "hidden"}}>
         <div style={{height: "100%"}}>{iframe}</div>
       </div>
     </div>;
@@ -279,7 +285,8 @@ interface GlyphButtonProps {
   onclick?: () => void,
   glyph: string,
   text: string,
-  disabled: boolean
+  disabled: boolean,
+  kind: string
 }
 class GlyphButton extends React.Component<GlyphButtonProps, {}> {
   constructor(props: GlyphButtonProps) {
@@ -289,7 +296,7 @@ class GlyphButton extends React.Component<GlyphButtonProps, {}> {
   render() {
     return (
       <button
-         className="btn btn-default"
+         className={`${this.props.kind} btn btn-default col-md-2 ide-button`}
          type='button'
          disabled={this.props.disabled}
          onClick={() => this.props.onclick && this.props.onclick()}>

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Julius+Sans+One|Lato|Montserrat');
+
 .myMarker {
   position:absolute;
   background:rgba(100,200,100,0.5);
@@ -9,7 +11,6 @@
   box-shadow: 0px 0px 3px 3px red inset;
 }
 
-
 .row.display-flex {
   display: flex;
   flex-wrap: wrap;
@@ -17,4 +18,34 @@
 .row.display-flex > [class*='col-'] {
   display: flex;
   flex-direction: column;
+}
+
+.btn {
+  margin-right: 0.4cm;
+  margin-bottom: 0.3cm;
+}
+
+button {
+  text-align: center;
+}
+
+.information {
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+}
+
+.navbar {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.stopify-heading {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.ide-button {
+  letter-spacing: 2px;
+  word-spacing: 2px;
+  line-height: 150%;
+  font-family: 'Julius Sans One', sans-serif;
+  font-weight: 300;
 }

@@ -53,10 +53,12 @@ interface StopifyEditorState {
   program: string,
   breakpoints: number[],
   line: number | null,
-  iframeUrl?: string
+  rhs: { type: 'iframe', url: string } | { type: 'message', text: string }
 }
 
 class StopifyEditor extends React.Component<{ language: string }, StopifyEditorState> {
+
+  static compileMessage = 'Click "Run" to compile and run.';
 
   private iframe: HTMLIFrameElement | null = null;
 
@@ -70,7 +72,8 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
       mode: 'stopped',
       program: langs[props.language].defaultCode,
       breakpoints: [],
-      line: null
+      line: null,
+      rhs: { type: 'message', text: StopifyEditor.compileMessage }
     };
 
     window.addEventListener('message', evt => {
@@ -80,7 +83,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
       }
       if (evt.data.type === 'ready') {
         if (this.state.mode === 'compiling') {
-          this.setMode('running');
+          this.setState({ mode: 'running' });
           this.iframe!.contentWindow.postMessage({
             type: 'start',
             breakpoints: this.state.breakpoints
@@ -103,16 +106,8 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     this.setState({ breakpoints });
   }
 
-  setMode(mode: Mode) {
-    this.setState({
-      program: this.state.program,
-      mode: mode,
-      breakpoints: this.state.breakpoints
-    });
-  }
-
   compile() {
-    this.setMode('compiling');
+    this.setState({ mode: 'compiling' });
     // if (lastLineMarker !== null) {
     //   editor.session.removeMarker(lastLineMarker);
     // }
@@ -133,10 +128,14 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     .then(path => {
       const fragment = encodeArgs(['--env', browser.name, '-t', 'lazy',
         '--estimator', 'countdown', '-y', '1', path]);
-      this.setState({ iframeUrl: `./container.html#${fragment}` });
+      this.setState({
+        rhs: { type: 'iframe', url: `./container.html#${fragment}` }
+      });
     }).catch(reason => {
-      alert(reason);
-      this.setMode('stopped');
+      this.setState({
+        mode: 'stopped',
+        rhs: { type: 'message', text: reason }
+      });
     });
   }
 
@@ -147,7 +146,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
       case 'stopped':
         return this.compile();
       case 'running':
-        this.setMode('paused');
+        this.setState({ mode: 'paused' });
         this.iframe!.contentWindow.postMessage({ type: 'pause' }, '*');
         return;
       case 'paused':
@@ -168,23 +167,22 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
   }
 
   onStop() {
-    switch (this.state.mode) {
-      case 'compiling':
-        this.setState({ iframeUrl: undefined });
-        break;
-      case 'running':
-        this.iframe!.contentWindow.postMessage({ type: 'pause' }, '*');
-        break;
-      case 'stopped':
-      case 'paused':
-    }
-    this.setMode('stopped');
+    this.iframe = null;
+    this.setState({
+      mode: 'stopped',
+      rhs: { type: 'message', text: StopifyEditor.compileMessage },
+      line: null
+    });
   }
 
   componentWillReceiveProps(nextProps: { language: string }) {
     // When the language changes, we stop the program and clear the output
     // and breakpoints.
-    this.setState({ mode: 'stopped', iframeUrl: undefined, breakpoints: [] });
+    this.setState({
+      mode: 'stopped',
+      rhs: { type: 'message', text: StopifyEditor.compileMessage },
+      breakpoints: []
+    });
     if (this.props.language !== nextProps.language) {
       this.setState({ program: langs[nextProps.language].defaultCode });
     }
@@ -200,7 +198,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     return (
       this.state.mode !== nextState.mode ||
       this.state.line !== nextState.line ||
-      this.state.iframeUrl !== nextState.iframeUrl ||
+      this.state.rhs !== nextState.rhs ||
       this.props.language !== nextProps.language);
   }
 
@@ -219,17 +217,19 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
   }
 
   render() {
-    // The "key" in the iframe is unique and forces a full reload.
-    const iframe = this.state.iframeUrl
-      ? <iframe
-           key={this.state.iframeUrl}
-           ref={(frame) => this.iframe = frame}
-           src={this.state.iframeUrl}
-           width='100%'
-           height='100%'
-           style={{border: 'none', overflow: 'hidden'}}>
-        </iframe>
-      : <div>Click "Run" to compile and run</div>;
+    let rhs: JSX.Element;
+    if (this.state.rhs.type === 'message') {
+      const lines = this.state.rhs.text.split('\n')
+        .map(line => <div>{line}</div>);
+      rhs = <div>{lines}</div>;
+    }
+    else {
+      // The "key" in the iframe is unique and forces a full reload.
+     rhs = <iframe key={this.state.rhs.url} ref={(frame) => this.iframe = frame}
+                   src={this.state.rhs.url} width='100%' height='100%'
+                   style={{border: 'none', overflow: 'hidden'}}>
+           </iframe>;
+    }
     return <div className="row display-flex">
       <div className="col-md-3 information">
         <p>This is an experimental, web-based code editor that lets you run
@@ -279,7 +279,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
         </StopifyAce>
       </div>
       <div className="col-md-3" id="output" style={{overflow: "hidden"}}>
-        <div style={{height: "100%"}}>{iframe}</div>
+        <div style={{height: "100%"}}>{rhs}</div>
       </div>
     </div>;
   }

@@ -55,6 +55,13 @@ object Runner extends JSApp {
   }
 }`,
         compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/scalajs'
+    },
+    Python: {
+        aceMode: 'python',
+        defaultCode: `def main():
+    print("hello")
+main()`,
+        compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/pyjs'
     }
 };
 //# sourceMappingURL=languages.js.map

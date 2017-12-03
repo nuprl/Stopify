@@ -93,7 +93,7 @@ export function parseRuntimeOpts(rawArgs: string[]): Opts {
     stop: args.stop,
     env: args.env,
     variance: args.variance,
-    externalRTS: false
+    requireRuntime: false
   };
   return <any>null;
 }

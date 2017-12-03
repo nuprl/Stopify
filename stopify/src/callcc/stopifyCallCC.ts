@@ -93,7 +93,7 @@ export const visitor: Visitor = {
     h.transformFromAst(path, [[callcc, opts]]);
     fastFreshId.cleanup()
 
-    if (opts.externalRTS) {
+    if (!opts.requireRuntime) {
       const body = path.node.body;
       path.node.body = [
         t.expressionStatement(

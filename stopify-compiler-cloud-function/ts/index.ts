@@ -40,7 +40,7 @@ function runStopify(response: express.Response, jsCode: string, filename: string
     const jsPath = `${dir}/original.js`;
     const stopifiedJsPath = `${dir}/output.js`
     return fs.writeFile(jsPath, jsCode)
-      .then(_ => exec(`${stopifyCompiler} ${flags.join(" ")} --debug --external-rts -t lazy ${jsPath} ${stopifiedJsPath}`))
+      .then(_ => exec(`${stopifyCompiler} ${flags.join(" ")} --debug -t lazy ${jsPath} ${stopifiedJsPath}`))
       .then(_ => fs.readFile(stopifiedJsPath))
   })
   .then(stopifiedJsCode => bucket.file(filename).save(stopifiedJsCode))

@@ -26,7 +26,7 @@ const visitor: Visitor = {
     path.node.body.unshift(
       t.variableDeclaration('var',
       [t.variableDeclarator(implicitsIdentifier,
-        opts.externalRTS ? t.identifier('stopify')
+        !opts.requireRuntime ? t.identifier('stopify')
           : t.callExpression(t.identifier('require'),
             [t.stringLiteral('Stopify/built/src/runtime/implicitApps')]))]));
   },

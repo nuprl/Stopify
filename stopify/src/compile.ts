@@ -50,8 +50,9 @@ commander.option(
   'simple');
 
 
-commander.option('--external-rts',
-  'expects a global variable called stopify');
+commander.option('--require-runtime',
+  `use require('stopify') to load the runtime system, which necessary to run
+   on Node`);
 
 commander.option(
   '--debug',
@@ -80,7 +81,7 @@ const plugin: any = [
     debug: args.debug,
     jsArgs: args.jsArgs,
     sourceMap: sourceMap,
-    externalRTS: args.externalRts
+    requireRuntime: args.requireRuntime
   }
 ];
 

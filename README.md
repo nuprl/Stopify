@@ -27,8 +27,8 @@ unchanged. Stopify will provide the following features:
 
 We have tested Stopify with ten languages: (1) C++, (2) Clojure, (3) Dart, (4)
 Java, (5) JavaScript, (6) OCaml, (7) Pyret, (8) Python, (9) Scheme, and (10)
-Scala. You can these out on the Stopify demo website
-([www.stopify.org](https://www.stopify.org)).
+Scala. Some of these are available on the Stopify demo page
+([www.stopify.org](http://www.stopify.org)) and the rest are coming soon.
 
 The rest of this README will guide you through installing Stopify and
 applying it to your own programming language.

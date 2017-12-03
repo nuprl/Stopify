@@ -31,7 +31,8 @@ button {
 
 .information {
   font-family: 'Lato', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
+  word-spacing: 2px;
 }
 
 .navbar {
@@ -48,4 +49,9 @@ button {
   line-height: 150%;
   font-family: 'Julius Sans One', sans-serif;
   font-weight: 300;
+}
+
+.logo {
+  max-height: 120px;
+  max-width: 200px;
 }

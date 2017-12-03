@@ -35,12 +35,12 @@ function checkCache(lang: string, input: string): Promise<CacheResult> {
     .then(exists => ({ filename, exists: exists[0] }));
 }
 
-function runStopify(response: express.Response, jsCode: string, filename: string) {
+function runStopify(response: express.Response, jsCode: string, filename: string, flags: string[]) {
   return tmpDir().then(dir => {
     const jsPath = `${dir}/original.js`;
     const stopifiedJsPath = `${dir}/output.js`
     return fs.writeFile(jsPath, jsCode)
-      .then(_ => exec(`${stopifyCompiler} --debug --external-rts -t lazy ${jsPath} ${stopifiedJsPath}`))
+      .then(_ => exec(`${stopifyCompiler} ${flags.join(" ")} --debug --external-rts -t lazy ${jsPath} ${stopifiedJsPath}`))
       .then(_ => fs.readFile(stopifiedJsPath))
   })
   .then(stopifiedJsCode => bucket.file(filename).save(stopifiedJsCode))
@@ -67,12 +67,12 @@ stopify.post('/js', bodyParser.text({ type: '*/*' }), (req, resp) =>
     }
     else {
       console.info(`Compiling js program (${req.body.length} bytes)`);
-      return runStopify(resp, req.body, filename);
+      return runStopify(resp, req.body, filename, ['--js-args=faithful', '--es=es5']);
     }
   })
   .catch(reject(resp)));
 
-function genericCompiler(lang: string) {
+function genericCompiler(lang: string, flags: string[]) {
   stopify.post(`/${lang}`, bodyParser.text({ type: '*/*' }), (req, resp) =>
     checkCache(lang, req.body)
     .then(({ filename,  exists }) => {
@@ -85,14 +85,14 @@ function genericCompiler(lang: string) {
         console.info(`Compiling ${lang} program (${req.body.length} bytes)`);
         return request.post(`http://35.184.26.215:8080/${lang}`,
                             { headers, body: req.body })
-          .then(stopifiedJsCode => runStopify(resp, stopifiedJsCode, filename));
+          .then(stopifiedJsCode => runStopify(resp, stopifiedJsCode, filename, flags));
       }
     })
     .catch(reject(resp)));
 }
 
-genericCompiler('pyjs');
-genericCompiler('emscripten');
-genericCompiler('bucklescript');
-genericCompiler('scalajs');
-genericCompiler('clojurescript');
+genericCompiler('pyjs', ['--js-args=faithful']);
+genericCompiler('emscripten', []);
+genericCompiler('bucklescript', []);
+genericCompiler('scalajs', []);
+genericCompiler('clojurescript', []);

@@ -49,9 +49,6 @@ commander.option(
     'invalid --js-args, see --help'),
   'simple');
 
-commander.option(
-  '--webpack',
-  '');
 
 commander.option('--external-rts',
   'expects a global variable called stopify');
@@ -94,105 +91,40 @@ const plugin: any = [
   }
 ];
 
-if (args.webpack) {
-  const mainJs = tmp.fileSync({ postfix: '.exclude.js' });
-  const srcModule = path.relative(mainJs.name, path.resolve(srcPath));
-  // NOTE(arjun): This is a small hack. By putting the require() in a thunk, we
-  // (1) delay loading the program before the RTS and (2) ensure that Webpack
-  // can statically resolve the module.
-  fs.writeFileSync(mainJs.name,
-    `function M() {  require("${srcModule}"); }
-     require('Stopify/built/src/rts').afterScriptLoad(M);`);
-  const rules: any[] = [];
-  if (args.transform !== 'original') {
-    rules.push({
-      test: /\.js$/,
-      // NOTE(arjun): This is a small hack. We don't transform files
-      // that end with .exclude.js, such as the loader created above.
-      exclude: /(\.exclude\.js$|node_modules\/(?!bs-platform))/,
-      loader: 'babel-loader',
-      options: {
-        plugins: [plugin],
-        minified: true,
-        comments: false,
-        cacheDirectory: args.cache
-      },
-    });
-  };
+const opts = {
+  plugins: [plugin],
+  babelrc: false,
+  ast: false,
+  code: true,
+  minified: true,
+  comments: false,
+};
 
-  const webpackConfig = {
-    entry:  mainJs.name,
-    output: { filename: dstPath },
-    externals: {
-      'Stopify/built/src/rts': 'stopify',
-      'Stopify/built/src/runtime/implicitApps': 'stopify',
-    },
-    module: {
-      rules: rules
-    },
-    node: {
-      global: false,
-      Buffer: false,
-      'fs': 'empty',
-      'path': 'empty',
-    },
-    resolve: {
-      modules: [
-        path.resolve('node_modules'),
-        path.resolve('../node_modules'),
-      ],
-    },
-  };
-
-  webpack(webpackConfig, (err, stats) => {
-    fs.unlinkSync(mainJs.name);
-    if (err) {
-        throw err;
-    }
-    const info = stats.toJson();
-    if (stats.hasErrors()) {
-      info.errors.map((e: any) => console.error(e));
-      throw new Error('Errors during Webpack');
-    }
-    process.exit(0);
-  });
+if (args.transform === 'original') {
+  const src = fs.readFileSync(srcPath, 'utf8')
+  if (dstPath === undefined) {
+    console.log(src);
+  }
+  else {
+    fs.writeFileSync(dstPath, src);
+  }
+  process.exit(0);
 }
-else {
-  const opts = {
-    plugins: [plugin],
-    babelrc: false,
-    ast: false,
-    code: true,
-    minified: true,
-    comments: false,
-  };
 
-  if (args.transform === 'original') {
-    const src = fs.readFileSync(srcPath, 'utf8')
-    if (dstPath === undefined) {
-      console.log(src);
-    }
-    else {
-      fs.writeFileSync(dstPath, src);
-    }
+babel.transformFile(srcPath, opts, (err, result) => {
+  if (err !== null) {
+    throw err;
+  }
+  const { code } = result;
+  if (typeof dstPath === 'undefined') {
+    process.stdout.write(code!);
     process.exit(0);
   }
-
-  babel.transformFile(srcPath, opts, (err, result) => {
+  fs.writeFile(dstPath, code!, (err) => {
     if (err !== null) {
-      throw err;
+      stderr.write(`error writing result (--dst must be a path)`);
+      process.exit(1);
     }
-    const { code } = result;
-    if (typeof dstPath === 'undefined') {
-      process.stdout.write(code!);
-      process.exit(0);
-    }
-    fs.writeFile(dstPath, code!, (err) => {
-      if (err !== null) {
-        stderr.write(`error writing result (--dst must be a path)`);
-        process.exit(1);
-      }
-      process.exit(0);
-    });
+    process.exit(0);
   });
-}
+});

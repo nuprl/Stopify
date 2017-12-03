@@ -128,8 +128,6 @@ The `stopify` compiler takes several command-line options:
 - `--debug` (optional) Set this flag if you trying to use Stopify to support
    single-stepping and breakpoints.
 
-- `--cache <DIR>` do not use this flag
-
 The `stopify-url` program produces a URL that runs a stopified program in
 the browser. This program also takes several command-line options:
 

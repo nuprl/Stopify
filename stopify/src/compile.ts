@@ -58,13 +58,6 @@ commander.option(
   'Insert suspensions between every line of code in the source program',
   false);
 
-commander.option(
-  '--cache <dir>',
-  'directory to cache object files',
-  parseArg(x => x, x => true,
-    'invalid --cache, see help'),
-  undefined);
-
 commander.arguments('<srcPath> <dstPath>');
 const args = commander.parse(process.argv);
 const srcPath = args.args[0];

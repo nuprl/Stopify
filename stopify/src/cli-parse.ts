@@ -4,9 +4,9 @@ import { parseArg } from './generic';
 
 commander.option(
   '-y, --yield <interval>',
-  'time between yields to the event loop (default: never yield)',
+  'time (in milliseconds) between yields to the event loop (default: 100)',
   parseArg(parseInt, x => x > 0, '--yield requires a number'),
-  NaN);
+  100);
 
 commander.option(
   '-e, --env <env>',
@@ -42,10 +42,10 @@ commander.option(
 
 commander.option(
   '--estimator <estimator>',
-  `one of exact, reservoir, velocity, or countdown (default: countdown)`,
+  `one of exact, reservoir, velocity, or countdown (default: velocity)`,
   parseArg(x => x, x => /^(exact|reservoir|countdown|velocity)$/.test(x),
     'invalid --estimator value'),
-  'countdown');
+  'velocity');
 
 commander.option(
   '-t, --transform <transform>',

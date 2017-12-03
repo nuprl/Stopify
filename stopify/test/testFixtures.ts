@@ -26,7 +26,7 @@ export function callCCTest(srcPath: string, transform: string, opts: string = ""
     execSync(
       `./bin/compile --require-runtime --js-args=faithful --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
     try {
-      execSync(`./bin/run ${dstPath} --transform ${transform} --yield 1`, { timeout: 30000 });
+      execSync(`./bin/run ${dstPath} --transform ${transform} --estimator=countdown --yield 1`, { timeout: 30000 });
     }
     finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.
@@ -50,8 +50,8 @@ export function browserTest(srcPath: string, transform: string) {
     test(`${testName} (may run forever)`, () => {
       const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
       execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
-      execSync(`./bin/browser ${dstPath}  --transform ${transform} -y 1 --stop 5 --env chrome`);
-      execSync(`./bin/browser ${dstPath}  --transform ${transform} -y 1 --stop 5 --env firefox`);
+      execSync(`./bin/browser ${dstPath}  --transform ${transform} --estimator=countdown -y 1 --stop 5 --env chrome`);
+      execSync(`./bin/browser ${dstPath}  --transform ${transform} --estimator=countdown -y 1 --stop 5 --env firefox`);
       fs.unlinkSync(dstPath);
     });
   }
@@ -59,8 +59,8 @@ export function browserTest(srcPath: string, transform: string) {
     it(testName, () => {
       const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
       execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
-      execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env chrome`);
-      execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env firefox`);
+      execSync(`./bin/browser ${dstPath}  --transform ${transform} --estimator=countdown --yield 1000 --env chrome`);
+      execSync(`./bin/browser ${dstPath}  --transform ${transform} --estimator=countdown --yield 1000 --env firefox`);
       fs.unlinkSync(dstPath);
     });
   }
@@ -84,7 +84,7 @@ export function stopCallCCTest(srcPath: string, transform: string) {
     const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: ".js" });
     execSync(`./bin/compile --require-runtime --transform ${transform} ${srcPath} ${dstPath}`);
     try {
-      execSync(`./bin/run ${dstPath} --transform ${transform} --yield 10 --stop 1`, { timeout: 5000 });
+      execSync(`./bin/run ${dstPath} --transform ${transform} --estimator=countdown --yield 10 --stop 1`, { timeout: 5000 });
     }
     finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.

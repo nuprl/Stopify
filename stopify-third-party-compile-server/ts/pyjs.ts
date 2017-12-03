@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as request from 'request-promise-native';
-import { tmpFile, exec } from './misc';
+import { tmpDir, exec } from './misc';
 
 // Download the PyJS runtime system from here
 const rtsUrl = 'https://storage.googleapis.com/stopify/pyjs_prelude.js';
@@ -24,10 +24,13 @@ export function init(): Promise<void> {
 }
 
 export function compile(code: string): Promise<string> {
-  return tmpFile('.py')
-    .then(pyPath => fs.writeFile(pyPath, code)
-      .then(_ => exec(`pyjscompile ${pyPath}`))
-      .then(jsCode => fs.readFile(rtsPath, 'utf-8')
-        .then(rts => fs.unlink(pyPath)
-          .then(_ => rts + jsCode + 'pygwtOnLoad();'))));
+  return tmpDir()
+    .then(tmpDir => {
+      const pyPath = `${tmpDir}/main.py`
+      return fs.writeFile(pyPath, code)
+        .then(_ => exec(`pyjscompile ${pyPath}`))
+        .then(jsCode => fs.readFile(rtsPath, 'utf-8')
+          .then(rts => fs.unlink(pyPath)
+            .then(_ => rts + jsCode + 'pygwtOnLoad();')));
+    })
 }

@@ -1,25 +1,17 @@
 /**
  * This program uses Selenium to run a Stopify benchmark in a browser.
  *
- * The program must have been compiled with the '--webpack' flag. If not,
+ * The program must have been compiled with the '--external-rts' flag. If not,
  * the benchmark will timeout after several minutes.
  *
  * There are a few steps involved:
  *
  * 1. We serve the dist/ directory and the directory containing the benchmark
- *    on port 9999 by default. (Configure using --local-host and --local-port.)
+ *    on port 9999.
  *
  * 2. We use Selenium to start a browser (in headless mode, if we know how).
- *    Using Remote WebDriver, it is possible to start the browser on a remote
- *    machine. To do so, run the following command on the remote machine:
  *
- *    $ java -jar selenium-server-standalone-{VERSION}.jar
- *
- *    and use the --remote-url parameter on this program.
- *
- * 3. Using Selenium, we direct the browser to fetch the page. If the browser
- *    is on a remote machine, ensure that --local-host is set to the IP address
- *    of the local machine.
+ * 3. Using Selenium, we direct the browser to fetch the page.
  */
 import * as selenium from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
@@ -51,10 +43,6 @@ let builder = new selenium.Builder()
   .setLoggingPrefs(loggingPrefs)
   .setChromeOptions(chromeOpts);
 
-if (opts.remoteWebDriverUrl) {
-  builder = builder.usingServer(opts.remoteWebDriverUrl);
-}
-
 const driver = builder.build();
 const app = express();
 
@@ -63,9 +51,11 @@ const benchmarkName = path.basename(opts.filename);
 app.use(express.static(path.join(__dirname, '../../dist')));
 app.use(express.static(path.dirname(opts.filename)));
 
-const server = app.listen(opts.testPort!, '0.0.0.0', 100, () => {
+const port = 9999;
+
+const server = app.listen(port, '0.0.0.0', 100, () => {
   const port = server.address().port
-  const url = `http://${opts.testHost}:${port}/benchmark.html#${src}`;
+  const url = `http://127.0.0.1:${port}/benchmark.html#${src}`;
   console.log(`GET ${url}`);
   driver.get(url)
     .then(_ => driver.wait(selenium.until.titleIs('done'), 8 * 60 * 1000))

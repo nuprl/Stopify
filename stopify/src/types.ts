@@ -20,8 +20,5 @@ export interface Opts {
    * 'MicrosoftEdge' instead of 'edge'.
    */
   env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari',
-  remoteWebDriverUrl?: string,
-  testHost?: string,
-  testPort?: number,
   externalRTS: boolean,
 }

@@ -63,7 +63,7 @@ npm install -g stopify
 3. Apply Stopify to the program:
 
    ```
-   stopify --external-rts -t lazy input.js output.js
+   stopify -t lazy input.js output.js
    ```
 
 4. To run the program in a browser, we need to (1) create an HTML page that
@@ -122,9 +122,6 @@ The `stopify` compiler takes several command-line options:
   Use `--js-args=faithful` if the input program does not behave this way.
 
 
-- `--external-rts` (optional) You need to set this flag. Without it, Stopify
-  assumes you are running tests.
-
 - `--debug` (optional) Set this flag if you trying to use Stopify to support
    single-stepping and breakpoints.
 
@@ -149,6 +146,10 @@ the browser. This program also takes several command-line options:
 
 - `-r, --resample-interval <interval>` How frequently should Stopify check the
   system time? By default, it is the same as `--yield`.
+
+- `--require-runtime` (optional) Set this flag to have Stopify use `require()`
+  to load its runtime system. This is necessary to run stopified programs
+  in Node.
 
 - `--time-per-elapsed` ???
 

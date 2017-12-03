@@ -126,7 +126,7 @@ const visitor: Visitor = {
       path.node.body.unshift(
         h.letExpression(
           t.identifier("$__T"),
-          opts.externalRTS ? t.identifier('stopify')
+          !opts.requireRuntime ? t.identifier('stopify')
             : t.callExpression(t.identifier('require'),
                 [t.stringLiteral('Stopify/built/src/rts')]),
           'const'));

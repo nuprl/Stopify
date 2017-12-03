@@ -20,5 +20,5 @@ export interface Opts {
    * 'MicrosoftEdge' instead of 'edge'.
    */
   env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari',
-  externalRTS: boolean,
+  requireRuntime: boolean,
 }

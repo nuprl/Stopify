@@ -1,7 +1,7 @@
 /**
  * This program uses Selenium to run a Stopify benchmark in a browser.
  *
- * The program must have been compiled with the '--external-rts' flag. If not,
+ * The program must have been compiled without the '--require-runtime' flag. If not,
  * the benchmark will timeout after several minutes.
  *
  * There are a few steps involved:

@@ -24,7 +24,7 @@ export function callCCTest(srcPath: string, transform: string, opts: string = ""
     const { name: dstPath } =
       tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
     execSync(
-      `./bin/compile --js-args=faithful --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
+      `./bin/compile --require-runtime --js-args=faithful --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
     try {
       execSync(`./bin/run ${dstPath} --transform ${transform} --yield 1`, { timeout: 30000 });
     }
@@ -49,7 +49,7 @@ export function browserTest(srcPath: string, transform: string) {
   if (srcPath.endsWith('forever.js')) {
     test(`${testName} (may run forever)`, () => {
       const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
-      execSync(`./bin/compile --external-rts --transform ${transform} ${srcPath} ${dstPath}`);
+      execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
       execSync(`./bin/browser ${dstPath}  --transform ${transform} -y 1 --stop 5 --env chrome`);
       execSync(`./bin/browser ${dstPath}  --transform ${transform} -y 1 --stop 5 --env firefox`);
       fs.unlinkSync(dstPath);
@@ -58,7 +58,7 @@ export function browserTest(srcPath: string, transform: string) {
   else {
     it(testName, () => {
       const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
-      execSync(`./bin/compile  --external-rts --transform ${transform} ${srcPath} ${dstPath}`);
+      execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
       execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env chrome`);
       execSync(`./bin/browser ${dstPath}  --transform ${transform} --yield 1000 --env firefox`);
       fs.unlinkSync(dstPath);
@@ -82,7 +82,7 @@ export function stopCallCCTest(srcPath: string, transform: string) {
   }
   it(testName, () => {
     const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: ".js" });
-    execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
+    execSync(`./bin/compile --require-runtime --transform ${transform} ${srcPath} ${dstPath}`);
     try {
       execSync(`./bin/run ${dstPath} --transform ${transform} --yield 10 --stop 1`, { timeout: 5000 });
     }

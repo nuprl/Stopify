@@ -219,7 +219,7 @@ function compile() {
   const olen = fs.readFileSync(src).toString().length
   const stime = Date.now()
   creates(dstJs, () =>
-    exec(`./bin/compile --webpack --transform ${transform} --new ${newMethod} ${src} ${dstJs}`));
+    exec(`./bin/compile --external-rts --transform ${transform} --new ${newMethod} ${src} ${dstJs}`));
   const ftime = Date.now()
   const ctime = ftime - stime
   const flen = fs.readFileSync(dstJs).toString().length

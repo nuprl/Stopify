@@ -33,6 +33,7 @@ class MultilingualStopifyEditor extends React.Component<{}, {language: string}> 
               <span className="caret"></span>
             </button>
             <ul className="dropdown-menu">
+              <li><a href="#" onClick={() => this.setState({ language: 'Python' })}>Python</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'ScalaJS' })}>Scala</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'OCaml' })}>OCaml</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'Cpp' })}>C++</a></li>

@@ -128,8 +128,6 @@ The `stopify` compiler takes several command-line options:
 - `--debug` (optional) Set this flag if you trying to use Stopify to support
    single-stepping and breakpoints.
 
-- `--webpack` do not use this flag
-
 - `--cache <DIR>` do not use this flag
 
 The `stopify-url` program produces a URL that runs a stopified program in
@@ -155,8 +153,6 @@ the browser. This program also takes several command-line options:
   system time? By default, it is the same as `--yield`.
 
 - `--time-per-elapsed` ???
-
-- These flags should be removed `--remote, --local-host, --local-port`
 
 ## Development
 
@@ -228,42 +224,9 @@ AST](astexplorer.net) and make sure that the annotation is present as a
 
 ## Stopify with Webpack
 
-
-Stopify is a Babel plugin thus can be used with [babel-loader]. In a new
-project:
-
-1. Add packages `yarn add babel-cli babel-loader webpack`.
-2. Add Stopify: `ln -s <local-stopify> node_modules/Stopify`
-3. Create `webpack.config.js` with the following contents:
-
-```
-module.exports = {
-  entry: <entrypoint-of-web-app>,
-  output: {
-    filename: './dist/bundle.js'
-  },
-  externals: {
-    "Stopify": 'stopify'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        exclude: /(Stopify|node_modules|bower_components)/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-              plugins: ['Stopify']
-          }
-        }
-      }
-    ]
-  }
-};
-```
-
-Notice that the configuration declares the Stopify module as an external.
-the HTML for the web app should load `Stopify/built/stopify.bundle.js` before
-the created `dist/bundle.js`.
+Stopify is a Babel plugin. Therefore, you can use it with [babel-loader]
+to transform modules while applying Webpack. To do so, you should specify
+that `stopify` is an external variable and load `stopify.bundle.js` before
+the stopified code.
 
 [babel-loader]: https://github.com/babel/babel-loader

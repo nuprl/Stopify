@@ -5,18 +5,15 @@ export interface Language {
 }
 
 export const langs: { [name: string]: Language } = {
-  'JavaScript': {
-    compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/js',
-    aceMode: 'javascript',
-    defaultCode: `function sum(n) {
-  let sum = 0;
-  for(let i = 0; i <= n; i++) {
-    console.log('acc: ' + sum)
-    sum += i
-  }
-  return sum;
-}
-sum(1000000)`
+  'ClojureScript': {
+    compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/clojurescript',
+    aceMode: 'clojure',
+		defaultCode:`(defn tail_sum [n acc]
+  (println (str "acc: " acc))
+  (if (= n 0)
+    acc
+    (tail_sum (- n 1) (+ acc n))))
+(println (tail_sum 1000000 1))`,
   },
   'Cpp': {
     compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/emscripten',
@@ -66,5 +63,4 @@ object Runner extends JSApp {
 }`,
     compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/scalajs'
   }
-
 }

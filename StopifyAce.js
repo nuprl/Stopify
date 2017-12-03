@@ -9,7 +9,7 @@ require('brace/mode/c_cpp');
 require('brace/mode/clojure');
 require('brace/mode/scala');
 require('brace/mode/javascript');
-require('brace/theme/monokai');
+require('brace/theme/eclipse');
 const Range = ace.acequire('ace/range').Range;
 /**
  * Encapsulates an AceEditor that supports setting breakpoints by
@@ -56,13 +56,16 @@ class StopifyAce extends React.Component {
         }
         this.editor = editor.editor;
         this.editor.$blockScrolling = Infinity;
+        this.editor.setOptions({
+            fontSize: "12pt"
+        });
         // const code = langs[this.props.language].defaultCode;
         // this.editor.setValue(code);
         // this.props.onChange(code);
         this.editor.on("guttermousedown", (evt) => this.updateBreakpoints(evt));
     }
     render() {
-        return React.createElement(react_ace_1.default, { ref: (editor) => this.setupEditor(editor), onChange: (text) => this.props.onChange(text), width: "100%", theme: "monokai", name: "the_editor", value: this.props.value, mode: languages_1.langs[this.props.language].aceMode });
+        return React.createElement(react_ace_1.default, { ref: (editor) => this.setupEditor(editor), onChange: (text) => this.props.onChange(text), width: "100%", theme: "eclipse", name: "the_editor", value: this.props.value, mode: languages_1.langs[this.props.language].aceMode });
     }
 }
 exports.StopifyAce = StopifyAce;

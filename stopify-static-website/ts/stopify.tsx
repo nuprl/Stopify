@@ -59,7 +59,6 @@ interface StopifyEditorState {
 class StopifyEditor extends React.Component<{ language: string }, StopifyEditorState> {
 
   private iframe: HTMLIFrameElement | null = null;
-  language: string
 
   constructor(props: { language: string }) {
     super(props);
@@ -73,8 +72,6 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
       breakpoints: [],
       line: null
     };
-
-    this.language = props.language
 
     window.addEventListener('message', evt => {
       // Message could be from somethign else, e.g., React DevTools
@@ -217,6 +214,10 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     }
   }
 
+  stepSupported(): boolean {
+    return langs[this.props.language].stepSupported;
+  }
+
   render() {
     // The "key" in the iframe is unique and forces a full reload.
     const iframe = this.state.iframeUrl
@@ -255,12 +256,14 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
           disabled={this.state.mode === 'compiling'}
           text={this.playPauseText()}
           kind="btn-primary"></GlyphButton>
-        <GlyphButton
-          onclick={this.onStep.bind(this)}
-          glyph=""
-          disabled={this.state.mode !== 'paused'}
-          text="Step"
-          kind="btn-warning"></GlyphButton>
+        {this.stepSupported() ?
+          <GlyphButton
+            onclick={this.onStep.bind(this)}
+            glyph=""
+            disabled={this.state.mode !== 'paused'}
+            text="Step"
+            kind="btn-warning"></GlyphButton>
+          : <div></div>}
         <GlyphButton
           onclick={this.onStop.bind(this)}
           glyph=""

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.langs = {
     'ClojureScript': {
+        stepSupported: true,
         compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/clojurescript',
         aceMode: 'clojure',
         defaultCode: `(defn tail_sum [n acc]
@@ -12,6 +13,7 @@ exports.langs = {
 (println (tail_sum 1000000 1))`,
     },
     'Cpp': {
+        stepSupported: true,
         compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/emscripten',
         aceMode: 'c_cpp',
         defaultCode: `#include <stdio.h>
@@ -31,6 +33,7 @@ int main() {
 }`
     },
     'OCaml': {
+        stepSupported: false,
         aceMode: 'ocaml',
         defaultCode: `let rec tail_sum n acc =
 print_endline ("acc: " ^ (string_of_int acc));
@@ -40,6 +43,7 @@ let _ = tail_sum 1000000 1`,
         compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/bucklescript'
     },
     ScalaJS: {
+        stepSupported: true,
         aceMode: 'scala',
         defaultCode: `import scala.scalajs.js.JSApp
 
@@ -57,6 +61,7 @@ object Runner extends JSApp {
         compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/scalajs'
     },
     Python: {
+        stepSupported: false,
         aceMode: 'python',
         defaultCode: `def run_forever():
     i = 0

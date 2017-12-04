@@ -63,16 +63,9 @@ object Runner extends JSApp {
     Python: {
         stepSupported: false,
         aceMode: 'python',
-        defaultCode: `def run_forever():
-    i = 0
-    while(True):
-        if i > 10000:
-            i = 0
-        i += 1
-        print i
-
-run_forever()
-    `,
+        defaultCode: `def main():
+    print("hello")
+main()`,
         compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/pyjs'
     }
 };

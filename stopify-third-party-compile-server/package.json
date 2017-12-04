@@ -1,6 +1,6 @@
 {
   "name": "@plasma-umass/stopify-third-party-compile-server",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "A web server that compiles several languages to JavaScript",
   "devDependencies": {
     "@types/body-parser": "^1.16.8",

@@ -1,6 +1,6 @@
 {
   "name": "stopify",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Stopify makes JavaScript a better target language for high-level languages and web-based programming tools",
   "main": "built/src/index.js",
   "devDependencies": {

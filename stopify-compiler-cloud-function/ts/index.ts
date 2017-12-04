@@ -35,16 +35,24 @@ function checkCache(lang: string, input: string): Promise<CacheResult> {
     .then(exists => ({ filename, exists: exists[0] }));
 }
 
-function runStopify(response: express.Response, jsCode: string, filename: string, flags: string[]) {
+function runStopify(
+  response: express.Response,
+  jsCode: string,
+  filename: string,
+  flags: string[],
+  cleanupFunction: (file: string) => Promise<any>) : Promise<express.Response> {
+
   return tmpDir().then(dir => {
     const jsPath = `${dir}/original.js`;
     const stopifiedJsPath = `${dir}/output.js`
     return fs.writeFile(jsPath, jsCode)
       .then(_ => exec(`${stopifyCompiler} ${flags.join(" ")} --debug -t lazy ${jsPath} ${stopifiedJsPath}`))
+      .then(_ => cleanupFunction(stopifiedJsPath))
       .then(_ => fs.readFile(stopifiedJsPath))
   })
   .then(stopifiedJsCode => bucket.file(filename).save(stopifiedJsCode))
   .then(_ => response.send(filename));
+
 };
 
 function reject(response: express.Response) {
@@ -67,12 +75,20 @@ stopify.post('/js', bodyParser.text({ type: '*/*' }), (req, resp) =>
     }
     else {
       console.info(`Compiling js program (${req.body.length} bytes)`);
-      return runStopify(resp, req.body, filename, ['--js-args=faithful', '--es=es5']);
+      return runStopify(resp, req.body, filename,
+        ['--js-args=faithful', '--es=es5'], defaultCleanup);
     }
   })
   .catch(reject(resp)));
 
-function genericCompiler(lang: string, flags: string[]) {
+function defaultCleanup(file: string): Promise<string> {
+  return new Promise((resolve, reject) => resolve(file))
+}
+
+function genericCompiler(
+  lang: string,
+  flags: string[],
+  cleanupFunction: (file: string) => Promise<any> = defaultCleanup) {
   stopify.post(`/${lang}`, bodyParser.text({ type: '*/*' }), (req, resp) =>
     checkCache(lang, req.body)
     .then(({ filename,  exists }) => {
@@ -85,13 +101,22 @@ function genericCompiler(lang: string, flags: string[]) {
         console.info(`Compiling ${lang} program (${req.body.length} bytes)`);
         return request.post(`http://35.184.26.215:8080/${lang}`,
                             { headers, body: req.body })
-          .then(stopifiedJsCode => runStopify(resp, stopifiedJsCode, filename, flags));
+          .then(stopifiedJsCode =>
+            runStopify(resp, stopifiedJsCode, filename, flags, cleanupFunction));
       }
     })
     .catch(reject(resp)));
 }
 
-genericCompiler('pyjs', ['--js-args=faithful']);
+
+// Removes $__R.suspend from the runtime. Makes use of the "___RUNTIME_ENDS___"
+// string added by the compiler.
+function pythonCleanup(file: string): Promise<string> {
+  return exec(`sed -i 's/"__RUNTIME_ENDS__"/\\0\\r\\n/g' ${file}`)
+    .then(_ => exec(`sed -i '1s/\\$__R.suspend()/null/g' ${file}`));
+}
+
+genericCompiler('pyjs', ['--js-args=faithful'], pythonCleanup);
 genericCompiler('emscripten', []);
 genericCompiler('bucklescript', []);
 genericCompiler('scalajs', []);

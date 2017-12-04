@@ -112,7 +112,7 @@ function genericCompiler(
 // Removes $__R.suspend from the runtime. Makes use of the "___RUNTIME_ENDS___"
 // string added by the compiler.
 function pythonCleanup(file: string): Promise<string> {
-  return exec(`sed -i 's/"__RUNTIME_ENDS__"/\\0\\r\\n/g' ${file}`)
+  return exec(`sed -i "s/'__RUNTIME_ENDS__'/\\0\\r\\n/g" ${file}`)
     .then(_ => exec(`sed -i '1s/\\$__R.suspend()/null/g' ${file}`));
 }
 

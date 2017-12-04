@@ -1,11 +1,13 @@
 export interface Language {
   compileUrl: string,
   defaultCode: string
-  aceMode: string
+  aceMode: string,
+  stepSupported: boolean
 }
 
 export const langs: { [name: string]: Language } = {
   'ClojureScript': {
+    stepSupported: true,
     compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/clojurescript',
     aceMode: 'clojure',
 		defaultCode:`(defn tail_sum [n acc]
@@ -16,6 +18,7 @@ export const langs: { [name: string]: Language } = {
 (println (tail_sum 1000000 1))`,
   },
   'Cpp': {
+    stepSupported: true,
     compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/emscripten',
     aceMode: 'c_cpp',
     defaultCode:
@@ -36,6 +39,7 @@ int main() {
 }`
   },
   'OCaml': {
+    stepSupported: false,
     aceMode: 'ocaml',
     defaultCode:
       `let rec tail_sum n acc =
@@ -46,6 +50,7 @@ let _ = tail_sum 1000000 1`,
     compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/bucklescript'
   },
   ScalaJS: {
+    stepSupported: true,
     aceMode: 'scala',
     defaultCode:
     `import scala.scalajs.js.JSApp
@@ -64,6 +69,7 @@ object Runner extends JSApp {
     compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/scalajs'
   },
   Python: {
+    stepSupported: false,
     aceMode: 'python',
     defaultCode:
     `def run_forever():

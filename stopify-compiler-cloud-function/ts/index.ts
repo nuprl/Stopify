@@ -72,7 +72,7 @@ stopify.post('/js', bodyParser.text({ type: '*/*' }), (req, resp) =>
   })
   .catch(reject(resp)));
 
-function genericCompiler(lang: string, flags: string[]) {
+function genericCompiler(lang: string, url: string, flags: string[]) {
   stopify.post(`/${lang}`, bodyParser.text({ type: '*/*' }), (req, resp) =>
     checkCache(lang, req.body)
     .then(({ filename,  exists }) => {
@@ -83,7 +83,7 @@ function genericCompiler(lang: string, flags: string[]) {
       }
       else {
         console.info(`Compiling ${lang} program (${req.body.length} bytes)`);
-        return request.post(`http://35.184.26.215:8080/${lang}`,
+        return request.post(url,
                             { headers, body: req.body })
           .then(stopifiedJsCode => runStopify(resp, stopifiedJsCode, filename, flags));
       }
@@ -91,8 +91,8 @@ function genericCompiler(lang: string, flags: string[]) {
     .catch(reject(resp)));
 }
 
-genericCompiler('pyjs', ['--js-args=faithful']);
-genericCompiler('emscripten', []);
-genericCompiler('bucklescript', []);
-genericCompiler('scalajs', []);
-genericCompiler('clojurescript', []);
+genericCompiler('pyjs', 'http://35.184.26.215:8080/pyjs', ['--js-args=faithful']);
+genericCompiler('emscripten',  'http://35.184.26.215:8080/emscripten', []);
+genericCompiler('bucklescript',  'http://35.184.26.215:8080/bucklescript', []);
+genericCompiler('scalajs', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileScalaJS', []);
+genericCompiler('clojurescript',  'http://35.184.26.215:8080/closurescript',[]);

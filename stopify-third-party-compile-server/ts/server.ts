@@ -4,7 +4,6 @@ import * as bodyParser from 'body-parser';
 import * as pyjs from './pyjs';
 import * as emscripten from './emscripten';
 import * as bucklescript from './bucklescript';
-import * as scalajs from './scalajs';
 import * as clojurescript from './clojurescript';
 
 export const app = express();
@@ -27,5 +26,4 @@ function compiler(url: string, compile: (src: string) => Promise<string>) {
 compiler('/pyjs', pyjs.compile);
 compiler('/emscripten', emscripten.compile);
 compiler('/bucklescript', bucklescript.compile);
-compiler('/scalajs', scalajs.compile);
 compiler('/clojurescript', clojurescript.compile);

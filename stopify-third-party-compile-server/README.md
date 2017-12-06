@@ -21,13 +21,12 @@ npm install -g browserify
 
 I had a lot of issues with permissions installing bs-platform.
 
-4. JDK (for Sacla and Clojure)
+4. JDK (for Clojure)
 
 ```
 sudo apt-get install openjdk-8-jdk
 ```
 
-5. http://www.scala-sbt.org/1.0/docs/Installing-sbt-on-Linux.html
 
 Building
 ========

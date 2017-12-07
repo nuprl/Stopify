@@ -198,7 +198,6 @@ const visitor = {
       // signature.
       if (vars.includes(path.node.id.name) &&
           !(state.opts.compileFunction && (<any>path.node).topFunction)) {
-        console.log(`Doing it to ${path.node.id.name} ${vars}`);
         const fun = t.functionExpression(
           fastFreshId.fresh('fun'),
           path.node.params,

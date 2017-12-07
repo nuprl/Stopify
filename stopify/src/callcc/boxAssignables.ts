@@ -48,7 +48,7 @@ function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
       path.node.id.name === x) {
     return false;
   }
-  return (<any>binds[x].kind === "hoisted" || freeIds.isNestedFree(path, x));
+  return (freeIds.isNestedFree(path, x));
 }
 
 function liftStatement(parentPath: NodePath<Parent>, path: NodePath<t.Node>,
@@ -198,6 +198,7 @@ const visitor = {
       // signature.
       if (vars.includes(path.node.id.name) &&
           !(state.opts.compileFunction && (<any>path.node).topFunction)) {
+        console.log(`Doing it to ${path.node.id.name} ${vars}`);
         const fun = t.functionExpression(
           fastFreshId.fresh('fun'),
           path.node.params,

@@ -48,6 +48,9 @@ const visitor = {
           decl.init = delimitExpr(decl.init);
         }
       }
+      else if (stmt.type === 'FunctionDeclaration') {
+        // leave intact
+      }
       else {
         if (state.opts.compileFunction && (<any>body[i]).topFunction) {
         }

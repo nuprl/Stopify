@@ -85,7 +85,15 @@ function genericCompiler(lang: string, url: string, flags: string[]) {
         console.info(`Compiling ${lang} program (${req.body.length} bytes)`);
         return request.post(url,
                             { headers, body: req.body })
-          .then(stopifiedJsCode => runStopify(resp, stopifiedJsCode, filename, flags));
+          .then(stopifiedJsCode => runStopify(resp, stopifiedJsCode, filename, flags))
+          .catch(err => {
+            if (err.name === 'StatusCodeError') {
+              throw err.response.body;
+            }
+            else {
+              throw err;
+            }
+          });
       }
     })
     .catch(reject(resp)));

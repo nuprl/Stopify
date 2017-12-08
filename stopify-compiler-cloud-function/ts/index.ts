@@ -95,4 +95,4 @@ genericCompiler('pyjs', 'http://35.184.26.215:8080/pyjs', ['--js-args=faithful']
 genericCompiler('emscripten',  'http://35.184.26.215:8080/emscripten', []);
 genericCompiler('bucklescript',  'http://35.184.26.215:8080/bucklescript', []);
 genericCompiler('scalajs', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileScalaJS', []);
-genericCompiler('clojurescript',  'http://35.184.26.215:8080/closurescript',[]);
+genericCompiler('clojurescript',  'http://35.184.26.215:8080/clojurescript',[]);

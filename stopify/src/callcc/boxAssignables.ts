@@ -91,6 +91,7 @@ function liftStatement(parentPath: NodePath<Parent>, path: NodePath<t.Node>,
 
 
 function enterFunction(self: State, path: NodePath<t.FunctionExpression>) {
+
     const locals = Set.of(...Object.keys(path.scope.bindings));
     // Mutable variables from this scope that are not shadowed
     const vars0 = self.vars.subtract(locals);
@@ -207,7 +208,7 @@ const visitor = {
         (<any>fun).boxedArgs = (<any>path.node).boxedArgs;
 
         // Little hack necessary to preserve annotation left by freeIds.ts
-        (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
+        (<any>fun).escapingAIds = (<any>path.node).escapingAIds;
         const stmt = t.variableDeclaration("var",
           [t.variableDeclarator(path.node.id, box(fun))]);
         liftStatement(parentPath, path, stmt);

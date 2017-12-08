@@ -8,74 +8,52 @@
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
-import * as SetExt from "./setExt";
+import { Set } from 'immutable';
+import * as SA from '../scopeAnalysis';
 
-export interface NestedFunctionFree {
-  nestedFunctionFree: Set<string>,
+export type T = {
+  escapingAIds: Set<string>
 }
 
 interface FreeIds {
   freeIds: Set<string>
 }
 
-interface State {
-  refIds: Set<string>,
-  refIdStack: Set<string>[]
+type S = {
+  nestedFreeIds: Set<string>[],
+  nestedFreeIdsStack: Set<string>[][]
+}
+function genericEnter(self: S, path: NodePath<t.Node & SA.T & T>) {
+  self.nestedFreeIds.push(path.node.freeIds);
+  self.nestedFreeIdsStack.push(self.nestedFreeIds);
+  self.nestedFreeIds = [];
 }
 
-const hasNff = [ "FunctionDeclaration", "FunctionExpression", "Program" ];
-const functionTypes = [ 'FunctionDeclaration', 'FunctionExpression' ];
+function genericExit(self: S, path: NodePath<t.Node & SA.T & T>) {
+  path.node.escapingAIds =
+    path.node.assignableIds.intersect(...self.nestedFreeIds);
+  self.nestedFreeIds = self.nestedFreeIdsStack.pop()!;
+}
 
 const visitor = {
-  Function(this: State, path: NodePath<t.Function & NestedFunctionFree>) {
-    path.node.nestedFunctionFree = new Set<string>();
-  },
-  Scope: {
-    enter(this: State, path: NodePath<t.Scopable>) {
-      this.refIdStack.push(this.refIds);
-      this.refIds = new Set();
+  Function: {
+    enter(this: S, path: NodePath<t.Function & SA.T & T>) {
+      genericEnter(this, path);
     },
-    exit(this: State, path: NodePath<t.Scopable & FreeIds>) {
-      const boundIds = new Set<string>(Object.keys(path.scope.bindings));
-      const freeIds = SetExt.diff(this.refIds, boundIds);
-      path.node.freeIds = freeIds;
-      this.refIds = this.refIdStack.pop()!;
-      for (const x of freeIds) {
-        this.refIds.add(x);
-      }
-
-      if (functionTypes.includes(path.node.type)) {
-        const parent = enclosingFunction(path);
-        const nestedFunctionFree = parent.node.nestedFunctionFree;
-        for (const x of path.node.freeIds) {
-          nestedFunctionFree.add(x);
-        }
-      }
-
+    exit(this: S, path: NodePath<t.Function & SA.T & T>) {
+      genericExit(this, path);
     }
   },
-  ReferencedIdentifier(this: State, path: NodePath<t.Identifier>) {
-    const parentType = path.parent.type;
-    if (parentType === "BreakStatement" ||
-        parentType === 'ContinueStatement' ||
-        parentType === "LabeledStatement") {
-      return;
+  Program: {
+    enter(this: S, path: NodePath<t.Program & SA.T & T>) {
+      this.nestedFreeIds = [];
+      this.nestedFreeIdsStack = [];
+    },
+    exit(this: S, path: NodePath<t.Program & SA.T & T>) {
+      path.node.escapingAIds = Set<string>(); // wtf
     }
-    this.refIds.add(path.node.name);
-  },
-  BindingIdentifier(this: State, path: NodePath<t.Identifier>) {
-    const parentType = path.parent.type;
-    if (parentType !== "AssignmentExpression") {
-      return;
-    }
-    this.refIds.add(path.node.name);
-  },
-  Program(this: State, path: NodePath<t.Program & NestedFunctionFree>) {
-    path.node.nestedFunctionFree = new Set<string>();
-    this.refIdStack = [];
-    this.refIds = new Set<string>();
   }
-}
+};
 
 export function annotate(path: NodePath<t.Node>) {
   const opts = {
@@ -87,28 +65,7 @@ export function annotate(path: NodePath<t.Node>) {
   babel.transformFromAst(path.node, undefined, opts);
 }
 
-export function enclosingFunction(path: NodePath<t.Node>): NodePath<(t.Function | t.Program) & NestedFunctionFree> {
-  const p = path.findParent(p => hasNff.includes(p.node.type));
-  return <any>p;
-}
-
-export function isNestedFree(
-  path: NodePath<t.Function | t.Program>,
+export function isNestedFree(path: NodePath<t.Function | t.Program>,
   x: string): boolean {
-    return (<any>path.node).nestedFunctionFree.has(x);
-}
-
-function main() {
-  const filename = process.argv[2];
-  const opts = { plugins: [() => ({ visitor })], babelrc: false };
-  babel.transformFile(filename, opts, (err, result) => {
-    if (err !== null) {
-      throw err;
-    }
-    console.log(result.code);
-  });
-}
-
-if (require.main === module) {
-  main();
+  return (<T>(<any>path.node)).escapingAIds.contains(x);
 }

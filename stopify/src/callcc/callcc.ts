@@ -12,6 +12,7 @@ import * as desugarSwitch from '../common/desugarSwitch';
 import * as desugarLogical from '../common/desugarLogical';
 import * as singleVarDecls from '../common/singleVarDecls';
 import * as makeBlocks from '../common/makeBlockStmt';
+import * as scopeAnalysis from '../scopeAnalysis';
 import * as boxAssignables from './boxAssignables';
 import * as desugarNew from '../common/desugarNew';
 import * as anf from '../common/anf';
@@ -55,6 +56,8 @@ const visitor: Visitor = {
 
     timeSlow('singleVarDecl', () =>
       h.transformFromAst(path, [singleVarDecls]));
+    timeSlow('scopeAnalysis', () =>
+      h.transformFromAst(path, [scopeAnalysis.plugin]));
     timeSlow('free ID initialization', () =>
       freeIds.annotate(path));
     timeSlow('box assignables', () =>

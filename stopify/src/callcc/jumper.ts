@@ -2,7 +2,6 @@ import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';
-import { letExpression } from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
 import * as generic from '../generic';
 import { getLabels, AppType } from './label';
@@ -100,11 +99,6 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   if ((<any>path.node).mark === 'Flat') {
     return;
   }
-  const { body } = path.node;
-  const afterDecls = body.body.findIndex(e =>
-   !(<any>e).__boxVarsInit__ && !(<any>e).lifted);
-  const { pre, post } = split(body.body, afterDecls);
-
   const restoreLocals = path.node.localVars;
 
   const restoreBlock = t.blockStatement([
@@ -162,16 +156,12 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     }
   }
 
-  const newBody = t.blockStatement([
-    ...pre,
+  path.node.body.body.unshift(...[
     ifRestoring,
     captureClosure,
     reenterClosure,
-    ...mayMatArgs,
-    ...post
+    ...mayMatArgs
   ]);
-  newBody.directives = path.node.body.directives;
-  path.get('body').replaceWith(newBody);
   path.skip();
 };
 
@@ -431,14 +421,21 @@ const jumper = {
       if ((<any>path.node).mark === 'Flat') {
         return;
       }
+    },
+    exit(path: NodePath<Labeled<FunctionT>>, state: State): void {
+      if((<any>path.node).mark == 'Flat') {
+        return
+      }
 
-      const declTarget = letExpression(target, t.nullLiteral());
+      func(path, state);
+
+      const declTarget = bh.varDecl(target, t.nullLiteral());
       (<any>declTarget).lifted = true;
       path.node.body.body.unshift(declTarget);
 
-      if (s.opts.handleNew === 'direct') {
+      if (state.opts.handleNew === 'direct') {
         path.node.localVars.push(newTarget);
-        const declNewTarget = letExpression(newTarget,
+        const declNewTarget = bh.varDecl(newTarget,
           t.memberExpression(t.identifier('new'), t.identifier('target')));
         (<any>declNewTarget).lifted = true;
 
@@ -450,12 +447,6 @@ const jumper = {
 
         path.node.body.body.push(ifConstructor);
       }
-    },
-    exit(path: NodePath<Labeled<FunctionT>>, state: State): void {
-      if((<any>path.node).mark == 'Flat') {
-        return
-      }
-      else return func(path, state);
     }
   },
 

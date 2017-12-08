@@ -151,3 +151,9 @@ export function arrayPrototypeSliceCall(e: t.Expression): t.Expression {
       t.identifier('call')),
     [e]);
 }
+
+export function varDecl(x: string | t.Identifier,
+  init?: t.Expression): t.VariableDeclaration {
+  const id = typeof x === 'string' ? t.identifier(x) : x;
+  return t.variableDeclaration('var', [t.variableDeclarator(id, init)]);
+}

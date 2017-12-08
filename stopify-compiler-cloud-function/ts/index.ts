@@ -40,7 +40,7 @@ function runStopify(response: express.Response, jsCode: string, filename: string
     const jsPath = `${dir}/original.js`;
     const stopifiedJsPath = `${dir}/output.js`
     return fs.writeFile(jsPath, jsCode)
-      .then(_ => exec(`${stopifyCompiler} ${flags.join(" ")} --debug -t lazy ${jsPath} ${stopifiedJsPath}`))
+      .then(_ => exec(`${stopifyCompiler} ${flags.join(" ")} -t lazy ${jsPath} ${stopifiedJsPath}`))
       .then(_ => fs.readFile(stopifiedJsPath))
   })
   .then(stopifiedJsCode => bucket.file(filename).save(stopifiedJsCode))
@@ -67,7 +67,7 @@ stopify.post('/js', bodyParser.text({ type: '*/*' }), (req, resp) =>
     }
     else {
       console.info(`Compiling js program (${req.body.length} bytes)`);
-      return runStopify(resp, req.body, filename, ['--js-args=faithful', '--es=es5']);
+      return runStopify(resp, req.body, filename, ['--debug', '--js-args=faithful', '--es=es5']);
     }
   })
   .catch(reject(resp)));
@@ -92,7 +92,7 @@ function genericCompiler(lang: string, url: string, flags: string[]) {
 }
 
 genericCompiler('pyjs', 'http://35.184.26.215:8080/pyjs', ['--js-args=faithful']);
-genericCompiler('emscripten',  'http://35.184.26.215:8080/emscripten', []);
+genericCompiler('emscripten',  'http://35.184.26.215:8080/emscripten', ['--debug']);
 genericCompiler('bucklescript',  'http://35.184.26.215:8080/bucklescript', []);
-genericCompiler('scalajs', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileScalaJS', []);
-genericCompiler('clojurescript',  'http://35.184.26.215:8080/clojurescript',[]);
+genericCompiler('scalajs', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileScalaJS', ['--debug']);
+genericCompiler('clojurescript',  'http://35.184.26.215:8080/clojurescript',['--debug']);

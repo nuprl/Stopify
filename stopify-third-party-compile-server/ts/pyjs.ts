@@ -31,6 +31,6 @@ export function compile(code: string): Promise<string> {
         .then(_ => exec(`pyjscompile ${pyPath}`))
         .then(jsCode => fs.readFile(rtsPath, 'utf-8')
           .then(rts => fs.unlink(pyPath)
-            .then(_ => rts + jsCode + 'pygwtOnLoad();')));
+            .then(_ => rts.replace('$__R.suspend()', 'null') + jsCode + 'pygwtOnLoad();')));
     })
 }

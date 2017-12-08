@@ -35,7 +35,6 @@
  */
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {letExpression} from '../common/helpers';
 import * as bh from '../babelHelpers';
 import { fresh } from '../fastFreshId';
 
@@ -68,8 +67,7 @@ const visitor: Visitor = {
       if (path.node.finalizer) {
         // NOTE(arjun): If we have several finally blocks in the same scope,
         // this probably creates duplicate declarations.
-        const sentinalDecl = letExpression(finallySentinal, sentinal, 'var');
-        (<any>sentinalDecl).lifted = true;
+        const sentinalDecl = bh.varDecl(finallySentinal, sentinal);
         bh.enclosingScopeBlock(path).unshift(sentinalDecl);
         path.node.finalizer.body.push(bh.sIf(t.binaryExpression('!==',
           finallySentinal, sentinal),

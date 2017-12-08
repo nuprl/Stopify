@@ -220,7 +220,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     let rhs: JSX.Element;
     if (this.state.rhs.type === 'message') {
       const lines = this.state.rhs.text.split('\n')
-        .map(line => <div>{line}</div>);
+        .map((line, index) => <div key={index}>{line}</div>);
       rhs = <div>{lines}</div>;
     }
     else {

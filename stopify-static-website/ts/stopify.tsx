@@ -232,21 +232,25 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     }
     return <div className="row display-flex">
       <div className="col-md-3 information">
-        <p>This is an experimental, web-based code editor that lets you run
+        <p>Stopify is a JavaScript-to-JavaScript compiler that makes it
+        possible to run
         programs, gracefully stop non-terminating programs, set breakpoints, and
         step through code <i>entirely in the browser</i>.</p>
 
-        <p>This editor is a technology demo for <b>Stopify</b>, a project to
-        make JavaScript a better language for compilers and web-based
+        <p>The goal of Stopify is to
+        make JavaScript a better language for compilers and Web-based
         programming tools. Most compilers that produce JavaScript inherit the
-        limitations of web. For example, long-running programs must be broken
-        into short events to keep the browser tab happy. Similarly, most web-based
-        code editors cannot gracefully handle non-terminating programs.</p>
+        limitations of the browser's execution model. For example, long-running programs must be broken
+        into short events to keep the browser tab happy. Similarly, most Web-based
+        IDE cannot gracefully handle non-terminating programs.</p>
 
         <p>Stopify addresses these issues in an (almost) language-neutral way.
         We use existing compilers to translate source languages to JavaScript.
         Stopify then instruments the JavaScript produced to support stopping,
-        stepping, and breakpointing. </p>
+        stepping, and breakpointing. Therefore, a Web-based IDE could use Stopify
+        to provide debugging features that are typically only found on
+        desktop IDEs.
+        </p>
       </div>
       <div className="col-md-5">
         <div>

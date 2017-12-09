@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stopify Technology Demo: a JS-to-JS compiler that makes it easier to build IDEs and compile to JS</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+
+    <div class="container-fluid">
+      <nav key="navbar" class="navbar navbar-default">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <button type="button"
+                  class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="./index.html"><b>Stopify</b> Technology Demo</a>
+            </div>
+            <div class="collapse navbar-collapse"
+                  id="bs-example-navbar-collapse-1">
+              <ul class="nav navbar-nav" id="navigation">
+                <li><a href="/index.html">Demo</a></li>
+                <li><a href="/faq.html">FAQ</a></li>
+                <li><a href="/about.html">More Information</a></li>
+                <li><a href="https://www.github.com/plasma-umass/Stopify">Source Code</a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      <div class="row">
+  <div class="rte col-md-offset-2 col-md-12 col-sm-12 col-sm-offset-0">
+    <h2 class="stopify-heading">Frequently Asked Questions</h3>
+  </div>
+</div>
+
+<div class="row">
+
+<div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+<h4 class="stopify-heading">What is Stopify?</h4>
+
+<p class="p1">
+Scores of languages now compile to JavaScript, which allows programmers to use
+many languages on the Web. Unfortunately, most compilers simply inherit
+the browser's execution model: long-running programs freeze the browser tab,
+blocking operations do not work, deeply recursive programs quickly overflow the
+stack, infinite loops crash Web-based IDEs, and so on. Stopify is a
+JavaScript-to-JavaScript compiler that is designed to help compiler authors
+address these limitations easily and efficiently.
+</p>
+</div>
+
+</div>
+
+<div class="row">
+<div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+<h4 class="stopify-heading">How does Stopify work?</h4>
+<p class="p1">
+There are four key pieces to Stopify.
+
+<ul>
+
+<li><b>First-class continuations:</b> Stopify's abstractions rely on
+first-class continuations, which it provides by compiling JavaScript to
+JavaScript.</li>
+
+<li><b>Browser-specific optimizations:</b>
+There are several ways to implement continuations in JavaScript and it
+turns out that different approaches work best on different browsers.
+Stopify can give a compiler multiple backends to maximize performance.
+</li>
+
+<li><b>Sub-languages of JavaScript:</b> JavaScript has several unusual language
+features that make it very difficult to implement Stopify efficiently.
+Fortunately, most source languages compile to sub-languages of JavaScript that
+don't use all of JavaScript's features. (<i>e.g.,</i> the image of OCaml in
+JavaScript is very simple sub-language of JavaScript.) We have identified
+several sub-languages that many compilers use and Stopify exploits them to
+maximize performance.</li>
+
+<li><b>Time estimation:</b> Stopify needs to periodically interrupt execution
+and yield control to the browser's event loop. The frequency of interruptions
+has to strike a balance between performance and responsiveness. Moreover,
+checking the system time too frequently from JavaScript also slows
+the program down. Stopify uses a sampling-based technique to estimate
+the rate at which the program executes and dynamically adjusts the interrupt
+rate.</li>
+
+</ul>
+
+</p>
+</div>
+</div>
+
+<div class="row">
+<div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+<h4 class="stopify-heading">How does Stopify perform?</h4>
+<p class="p1">
+See the question above: it depends on the source language and the sub-language
+of JavaScript that the source language compiler uses. We have extensive
+benchmarks that we can share if you're interested. But, to give an example, on
+Python (using PyJS), we find that the median slowdown is 1.4x. PyJS doesn't use
+all of JavaScript's features and we can exploit that to improve performance.
+Our worst slowdown is when the source language is JavaScript itself because we
+can't make simplifying assumptions. The median slowdown we get on the Kraken
+benchmark squite is 20x. These are slowdowns on a $200 ChromeBook. We also have
+results from the four major browsers on a desktop machine.
+</p>
+</div>
+</div>
+    
+<div class="row">
+<div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+<h4 class="stopify-heading">Why not use Web Workers?</h4>
+<p class="p1">
+Stopify runs programs on the main JavaScript thread, which gives you full
+access to the DOM, the network, etc. This is particularly important for many
+web-based IDEs that rely on graphics. A Web Worker would give us to ability to
+run a long-running computation and kill it, but would make DOM access much
+harder. Moreover, a Web Worker does not provide provide the rich execution
+control that Stopify provides, e.g., pausing, breakpointing, and deep stacks.
+</p>
+</div>
+</div>
+
+<div class="row">
+<div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+<h4 class="stopify-heading">Why not use WebAssembly?</h4>
+<p class="p1">
+
+We think WebAssembly is awesome! However, at the moment, it is really designed
+to be a target for C/C++. Currently, garbage collection, threads, tail calls,
+and host bindings (e.g., access to the DOM) are in the feature proposal stage.
+Threfore, WebAssembly today does not provide enough features to prototype a
+Stopify-like solution. As WebAssembly evolves to support higher-level
+languages, web-based IDEs will want to use it. For that to happen, WebAssembly
+will need to support the kind of execution control that Stopify provides for
+JavaScript.
+
+</p>
+</div>
+</div>
+
+<div class="row">
+<div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+<h4 class="stopify-heading">Can Stopify be applied to more than IDEs?</h4>
+<p class="p1">
+
+Yes! Stopify implements first-class continuations for JavaScript, so you can
+easily use it to build anything that first-class continuations allow. Let
+us know what you do with Stopify!
+
+</p>
+</div>
+</div>
+
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="stopify.js"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-6609135-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

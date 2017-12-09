@@ -232,24 +232,20 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     }
     return <div className="row display-flex">
       <div className="col-md-3 information">
-        <p>Stopify is a JavaScript-to-JavaScript compiler that makes it
-        possible to run
-        programs, gracefully stop non-terminating programs, set breakpoints, and
-        step through code <i>entirely in the browser</i>.</p>
 
-        <p>The goal of Stopify is to
-        make JavaScript a better language for compilers and Web-based
-        programming tools. Most compilers that produce JavaScript inherit the
-        limitations of the browser's execution model. For example, long-running programs must be broken
-        into short events to keep the browser tab happy. Similarly, most Web-based
-        IDE cannot gracefully handle non-terminating programs.</p>
-
-        <p>Stopify addresses these issues in an (almost) language-neutral way.
-        We use existing compilers to translate source languages to JavaScript.
-        Stopify then instruments the JavaScript produced to support stopping,
-        stepping, and breakpointing. Therefore, a Web-based IDE could use Stopify
-        to provide debugging features that are typically only found on
-        desktop IDEs.
+        <p>This is a demo of Stopify, a JavaScript-to-JavaScript compiler that
+        makes it possible for other compilers and Web-based IDEs to gracefully
+        run long-running programs, stop non-terminating programs, support
+        blocking I/O, set breakpoints, and step through code <i>entirely
+        in the browser</i>. To demonstrate, this demo applies Stopify to the
+        JavaScript output by several existing compilers without making changes
+        to the compilers themselves. We showcase programs that take several
+        seconds to run or run forever. These programs would normally freeze your
+        browser tab, but Stopify keeps this page responsive and let's you
+        gracefully interrupt at any time. For certain languages, Stopify
+        even supports setting breakpoints and single-stepping. The FAQ
+        and Source Code provide more information and discuss how to use
+        Stopify to enhance your compiler or IDE.
         </p>
       </div>
       <div className="col-md-5">

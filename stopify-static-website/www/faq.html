@@ -1,0 +1,53 @@
+---
+layout: main
+---
+<div class="row">
+  <div class="rte col-md-offset-2 col-md-12 col-sm-12 col-sm-offset-0">
+    <h2 class="stopify-heading">Frequently Asked Questions</h3>
+  </div>
+</div>
+
+<div class="row">
+  <div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+    <h4 class="stopify-heading">Why Stopify?</h4>
+    <p class="p1">
+Scores of compilers emit JavaScript, enabling programmers to use many languages on the Web, reuse existing code, and even use Web IDEs.  Unfortunately, most compilers expose the browser's compromised execution model, so long programs freeze the browser tab, infinite loops crash IDEs, and so on.  The few compilers that avoid these problems suffer poor performance and are difficult to engineer.
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+    <h4 class="stopify-heading">How does Stopify work?</h4>
+    <p class="p1">
+Stopify's abstractions rely on first-class continuations, which it provides by compiling JavaScript to JavaScript.  We also identify sub-languages of JavaScript that compilers implicitly use, and exploit these to improve performance. Stopify needs to repeatedly interrupt and resume program execution. We use a sampling-based technique to estimate program speed that outperforms other systems.
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+    <h4 class="stopify-heading">Why not use Web Workers?</h4>
+    <p class="p1">
+Web Workers are essentially isolated processes for JavaScript and a Web IDE can use them to terminate a user's program.  However, unlike Stopify, Workers do not provide richer execution control (e.g., pausing or breakpointing) or deep stacks.  Unlike Stopify, they also have a limited interface: they cannot directly access the DOM, and can communicate only through special shared datatypes or by message passing.
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+    <h4 class="stopify-heading">Why not use WebAssembly?</h4>
+    <p class="p1">
+ WebAssembly is a new low-level language in Web browsers.  Currently, garbage collection, threads, tail calls, and host bindings (e.g., access to the DOM) are in the feature proposal stage. Therefore, WebAssembly currently does not provide enough features to prototype a Stopify-like solution.  Nevertheless, as it matures, Web IDEs may want to switch to it. For that to happen, WebAssembly will need to support the kind of execution control that Stopify provides for JavaScript.
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+    <h4 class="stopify-heading">Can Stopify be applied to more than IDEs?</h4>
+    <p class="p1">
+Yes! Stopify implements the call/cc operator, and as such can be used to implement all that call/cc entails in JavaScript. This includes not only the debugging abstractions demonstrated here, but also cooperative threading, synchronous interfaces around asynchronous browser APIs, proper tail call semantics (even in browsers with native propert tail call support), and more.
+    </p>
+  </div>
+</div>

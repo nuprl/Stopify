@@ -13,8 +13,13 @@ class MultilingualStopifyEditor extends React.Component<{}, {language: string}> 
 
   constructor(props: { language: string }) {
     super(props);
+    let lang = 'Scala';
+    if (window.location.hash.length > 1 &&
+        Object.keys(langs).includes(window.location.hash.slice(1))) {
+        lang = window.location.hash.slice(1);
+    }
     this.state = {
-      language: 'ScalaJS'
+      language: lang
     };
   }
 
@@ -28,15 +33,16 @@ class MultilingualStopifyEditor extends React.Component<{}, {language: string}> 
         <div className="col-md-12">
           <span className="dropdown">
             <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-              Choose a Language
+              {this.state.language}
               <span className="caret"></span>
             </button>
             <ul className="dropdown-menu">
+            <li><a href="#" onClick={() => this.setState({ language: 'Dart' })}>Dart</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'Python' })}>Python</a></li>
-              <li><a href="#" onClick={() => this.setState({ language: 'ScalaJS' })}>Scala</a></li>
+              <li><a href="#" onClick={() => this.setState({ language: 'Scala' })}>Scala</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'OCaml' })}>OCaml</a></li>
-              <li><a href="#" onClick={() => this.setState({ language: 'Cpp' })}>C++</a></li>
-              <li><a href="#" onClick={() => this.setState({ language: 'ClojureScript' })}>Clojure</a></li>
+              <li><a href="#" onClick={() => this.setState({ language: 'C++' })}>C++</a></li>
+              <li><a href="#" onClick={() => this.setState({ language: 'Clojure' })}>Clojure</a></li>
             </ul>
           </span>
         </div>
@@ -230,7 +236,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
            </iframe>;
     }
     return <div className="row display-flex">
-      <div className="col-md-6 col-xs-12">
+      <div className="col-md-8 col-xs-12">
         <div>
         <GlyphButton
           onclick={this.onPlayPause.bind(this)}
@@ -260,7 +266,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
           language={this.props.language}>
         </StopifyAce>
       </div>
-      <div className="col-md-5 col-xs-12" id="output" style={{overflow: "hidden"}}>
+      <div className="col-md-3 col-xs-12" id="output" style={{overflow: "hidden"}}>
         <div style={{height: "100%"}}>{rhs}</div>
       </div>
     </div>;

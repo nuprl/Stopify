@@ -9,7 +9,18 @@ const compilerBase = 'https://us-central1-arjun-umass.cloudfunctions.net/stopify
 
 
 export const langs: { [name: string]: Language } = {
-  'ClojureScript': {
+  'Dart': {
+    stepSupported: false,
+    compileUrl: `${compilerBase}/dart2js`,
+    aceMode: 'dart',
+    defaultCode: `
+void main() {
+  for (int i = 0; i < 10000000; i++) {
+    print('hello \${i + 1}');
+  }
+}`
+  },
+  'Clojure': {
     stepSupported: true,
     compileUrl: `${compilerBase}/clojurescript`,
     aceMode: 'clojure',
@@ -20,7 +31,7 @@ export const langs: { [name: string]: Language } = {
     (tail_sum (- n 1) (+ acc n))))
 (println (tail_sum 1000000 1))`,
   },
-  'Cpp': {
+  'C++': {
     stepSupported: true,
     compileUrl: `${compilerBase}/emscripten`,
     aceMode: 'c_cpp',
@@ -52,7 +63,7 @@ if n = 0 then acc else tail_sum (n - 1) (acc + n)
 let _ = tail_sum 1000000 1`,
     compileUrl: `${compilerBase}/bucklescript`
   },
-  ScalaJS: {
+  'Scala': {
     stepSupported: true,
     aceMode: 'scala',
     defaultCode:

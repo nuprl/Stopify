@@ -25,8 +25,7 @@ class MultilingualStopifyEditor extends React.Component<{}, {language: string}> 
   render() {
     return [
       <div key="chooseLang" className="row">
-        <h3 className="stopify-heading col-md-3">What is Stopify?</h3>
-        <div className="col-md-5">
+        <div className="col-md-12">
           <span className="dropdown">
             <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
               Choose a Language
@@ -231,24 +230,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
            </iframe>;
     }
     return <div className="row display-flex">
-      <div className="col-md-3 information">
-
-        <p>This is a demo of Stopify, a JavaScript-to-JavaScript compiler that
-        makes it possible for other compilers and Web-based IDEs to gracefully
-        run long-running programs, stop non-terminating programs, support
-        blocking I/O, set breakpoints, and step through code <i>entirely
-        in the browser</i>. To demonstrate, this demo applies Stopify to the
-        JavaScript output by several existing compilers without making changes
-        to the compilers themselves. We showcase programs that take several
-        seconds to run or run forever. These programs would normally freeze your
-        browser tab, but Stopify keeps this page responsive and let's you
-        gracefully interrupt at any time. For certain languages, Stopify
-        even supports setting breakpoints and single-stepping. The FAQ
-        and Source Code provide more information and discuss how to use
-        Stopify to enhance your compiler or IDE.
-        </p>
-      </div>
-      <div className="col-md-5">
+      <div className="col-md-6 col-xs-12">
         <div>
         <GlyphButton
           onclick={this.onPlayPause.bind(this)}
@@ -278,7 +260,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
           language={this.props.language}>
         </StopifyAce>
       </div>
-      <div className="col-md-3" id="output" style={{overflow: "hidden"}}>
+      <div className="col-md-5 col-xs-12" id="output" style={{overflow: "hidden"}}>
         <div style={{height: "100%"}}>{rhs}</div>
       </div>
     </div>;

@@ -17,6 +17,7 @@ import { knowns } from '../common/cannotCapture'
 import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeHOFs from '../exposeHOFs';
 import * as jumper from './jumper';
+import { timeSlow } from '../generic';
 
 const allowed = [
   "Object",
@@ -69,15 +70,16 @@ export const visitor: Visitor = {
     }
 
     fastFreshId.init(path);
-    const plugs = []
+    const plugs: any[] = [];
     // Cleanup globals when not running in `func` compile mode
     if (!state.opts.compileFunction) {
       plugs.push([cleanupGlobals, { allowed }])
     }
-    h.transformFromAst(path, [
-      ...plugs,
-      [hygiene, { reserved }],
-    ]);
+    timeSlow('hygiene, etc.', () =>
+      h.transformFromAst(path, [
+        ...plugs,
+        [hygiene, { reserved }],
+      ]));
     if (!state.opts.debug) {
       h.transformFromAst(path, [
         markAnnotated
@@ -89,8 +91,11 @@ export const visitor: Visitor = {
         markFlatApplications,
       ]);
     }
-    h.transformFromAst(path, [[insertSuspend, opts]]);
-    h.transformFromAst(path, [[callcc, opts]]);
+    timeSlow('insertSuspend', () =>
+      h.transformFromAst(path, [[insertSuspend, opts]]));
+    timeSlow('(control ...) elimination', () =>
+      h.transformFromAst(path, [[callcc, opts]]));
+
     fastFreshId.cleanup()
 
     if (!opts.requireRuntime) {

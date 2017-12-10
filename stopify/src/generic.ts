@@ -33,7 +33,7 @@ export function timeSlow<T>(label: string, thunk: () => T): T {
   const result = thunk();
   const end = Date.now();
   const delay = end - start;
-  if (delay > 5000) {
+  if (delay > 2000) {
     console.info(`${label} (${delay} ms)`);
   }
   return result;

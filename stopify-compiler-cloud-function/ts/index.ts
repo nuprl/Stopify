@@ -4,20 +4,19 @@ import * as bodyParser from 'body-parser';
 import * as request from 'request-promise-native';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { tmpDir, exec } from './misc';
+import { tmpDir } from './misc';
 import * as storage from '@google-cloud/storage';
 import { resolve } from 'path';
 import * as crypto from 'crypto';
+import * as stopifyCompiler from 'stopify';
 
 const sto = storage();
-
 const bucket = sto.bucket('stopify-compiler-output');
 
 export const stopify = express();
+export const stopifyTesting = stopify;
 
 stopify.use(cors());
-
-const stopifyCompiler = '/nodejs/bin/node ./node_modules/stopify/built/src/compile.js';
 
 const headers = { 'Content-Type': 'text/plain' };
 
@@ -35,13 +34,11 @@ function checkCache(lang: string, input: string): Promise<CacheResult> {
     .then(exists => ({ filename, exists: exists[0] }));
 }
 
-function runStopify(response: express.Response, jsCode: string, filename: string, flags: string[]) {
+function runStopify(response: express.Response, jsCode: string, filename: string, opts: stopifyCompiler.CompilerOpts) {
   return tmpDir().then(dir => {
     const jsPath = `${dir}/original.js`;
-    const stopifiedJsPath = `${dir}/output.js`
     return fs.writeFile(jsPath, jsCode)
-      .then(_ => exec(`${stopifyCompiler} ${flags.join(" ")} -t lazy ${jsPath} ${stopifiedJsPath}`))
-      .then(_ => fs.readFile(stopifiedJsPath))
+      .then(_ => stopifyCompiler.stopify(jsPath, opts))
   })
   .then(stopifiedJsCode => bucket.file(filename).save(stopifiedJsCode))
   .then(_ => response.send(filename));
@@ -57,22 +54,22 @@ function reject(response: express.Response) {
   };
 }
 
-stopify.post('/js', bodyParser.text({ type: '*/*' }), (req, resp) =>
-  checkCache('js', req.body)
-  .then(({ filename,  exists }) => {
-    if (exists) {
-      resp.set('Access-Control-Allow-Origin', '*');
-      resp.set('Access-Control-Allow-Methods', 'POST');
-      return resp.send(filename);
-    }
-    else {
-      console.info(`Compiling js program (${req.body.length} bytes)`);
-      return runStopify(resp, req.body, filename, ['--debug', '--js-args=faithful', '--es=es5']);
-    }
-  })
-  .catch(reject(resp)));
+// stopify.post('/js', bodyParser.text({ type: '*/*' }), (req, resp) =>
+//   checkCache('js', req.body)
+//   .then(({ filename,  exists }) => {
+//     if (exists) {
+//       resp.set('Access-Control-Allow-Origin', '*');
+//       resp.set('Access-Control-Allow-Methods', 'POST');
+//       return resp.send(filename);
+//     }
+//     else {
+//       console.info(`Compiling js program (${req.body.length} bytes)`);
+//       return runStopify(resp, req.body, filename, ['--debug', '--js-args=faithful', '--es=es5']);
+//     }
+//   })
+//   .catch(reject(resp)));
 
-function genericCompiler(lang: string, url: string, flags: string[]) {
+function genericCompiler(lang: string, url: string, opts: stopifyCompiler.CompilerOpts) {
   stopify.post(`/${lang}`, bodyParser.text({ type: '*/*' }), (req, resp) =>
     checkCache(lang, req.body)
     .then(({ filename,  exists }) => {
@@ -85,7 +82,7 @@ function genericCompiler(lang: string, url: string, flags: string[]) {
         console.info(`Compiling ${lang} program (${req.body.length} bytes)`);
         return request.post(url,
                             { headers, body: req.body })
-          .then(stopifiedJsCode => runStopify(resp, stopifiedJsCode, filename, flags))
+          .then(stopifiedJsCode => runStopify(resp, stopifiedJsCode, filename, opts))
           .catch(err => {
             if (err.name === 'StatusCodeError') {
               throw err.response.body;
@@ -99,8 +96,8 @@ function genericCompiler(lang: string, url: string, flags: string[]) {
     .catch(reject(resp)));
 }
 
-genericCompiler('pyjs', 'http://35.184.26.215:8080/pyjs', ['--js-args=faithful']);
-genericCompiler('emscripten',  'http://35.184.26.215:8080/emscripten', ['--debug']);
-genericCompiler('bucklescript',  'http://35.184.26.215:8080/bucklescript', []);
-genericCompiler('scalajs', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileScalaJS', ['--debug']);
-genericCompiler('clojurescript',  'http://35.184.26.215:8080/clojurescript',['--debug']);
+genericCompiler('pyjs', 'http://35.184.26.215:8080/pyjs', { jsArgs: 'faithful' });
+genericCompiler('emscripten',  'http://35.184.26.215:8080/emscripten', { debug: true });
+genericCompiler('bucklescript',  'http://35.184.26.215:8080/bucklescript', {});
+genericCompiler('scalajs', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileScalaJS', { debug: true });
+genericCompiler('clojurescript',  'http://35.184.26.215:8080/clojurescript', { debug: true });

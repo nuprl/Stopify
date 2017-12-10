@@ -17,7 +17,9 @@
   "scripts": {
     "build": "cd ../stopify && yarn run build && cd ../stopify-compiler-cloud-function && ./bin/build.sh",
     "init-bucket": "./bin/init-bucket.sh",
-    "deploy": "gcloud beta functions deploy stopify --memory=2048MB --timeout=300 --stage-bucket stopify-cloud-function --trigger-http"
+    "deploy": "gcloud beta functions deploy stopify --memory=2048MB --timeout=300 --stage-bucket stopify-cloud-function --trigger-http",
+    "deploy-testing": "gcloud beta functions deploy stopifyTesting --memory=2048MB --timeout=300 --stage-bucket stopify-cloud-function --trigger-http"
+
 
   },
   "contributors": [
@@ -35,7 +37,7 @@
     "morgan": "^1.9.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
-    "stopify": "0.0.8",
+    "stopify": "^0.0.8",
     "tmp": "^0.0.33"
   }
 }

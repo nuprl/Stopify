@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const compilerBase = 'https://us-central1-arjun-umass.cloudfunctions.net/stopify';
 exports.langs = {
     'ClojureScript': {
         stepSupported: true,
-        compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/clojurescript',
+        compileUrl: `${compilerBase}/clojurescript`,
         aceMode: 'clojure',
         defaultCode: `(defn tail_sum [n acc]
   (println (str "acc: " acc))
@@ -14,7 +15,7 @@ exports.langs = {
     },
     'Cpp': {
         stepSupported: true,
-        compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/emscripten',
+        compileUrl: `${compilerBase}/emscripten`,
         aceMode: 'c_cpp',
         defaultCode: `#include <stdio.h>
 
@@ -40,7 +41,7 @@ print_endline ("acc: " ^ (string_of_int acc));
 if n = 0 then acc else tail_sum (n - 1) (acc + n)
 
 let _ = tail_sum 1000000 1`,
-        compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/bucklescript'
+        compileUrl: `${compilerBase}/bucklescript`
     },
     ScalaJS: {
         stepSupported: true,
@@ -58,7 +59,7 @@ object Runner extends JSApp {
     println(sum(1000000, 0))
   }
 }`,
-        compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/scalajs'
+        compileUrl: `${compilerBase}/scalajs`
     },
     Python: {
         stepSupported: false,
@@ -73,7 +74,7 @@ object Runner extends JSApp {
 
 run_forever()
     `,
-        compileUrl: 'https://us-central1-arjun-umass.cloudfunctions.net/stopify/pyjs'
+        compileUrl: `${compilerBase}/pyjs`
     }
 };
 //# sourceMappingURL=languages.js.map

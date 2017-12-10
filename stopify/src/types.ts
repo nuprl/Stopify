@@ -22,3 +22,14 @@ export interface Opts {
   env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari',
   requireRuntime: boolean,
 }
+
+export interface CompilerOpts {
+  debug?: boolean,
+  transform?: CaptureMethod,
+  newMethod?: HandleNew,
+  es?: 'sane' | 'es5',
+  hofs?: 'builtin' | 'fill',
+  jsArgs?: 'simple' | 'faithful',
+  requireRuntime?: boolean,
+}
+

@@ -236,7 +236,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
            </iframe>;
     }
     return <div className="row display-flex">
-      <div className="col-md-6 col-xs-12">
+      <div className="col-md-8 col-xs-12">
         <div>
         <GlyphButton
           onclick={this.onPlayPause.bind(this)}
@@ -266,7 +266,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
           language={this.props.language}>
         </StopifyAce>
       </div>
-      <div className="col-md-5 col-xs-12" id="output" style={{overflow: "hidden"}}>
+      <div className="col-md-3 col-xs-12" id="output" style={{overflow: "hidden"}}>
         <div style={{height: "100%"}}>{rhs}</div>
       </div>
     </div>;

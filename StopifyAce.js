@@ -9,6 +9,7 @@ require('brace/mode/c_cpp');
 require('brace/mode/clojure');
 require('brace/mode/scala');
 require('brace/mode/javascript');
+require('brace/mode/dart');
 require('brace/theme/eclipse');
 const Range = ace.acequire('ace/range').Range;
 /**

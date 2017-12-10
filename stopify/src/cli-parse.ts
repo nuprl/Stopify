@@ -10,10 +10,8 @@ commander.option(
 
 commander.option(
   '-e, --env <env>',
-  'the runtime environment (default: node)',
-  parseArg(x => x,
-    (x) => /^(chrome|firefox|node|safari|MicrosoftEdge|ChromeBook)$/.test(x),
-    '--env must be chrome, firefox, safari, MicrosoftEdge, ChromeBook, or node'),
+  'the runtime environment for testing (default: node)',
+  x => x,
   'node');
 
 commander.option(

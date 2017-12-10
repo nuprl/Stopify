@@ -128,8 +128,6 @@ The `stopify` compiler takes several command-line options:
 The `stopify-url` program produces a URL that runs a stopified program in
 the browser. This program also takes several command-line options:
 
-- `--env <env>` (required)  Use `--env node`. This flag should be removed.
-
 - `--transform <transform>` (required). This must be the same that was
   used during compilation. This flag should be removed.
 
@@ -154,6 +152,9 @@ the browser. This program also takes several command-line options:
   running. The other options are `exact`, which reports the exact system time,
   but is very slow and `countdown`, which never checks the system time, but
   results in high variance. The `reservoir` option in deprecated.
+
+- `--env <browser>` (optional, for testing only). We use this flag to launch
+  `<browser>` using Selenium for our integration tests.
 
 - `--time-per-elapsed` ???
 

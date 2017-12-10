@@ -9,6 +9,17 @@ const compilerBase = 'https://us-central1-arjun-umass.cloudfunctions.net/stopify
 
 
 export const langs: { [name: string]: Language } = {
+  'Dart': {
+    stepSupported: true,
+    compileUrl: `${compilerBase}/dart2js`,
+    aceMode: 'dart',
+    defaultCode: `
+void main() {
+  for (int i = 0; i < 10000000; i++) {
+    print('hello \${i + 1}');
+  }
+}`
+  },
   'ClojureScript': {
     stepSupported: true,
     compileUrl: `${compilerBase}/clojurescript`,

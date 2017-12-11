@@ -173,6 +173,8 @@ function generateLineMapping(map: RawSourceMap | undefined): LineMapping {
         mapping.source.includes('https://') ||
         mapping.source.includes('goog/') ||
         mapping.source.includes('cljs/') ||
+        mapping.source.includes('opt/') ||
+        mapping.source.includes('user_code/') ||
         mapping.line === null) {
         return null;
       } else {

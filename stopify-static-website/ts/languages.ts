@@ -10,7 +10,7 @@ const compilerBase = 'https://us-central1-arjun-umass.cloudfunctions.net/stopify
 
 export const langs: { [name: string]: Language } = {
   'Dart': {
-    stepSupported: false,
+    stepSupported: true,
     compileUrl: `${compilerBase}/dart2js`,
     aceMode: 'dart',
     defaultCode: `

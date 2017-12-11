@@ -60,7 +60,7 @@ commander.arguments('<srcPath> <dstPath>');
 const args = commander.parse(process.argv);
 
 stopify(args.args[0], {
-  debug: args.boolean,
+  debug: args.debug,
   transform: args.transform,
   newMethod: args.handleNew,
   es: args.es,

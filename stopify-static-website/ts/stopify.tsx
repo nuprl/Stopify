@@ -54,6 +54,7 @@ class MultilingualStopifyEditor extends React.Component<{}, {language: string}> 
 }
 
 interface StopifyEditorState {
+  language: string,
   mode: Mode,
   program: string,
   breakpoints: number[],
@@ -74,6 +75,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     //   editor.session.removeMarker(lastLineMarker);
     // }
     this.state = {
+      language: props.language,
       mode: 'stopped',
       program: langs[props.language].defaultCode,
       breakpoints: [],
@@ -82,6 +84,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     };
 
     window.addEventListener('message', evt => {
+      console.log(this.state.language);
       // Message could be from somethign else, e.g., React DevTools
       if (this.iframe === null || evt.source !== this.iframe.contentWindow) {
         return;
@@ -95,7 +98,9 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
           }, '*');
         }
       }
-      else  if (evt.data.linenum && evt.data.linenum-1 === this.state.line) {
+      else if (this.state.language !== 'Dart' &&
+        evt.data.linenum &&
+        evt.data.linenum-1 === this.state.line) {
         this.iframe!.contentWindow.postMessage({ type: 'step' }, '*');
       }
       else {

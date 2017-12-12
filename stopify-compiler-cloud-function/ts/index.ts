@@ -101,4 +101,4 @@ genericCompiler('emscripten',  'http://35.184.26.215:8080/emscripten', { debug: 
 genericCompiler('bucklescript',  'http://35.184.26.215:8080/bucklescript', {});
 genericCompiler('scalajs', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileScalaJS', { debug: true });
 genericCompiler('clojurescript',  'http://35.184.26.215:8080/clojurescript', { debug: true });
-genericCompiler('dart2js', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileDart2JS', { debug: true });
+genericCompiler('dart2js', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileDart2JS', { });

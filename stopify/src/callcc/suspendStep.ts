@@ -15,6 +15,7 @@ const insertSuspend: Visitor = {
     exit(path: NodePath<t.BlockStatement>, s: { opts: Options }): void {
       const { body } = path.node;
       const newBody: t.Statement[] = [];
+      (<any>newBody).suspends = false;
       body.forEach((v, i) => {
         const loc = v.loc;
         let mark;
@@ -30,6 +31,7 @@ const insertSuspend: Visitor = {
                 t.callExpression(t.memberExpression(t.identifier("$__R"),
                   t.identifier("suspend")), [])),
               v);
+            (<any>newBody).suspends = true;
           } else {
             newBody.push(v);
           }
@@ -53,10 +55,21 @@ const insertSuspend: Visitor = {
     }
   },
 
-  Loop(path: NodePath<t.Loop>): void {
-    if (path.node.body.type !== "BlockStatement") {
-      const body = t.blockStatement([path.node.body]);
-      path.node.body = body;
+  Loop: {
+    enter(path: NodePath<t.Loop>): void {
+      if (path.node.body.type !== "BlockStatement") {
+        const body = t.blockStatement([path.node.body]);
+        path.node.body = body;
+      }
+    },
+
+    exit(path: NodePath<t.Loop>): void {
+      if (t.isBlockStatement(path.node.body) &&
+        !(<any>path.node.body).suspends) {
+        path.node.body.body.push(t.expressionStatement(
+          t.callExpression(t.memberExpression(t.identifier("$__R"),
+            t.identifier("suspend")), [])));
+      }
     }
   },
 

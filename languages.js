@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const compilerBase = 'https://us-central1-arjun-umass.cloudfunctions.net/stopify';
 exports.langs = {
     'Dart': {
-        stepSupported: true,
+        stepSupported: false,
         compileUrl: `${compilerBase}/dart2js`,
         aceMode: 'dart',
         defaultCode: `

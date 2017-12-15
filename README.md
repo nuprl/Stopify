@@ -45,7 +45,7 @@ npm install -g stopify
    following program has an infinite loop that make browsers lock up.
    Save the following  program as `input.js`:
 
-   ```
+   ```javascript
    const elt = document.createElement("div");
    document.body.appendChild(elt);
 

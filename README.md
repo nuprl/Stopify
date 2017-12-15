@@ -196,36 +196,6 @@ the fastest way to test a small change. To do so, compile it without
 the `--external-rts` flag and then it using `./bin/run`. This program
 takes the same command-line arguments as `stopify-url`.
 
-
-### Optimization annotations
-
-[FILL] The following sections need work
-
-
-Stopify supports comment based annotations to tell the compiler to optimize
-certain functions and call sites. In order to tell the compiler that
-a particular function shouldn't be instrumented, output:
-
-```javascript
-/* @stopify flat */
-function foo() { ... }
-```
-
-**WARNING**: If such a function calls another function that tried to capture
-the stack, this function won't be properly restored.
-
-In order to tell the compiler that a call site shouldn't be instrumented,
-output:
-
-```javascript
-let a = /* @stopify flat */ foo()
-```
-
-When doing this, we need to be careful that the comment is directly before the
-call. To ensure that stopify recognizes the annotation, [check the
-AST](astexplorer.net) and make sure that the annotation is present as a
-`leadingComment` for the desired CallExpression.
-
 ## Stopify with Webpack
 
 Stopify is a Babel plugin. Therefore, you can use it with [babel-loader]

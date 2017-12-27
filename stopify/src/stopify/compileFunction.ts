@@ -10,7 +10,7 @@
 
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
-import * as h from '../common/helpers';
+import * as callcc from 'stopify-continuations';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
@@ -23,7 +23,7 @@ const visitor: Visitor = {
     const func = path.node.body[0]
     assert.equal(func.type, 'FunctionDeclaration',
       'Must compile a top-level function')
-    h.transformFromAst(path, [[stopifyCallCC.plugin, opts]])
+    callcc.transformFromAst(path, [[stopifyCallCC.plugin, opts]])
   }
 }
 

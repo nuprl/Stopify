@@ -84,10 +84,6 @@ export function containsCall<T>(path: NodePath<T>) {
   return o.containsCall;
 }
 
-export class LineMapping {
-  constructor(public getLine: (line: number, column: number) => number | null) {}
-}
-
 // Object to wrap the state of the stop, onStop, isStop functions
 class StopWrapper {
   private hasStopped: boolean;
@@ -159,43 +155,6 @@ export function transformFromAst(
   return babel.transformFromAst(path.node, undefined, opts);
 }
 
-/**
- * Returns a custom line mapper which maps `node_modules` sources to `null`.
- */
-function generateLineMapping(map: RawSourceMap | undefined): LineMapping {
-  if (map) {
-    console.log('// Mapping found');
-    const sourceMap = new SourceMapConsumer(map);
-    return new LineMapping((line: number, column: number) => {
-      const mapping = sourceMap.originalPositionFor({ line, column });
-      if (mapping.source === null ||
-        mapping.source.includes('node_modules/') ||
-        mapping.source.includes('https://') ||
-        mapping.source.includes('goog/') ||
-        mapping.source.includes('cljs/') ||
-        mapping.source.includes('opt/') ||
-        mapping.source.includes('user_code/') ||
-        mapping.line === null) {
-        return null;
-      } else {
-        return mapping.line;
-      }
-    });
-  } else {
-    console.log('// No mapping found, using one-to-one map');
-    return new LineMapping((line: number, column: number) => line);
-  }
-}
-
-function parseMapping(code: string) {
-  const mapConverter = smc.fromSource(code);
-  // No match
-  if (mapConverter === null) {
-    return generateLineMapping(undefined);
-  } else {
-    return generateLineMapping(mapConverter.toObject());
-  }
-}
 
 export {
   transformed,
@@ -205,8 +164,6 @@ export {
   newTag,
   letExpression,
   flatBodyStatement,
-  generateLineMapping,
-  parseMapping,
   StopWrapper,
 };
 

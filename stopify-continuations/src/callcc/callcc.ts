@@ -127,8 +127,10 @@ const visitor: Visitor = {
         h.letExpression(
           t.identifier("$__T"),
           !opts.requireRuntime ? t.identifier('stopify')
-            : t.callExpression(t.identifier('require'),
-                [t.stringLiteral('Stopify/built/src/rts')]),
+            : t.memberExpression(
+                t.callExpression(t.identifier('require'),
+                  [t.stringLiteral('stopify-continuations')]),
+                  t.identifier('rts')),
           'const'));
     }
     path.stop();

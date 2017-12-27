@@ -1,9 +1,8 @@
-import * as helpers from '../src/common/helpers';
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 const assert = require('assert');
-import CallCC from '../src/callcc/callcc';
+import * as CallCC from 'stopify-continuations';
 const glob = require('glob');
 import * as fs from 'fs';
 import * as tmp from 'tmp';
@@ -16,7 +15,7 @@ function check(codeWithCallCC: string) {
   });
   const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: ".js" });
   fs.writeFileSync(dstPath, jsCode);
-  const { status } = spawnSync("node", ["--harmony_tailcalls", dstPath], { stdio: 'inherit' });
+  const { status } = spawnSync("node", [dstPath], { stdio: 'inherit' });
   assert(status == 42);
   fs.unlinkSync(dstPath);
 }

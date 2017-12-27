@@ -1,22 +1,11 @@
-import callcc from './callcc';
-import suspendStop from './suspendStop';
-import suspendStep from './suspendStep';
 import * as babel from 'babel-core';
-import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as h from '../common/helpers';
 import * as fs from 'fs';
 import * as babylon from 'babylon';
-import cleanupGlobals from '../common/cleanupGlobals';
-import hygiene from '../common/hygiene';
-import markFlatFunctions from '../common/markFlatFunctions';
-import markAnnotated from '../common/markAnnotated'
-import * as fastFreshId from '../fastFreshId';
-import markFlatApplications from '../common/markFlatApplications'
-import { knowns } from '../common/cannotCapture'
-import * as exposeImplicitApps from '../exposeImplicitApps';
-import * as exposeHOFs from '../exposeHOFs';
-import * as jumper from './jumper';
+import { NodePath, Visitor } from 'babel-traverse';
+import * as callcc from 'stopify-continuations';
+import suspendStop from './suspendStop';
+import suspendStep from './suspendStep';
 import { timeSlow } from '../generic';
 
 const allowed = [
@@ -28,22 +17,6 @@ const allowed = [
   "window",
   "document",
   "setTimeout",
-  "captureCC",
-];
-
-const reserved = [
-  ...knowns,
-  exposeImplicitApps.implicitsIdentifier.name,
-  exposeHOFs.hofIdentifier.name,
-  "$opts",
-  "$result",
-  "target",
-  "newTarget",
-  "captureLocals",
-  jumper.restoreNextFrame.name,
-  "frame",
-  "SENTINAL",
-  "finally_rv",
   "captureCC",
 ];
 
@@ -69,34 +42,34 @@ export const visitor: Visitor = {
       state.opts.hofs = 'builtin';
     }
 
-    fastFreshId.init(path);
+    callcc.fastFreshId.init(path);
     const plugs: any[] = [];
     // Cleanup globals when not running in `func` compile mode
     if (!state.opts.compileFunction) {
-      plugs.push([cleanupGlobals, { allowed }])
+      plugs.push([callcc.cleanupGlobals, { allowed }])
     }
     timeSlow('hygiene, etc.', () =>
-      h.transformFromAst(path, [
+      callcc.transformFromAst(path, [
         ...plugs,
-        [hygiene, { reserved }],
+        [callcc.hygiene, { reserved: callcc.reserved }],
       ]));
     if (!state.opts.debug) {
-      h.transformFromAst(path, [
-        markAnnotated
+      callcc.transformFromAst(path, [
+        callcc.markAnnotated
       ])
-      h.transformFromAst(path, [
-        [markFlatFunctions],
+      callcc.transformFromAst(path, [
+        [callcc.markFlatFunctions],
       ])
-      h.transformFromAst(path, [
-        markFlatApplications,
+      callcc.transformFromAst(path, [
+        callcc.markFlatApplications,
       ]);
     }
     timeSlow('insertSuspend', () =>
-      h.transformFromAst(path, [[insertSuspend, opts]]));
+      callcc.transformFromAst(path, [[insertSuspend, opts]]));
     timeSlow('(control ...) elimination', () =>
-      h.transformFromAst(path, [[callcc, opts]]));
+      callcc.transformFromAst(path, [[callcc.plugin, opts]]));
 
-    fastFreshId.cleanup()
+    callcc.fastFreshId.cleanup()
 
     if (!opts.requireRuntime) {
       const body = path.node.body;

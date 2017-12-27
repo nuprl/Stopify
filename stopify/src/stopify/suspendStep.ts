@@ -1,7 +1,7 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import { SourceMapConsumer } from 'source-map';
 import * as t from 'babel-types';
-import {LineMapping} from '../common/helpers';
+import {LineMapping} from '../sourceMaps';
 
 interface Options {
   sourceMap: LineMapping;

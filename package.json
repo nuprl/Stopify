@@ -4,6 +4,7 @@
   "workspaces": [
       "stopify",
       "stopify-third-party-compile-server",
-      "stopify-static-website"
+      "stopify-static-website",
+      "stopify-continuations"
   ]
 }

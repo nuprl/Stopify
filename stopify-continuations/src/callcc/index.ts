@@ -11,10 +11,15 @@ export { default as markFlatFunctions } from '../common/markFlatFunctions';
 export { default as markAnnotated } from '../common/markAnnotated'
 import * as fastFreshId from '../fastFreshId';
 export { default as markFlatApplications } from '../common/markFlatApplications'
-export { default as runtime } from '../runtime/default';
-import * as rts from '../rts';
-export { fastFreshId, rts }
+export { fastFreshId }
+export { Stack, Mode, Runtime, KFrameTop } from './runtime';
 
+export { LazyRuntime } from './lazyRuntime';
+export { EagerRuntime } from './eagerRuntime';
+export { RetvalRuntime } from './retvalRuntime';
+export { FudgeRuntime } from './fudgeRuntime';
+export { Opts } from '../types';
+export { unreachable } from '../generic';
 export const reserved = [
   ...knowns,
   exposeImplicitApps.implicitsIdentifier.name,

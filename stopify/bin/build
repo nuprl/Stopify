@@ -6,3 +6,5 @@ set -e
 if [ ! -L node_modules/Stopify ]; then
     (cd node_modules; ln -s .. Stopify)
 fi
+
+./node_modules/.bin/webpack

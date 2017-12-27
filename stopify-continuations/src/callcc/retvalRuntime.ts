@@ -1,9 +1,8 @@
 import * as common from './runtime';
-import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 
-class RetValRuntime extends common.Runtime {
-  constructor(yieldInterval: number, estimator: ElapsedTimeEstimator) {
-    super(yieldInterval, estimator);
+export class RetvalRuntime extends common.Runtime {
+  constructor() {
+    super();
   }
 
   captureCC(f: (k: any) => any): common.Capture {
@@ -74,4 +73,4 @@ class RetValRuntime extends common.Runtime {
   }
 }
 
-export default RetValRuntime;
+export default RetvalRuntime;

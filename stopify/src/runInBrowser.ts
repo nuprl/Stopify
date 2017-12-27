@@ -48,7 +48,6 @@ const app = express();
 
 const benchmarkName = path.basename(opts.filename);
 
-app.use(express.static(path.join(__dirname, '../../../stopify-continuations/dist')));
 app.use(express.static(path.join(__dirname, '../../dist')));
 app.use(express.static(path.dirname(opts.filename)));
 

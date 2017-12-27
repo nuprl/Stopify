@@ -129,7 +129,7 @@ const visitor: Visitor = {
           !opts.requireRuntime ? t.identifier('stopify')
             : t.memberExpression(
                 t.callExpression(t.identifier('require'),
-                  [t.stringLiteral('stopify-continuations')]),
+                  [t.stringLiteral('stopify')]),
                   t.identifier('rts')),
           'const'));
     }

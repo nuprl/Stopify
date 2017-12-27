@@ -1,5 +1,3 @@
-import { setImmediate } from '../setImmediate';
-import { ElapsedTimeEstimator } from '../elapsedTimeEstimator';
 import { knowns } from '../common/cannotCapture'
 import { unreachable } from '../generic';
 import * as assert from 'assert';
@@ -59,23 +57,14 @@ export abstract class Runtime {
   stack: Stack;
   mode: Mode;
   linenum: undefined | number;
-  breakpoints: number[];
 
   constructor(
-    public yieldInterval: number,
-    public estimator: ElapsedTimeEstimator,
     public capturing: boolean = false,
-    private delimitDepth: number = 0,
+    public delimitDepth: number = 0,
     // true if computation is suspended by 'suspend'
-    private isSuspended: boolean = false,
+    public isSuspended: boolean = false,
     // a queue of computations that need to run
-    private pendingRuns: (() => void)[] = [],
-    /** This function is applied immediately before stopify yields control to
-     *  the browser's event loop. If the function produces 'false', the
-     *  computation terminates.
-     */
-    public onYield = function(): boolean { return true; },
-    private continuation = function() {}) {
+    private pendingRuns: (() => void)[] = []) {
     this.stack = [];
     this.mode = true;
   }
@@ -90,10 +79,6 @@ export abstract class Runtime {
     this.isSuspended = false;
     this.runtime_(thunk);
     this.resume();
-  }
-
-  resumeFromCaptured(): any {
-    this.resumeFromSuspension(this.continuation);
   }
 
   /**
@@ -120,30 +105,6 @@ export abstract class Runtime {
     }
   }
 
-  suspend(): void {
-    assert(!this.isSuspended);
-
-    // Do not suspend at the top-level of required modules.
-    if (this.delimitDepth > 1) {
-      return;
-    }
-
-    // If this.yieldInterval is NaN, the condition will be false
-    if (this.hitBreakpoint() ||
-      this.estimator.elapsedTime() >= this.yieldInterval) {
-      this.estimator.reset();
-      this.isSuspended = true;
-      return this.captureCC((continuation) => {
-        this.continuation = continuation;
-        if (this.onYield()) {
-          return setImmediate(() => {
-            this.resumeFromSuspension(continuation);
-          });
-        }
-      });
-    }
-  }
-
   topK(f: () => any): KFrameTop {
     return {
       kind: 'top',
@@ -153,14 +114,6 @@ export abstract class Runtime {
         return f();
       }
     };
-  }
-
-  setBreakpoints(breaks: number[]): void {
-    this.breakpoints = breaks;
-  }
-
-  hitBreakpoint(): boolean {
-    return this.breakpoints && this.breakpoints.includes(<number>this.linenum);
   }
 
   runtime(body: () => any): any {

@@ -1,5 +1,5 @@
 module.exports = {
-  entry: './dist/src/rts.js',
+  entry: './built/src/runtime/rts.js',
   output: {
     filename: 'dist/stopify.bundle.js',
     library: 'stopify',

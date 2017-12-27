@@ -3,7 +3,7 @@ import { Opts, Stoppable, ElapsedTimeEstimatorName } from '../types';
 import * as minimist from 'minimist';
 import { sum } from '../generic';
 import { sprintf } from 'sprintf';
-import { makeRTS, getRTS } from '../rts';
+import { makeRTS, getRTS } from './rts';
 import * as path from 'path';
 
 const fakeRTS: any = {

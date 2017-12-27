@@ -13,12 +13,6 @@ import * as fastFreshId from '../fastFreshId';
 export { default as markFlatApplications } from '../common/markFlatApplications'
 export { fastFreshId }
 export { Stack, Mode, Runtime, KFrameTop } from './runtime';
-
-export { LazyRuntime } from './lazyRuntime';
-export { EagerRuntime } from './eagerRuntime';
-export { RetvalRuntime } from './retvalRuntime';
-export { FudgeRuntime } from './fudgeRuntime';
-export { Opts } from '../types';
 export { unreachable } from '../generic';
 export const reserved = [
   ...knowns,

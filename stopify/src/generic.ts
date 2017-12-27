@@ -20,14 +20,6 @@ export function takeWhile<T>(f: (elt: T) => boolean, arr: T[]): T[] {
   return arr.slice(0);
 }
 
-export function time<T>(label: string, thunk: () => T): T {
-  const start = Date.now();
-  const result = thunk();
-  const end = Date.now();
-  console.info(`${label} (${start - end} ms)`);
-  return result;
-}
-
 export function timeSlow<T>(label: string, thunk: () => T): T {
   const start = Date.now();
   const result = thunk();

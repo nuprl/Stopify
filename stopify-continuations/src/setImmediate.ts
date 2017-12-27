@@ -1,5 +1,10 @@
+/**
+ * A browser-dependent implementation of setImmediate. We have performed
+ * simple experiments to determine which implementation of setImmediate is
+ * fastest on each browser. We use postMessage for any browser that we haven't
+ * tested.
+ */
 import * as browser from 'detect-browser'
-
 
 function makeSetImmediateMC(): (thunk: () => void) => void {
   const chan = new MessageChannel();
@@ -31,6 +36,7 @@ function makeSetImmediatePM(): (thunk: () => void) => void {
   });
   return (thunk) => {
     thunks.push(thunk);
+    // NOTE(arjun): This likely conflicts with other uses of postMessage.
     window.postMessage(true, '*');
   };
 }

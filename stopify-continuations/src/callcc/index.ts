@@ -12,7 +12,7 @@ export { default as markAnnotated } from '../common/markAnnotated'
 import * as fastFreshId from '../fastFreshId';
 export { default as markFlatApplications } from '../common/markFlatApplications'
 export { fastFreshId }
-export { Stack, Mode, Runtime, KFrameTop } from './runtime';
+export { Runtime } from './runtime';
 export { unreachable } from '../generic';
 export const reserved = [
   ...knowns,

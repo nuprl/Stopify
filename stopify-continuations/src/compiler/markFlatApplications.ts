@@ -5,7 +5,7 @@
  */
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { FlatTag, FlatnessMark } from './helpers';
+import { FlatTag, FlatnessMark } from '../common/helpers';
 
 /**
  * 0 -> No debugging
@@ -216,6 +216,6 @@ const visitor: Visitor = {
   AssignmentExpression: assign,
 }
 
-export default function () {
+export function markFlatApplications() {
   return { visitor };
 }

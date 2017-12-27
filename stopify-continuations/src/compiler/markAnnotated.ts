@@ -1,6 +1,6 @@
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { StopifyAnnotation, isStopifyAnnotation, FlatnessMark } from './helpers';
+import { StopifyAnnotation, isStopifyAnnotation, FlatnessMark } from '../common/helpers';
 
 function markerVisitor(path: NodePath<FlatnessMark<t.CallExpression|t.NewExpression|t.FunctionDeclaration|t.FunctionExpression>>) {
     const { leadingComments } = path.node
@@ -18,6 +18,6 @@ const visitor: Visitor = {
   FunctionExpression: markerVisitor
 }
 
-export default function () {
+export function markAnnotated() {
     return { visitor };
 }

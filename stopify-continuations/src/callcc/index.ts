@@ -7,10 +7,8 @@ import * as jumper from './jumper';
 export { default as cleanupGlobals } from '../common/cleanupGlobals';
 export { default as hygiene } from '../common/hygiene';
 export { transformFromAst } from '../common/helpers';
-export { default as markFlatFunctions } from '../common/markFlatFunctions';
-export { default as markAnnotated } from '../common/markAnnotated'
+export { flatness } from '../compiler/flatness';
 import * as fastFreshId from '../fastFreshId';
-export { default as markFlatApplications } from '../common/markFlatApplications'
 export { fastFreshId }
 export { Runtime } from './runtime';
 export { unreachable } from '../generic';

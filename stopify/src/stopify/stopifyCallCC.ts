@@ -54,15 +54,7 @@ export const visitor: Visitor = {
         [callcc.hygiene, { reserved: callcc.reserved }],
       ]));
     if (!state.opts.debug) {
-      callcc.transformFromAst(path, [
-        callcc.markAnnotated
-      ])
-      callcc.transformFromAst(path, [
-        [callcc.markFlatFunctions],
-      ])
-      callcc.transformFromAst(path, [
-        callcc.markFlatApplications,
-      ]);
+      callcc.transformFromAst(path, [ callcc.flatness ]);
     }
     timeSlow('insertSuspend', () =>
       callcc.transformFromAst(path, [[insertSuspend, opts]]));

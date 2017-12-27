@@ -6,7 +6,7 @@
 
 import * as t from 'babel-types';
 import { NodePath, Visitor } from 'babel-traverse';
-import { FlatTag, FlatnessMark } from './helpers'
+import { FlatTag, FlatnessMark } from '../common/helpers'
 
 let debug = false;
 
@@ -66,6 +66,6 @@ const visitor = {
   "Loop": callExpr
 }
 
-export default function() {
+export function markFlatFunctions() {
   return { visitor };
 }

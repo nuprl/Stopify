@@ -52,9 +52,7 @@ app.use(express.static(path.join(__dirname, '../../../stopify-continuations/dist
 app.use(express.static(path.join(__dirname, '../../dist')));
 app.use(express.static(path.dirname(opts.filename)));
 
-const port = 9999;
-
-const server = app.listen(port, '0.0.0.0', 100, () => {
+const server = app.listen(() => {
   const port = server.address().port
   const url = `http://127.0.0.1:${port}/benchmark.html#${src}`;
   console.log(`GET ${url}`);

@@ -3,10 +3,10 @@ const assert = require('assert');
 function f() {
   function g() {}
   {
-    callCC(function(k) { });
+    captureCC(function(k) { k(); });
     g.x = 200;
   }
-  callCC(function(k) { });
+  captureCC(function(k) { k(); });
   assert(g.x === 200);
 }
 

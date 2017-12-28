@@ -1,3 +1,5 @@
+// NOTE(arjun): This test may be have written for call/cc instead of
+// composable continuations. So, it is unclear if this works.
 function node(left, right) {
   return { left: left, right: right, type: "node" };
 }
@@ -18,7 +20,7 @@ function treeLeafGen(tree) {
   let returnLeaf = function(tree) {
     if (tree.type === "leaf") {
       console.log("At leaf", tree.val);
-      callCC(function(remainingLeaves) {
+      captureCC(function(remainingLeaves) {
         console.log("Captured");
         resume = function() { remainingLeaves(void 0); };
         console.log("Producing ", tree.val);
@@ -34,7 +36,7 @@ function treeLeafGen(tree) {
 
   return function() {
     console.log("Here 0");
-    return callCC(function(k) {
+    return captureCC(function(k) {
       console.log("Here 1");
 
       caller = k;

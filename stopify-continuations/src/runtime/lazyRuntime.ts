@@ -1,6 +1,5 @@
-import * as common from './runtime';
-export * from './runtime';
-import * as assert from 'assert';
+import * as common from './abstractRuntime';
+export * from './abstractRuntime';
 
 export class LazyRuntime extends common.Runtime {
   constructor() {

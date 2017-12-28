@@ -10,7 +10,6 @@ export { transformFromAst } from '../common/helpers';
 export { flatness } from '../compiler/flatness';
 import * as fastFreshId from '../fastFreshId';
 export { fastFreshId }
-export { Runtime } from './runtime';
 export { unreachable } from '../generic';
 export const reserved = [
   ...knowns,

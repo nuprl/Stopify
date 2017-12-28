@@ -3,7 +3,7 @@ const assert = require('assert');
 function f() {
   function g() { };
   g.x = 200;
-  callCC(function(k) { });
+  captureCC(function(k) { return k(); });
   assert(g.x === 200);
 }
 

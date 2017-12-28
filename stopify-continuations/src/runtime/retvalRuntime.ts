@@ -1,4 +1,5 @@
-import * as common from './runtime';
+import * as common from './abstractRuntime';
+export * from './abstractRuntime';
 
 export class RetvalRuntime extends common.Runtime {
   constructor() {

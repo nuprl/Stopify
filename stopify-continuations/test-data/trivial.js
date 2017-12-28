@@ -2,8 +2,9 @@ const assert = require('assert');
 
 
 function f() {
-  return callCC(function(k) {
+  return captureCC(function(k) {
     k(100);
+    assert(false);
     return 5;
   });
 }

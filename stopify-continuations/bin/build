@@ -2,3 +2,4 @@
 set -x
 set -e
 ./node_modules/.bin/tsc
+./node_modules/.bin/webpack --config js/webpack.config.js

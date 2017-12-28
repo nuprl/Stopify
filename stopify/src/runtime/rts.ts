@@ -3,12 +3,11 @@ import { sprintf } from 'sprintf';
 import { unreachable, Runtime } from 'stopify-continuations/dist/src/runtime';
 import * as elapsedTimeEstimator from './elapsedTimeEstimator';
 import runtime from './default';
-import { Opts } from '../types';
 import { RuntimeWithSuspend } from './suspend';
-import { parseRuntimeOpts } from '../cli-parse';
 import { sum } from '../generic';
+import { opts } from './opts';
 
-function makeEstimator(opts: Opts): elapsedTimeEstimator.ElapsedTimeEstimator {
+function makeEstimator(): elapsedTimeEstimator.ElapsedTimeEstimator {
   if (opts.estimator === 'exact') {
     return elapsedTimeEstimator.makeExact();
   }
@@ -33,8 +32,7 @@ export function init(contRTS: cont.Runtime) {
     return rts;
   }
 
-  const opts = parseRuntimeOpts(process.argv.slice(2));
-  const estimator = makeEstimator(opts);
+  const estimator = makeEstimator();
   rts = new RuntimeWithSuspend(contRTS, opts.yieldInterval, estimator);
 
   const startTime = Date.now();
@@ -79,6 +77,9 @@ export function init(contRTS: cont.Runtime) {
       latencyVar = 'NA';
     }
     console.log(`${runningTime},${yields},${sprintf("%.2f", latencyAvg)},${latencyVar}`);
+    if (window) {
+      window.document.title = "done";
+    }
   };
 
   if (typeof opts.stop !== 'undefined') {
@@ -93,33 +94,10 @@ export function init(contRTS: cont.Runtime) {
 
 let rts : RuntimeWithSuspend | undefined = undefined;
 
-
-function getOpts(): Opts {
-  const opts = JSON.parse(
-    decodeURIComponent(window.location.hash.slice(1)));
-  // JSON turns undefined into null, which compare differently with numbers.
-  for (const k of Object.keys(opts)) {
-    if (opts[k] === null) {
-      delete opts[k];
-    }
-  }
-  return opts;
-}
-
-export function afterScriptLoad(M : any) {
-  // NOTE(arjun): Idiotic that we are doing this twice
-  const opts = getOpts();
-  runtime.run(M, opts,  () => {
-    window.document.title = "done";
-  });
-}
-
-export function loadScript(onload: () => any, prefix?: string) {
-  const opts = getOpts();
+export function load() {
   // Dynamically load the file
   const script = document.createElement('script');
-  script.setAttribute('src', (prefix || '') + opts.filename);
-  script.onload = onload;
+  script.setAttribute('src', opts.filename);
   document.body.appendChild(script);
 }
 

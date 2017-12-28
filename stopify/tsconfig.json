@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "outDir": "./built",
+        "outDir": "dist",
         "allowUnreachableCode": true,
         "lib": ["es2016", "dom"],
         "target": "es6",
@@ -20,6 +20,6 @@
     "exclude": [
       "test/should-run",
       "test/should-stop",
-      "built"
+      "dist"
     ]
 }

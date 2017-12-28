@@ -24,7 +24,7 @@ import * as express from 'express';
 process.env.MOZ_HEADLESS = "1";
 
 const stdout = process.stdout;
-const args = process.argv.slice(2);
+const [ _, __, browser, ...args ] = process.argv;
 const opts = parseRuntimeOpts(args);
 const src = benchmarkUrl(args);
 
@@ -39,7 +39,7 @@ const loggingPrefs = new selenium.logging.Preferences();
 loggingPrefs.setLevel('browser', 'all');
 
 let builder = new selenium.Builder()
-  .forBrowser(opts.env)
+  .forBrowser(browser)
   .setLoggingPrefs(loggingPrefs)
   .setChromeOptions(chromeOpts);
 
@@ -48,12 +48,13 @@ const app = express();
 
 const benchmarkName = path.basename(opts.filename);
 
+app.use(express.static(path.join(__dirname, '../../../stopify-continuations/dist')));
 app.use(express.static(path.join(__dirname, '../../dist')));
 app.use(express.static(path.dirname(opts.filename)));
 
 const server = app.listen(() => {
   const port = server.address().port
-  const url = `http://127.0.0.1:${port}/benchmark.html#${src}`;
+  const url = `http://127.0.0.1:${port}/benchmark-lazy.html#${src}`;
   console.log(`GET ${url}`);
   driver.get(url)
     .then(_ => driver.wait(selenium.until.titleIs('done'), 8 * 60 * 1000))

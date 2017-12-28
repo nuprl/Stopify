@@ -1,0 +1,1907 @@
+<testsuites name="jest tests">
+  <testsuite name="Call/CC integration tests" tests="12" errors="0" failures="0" skipped="12" timestamp="2017-12-28T07:16:26" time="0.292">
+    <testcase classname="Call/CC integration tests test/should-run/source-language/dart.js  (lazy)" name="Call/CC integration tests test/should-run/source-language/dart.js  (lazy)" time="0.001">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/dart.js  (eager)" name="Call/CC integration tests test/should-run/source-language/dart.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/dart.js  (retval)" name="Call/CC integration tests test/should-run/source-language/dart.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/ocaml.js  (lazy)" name="Call/CC integration tests test/should-run/source-language/ocaml.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/ocaml.js  (eager)" name="Call/CC integration tests test/should-run/source-language/ocaml.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/ocaml.js  (retval)" name="Call/CC integration tests test/should-run/source-language/ocaml.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/scala-list.js  (lazy)" name="Call/CC integration tests test/should-run/source-language/scala-list.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/scala-list.js  (eager)" name="Call/CC integration tests test/should-run/source-language/scala-list.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/scala-list.js  (retval)" name="Call/CC integration tests test/should-run/source-language/scala-list.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/scala.js  (lazy)" name="Call/CC integration tests test/should-run/source-language/scala.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/scala.js  (eager)" name="Call/CC integration tests test/should-run/source-language/scala.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC integration tests test/should-run/source-language/scala.js  (retval)" name="Call/CC integration tests test/should-run/source-language/scala.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+  </testsuite>
+  <testsuite name="separate compilation using --hofs=builtin" tests="2" errors="0" failures="0" skipped="2" timestamp="2017-12-28T07:16:26" time="0.023">
+    <testcase classname="separate compilation using --hofs=builtin test/hofs/forEach.js" name="separate compilation using --hofs=builtin test/hofs/forEach.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="separate compilation using --hofs=builtin test/hofs/sort.js" name="separate compilation using --hofs=builtin test/hofs/sort.js" time="0">
+      <skipped/>
+    </testcase>
+  </testsuite>
+  <testsuite name="In-browser tests" tests="6" errors="0" failures="0" skipped="6" timestamp="2017-12-28T07:16:26" time="0.028">
+    <testcase classname="In-browser tests test/should-run/source-language/dart.js (lazy) (in-browser)" name="In-browser tests test/should-run/source-language/dart.js (lazy) (in-browser)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="In-browser tests test/should-run/source-language/ocaml.js (lazy) (in-browser)" name="In-browser tests test/should-run/source-language/ocaml.js (lazy) (in-browser)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="In-browser tests test/should-run/source-language/scala-list.js (lazy) (in-browser)" name="In-browser tests test/should-run/source-language/scala-list.js (lazy) (in-browser)" time="0.001">
+      <skipped/>
+    </testcase>
+    <testcase classname="In-browser tests test/should-run/source-language/scala.js (lazy) (in-browser)" name="In-browser tests test/should-run/source-language/scala.js (lazy) (in-browser)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="In-browser tests test/browser/check-tail-calls.js (lazy) (in-browser)" name="In-browser tests test/browser/check-tail-calls.js (lazy) (in-browser)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="In-browser tests test/browser/while-true.forever.js (lazy) (in-browser) (may run forever)" name="In-browser tests test/browser/while-true.forever.js (lazy) (in-browser) (may run forever)" time="0">
+      <skipped/>
+    </testcase>
+  </testsuite>
+  <testsuite name="Sanity check -- All tests pass without plugins" tests="121" errors="0" failures="0" skipped="121" timestamp="2017-12-28T07:16:26" time="0.319">
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/and-call-while-guard.js" name="Sanity check -- All tests pass without plugins test/should-run/and-call-while-guard.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/and-left-method-call-shortcircuit.js" name="Sanity check -- All tests pass without plugins test/should-run/and-left-method-call-shortcircuit.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/and-lhs-once.js" name="Sanity check -- All tests pass without plugins test/should-run/and-lhs-once.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/and-or-shortcircuit.js" name="Sanity check -- All tests pass without plugins test/should-run/and-or-shortcircuit.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/and-right-method-call-shortcircuit.js" name="Sanity check -- All tests pass without plugins test/should-run/and-right-method-call-shortcircuit.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/args-reorder.js" name="Sanity check -- All tests pass without plugins test/should-run/args-reorder.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/arguments.js" name="Sanity check -- All tests pass without plugins test/should-run/arguments.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/array-reorder.js" name="Sanity check -- All tests pass without plugins test/should-run/array-reorder.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/assign-flat-to-unflat.js" name="Sanity check -- All tests pass without plugins test/should-run/assign-flat-to-unflat.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js" name="Sanity check -- All tests pass without plugins test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js" name="Sanity check -- All tests pass without plugins test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/assignment-order.js" name="Sanity check -- All tests pass without plugins test/should-run/assignment-order.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/block.js" name="Sanity check -- All tests pass without plugins test/should-run/block.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/boxed-function-declaration.js" name="Sanity check -- All tests pass without plugins test/should-run/boxed-function-declaration.js" time="0.001">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/boxed-var-named-fun.js" name="Sanity check -- All tests pass without plugins test/should-run/boxed-var-named-fun.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/call-computed.js" name="Sanity check -- All tests pass without plugins test/should-run/call-computed.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/computed-function.js" name="Sanity check -- All tests pass without plugins test/should-run/computed-function.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/cps.js" name="Sanity check -- All tests pass without plugins test/should-run/cps.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/ctor-call.js" name="Sanity check -- All tests pass without plugins test/should-run/ctor-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/desugar-for-break.js" name="Sanity check -- All tests pass without plugins test/should-run/desugar-for-break.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/desugar-simple-for.js" name="Sanity check -- All tests pass without plugins test/should-run/desugar-simple-for.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/eval-call-func.js" name="Sanity check -- All tests pass without plugins test/should-run/eval-call-func.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/eval-func-call-func.js" name="Sanity check -- All tests pass without plugins test/should-run/eval-func-call-func.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/eval-Function-call-function.js" name="Sanity check -- All tests pass without plugins test/should-run/eval-Function-call-function.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/eval-simple.js" name="Sanity check -- All tests pass without plugins test/should-run/eval-simple.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/fac-expr.js" name="Sanity check -- All tests pass without plugins test/should-run/fac-expr.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/factorial.js" name="Sanity check -- All tests pass without plugins test/should-run/factorial.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/failing-boxAssignables.js" name="Sanity check -- All tests pass without plugins test/should-run/failing-boxAssignables.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/fallthrough.js" name="Sanity check -- All tests pass without plugins test/should-run/fallthrough.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/falsey-or.js" name="Sanity check -- All tests pass without plugins test/should-run/falsey-or.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/fibb.js" name="Sanity check -- All tests pass without plugins test/should-run/fibb.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/finally-re-enter.js" name="Sanity check -- All tests pass without plugins test/should-run/finally-re-enter.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/finally-resume.js" name="Sanity check -- All tests pass without plugins test/should-run/finally-resume.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/for-in-id.js" name="Sanity check -- All tests pass without plugins test/should-run/for-in-id.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/for-in.js" name="Sanity check -- All tests pass without plugins test/should-run/for-in.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/for-loop-no-block.js" name="Sanity check -- All tests pass without plugins test/should-run/for-loop-no-block.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/for-loop.js" name="Sanity check -- All tests pass without plugins test/should-run/for-loop.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/free-global.js" name="Sanity check -- All tests pass without plugins test/should-run/free-global.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/fun-local-same-name.js" name="Sanity check -- All tests pass without plugins test/should-run/fun-local-same-name.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/func-func-call.js" name="Sanity check -- All tests pass without plugins test/should-run/func-func-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/function-apply.js" name="Sanity check -- All tests pass without plugins test/should-run/function-apply.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/function-call.js" name="Sanity check -- All tests pass without plugins test/should-run/function-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/function-decl-hoist-2.js" name="Sanity check -- All tests pass without plugins test/should-run/function-decl-hoist-2.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/function-decl-hoist.js" name="Sanity check -- All tests pass without plugins test/should-run/function-decl-hoist.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/function-expression.js" name="Sanity check -- All tests pass without plugins test/should-run/function-expression.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/Function-simple.js" name="Sanity check -- All tests pass without plugins test/should-run/Function-simple.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/hoist-var.js" name="Sanity check -- All tests pass without plugins test/should-run/hoist-var.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/hoisted-call.js" name="Sanity check -- All tests pass without plugins test/should-run/hoisted-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/if-return-dead-code.js" name="Sanity check -- All tests pass without plugins test/should-run/if-return-dead-code.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/labeled-continue-for.js" name="Sanity check -- All tests pass without plugins test/should-run/labeled-continue-for.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/labeled-continue-inner.js" name="Sanity check -- All tests pass without plugins test/should-run/labeled-continue-inner.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/labeled-continue-outer.js" name="Sanity check -- All tests pass without plugins test/should-run/labeled-continue-outer.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/method-call-from-function-call.js" name="Sanity check -- All tests pass without plugins test/should-run/method-call-from-function-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/multi-var-order.js" name="Sanity check -- All tests pass without plugins test/should-run/multi-var-order.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/native-new.js" name="Sanity check -- All tests pass without plugins test/should-run/native-new.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/nested-break.js" name="Sanity check -- All tests pass without plugins test/should-run/nested-break.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/nested-if.js" name="Sanity check -- All tests pass without plugins test/should-run/nested-if.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/nested-new-expr.js" name="Sanity check -- All tests pass without plugins test/should-run/nested-new-expr.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/nested-ternary.js" name="Sanity check -- All tests pass without plugins test/should-run/nested-ternary.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/nested-try.js" name="Sanity check -- All tests pass without plugins test/should-run/nested-try.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/new-Function-apply.js" name="Sanity check -- All tests pass without plugins test/should-run/new-Function-apply.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/new-method-call.js" name="Sanity check -- All tests pass without plugins test/should-run/new-method-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/new-returning-object.js" name="Sanity check -- All tests pass without plugins test/should-run/new-returning-object.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/new-with-args.js" name="Sanity check -- All tests pass without plugins test/should-run/new-with-args.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/new.js" name="Sanity check -- All tests pass without plugins test/should-run/new.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/object-literal-reorder.js" name="Sanity check -- All tests pass without plugins test/should-run/object-literal-reorder.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/object-method-suspension.js" name="Sanity check -- All tests pass without plugins test/should-run/object-method-suspension.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/object-method-var-decls.js" name="Sanity check -- All tests pass without plugins test/should-run/object-method-var-decls.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/object-props.js" name="Sanity check -- All tests pass without plugins test/should-run/object-props.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/odd-even.js" name="Sanity check -- All tests pass without plugins test/should-run/odd-even.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/or-left-method-call-shortcircuit.js" name="Sanity check -- All tests pass without plugins test/should-run/or-left-method-call-shortcircuit.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/or-right-method-call-shortcircuit.js" name="Sanity check -- All tests pass without plugins test/should-run/or-right-method-call-shortcircuit.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/order-of-eval-both-call.js" name="Sanity check -- All tests pass without plugins test/should-run/order-of-eval-both-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/order-of-eval-left-call.js" name="Sanity check -- All tests pass without plugins test/should-run/order-of-eval-left-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/order-of-eval-right-call.js" name="Sanity check -- All tests pass without plugins test/should-run/order-of-eval-right-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/properties.js" name="Sanity check -- All tests pass without plugins test/should-run/properties.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/prototype-inheritance.js" name="Sanity check -- All tests pass without plugins test/should-run/prototype-inheritance.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/rename-Math.js" name="Sanity check -- All tests pass without plugins test/should-run/rename-Math.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/restore-into-try.js" name="Sanity check -- All tests pass without plugins test/should-run/restore-into-try.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/return-apply-lambda.js" name="Sanity check -- All tests pass without plugins test/should-run/return-apply-lambda.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/return-from-ctor.js" name="Sanity check -- All tests pass without plugins test/should-run/return-from-ctor.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/scala-failing-proto.js" name="Sanity check -- All tests pass without plugins test/should-run/scala-failing-proto.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/scala-parentData.js" name="Sanity check -- All tests pass without plugins test/should-run/scala-parentData.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/seq-app-order.js" name="Sanity check -- All tests pass without plugins test/should-run/seq-app-order.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/seq-expr-in-loop-guard.js" name="Sanity check -- All tests pass without plugins test/should-run/seq-expr-in-loop-guard.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/seq-order.js" name="Sanity check -- All tests pass without plugins test/should-run/seq-order.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/seq-while-funcall.js" name="Sanity check -- All tests pass without plugins test/should-run/seq-while-funcall.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/set-prototype-to-function.js" name="Sanity check -- All tests pass without plugins test/should-run/set-prototype-to-function.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/set-prototype-to-object.js" name="Sanity check -- All tests pass without plugins test/should-run/set-prototype-to-object.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/simple-if-execute-one-branch.js" name="Sanity check -- All tests pass without plugins test/should-run/simple-if-execute-one-branch.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/simple-if.js" name="Sanity check -- All tests pass without plugins test/should-run/simple-if.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/single-stmt-label.js" name="Sanity check -- All tests pass without plugins test/should-run/single-stmt-label.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/sum.js" name="Sanity check -- All tests pass without plugins test/should-run/sum.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/switch-in-while.js" name="Sanity check -- All tests pass without plugins test/should-run/switch-in-while.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/switch.js" name="Sanity check -- All tests pass without plugins test/should-run/switch.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/tail-call.js" name="Sanity check -- All tests pass without plugins test/should-run/tail-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/terminating-seq.js" name="Sanity check -- All tests pass without plugins test/should-run/terminating-seq.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/ternary-left-method-call-shortcircuit.js" name="Sanity check -- All tests pass without plugins test/should-run/ternary-left-method-call-shortcircuit.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/ternary-right-method-call-shortcircuit.js" name="Sanity check -- All tests pass without plugins test/should-run/ternary-right-method-call-shortcircuit.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/ternary-short-circuit.js" name="Sanity check -- All tests pass without plugins test/should-run/ternary-short-circuit.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/throw-call.js" name="Sanity check -- All tests pass without plugins test/should-run/throw-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/throw-in-catch.js" name="Sanity check -- All tests pass without plugins test/should-run/throw-in-catch.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/top-level-throw.js" name="Sanity check -- All tests pass without plugins test/should-run/top-level-throw.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/triple-call.js" name="Sanity check -- All tests pass without plugins test/should-run/triple-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/try-catch.js" name="Sanity check -- All tests pass without plugins test/should-run/try-catch.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/try-finally.js" name="Sanity check -- All tests pass without plugins test/should-run/try-finally.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/try-no-throw.js" name="Sanity check -- All tests pass without plugins test/should-run/try-no-throw.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/try-re-enter-catch.js" name="Sanity check -- All tests pass without plugins test/should-run/try-re-enter-catch.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/uninitialized.js" name="Sanity check -- All tests pass without plugins test/should-run/uninitialized.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/untransformed-function-call.js" name="Sanity check -- All tests pass without plugins test/should-run/untransformed-function-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/var-after-fun-decl.js" name="Sanity check -- All tests pass without plugins test/should-run/var-after-fun-decl.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/var-redeclaration-2.js" name="Sanity check -- All tests pass without plugins test/should-run/var-redeclaration-2.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/var-redeclaration.js" name="Sanity check -- All tests pass without plugins test/should-run/var-redeclaration.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/var-seq.js" name="Sanity check -- All tests pass without plugins test/should-run/var-seq.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/while-break.js" name="Sanity check -- All tests pass without plugins test/should-run/while-break.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/while-call.js" name="Sanity check -- All tests pass without plugins test/should-run/while-call.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/while-continue.js" name="Sanity check -- All tests pass without plugins test/should-run/while-continue.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/while-in-switch.js" name="Sanity check -- All tests pass without plugins test/should-run/while-in-switch.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/while-loop-no-block.js" name="Sanity check -- All tests pass without plugins test/should-run/while-loop-no-block.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/while-loop.js" name="Sanity check -- All tests pass without plugins test/should-run/while-loop.js" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Sanity check -- All tests pass without plugins test/should-run/while-return.js" name="Sanity check -- All tests pass without plugins test/should-run/while-return.js" time="0">
+      <skipped/>
+    </testcase>
+  </testsuite>
+  <testsuite name="call/cc" tests="484" errors="0" failures="0" skipped="484" timestamp="2017-12-28T07:16:26" time="0.318">
+    <testcase classname="call/cc test/should-run/and-call-while-guard.js  (lazy)" name="call/cc test/should-run/and-call-while-guard.js  (lazy)" time="0.001">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-call-while-guard.js --new direct (lazy)" name="call/cc test/should-run/and-call-while-guard.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-call-while-guard.js  (eager)" name="call/cc test/should-run/and-call-while-guard.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-call-while-guard.js  (retval)" name="call/cc test/should-run/and-call-while-guard.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-left-method-call-shortcircuit.js  (lazy)" name="call/cc test/should-run/and-left-method-call-shortcircuit.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-left-method-call-shortcircuit.js --new direct (lazy)" name="call/cc test/should-run/and-left-method-call-shortcircuit.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-left-method-call-shortcircuit.js  (eager)" name="call/cc test/should-run/and-left-method-call-shortcircuit.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-left-method-call-shortcircuit.js  (retval)" name="call/cc test/should-run/and-left-method-call-shortcircuit.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-lhs-once.js  (lazy)" name="call/cc test/should-run/and-lhs-once.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-lhs-once.js --new direct (lazy)" name="call/cc test/should-run/and-lhs-once.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-lhs-once.js  (eager)" name="call/cc test/should-run/and-lhs-once.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-lhs-once.js  (retval)" name="call/cc test/should-run/and-lhs-once.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-or-shortcircuit.js  (lazy)" name="call/cc test/should-run/and-or-shortcircuit.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-or-shortcircuit.js --new direct (lazy)" name="call/cc test/should-run/and-or-shortcircuit.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-or-shortcircuit.js  (eager)" name="call/cc test/should-run/and-or-shortcircuit.js  (eager)" time="0.001">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-or-shortcircuit.js  (retval)" name="call/cc test/should-run/and-or-shortcircuit.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-right-method-call-shortcircuit.js  (lazy)" name="call/cc test/should-run/and-right-method-call-shortcircuit.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-right-method-call-shortcircuit.js --new direct (lazy)" name="call/cc test/should-run/and-right-method-call-shortcircuit.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-right-method-call-shortcircuit.js  (eager)" name="call/cc test/should-run/and-right-method-call-shortcircuit.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/and-right-method-call-shortcircuit.js  (retval)" name="call/cc test/should-run/and-right-method-call-shortcircuit.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/args-reorder.js  (lazy)" name="call/cc test/should-run/args-reorder.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/args-reorder.js --new direct (lazy)" name="call/cc test/should-run/args-reorder.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/args-reorder.js  (eager)" name="call/cc test/should-run/args-reorder.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/args-reorder.js  (retval)" name="call/cc test/should-run/args-reorder.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/arguments.js  (lazy)" name="call/cc test/should-run/arguments.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/arguments.js --new direct (lazy)" name="call/cc test/should-run/arguments.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/arguments.js  (eager)" name="call/cc test/should-run/arguments.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/arguments.js  (retval)" name="call/cc test/should-run/arguments.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/array-reorder.js  (lazy)" name="call/cc test/should-run/array-reorder.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/array-reorder.js --new direct (lazy)" name="call/cc test/should-run/array-reorder.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/array-reorder.js  (eager)" name="call/cc test/should-run/array-reorder.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/array-reorder.js  (retval)" name="call/cc test/should-run/array-reorder.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assign-flat-to-unflat.js  (lazy)" name="call/cc test/should-run/assign-flat-to-unflat.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assign-flat-to-unflat.js --new direct (lazy)" name="call/cc test/should-run/assign-flat-to-unflat.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assign-flat-to-unflat.js  (eager)" name="call/cc test/should-run/assign-flat-to-unflat.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assign-flat-to-unflat.js  (retval)" name="call/cc test/should-run/assign-flat-to-unflat.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js  (lazy)" name="call/cc test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js --new direct (lazy)" name="call/cc test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js  (eager)" name="call/cc test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js  (retval)" name="call/cc test/should-run/assignable-boxing-arguments-array-arity-mismatch-threeway-interaction-bug.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js  (lazy)" name="call/cc test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js --new direct (lazy)" name="call/cc test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js  (eager)" name="call/cc test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js  (retval)" name="call/cc test/should-run/assignable-boxing-arguments-array-mismatch-threeway-interaction-regression-1.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignment-order.js  (lazy)" name="call/cc test/should-run/assignment-order.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignment-order.js --new direct (lazy)" name="call/cc test/should-run/assignment-order.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignment-order.js  (eager)" name="call/cc test/should-run/assignment-order.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/assignment-order.js  (retval)" name="call/cc test/should-run/assignment-order.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/block.js  (lazy)" name="call/cc test/should-run/block.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/block.js --new direct (lazy)" name="call/cc test/should-run/block.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/block.js  (eager)" name="call/cc test/should-run/block.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/block.js  (retval)" name="call/cc test/should-run/block.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/boxed-function-declaration.js  (lazy)" name="call/cc test/should-run/boxed-function-declaration.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/boxed-function-declaration.js --new direct (lazy)" name="call/cc test/should-run/boxed-function-declaration.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/boxed-function-declaration.js  (eager)" name="call/cc test/should-run/boxed-function-declaration.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/boxed-function-declaration.js  (retval)" name="call/cc test/should-run/boxed-function-declaration.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/boxed-var-named-fun.js  (lazy)" name="call/cc test/should-run/boxed-var-named-fun.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/boxed-var-named-fun.js --new direct (lazy)" name="call/cc test/should-run/boxed-var-named-fun.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/boxed-var-named-fun.js  (eager)" name="call/cc test/should-run/boxed-var-named-fun.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/boxed-var-named-fun.js  (retval)" name="call/cc test/should-run/boxed-var-named-fun.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/call-computed.js  (lazy)" name="call/cc test/should-run/call-computed.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/call-computed.js --new direct (lazy)" name="call/cc test/should-run/call-computed.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/call-computed.js  (eager)" name="call/cc test/should-run/call-computed.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/call-computed.js  (retval)" name="call/cc test/should-run/call-computed.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/computed-function.js  (lazy)" name="call/cc test/should-run/computed-function.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/computed-function.js --new direct (lazy)" name="call/cc test/should-run/computed-function.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/computed-function.js  (eager)" name="call/cc test/should-run/computed-function.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/computed-function.js  (retval)" name="call/cc test/should-run/computed-function.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/cps.js  (lazy)" name="call/cc test/should-run/cps.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/cps.js --new direct (lazy)" name="call/cc test/should-run/cps.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/cps.js  (eager)" name="call/cc test/should-run/cps.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/cps.js  (retval)" name="call/cc test/should-run/cps.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ctor-call.js  (lazy)" name="call/cc test/should-run/ctor-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ctor-call.js --new direct (lazy)" name="call/cc test/should-run/ctor-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ctor-call.js  (eager)" name="call/cc test/should-run/ctor-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ctor-call.js  (retval)" name="call/cc test/should-run/ctor-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/desugar-for-break.js  (lazy)" name="call/cc test/should-run/desugar-for-break.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/desugar-for-break.js --new direct (lazy)" name="call/cc test/should-run/desugar-for-break.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/desugar-for-break.js  (eager)" name="call/cc test/should-run/desugar-for-break.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/desugar-for-break.js  (retval)" name="call/cc test/should-run/desugar-for-break.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/desugar-simple-for.js  (lazy)" name="call/cc test/should-run/desugar-simple-for.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/desugar-simple-for.js --new direct (lazy)" name="call/cc test/should-run/desugar-simple-for.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/desugar-simple-for.js  (eager)" name="call/cc test/should-run/desugar-simple-for.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/desugar-simple-for.js  (retval)" name="call/cc test/should-run/desugar-simple-for.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-call-func.js  (lazy)" name="call/cc test/should-run/eval-call-func.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-call-func.js --new direct (lazy)" name="call/cc test/should-run/eval-call-func.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-call-func.js  (eager)" name="call/cc test/should-run/eval-call-func.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-call-func.js  (retval)" name="call/cc test/should-run/eval-call-func.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-func-call-func.js  (lazy)" name="call/cc test/should-run/eval-func-call-func.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-func-call-func.js --new direct (lazy)" name="call/cc test/should-run/eval-func-call-func.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-func-call-func.js  (eager)" name="call/cc test/should-run/eval-func-call-func.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-func-call-func.js  (retval)" name="call/cc test/should-run/eval-func-call-func.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-Function-call-function.js  (lazy)" name="call/cc test/should-run/eval-Function-call-function.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-Function-call-function.js --new direct (lazy)" name="call/cc test/should-run/eval-Function-call-function.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-Function-call-function.js  (eager)" name="call/cc test/should-run/eval-Function-call-function.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-Function-call-function.js  (retval)" name="call/cc test/should-run/eval-Function-call-function.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-simple.js  (lazy)" name="call/cc test/should-run/eval-simple.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-simple.js --new direct (lazy)" name="call/cc test/should-run/eval-simple.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-simple.js  (eager)" name="call/cc test/should-run/eval-simple.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/eval-simple.js  (retval)" name="call/cc test/should-run/eval-simple.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fac-expr.js  (lazy)" name="call/cc test/should-run/fac-expr.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fac-expr.js --new direct (lazy)" name="call/cc test/should-run/fac-expr.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fac-expr.js  (eager)" name="call/cc test/should-run/fac-expr.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fac-expr.js  (retval)" name="call/cc test/should-run/fac-expr.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/factorial.js  (lazy)" name="call/cc test/should-run/factorial.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/factorial.js --new direct (lazy)" name="call/cc test/should-run/factorial.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/factorial.js  (eager)" name="call/cc test/should-run/factorial.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/factorial.js  (retval)" name="call/cc test/should-run/factorial.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/failing-boxAssignables.js  (lazy)" name="call/cc test/should-run/failing-boxAssignables.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/failing-boxAssignables.js --new direct (lazy)" name="call/cc test/should-run/failing-boxAssignables.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/failing-boxAssignables.js  (eager)" name="call/cc test/should-run/failing-boxAssignables.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/failing-boxAssignables.js  (retval)" name="call/cc test/should-run/failing-boxAssignables.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fallthrough.js  (lazy)" name="call/cc test/should-run/fallthrough.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fallthrough.js --new direct (lazy)" name="call/cc test/should-run/fallthrough.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fallthrough.js  (eager)" name="call/cc test/should-run/fallthrough.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fallthrough.js  (retval)" name="call/cc test/should-run/fallthrough.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/falsey-or.js  (lazy)" name="call/cc test/should-run/falsey-or.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/falsey-or.js --new direct (lazy)" name="call/cc test/should-run/falsey-or.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/falsey-or.js  (eager)" name="call/cc test/should-run/falsey-or.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/falsey-or.js  (retval)" name="call/cc test/should-run/falsey-or.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fibb.js  (lazy)" name="call/cc test/should-run/fibb.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fibb.js --new direct (lazy)" name="call/cc test/should-run/fibb.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fibb.js  (eager)" name="call/cc test/should-run/fibb.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fibb.js  (retval)" name="call/cc test/should-run/fibb.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/finally-re-enter.js  (lazy)" name="call/cc test/should-run/finally-re-enter.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/finally-re-enter.js --new direct (lazy)" name="call/cc test/should-run/finally-re-enter.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/finally-re-enter.js  (eager)" name="call/cc test/should-run/finally-re-enter.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/finally-re-enter.js  (retval)" name="call/cc test/should-run/finally-re-enter.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/finally-resume.js  (lazy)" name="call/cc test/should-run/finally-resume.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/finally-resume.js --new direct (lazy)" name="call/cc test/should-run/finally-resume.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/finally-resume.js  (eager)" name="call/cc test/should-run/finally-resume.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/finally-resume.js  (retval)" name="call/cc test/should-run/finally-resume.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-in-id.js  (lazy)" name="call/cc test/should-run/for-in-id.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-in-id.js --new direct (lazy)" name="call/cc test/should-run/for-in-id.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-in-id.js  (eager)" name="call/cc test/should-run/for-in-id.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-in-id.js  (retval)" name="call/cc test/should-run/for-in-id.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-in.js  (lazy)" name="call/cc test/should-run/for-in.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-in.js --new direct (lazy)" name="call/cc test/should-run/for-in.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-in.js  (eager)" name="call/cc test/should-run/for-in.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-in.js  (retval)" name="call/cc test/should-run/for-in.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-loop-no-block.js  (lazy)" name="call/cc test/should-run/for-loop-no-block.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-loop-no-block.js --new direct (lazy)" name="call/cc test/should-run/for-loop-no-block.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-loop-no-block.js  (eager)" name="call/cc test/should-run/for-loop-no-block.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-loop-no-block.js  (retval)" name="call/cc test/should-run/for-loop-no-block.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-loop.js  (lazy)" name="call/cc test/should-run/for-loop.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-loop.js --new direct (lazy)" name="call/cc test/should-run/for-loop.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-loop.js  (eager)" name="call/cc test/should-run/for-loop.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/for-loop.js  (retval)" name="call/cc test/should-run/for-loop.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/free-global.js  (lazy)" name="call/cc test/should-run/free-global.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/free-global.js --new direct (lazy)" name="call/cc test/should-run/free-global.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/free-global.js  (eager)" name="call/cc test/should-run/free-global.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/free-global.js  (retval)" name="call/cc test/should-run/free-global.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fun-local-same-name.js  (lazy)" name="call/cc test/should-run/fun-local-same-name.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fun-local-same-name.js --new direct (lazy)" name="call/cc test/should-run/fun-local-same-name.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fun-local-same-name.js  (eager)" name="call/cc test/should-run/fun-local-same-name.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/fun-local-same-name.js  (retval)" name="call/cc test/should-run/fun-local-same-name.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/func-func-call.js  (lazy)" name="call/cc test/should-run/func-func-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/func-func-call.js --new direct (lazy)" name="call/cc test/should-run/func-func-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/func-func-call.js  (eager)" name="call/cc test/should-run/func-func-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/func-func-call.js  (retval)" name="call/cc test/should-run/func-func-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-apply.js  (lazy)" name="call/cc test/should-run/function-apply.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-apply.js --new direct (lazy)" name="call/cc test/should-run/function-apply.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-apply.js  (eager)" name="call/cc test/should-run/function-apply.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-apply.js  (retval)" name="call/cc test/should-run/function-apply.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-call.js  (lazy)" name="call/cc test/should-run/function-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-call.js --new direct (lazy)" name="call/cc test/should-run/function-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-call.js  (eager)" name="call/cc test/should-run/function-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-call.js  (retval)" name="call/cc test/should-run/function-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-decl-hoist-2.js  (lazy)" name="call/cc test/should-run/function-decl-hoist-2.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-decl-hoist-2.js --new direct (lazy)" name="call/cc test/should-run/function-decl-hoist-2.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-decl-hoist-2.js  (eager)" name="call/cc test/should-run/function-decl-hoist-2.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-decl-hoist-2.js  (retval)" name="call/cc test/should-run/function-decl-hoist-2.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-decl-hoist.js  (lazy)" name="call/cc test/should-run/function-decl-hoist.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-decl-hoist.js --new direct (lazy)" name="call/cc test/should-run/function-decl-hoist.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-decl-hoist.js  (eager)" name="call/cc test/should-run/function-decl-hoist.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-decl-hoist.js  (retval)" name="call/cc test/should-run/function-decl-hoist.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-expression.js  (lazy)" name="call/cc test/should-run/function-expression.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-expression.js --new direct (lazy)" name="call/cc test/should-run/function-expression.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-expression.js  (eager)" name="call/cc test/should-run/function-expression.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/function-expression.js  (retval)" name="call/cc test/should-run/function-expression.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/Function-simple.js  (lazy)" name="call/cc test/should-run/Function-simple.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/Function-simple.js --new direct (lazy)" name="call/cc test/should-run/Function-simple.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/Function-simple.js  (eager)" name="call/cc test/should-run/Function-simple.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/Function-simple.js  (retval)" name="call/cc test/should-run/Function-simple.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/hoist-var.js  (lazy)" name="call/cc test/should-run/hoist-var.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/hoist-var.js --new direct (lazy)" name="call/cc test/should-run/hoist-var.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/hoist-var.js  (eager)" name="call/cc test/should-run/hoist-var.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/hoist-var.js  (retval)" name="call/cc test/should-run/hoist-var.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/hoisted-call.js  (lazy)" name="call/cc test/should-run/hoisted-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/hoisted-call.js --new direct (lazy)" name="call/cc test/should-run/hoisted-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/hoisted-call.js  (eager)" name="call/cc test/should-run/hoisted-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/hoisted-call.js  (retval)" name="call/cc test/should-run/hoisted-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/if-return-dead-code.js  (lazy)" name="call/cc test/should-run/if-return-dead-code.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/if-return-dead-code.js --new direct (lazy)" name="call/cc test/should-run/if-return-dead-code.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/if-return-dead-code.js  (eager)" name="call/cc test/should-run/if-return-dead-code.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/if-return-dead-code.js  (retval)" name="call/cc test/should-run/if-return-dead-code.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-for.js  (lazy)" name="call/cc test/should-run/labeled-continue-for.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-for.js --new direct (lazy)" name="call/cc test/should-run/labeled-continue-for.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-for.js  (eager)" name="call/cc test/should-run/labeled-continue-for.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-for.js  (retval)" name="call/cc test/should-run/labeled-continue-for.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-inner.js  (lazy)" name="call/cc test/should-run/labeled-continue-inner.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-inner.js --new direct (lazy)" name="call/cc test/should-run/labeled-continue-inner.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-inner.js  (eager)" name="call/cc test/should-run/labeled-continue-inner.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-inner.js  (retval)" name="call/cc test/should-run/labeled-continue-inner.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-outer.js  (lazy)" name="call/cc test/should-run/labeled-continue-outer.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-outer.js --new direct (lazy)" name="call/cc test/should-run/labeled-continue-outer.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-outer.js  (eager)" name="call/cc test/should-run/labeled-continue-outer.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/labeled-continue-outer.js  (retval)" name="call/cc test/should-run/labeled-continue-outer.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/method-call-from-function-call.js  (lazy)" name="call/cc test/should-run/method-call-from-function-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/method-call-from-function-call.js --new direct (lazy)" name="call/cc test/should-run/method-call-from-function-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/method-call-from-function-call.js  (eager)" name="call/cc test/should-run/method-call-from-function-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/method-call-from-function-call.js  (retval)" name="call/cc test/should-run/method-call-from-function-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/multi-var-order.js  (lazy)" name="call/cc test/should-run/multi-var-order.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/multi-var-order.js --new direct (lazy)" name="call/cc test/should-run/multi-var-order.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/multi-var-order.js  (eager)" name="call/cc test/should-run/multi-var-order.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/multi-var-order.js  (retval)" name="call/cc test/should-run/multi-var-order.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/native-new.js  (lazy)" name="call/cc test/should-run/native-new.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/native-new.js --new direct (lazy)" name="call/cc test/should-run/native-new.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/native-new.js  (eager)" name="call/cc test/should-run/native-new.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/native-new.js  (retval)" name="call/cc test/should-run/native-new.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-break.js  (lazy)" name="call/cc test/should-run/nested-break.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-break.js --new direct (lazy)" name="call/cc test/should-run/nested-break.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-break.js  (eager)" name="call/cc test/should-run/nested-break.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-break.js  (retval)" name="call/cc test/should-run/nested-break.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-if.js  (lazy)" name="call/cc test/should-run/nested-if.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-if.js --new direct (lazy)" name="call/cc test/should-run/nested-if.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-if.js  (eager)" name="call/cc test/should-run/nested-if.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-if.js  (retval)" name="call/cc test/should-run/nested-if.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-new-expr.js  (lazy)" name="call/cc test/should-run/nested-new-expr.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-new-expr.js --new direct (lazy)" name="call/cc test/should-run/nested-new-expr.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-new-expr.js  (eager)" name="call/cc test/should-run/nested-new-expr.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-new-expr.js  (retval)" name="call/cc test/should-run/nested-new-expr.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-ternary.js  (lazy)" name="call/cc test/should-run/nested-ternary.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-ternary.js --new direct (lazy)" name="call/cc test/should-run/nested-ternary.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-ternary.js  (eager)" name="call/cc test/should-run/nested-ternary.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-ternary.js  (retval)" name="call/cc test/should-run/nested-ternary.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-try.js  (lazy)" name="call/cc test/should-run/nested-try.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-try.js --new direct (lazy)" name="call/cc test/should-run/nested-try.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-try.js  (eager)" name="call/cc test/should-run/nested-try.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/nested-try.js  (retval)" name="call/cc test/should-run/nested-try.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-Function-apply.js  (lazy)" name="call/cc test/should-run/new-Function-apply.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-Function-apply.js --new direct (lazy)" name="call/cc test/should-run/new-Function-apply.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-Function-apply.js  (eager)" name="call/cc test/should-run/new-Function-apply.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-Function-apply.js  (retval)" name="call/cc test/should-run/new-Function-apply.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-method-call.js  (lazy)" name="call/cc test/should-run/new-method-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-method-call.js --new direct (lazy)" name="call/cc test/should-run/new-method-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-method-call.js  (eager)" name="call/cc test/should-run/new-method-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-method-call.js  (retval)" name="call/cc test/should-run/new-method-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-returning-object.js  (lazy)" name="call/cc test/should-run/new-returning-object.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-returning-object.js --new direct (lazy)" name="call/cc test/should-run/new-returning-object.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-returning-object.js  (eager)" name="call/cc test/should-run/new-returning-object.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-returning-object.js  (retval)" name="call/cc test/should-run/new-returning-object.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-with-args.js  (lazy)" name="call/cc test/should-run/new-with-args.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-with-args.js --new direct (lazy)" name="call/cc test/should-run/new-with-args.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-with-args.js  (eager)" name="call/cc test/should-run/new-with-args.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new-with-args.js  (retval)" name="call/cc test/should-run/new-with-args.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new.js  (lazy)" name="call/cc test/should-run/new.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new.js --new direct (lazy)" name="call/cc test/should-run/new.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new.js  (eager)" name="call/cc test/should-run/new.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/new.js  (retval)" name="call/cc test/should-run/new.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-literal-reorder.js  (lazy)" name="call/cc test/should-run/object-literal-reorder.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-literal-reorder.js --new direct (lazy)" name="call/cc test/should-run/object-literal-reorder.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-literal-reorder.js  (eager)" name="call/cc test/should-run/object-literal-reorder.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-literal-reorder.js  (retval)" name="call/cc test/should-run/object-literal-reorder.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-method-suspension.js  (lazy)" name="call/cc test/should-run/object-method-suspension.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-method-suspension.js --new direct (lazy)" name="call/cc test/should-run/object-method-suspension.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-method-suspension.js  (eager)" name="call/cc test/should-run/object-method-suspension.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-method-suspension.js  (retval)" name="call/cc test/should-run/object-method-suspension.js  (retval)" time="0.001">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-method-var-decls.js  (lazy)" name="call/cc test/should-run/object-method-var-decls.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-method-var-decls.js --new direct (lazy)" name="call/cc test/should-run/object-method-var-decls.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-method-var-decls.js  (eager)" name="call/cc test/should-run/object-method-var-decls.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-method-var-decls.js  (retval)" name="call/cc test/should-run/object-method-var-decls.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-props.js  (lazy)" name="call/cc test/should-run/object-props.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-props.js --new direct (lazy)" name="call/cc test/should-run/object-props.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-props.js  (eager)" name="call/cc test/should-run/object-props.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/object-props.js  (retval)" name="call/cc test/should-run/object-props.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/odd-even.js  (lazy)" name="call/cc test/should-run/odd-even.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/odd-even.js --new direct (lazy)" name="call/cc test/should-run/odd-even.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/odd-even.js  (eager)" name="call/cc test/should-run/odd-even.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/odd-even.js  (retval)" name="call/cc test/should-run/odd-even.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/or-left-method-call-shortcircuit.js  (lazy)" name="call/cc test/should-run/or-left-method-call-shortcircuit.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/or-left-method-call-shortcircuit.js --new direct (lazy)" name="call/cc test/should-run/or-left-method-call-shortcircuit.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/or-left-method-call-shortcircuit.js  (eager)" name="call/cc test/should-run/or-left-method-call-shortcircuit.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/or-left-method-call-shortcircuit.js  (retval)" name="call/cc test/should-run/or-left-method-call-shortcircuit.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/or-right-method-call-shortcircuit.js  (lazy)" name="call/cc test/should-run/or-right-method-call-shortcircuit.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/or-right-method-call-shortcircuit.js --new direct (lazy)" name="call/cc test/should-run/or-right-method-call-shortcircuit.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/or-right-method-call-shortcircuit.js  (eager)" name="call/cc test/should-run/or-right-method-call-shortcircuit.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/or-right-method-call-shortcircuit.js  (retval)" name="call/cc test/should-run/or-right-method-call-shortcircuit.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-both-call.js  (lazy)" name="call/cc test/should-run/order-of-eval-both-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-both-call.js --new direct (lazy)" name="call/cc test/should-run/order-of-eval-both-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-both-call.js  (eager)" name="call/cc test/should-run/order-of-eval-both-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-both-call.js  (retval)" name="call/cc test/should-run/order-of-eval-both-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-left-call.js  (lazy)" name="call/cc test/should-run/order-of-eval-left-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-left-call.js --new direct (lazy)" name="call/cc test/should-run/order-of-eval-left-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-left-call.js  (eager)" name="call/cc test/should-run/order-of-eval-left-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-left-call.js  (retval)" name="call/cc test/should-run/order-of-eval-left-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-right-call.js  (lazy)" name="call/cc test/should-run/order-of-eval-right-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-right-call.js --new direct (lazy)" name="call/cc test/should-run/order-of-eval-right-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-right-call.js  (eager)" name="call/cc test/should-run/order-of-eval-right-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/order-of-eval-right-call.js  (retval)" name="call/cc test/should-run/order-of-eval-right-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/properties.js  (lazy)" name="call/cc test/should-run/properties.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/properties.js --new direct (lazy)" name="call/cc test/should-run/properties.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/properties.js  (eager)" name="call/cc test/should-run/properties.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/properties.js  (retval)" name="call/cc test/should-run/properties.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/prototype-inheritance.js  (lazy)" name="call/cc test/should-run/prototype-inheritance.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/prototype-inheritance.js --new direct (lazy)" name="call/cc test/should-run/prototype-inheritance.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/prototype-inheritance.js  (eager)" name="call/cc test/should-run/prototype-inheritance.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/prototype-inheritance.js  (retval)" name="call/cc test/should-run/prototype-inheritance.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/rename-Math.js  (lazy)" name="call/cc test/should-run/rename-Math.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/rename-Math.js --new direct (lazy)" name="call/cc test/should-run/rename-Math.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/rename-Math.js  (eager)" name="call/cc test/should-run/rename-Math.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/rename-Math.js  (retval)" name="call/cc test/should-run/rename-Math.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/restore-into-try.js  (lazy)" name="call/cc test/should-run/restore-into-try.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/restore-into-try.js --new direct (lazy)" name="call/cc test/should-run/restore-into-try.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/restore-into-try.js  (eager)" name="call/cc test/should-run/restore-into-try.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/restore-into-try.js  (retval)" name="call/cc test/should-run/restore-into-try.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/return-apply-lambda.js  (lazy)" name="call/cc test/should-run/return-apply-lambda.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/return-apply-lambda.js --new direct (lazy)" name="call/cc test/should-run/return-apply-lambda.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/return-apply-lambda.js  (eager)" name="call/cc test/should-run/return-apply-lambda.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/return-apply-lambda.js  (retval)" name="call/cc test/should-run/return-apply-lambda.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/return-from-ctor.js  (lazy)" name="call/cc test/should-run/return-from-ctor.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/return-from-ctor.js --new direct (lazy)" name="call/cc test/should-run/return-from-ctor.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/return-from-ctor.js  (eager)" name="call/cc test/should-run/return-from-ctor.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/return-from-ctor.js  (retval)" name="call/cc test/should-run/return-from-ctor.js  (retval)" time="0.001">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/scala-failing-proto.js  (lazy)" name="call/cc test/should-run/scala-failing-proto.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/scala-failing-proto.js --new direct (lazy)" name="call/cc test/should-run/scala-failing-proto.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/scala-failing-proto.js  (eager)" name="call/cc test/should-run/scala-failing-proto.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/scala-failing-proto.js  (retval)" name="call/cc test/should-run/scala-failing-proto.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/scala-parentData.js  (lazy)" name="call/cc test/should-run/scala-parentData.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/scala-parentData.js --new direct (lazy)" name="call/cc test/should-run/scala-parentData.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/scala-parentData.js  (eager)" name="call/cc test/should-run/scala-parentData.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/scala-parentData.js  (retval)" name="call/cc test/should-run/scala-parentData.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-app-order.js  (lazy)" name="call/cc test/should-run/seq-app-order.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-app-order.js --new direct (lazy)" name="call/cc test/should-run/seq-app-order.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-app-order.js  (eager)" name="call/cc test/should-run/seq-app-order.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-app-order.js  (retval)" name="call/cc test/should-run/seq-app-order.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-expr-in-loop-guard.js  (lazy)" name="call/cc test/should-run/seq-expr-in-loop-guard.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-expr-in-loop-guard.js --new direct (lazy)" name="call/cc test/should-run/seq-expr-in-loop-guard.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-expr-in-loop-guard.js  (eager)" name="call/cc test/should-run/seq-expr-in-loop-guard.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-expr-in-loop-guard.js  (retval)" name="call/cc test/should-run/seq-expr-in-loop-guard.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-order.js  (lazy)" name="call/cc test/should-run/seq-order.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-order.js --new direct (lazy)" name="call/cc test/should-run/seq-order.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-order.js  (eager)" name="call/cc test/should-run/seq-order.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-order.js  (retval)" name="call/cc test/should-run/seq-order.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-while-funcall.js  (lazy)" name="call/cc test/should-run/seq-while-funcall.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-while-funcall.js --new direct (lazy)" name="call/cc test/should-run/seq-while-funcall.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-while-funcall.js  (eager)" name="call/cc test/should-run/seq-while-funcall.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/seq-while-funcall.js  (retval)" name="call/cc test/should-run/seq-while-funcall.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/set-prototype-to-function.js  (lazy)" name="call/cc test/should-run/set-prototype-to-function.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/set-prototype-to-function.js --new direct (lazy)" name="call/cc test/should-run/set-prototype-to-function.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/set-prototype-to-function.js  (eager)" name="call/cc test/should-run/set-prototype-to-function.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/set-prototype-to-function.js  (retval)" name="call/cc test/should-run/set-prototype-to-function.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/set-prototype-to-object.js  (lazy)" name="call/cc test/should-run/set-prototype-to-object.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/set-prototype-to-object.js --new direct (lazy)" name="call/cc test/should-run/set-prototype-to-object.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/set-prototype-to-object.js  (eager)" name="call/cc test/should-run/set-prototype-to-object.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/set-prototype-to-object.js  (retval)" name="call/cc test/should-run/set-prototype-to-object.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/simple-if-execute-one-branch.js  (lazy)" name="call/cc test/should-run/simple-if-execute-one-branch.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/simple-if-execute-one-branch.js --new direct (lazy)" name="call/cc test/should-run/simple-if-execute-one-branch.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/simple-if-execute-one-branch.js  (eager)" name="call/cc test/should-run/simple-if-execute-one-branch.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/simple-if-execute-one-branch.js  (retval)" name="call/cc test/should-run/simple-if-execute-one-branch.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/simple-if.js  (lazy)" name="call/cc test/should-run/simple-if.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/simple-if.js --new direct (lazy)" name="call/cc test/should-run/simple-if.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/simple-if.js  (eager)" name="call/cc test/should-run/simple-if.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/simple-if.js  (retval)" name="call/cc test/should-run/simple-if.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/single-stmt-label.js  (lazy)" name="call/cc test/should-run/single-stmt-label.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/single-stmt-label.js --new direct (lazy)" name="call/cc test/should-run/single-stmt-label.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/single-stmt-label.js  (eager)" name="call/cc test/should-run/single-stmt-label.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/single-stmt-label.js  (retval)" name="call/cc test/should-run/single-stmt-label.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/sum.js  (lazy)" name="call/cc test/should-run/sum.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/sum.js --new direct (lazy)" name="call/cc test/should-run/sum.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/sum.js  (eager)" name="call/cc test/should-run/sum.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/sum.js  (retval)" name="call/cc test/should-run/sum.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/switch-in-while.js  (lazy)" name="call/cc test/should-run/switch-in-while.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/switch-in-while.js --new direct (lazy)" name="call/cc test/should-run/switch-in-while.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/switch-in-while.js  (eager)" name="call/cc test/should-run/switch-in-while.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/switch-in-while.js  (retval)" name="call/cc test/should-run/switch-in-while.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/switch.js  (lazy)" name="call/cc test/should-run/switch.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/switch.js --new direct (lazy)" name="call/cc test/should-run/switch.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/switch.js  (eager)" name="call/cc test/should-run/switch.js  (eager)" time="0.001">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/switch.js  (retval)" name="call/cc test/should-run/switch.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/tail-call.js  (lazy)" name="call/cc test/should-run/tail-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/tail-call.js --new direct (lazy)" name="call/cc test/should-run/tail-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/tail-call.js  (eager)" name="call/cc test/should-run/tail-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/tail-call.js  (retval)" name="call/cc test/should-run/tail-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/terminating-seq.js  (lazy)" name="call/cc test/should-run/terminating-seq.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/terminating-seq.js --new direct (lazy)" name="call/cc test/should-run/terminating-seq.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/terminating-seq.js  (eager)" name="call/cc test/should-run/terminating-seq.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/terminating-seq.js  (retval)" name="call/cc test/should-run/terminating-seq.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-left-method-call-shortcircuit.js  (lazy)" name="call/cc test/should-run/ternary-left-method-call-shortcircuit.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-left-method-call-shortcircuit.js --new direct (lazy)" name="call/cc test/should-run/ternary-left-method-call-shortcircuit.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-left-method-call-shortcircuit.js  (eager)" name="call/cc test/should-run/ternary-left-method-call-shortcircuit.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-left-method-call-shortcircuit.js  (retval)" name="call/cc test/should-run/ternary-left-method-call-shortcircuit.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-right-method-call-shortcircuit.js  (lazy)" name="call/cc test/should-run/ternary-right-method-call-shortcircuit.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-right-method-call-shortcircuit.js --new direct (lazy)" name="call/cc test/should-run/ternary-right-method-call-shortcircuit.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-right-method-call-shortcircuit.js  (eager)" name="call/cc test/should-run/ternary-right-method-call-shortcircuit.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-right-method-call-shortcircuit.js  (retval)" name="call/cc test/should-run/ternary-right-method-call-shortcircuit.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-short-circuit.js  (lazy)" name="call/cc test/should-run/ternary-short-circuit.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-short-circuit.js --new direct (lazy)" name="call/cc test/should-run/ternary-short-circuit.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-short-circuit.js  (eager)" name="call/cc test/should-run/ternary-short-circuit.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/ternary-short-circuit.js  (retval)" name="call/cc test/should-run/ternary-short-circuit.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/throw-call.js  (lazy)" name="call/cc test/should-run/throw-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/throw-call.js --new direct (lazy)" name="call/cc test/should-run/throw-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/throw-call.js  (eager)" name="call/cc test/should-run/throw-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/throw-call.js  (retval)" name="call/cc test/should-run/throw-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/throw-in-catch.js  (lazy)" name="call/cc test/should-run/throw-in-catch.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/throw-in-catch.js --new direct (lazy)" name="call/cc test/should-run/throw-in-catch.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/throw-in-catch.js  (eager)" name="call/cc test/should-run/throw-in-catch.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/throw-in-catch.js  (retval)" name="call/cc test/should-run/throw-in-catch.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/top-level-throw.js  (lazy)" name="call/cc test/should-run/top-level-throw.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/top-level-throw.js --new direct (lazy)" name="call/cc test/should-run/top-level-throw.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/top-level-throw.js  (eager)" name="call/cc test/should-run/top-level-throw.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/top-level-throw.js  (retval)" name="call/cc test/should-run/top-level-throw.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/triple-call.js  (lazy)" name="call/cc test/should-run/triple-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/triple-call.js --new direct (lazy)" name="call/cc test/should-run/triple-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/triple-call.js  (eager)" name="call/cc test/should-run/triple-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/triple-call.js  (retval)" name="call/cc test/should-run/triple-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-catch.js  (lazy)" name="call/cc test/should-run/try-catch.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-catch.js --new direct (lazy)" name="call/cc test/should-run/try-catch.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-catch.js  (eager)" name="call/cc test/should-run/try-catch.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-catch.js  (retval)" name="call/cc test/should-run/try-catch.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-finally.js  (lazy)" name="call/cc test/should-run/try-finally.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-finally.js --new direct (lazy)" name="call/cc test/should-run/try-finally.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-finally.js  (eager)" name="call/cc test/should-run/try-finally.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-finally.js  (retval)" name="call/cc test/should-run/try-finally.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-no-throw.js  (lazy)" name="call/cc test/should-run/try-no-throw.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-no-throw.js --new direct (lazy)" name="call/cc test/should-run/try-no-throw.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-no-throw.js  (eager)" name="call/cc test/should-run/try-no-throw.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-no-throw.js  (retval)" name="call/cc test/should-run/try-no-throw.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-re-enter-catch.js  (lazy)" name="call/cc test/should-run/try-re-enter-catch.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-re-enter-catch.js --new direct (lazy)" name="call/cc test/should-run/try-re-enter-catch.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-re-enter-catch.js  (eager)" name="call/cc test/should-run/try-re-enter-catch.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/try-re-enter-catch.js  (retval)" name="call/cc test/should-run/try-re-enter-catch.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/uninitialized.js  (lazy)" name="call/cc test/should-run/uninitialized.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/uninitialized.js --new direct (lazy)" name="call/cc test/should-run/uninitialized.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/uninitialized.js  (eager)" name="call/cc test/should-run/uninitialized.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/uninitialized.js  (retval)" name="call/cc test/should-run/uninitialized.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/untransformed-function-call.js  (lazy)" name="call/cc test/should-run/untransformed-function-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/untransformed-function-call.js --new direct (lazy)" name="call/cc test/should-run/untransformed-function-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/untransformed-function-call.js  (eager)" name="call/cc test/should-run/untransformed-function-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/untransformed-function-call.js  (retval)" name="call/cc test/should-run/untransformed-function-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-after-fun-decl.js  (lazy)" name="call/cc test/should-run/var-after-fun-decl.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-after-fun-decl.js --new direct (lazy)" name="call/cc test/should-run/var-after-fun-decl.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-after-fun-decl.js  (eager)" name="call/cc test/should-run/var-after-fun-decl.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-after-fun-decl.js  (retval)" name="call/cc test/should-run/var-after-fun-decl.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-redeclaration-2.js  (lazy)" name="call/cc test/should-run/var-redeclaration-2.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-redeclaration-2.js --new direct (lazy)" name="call/cc test/should-run/var-redeclaration-2.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-redeclaration-2.js  (eager)" name="call/cc test/should-run/var-redeclaration-2.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-redeclaration-2.js  (retval)" name="call/cc test/should-run/var-redeclaration-2.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-redeclaration.js  (lazy)" name="call/cc test/should-run/var-redeclaration.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-redeclaration.js --new direct (lazy)" name="call/cc test/should-run/var-redeclaration.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-redeclaration.js  (eager)" name="call/cc test/should-run/var-redeclaration.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-redeclaration.js  (retval)" name="call/cc test/should-run/var-redeclaration.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-seq.js  (lazy)" name="call/cc test/should-run/var-seq.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-seq.js --new direct (lazy)" name="call/cc test/should-run/var-seq.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-seq.js  (eager)" name="call/cc test/should-run/var-seq.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/var-seq.js  (retval)" name="call/cc test/should-run/var-seq.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-break.js  (lazy)" name="call/cc test/should-run/while-break.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-break.js --new direct (lazy)" name="call/cc test/should-run/while-break.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-break.js  (eager)" name="call/cc test/should-run/while-break.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-break.js  (retval)" name="call/cc test/should-run/while-break.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-call.js  (lazy)" name="call/cc test/should-run/while-call.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-call.js --new direct (lazy)" name="call/cc test/should-run/while-call.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-call.js  (eager)" name="call/cc test/should-run/while-call.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-call.js  (retval)" name="call/cc test/should-run/while-call.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-continue.js  (lazy)" name="call/cc test/should-run/while-continue.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-continue.js --new direct (lazy)" name="call/cc test/should-run/while-continue.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-continue.js  (eager)" name="call/cc test/should-run/while-continue.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-continue.js  (retval)" name="call/cc test/should-run/while-continue.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-in-switch.js  (lazy)" name="call/cc test/should-run/while-in-switch.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-in-switch.js --new direct (lazy)" name="call/cc test/should-run/while-in-switch.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-in-switch.js  (eager)" name="call/cc test/should-run/while-in-switch.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-in-switch.js  (retval)" name="call/cc test/should-run/while-in-switch.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-loop-no-block.js  (lazy)" name="call/cc test/should-run/while-loop-no-block.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-loop-no-block.js --new direct (lazy)" name="call/cc test/should-run/while-loop-no-block.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-loop-no-block.js  (eager)" name="call/cc test/should-run/while-loop-no-block.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-loop-no-block.js  (retval)" name="call/cc test/should-run/while-loop-no-block.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-loop.js  (lazy)" name="call/cc test/should-run/while-loop.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-loop.js --new direct (lazy)" name="call/cc test/should-run/while-loop.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-loop.js  (eager)" name="call/cc test/should-run/while-loop.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-loop.js  (retval)" name="call/cc test/should-run/while-loop.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-return.js  (lazy)" name="call/cc test/should-run/while-return.js  (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-return.js --new direct (lazy)" name="call/cc test/should-run/while-return.js --new direct (lazy)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-return.js  (eager)" name="call/cc test/should-run/while-return.js  (eager)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="call/cc test/should-run/while-return.js  (retval)" name="call/cc test/should-run/while-return.js  (retval)" time="0">
+      <skipped/>
+    </testcase>
+  </testsuite>
+  <testsuite name="Call/CC stopping tests" tests="6" errors="0" failures="0" skipped="6" timestamp="2017-12-28T07:16:26" time="0.021">
+    <testcase classname="Call/CC stopping tests test/should-stop/eval-inf-while.js (lazy) (infinite loop)" name="Call/CC stopping tests test/should-stop/eval-inf-while.js (lazy) (infinite loop)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC stopping tests test/should-stop/eval-inf-while.js (eager) (infinite loop)" name="Call/CC stopping tests test/should-stop/eval-inf-while.js (eager) (infinite loop)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC stopping tests test/should-stop/eval-inf-while.js (retval) (infinite loop)" name="Call/CC stopping tests test/should-stop/eval-inf-while.js (retval) (infinite loop)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC stopping tests test/should-stop/tight-loop.js (lazy) (infinite loop)" name="Call/CC stopping tests test/should-stop/tight-loop.js (lazy) (infinite loop)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC stopping tests test/should-stop/tight-loop.js (eager) (infinite loop)" name="Call/CC stopping tests test/should-stop/tight-loop.js (eager) (infinite loop)" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Call/CC stopping tests test/should-stop/tight-loop.js (retval) (infinite loop)" name="Call/CC stopping tests test/should-stop/tight-loop.js (retval) (infinite loop)" time="0">
+      <skipped/>
+    </testcase>
+  </testsuite>
+</testsuites>

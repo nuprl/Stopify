@@ -22,8 +22,8 @@ const allowed = [
 
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
-    const opts = state.opts;
-    opts.useReturn = true;
+    const opts: callcc.CompilerOpts = state.opts;
+    (<any>opts).useReturn = true;
     const insertSuspend = state.opts.debug ? suspendStep : suspendStop;
 
     path.stop();
@@ -64,27 +64,32 @@ export const visitor: Visitor = {
 
     callcc.fastFreshId.cleanup()
 
-    if (!opts.requireRuntime) {
-      const body = path.node.body;
-      path.node.body = [
-        t.expressionStatement(
-          t.callExpression(
-            t.memberExpression(t.identifier('stopify'),
-              t.identifier('afterScriptLoad')),
-            [t.functionExpression(undefined, [], t.blockStatement(body))]))
-      ];
+    if (opts.requireRuntime) {
+      // var $S = require('stopify/built/src/runtime/rts').init($__R);
+      path.node.body.splice(2, 0,
+      t.variableDeclaration('var',
+          [t.variableDeclarator(
+            t.identifier('$S'),
+            t.callExpression(
+              t.memberExpression(
+                t.callExpression(t.identifier('require'),
+                  [t.stringLiteral('stopify/built/src/runtime/rts')]),
+                t.identifier('init')),
+                [t.identifier('$__R')]))]));
     }
-    // var $S = require('stopify/built/src/runtime/rts').init($__R);
-    path.node.body.splice(2, 0, 
-     t.variableDeclaration('var',
-        [t.variableDeclarator(
-           t.identifier('$S'),
-           t.callExpression(
-             t.memberExpression(
-               t.callExpression(t.identifier('require'),
-                 [t.stringLiteral('stopify/built/src/runtime/rts')]),
-              t.identifier('init')),
-              [t.identifier('$__R')]))]));
+    else {
+      // var $S = stopify.init($__R);
+      path.node.body.splice(2, 0,
+        t.variableDeclaration('var',
+            [t.variableDeclarator(
+              t.identifier('$S'),
+              t.callExpression(
+                t.memberExpression(
+                  t.identifier('stopify'),
+                  t.identifier('init')),
+                  [t.identifier('$__R')]))]));
+    }
+
     path.node.body.push(
       t.expressionStatement(
         t.callExpression(

@@ -8,10 +8,7 @@ export function localBenchmarkUrl(args: string[]) {
 }
 
 export function benchmarkUrl(args: string[]) {
-  const opts = parseRuntimeOpts(args);
-  opts.filename = path.basename(opts.filename);
-  console.log(`To run locally: ${localBenchmarkUrl(args)}`);
-  return encodeURIComponent(JSON.stringify(opts)); 
+  return encodeURIComponent(JSON.stringify(args));
 }
 
 export function encodeArgs(args: string[]) {

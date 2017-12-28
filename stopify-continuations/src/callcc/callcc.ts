@@ -147,7 +147,7 @@ const visitor: Visitor = {
       path.node.body.unshift(
         h.letExpression(
           t.identifier("$__T"),
-          !opts.requireRuntime ? t.identifier('stopify')
+          !opts.requireRuntime ? t.identifier('stopifyCont')
             : t.callExpression(t.identifier('require'),
                 [t.stringLiteral(runtimePath(opts.captureMethod))]),
           'const'));

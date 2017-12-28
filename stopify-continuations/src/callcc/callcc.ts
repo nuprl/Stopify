@@ -64,15 +64,15 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
 
-    if (state.opts.handleNew === 'wrapper') {
+    if (opts.newMethod === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
     }
 
-    if (state.opts.esMode === 'es5') {
+    if (opts.es === 'es5') {
       h.transformFromAst(path, [exposeImplicitApps.plugin]);
     }
 
-    if (state.opts.hofs === 'fill') {
+    if (opts.hofs === 'fill') {
       h.transformFromAst(path, [exposeHOFs.plugin]);
     }
 
@@ -102,7 +102,7 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[jumper.plugin, opts]]));
 
     let toShift;
-    if (state.opts.compileFunction) {
+    if ((<any>opts).compileFunction) {
       if (t.isFunctionDeclaration(path.node.body[0])) {
         toShift = (<t.FunctionDeclaration>path.node.body[0]).body.body
       }

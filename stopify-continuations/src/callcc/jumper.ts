@@ -6,6 +6,7 @@ import * as fastFreshId from '../fastFreshId';
 import * as generic from '../generic';
 import { getLabels, AppType } from './label';
 import * as imm from 'immutable';
+import { CompilerOpts, CaptureMethod, HandleNew } from '../types';
 import { box } from './boxAssignables';
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
@@ -19,16 +20,8 @@ type Labeled<T> = T & {
 }
 type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
 
-export type CaptureLogic = 'lazy' | 'eager' | 'retval' | 'fudge';
-export type NewMethod = 'direct' | 'wrapper';
-
 interface State {
-  opts: {
-    captureMethod: CaptureLogic,
-    handleNew: NewMethod,
-    compileFunction: boolean,
-    jsArgs: 'faithful' | 'simple',
-  };
+  opts: CompilerOpts
 }
 
 const captureLogics: { [key: string]: CaptureFun } = {
@@ -433,7 +426,7 @@ const jumper = {
       (<any>declTarget).lifted = true;
       path.node.body.body.unshift(declTarget);
 
-      if (state.opts.handleNew === 'direct') {
+      if (state.opts.newMethod === 'direct') {
         path.node.localVars.push(newTarget);
         const declNewTarget = bh.varDecl(newTarget,
           t.memberExpression(t.identifier('new'), t.identifier('target')));

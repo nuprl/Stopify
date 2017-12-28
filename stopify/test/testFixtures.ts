@@ -26,7 +26,7 @@ export function callCCTest(srcPath: string, transform: string, opts: string = ""
     execSync(
       `./bin/compile --require-runtime --js-args=faithful --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
     try {
-      execSync(`./bin/run ${dstPath} --transform ${transform} --estimator=countdown --yield 1`, { timeout: 30000 });
+      execSync(`node ${dstPath} --estimator=countdown --yield 1`, { timeout: 10000 });
     }
     finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.

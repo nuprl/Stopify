@@ -22,7 +22,7 @@ function implicit(name: string, ...args: t.Expression[]): t.Expression {
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
-    const opts: types.Opts  = state.opts;
+    const opts: types.CompilerOpts  = state.opts;
     path.node.body.unshift(
       t.variableDeclaration('var',
       [t.variableDeclarator(implicitsIdentifier,

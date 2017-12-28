@@ -17,7 +17,7 @@ const allowed = [
   "window",
   "document",
   "setTimeout",
-  "captureCC",
+  "captureCC"
 ];
 
 export const visitor: Visitor = {
@@ -48,6 +48,7 @@ export const visitor: Visitor = {
     if (!state.opts.compileFunction) {
       plugs.push([callcc.cleanupGlobals, { allowed }])
     }
+
     timeSlow('hygiene, etc.', () =>
       callcc.transformFromAst(path, [
         ...plugs,
@@ -73,6 +74,27 @@ export const visitor: Visitor = {
             [t.functionExpression(undefined, [], t.blockStatement(body))]))
       ];
     }
+    // var $S = require('stopify/built/src/runtime/rts').init($__R);
+    path.node.body.splice(2, 0, 
+     t.variableDeclaration('var',
+        [t.variableDeclarator(
+           t.identifier('$S'),
+           t.callExpression(
+             t.memberExpression(
+               t.callExpression(t.identifier('require'),
+                 [t.stringLiteral('stopify/built/src/runtime/rts')]),
+              t.identifier('init')),
+              [t.identifier('$__R')]))]));
+    path.node.body.push(
+      t.expressionStatement(
+        t.callExpression(
+          t.memberExpression(t.identifier('$__R'), t.identifier('delimit')),
+          [t.functionExpression(undefined, [],
+            t.blockStatement([
+              t.expressionStatement(
+                t.callExpression(
+                  t.memberExpression(t.identifier('$S'), t.identifier('onEnd')), 
+                  []))]))])));
   }
 }
 

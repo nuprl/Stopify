@@ -74,4 +74,4 @@ export class RetvalRuntime extends common.Runtime {
   }
 }
 
-export default RetvalRuntime;
+export default new RetvalRuntime();

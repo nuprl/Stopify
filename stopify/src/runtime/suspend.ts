@@ -2,7 +2,7 @@ import { setImmediate } from './setImmediate';
 import { ElapsedTimeEstimator } from './elapsedTimeEstimator';
 import { unreachable } from '../generic';
 import * as assert from 'assert';
-import {  Runtime } from 'stopify-continuations';
+import {  Runtime } from 'stopify-continuations/dist/src/runtime';
 
 
 export class RuntimeWithSuspend {
@@ -17,6 +17,10 @@ export class RuntimeWithSuspend {
      *  computation terminates.
      */
     public onYield = function(): boolean { return true; },
+    /**
+      Called when execution reaches the end of any stopified module.
+     */
+    public onEnd = function() { },
     public continuation = function() {}  ) {
   }
 
@@ -40,12 +44,10 @@ export class RuntimeWithSuspend {
 
   suspend(): void {
     assert(!this.rts.isSuspended);
-
     // Do not suspend at the top-level of required modules.
     if (this.rts.delimitDepth > 1) {
       return;
     }
-
     // If this.yieldInterval is NaN, the condition will be false
     if (this.hitBreakpoint() ||
       this.estimator.elapsedTime() >= this.yieldInterval) {
@@ -53,6 +55,7 @@ export class RuntimeWithSuspend {
       this.rts.isSuspended = true;
       return this.rts.captureCC((continuation) => {
         this.continuation = continuation;
+
         if (this.onYield()) {
           return setImmediate(() => {
             this.rts.resumeFromSuspension(continuation);

@@ -1,3 +1,4 @@
+export * from '../types';
 export { default as plugin } from './callcc';
 import { knowns } from '../common/cannotCapture'
 import * as exposeImplicitApps from '../exposeImplicitApps';

@@ -143,9 +143,7 @@ const visitor: Visitor = {
       path.node.body.unshift(
         h.letExpression(
           t.identifier('$__R'),
-            t.newExpression(
-              t.memberExpression(t.identifier('$__T'), t.identifier('default')),
-              [])));
+           t.memberExpression(t.identifier('$__T'), t.identifier('default'))));
       path.node.body.unshift(
         h.letExpression(
           t.identifier("$__T"),

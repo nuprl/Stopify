@@ -3,8 +3,8 @@ import { Opts, Stoppable, ElapsedTimeEstimatorName } from '../types';
 import * as minimist from 'minimist';
 import { sum } from '../generic';
 import { sprintf } from 'sprintf';
-import { makeRTS, getRTS } from './rts';
 import * as path from 'path';
+import { getRTS } from './rts';
 
 const fakeRTS: any = {
   delimit(thunk: () => void) {
@@ -51,7 +51,7 @@ export class Default {
   }
 
   run(M: (() => void) | undefined, opts: Opts, done: () => void): void {
-    const rts = opts.transform === 'original' ? fakeRTS : makeRTS(opts);
+    const rts = getRTS();
     let lastStopTime: number | undefined;
     let stopIntervals: number[] = [];
     this.mustStop = false;
@@ -77,31 +77,7 @@ export class Default {
     }
 
     const onDone = () => {
-      const endTime = Date.now();
-      const runningTime = endTime - startTime;
-      const latencyAvg = runningTime / this.yields;
-      let latencyVar;
-      console.log("BEGIN STOPIFY BENCHMARK RESULTS");
-      if (opts.variance) {
-        console.log("BEGIN VARIANCE")
-        for (let i = 0; i < stopIntervals.length; i++) {
-          console.log(`${i},${stopIntervals[i]}`);
-        }
-        console.log("END VARIANCE");
-        if (this.yields === 0) {
-          latencyVar = "0";
-        }
-        else {
-          latencyVar = sprintf("%.2f",
-            sum(stopIntervals.map(x =>
-              (latencyAvg - x) * (latencyAvg - x))) / this.yields);
-        }
-      }
-      else {
-        latencyVar = 'NA';
-      }
-      console.log(`${runningTime},${this.yields},${sprintf("%.2f", latencyAvg)},${latencyVar}`);
-      done();
+
     }
 
     if (opts.env !== 'node') {

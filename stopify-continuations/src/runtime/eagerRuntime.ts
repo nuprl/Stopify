@@ -76,4 +76,4 @@ export class EagerRuntime extends common.Runtime {
   }
 }
 
-export default EagerRuntime;
+export default new EagerRuntime();

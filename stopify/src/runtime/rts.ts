@@ -1,8 +1,12 @@
 import * as assert from 'assert';
-import { unreachable, Runtime, Opts, LazyRuntime, EagerRuntime, RetvalRuntime, FudgeRuntime } from 'stopify-continuations/dist/src/runtime';
+import { sprintf } from 'sprintf';
+import { unreachable, Runtime } from 'stopify-continuations/dist/src/runtime';
 import * as elapsedTimeEstimator from './elapsedTimeEstimator';
 import runtime from './default';
+import { Opts } from '../types';
 import { RuntimeWithSuspend } from './suspend';
+import { parseRuntimeOpts } from '../cli-parse';
+import { sum } from '../generic';
 
 function makeEstimator(opts: Opts): elapsedTimeEstimator.ElapsedTimeEstimator {
   if (opts.estimator === 'exact') {
@@ -22,49 +26,66 @@ function makeEstimator(opts: Opts): elapsedTimeEstimator.ElapsedTimeEstimator {
   }
 }
 
-function modeToBase(transform: string) {
- if (transform === 'eager') {
-    return new EagerRuntime();
+import * as cont from 'stopify-continuations/dist/src/runtime';
+
+export function init(contRTS: cont.Runtime) {
+  if (rts) {
+    return rts;
   }
-  else if (transform === 'lazy') {
-    return new LazyRuntime();
+
+  const opts = parseRuntimeOpts(process.argv.slice(2));
+  const estimator = makeEstimator(opts);
+  rts = new RuntimeWithSuspend(contRTS, opts.yieldInterval, estimator);
+
+  const startTime = Date.now();
+  let lastStopTime: number | undefined;
+  let stopIntervals: number[] = [];
+  let yields = 0;
+  rts.onYield = () => {
+    yields++;
+    if (opts.variance) {
+      const now = Date.now();
+      if (typeof lastStopTime === 'number') {
+        stopIntervals.push(now - lastStopTime);
+      }
+      lastStopTime = now;
+    }
+    return true;
   }
-  else if (transform === 'retval') {
-    return new RetvalRuntime();
-  }
-  else if (transform === 'fudge') {
-    return new FudgeRuntime();
-  }
-  else {
-    throw new Error(`unknown transformation: ${transform}`);
-  }
+
+  rts.onEnd = () => {
+    const endTime = Date.now();
+    const runningTime = endTime - startTime;
+    const latencyAvg = runningTime / yields;
+    let latencyVar;
+    console.log("BEGIN STOPIFY BENCHMARK RESULTS");
+    if (opts.variance) {
+      console.log("BEGIN VARIANCE")
+      for (let i = 0; i < stopIntervals.length; i++) {
+        console.log(`${i},${stopIntervals[i]}`);
+      }
+      console.log("END VARIANCE");
+      if (this.yields === 0) {
+        latencyVar = "0";
+      }
+      else {
+        latencyVar = sprintf("%.2f",
+          sum(stopIntervals.map(x =>
+            (latencyAvg - x) * (latencyAvg - x))) / yields);
+      }
+    }
+    else {
+      latencyVar = 'NA';
+    }
+    console.log(`${runningTime},${yields},${sprintf("%.2f", latencyAvg)},${latencyVar}`);
+  
+  };
+
+  return rts;
 }
 
 let rts : RuntimeWithSuspend | undefined = undefined;
 
-/**
- * Initializes the runtime system. This function must be called once and before
- * any stopified code starts running.
- */
-export function makeRTS(opts: Opts): RuntimeWithSuspend {
-  assert(rts === undefined, 'runtime already initialized');
-  const estimator = makeEstimator(opts);
-  const base = modeToBase(opts.transform);
-  rts = new RuntimeWithSuspend(base, opts.yieldInterval, estimator);
-  return rts;
-}
-
-/**
- * Produces a reference to the runtime system, assuming it is initialized.
- */
-export function getRTS(): RuntimeWithSuspend {
-  if (rts === undefined) {
-    throw new assert.AssertionError({ message: 'runtime not initialized' });
-  }
-  else {
-    return rts;
-  }
-}
 
 function getOpts(): Opts {
   const opts = JSON.parse(
@@ -99,6 +120,12 @@ export function setOnStop(onStop: () => any): void {
   runtime.onStop = onStop;
 }
 
+export function getRTS() {
+  if (rts === undefined) {
+    throw new Error('runtime system not initialized');
+  }
+  return rts;
+}
 export function setBreakpoints(breaks: number[]): void {
   getRTS().setBreakpoints(breaks);
 }

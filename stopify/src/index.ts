@@ -13,29 +13,8 @@ export { rts };
 
 export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<string> {
 
-  if (opts.transform === 'original') {
+  if (opts.captureMethod === 'original') {
     return fs.readFile(srcPath, 'utf-8');
-  }
-  if (opts.debug === undefined) {
-    opts.debug = false;
-  }
-  if (opts.transform === undefined) {
-    opts.transform = 'lazy';
-  }
-  if (opts.newMethod === undefined) {
-    opts.newMethod = 'wrapper';
-  }
-  if (opts.es === undefined) {
-    opts.es = 'sane';
-  }
-  if (opts.hofs === undefined) {
-    opts.hofs = 'builtin';
-  }
-  if (opts.jsArgs === undefined) {
-    opts.jsArgs = 'simple';
-  }
-  if (opts.requireRuntime === undefined) {
-    opts.requireRuntime = false;
   }
 
   return fs.readFile(srcPath, 'utf-8')
@@ -48,22 +27,9 @@ export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<stri
       return { src: src, sourceMap: generateLineMapping(<RawSourceMap>map) };
     })
     .then(({src, sourceMap}) => {
-      const plugin: any = [
-        stopifyCallCC,
-        {
-          captureMethod: opts.transform,
-          handleNew: opts.newMethod,
-          esMode: opts.es,
-          hofs: opts.hofs,
-          debug: opts.debug,
-          jsArgs: opts.jsArgs,
-          sourceMap: sourceMap,
-          requireRuntime: opts.requireRuntime
-        }
-      ];
 
       const babelOpts = {
-        plugins: [plugin],
+        plugins: [[ stopifyCallCC, opts ]],
         babelrc: false,
         ast: false,
         code: true,

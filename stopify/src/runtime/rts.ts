@@ -41,6 +41,7 @@ export function init(contRTS: cont.Runtime) {
   let lastStopTime: number | undefined;
   let stopIntervals: number[] = [];
   let yields = 0;
+  let shouldStop = false;
   rts.onYield = () => {
     yields++;
     if (opts.variance) {
@@ -50,7 +51,7 @@ export function init(contRTS: cont.Runtime) {
       }
       lastStopTime = now;
     }
-    return true;
+    return !shouldStop;
   }
 
   rts.onEnd = () => {
@@ -78,8 +79,14 @@ export function init(contRTS: cont.Runtime) {
       latencyVar = 'NA';
     }
     console.log(`${runningTime},${yields},${sprintf("%.2f", latencyAvg)},${latencyVar}`);
-  
   };
+
+  if (typeof opts.stop !== 'undefined') {
+    setTimeout(() => {
+      shouldStop = true;
+    },  opts.stop * 1000);
+  }
+
 
   return rts;
 }

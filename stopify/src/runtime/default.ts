@@ -70,9 +70,6 @@ export class Default {
       if (hit) {
         this.stop();
       }
-      if (this.mustStop) {
-        this.onStop();
-      }
       return !this.mustStop;
     }
 
@@ -96,11 +93,6 @@ export class Default {
     }
 
     const startTime = Date.now();
-
-    if (typeof opts.stop !== 'undefined') {
-      this.setOnStop(onDone)
-      setTimeout(() => this.stop(), opts.stop * 1000);
-    }
 
     if (M) {
       M();

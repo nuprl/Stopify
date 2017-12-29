@@ -38,28 +38,6 @@ import { transformFile } from 'babel-core';
 
 const $__R = t.identifier('$__R')
 
-/** Returns the module path of a runtime system. */
-function runtimePath(transform: types.CaptureMethod): string {
-  if (transform === 'lazy') {
-    return 'stopify-continuations/dist/src/runtime/lazyRuntime';
-  }
-  else if (transform === 'eager') {
-    return 'stopify-continuations/dist/src/runtime/eagerRuntime';
-  }
-  else if (transform === 'retval') {
-    return 'stopify-continuations/dist/src/runtime/retvalRuntime';
-  }
-  else if (transform === 'fudge') {
-    return 'stopify-continuations/dist/src/runtime/fudgeRuntime';
-  }
-  else if (transform === 'original') {
-    throw new Error('callcc plugina applied to original');
-  }
-  else {
-    return unreachable();
-  }
-}
-
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
@@ -143,13 +121,18 @@ const visitor: Visitor = {
       path.node.body.unshift(
         h.letExpression(
           t.identifier('$__R'),
-           t.memberExpression(t.identifier('$__T'), t.identifier('default'))));
+           t.callExpression(
+             t.memberExpression(t.identifier('$__T'),
+               t.identifier('newRTS')),
+              [t.stringLiteral(opts.captureMethod)]),
+          'const'));
       path.node.body.unshift(
         h.letExpression(
           t.identifier("$__T"),
-          !opts.requireRuntime ? t.identifier('stopifyCont')
+          !opts.requireRuntime
+            ?  t.identifier('stopify')
             : t.callExpression(t.identifier('require'),
-                [t.stringLiteral(runtimePath(opts.captureMethod))]),
+                [t.stringLiteral('stopify-continuations/dist/src/runtime/runtime')]),
           'const'));
     }
 

@@ -83,5 +83,3 @@ export class LazyRuntime extends common.Runtime {
     }
   }
 }
-
-export default new LazyRuntime();

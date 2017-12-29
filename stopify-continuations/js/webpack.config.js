@@ -1,12 +1,7 @@
 module.exports = {
-  entry: {
-    lazy: './dist/src/runtime/lazyRuntime.js',
-    eager: './dist/src/runtime/eagerRuntime.js',
-    retval: './dist/src/runtime/retvalRuntime.js',
-    fudge: './dist/src/runtime/fudgeRuntime.js',
-  },
+  entry: './dist/src/runtime/runtime.js',
   output: {
-    filename: 'dist/stopify-[name].bundle.js',
+    filename: 'dist/stopify-continuations.bundle.js',
     library: 'stopifyCont',
     libraryTarget: 'var'
   },

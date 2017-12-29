@@ -1,7 +1,7 @@
 module.exports = {
-  entry: './dist/src/runtime/runtime.js',
+  entry: './dist/src/runtime/precompiled.js',
   output: {
-    filename: 'dist/stopify-continuations.bundle.js',
+    filename: 'dist/stopify.bundle.js',
     library: 'stopify',
     libraryTarget: 'var'
   },

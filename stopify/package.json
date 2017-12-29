@@ -87,7 +87,7 @@
   },
   "jest": {
     "roots": [
-      "<rootDir>/built/test"
+      "<rootDir>/dist/test"
     ],
     "testResultsProcessor": "../node_modules/jest-junit"
   },

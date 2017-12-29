@@ -1,3 +1,6 @@
+import { Opts } from '../types';
+import { unreachable } from '../generic';
+
 /**
  * Interface for an object that estimates elapsed time.
  */
@@ -157,4 +160,22 @@ class VelocityEstimator implements ElapsedTimeEstimator {
  */
 export function makeVelocityEstimator(resample: number = 100): ElapsedTimeEstimator {
   return new VelocityEstimator(resample);
+}
+
+export function makeEstimator(opts: Opts): ElapsedTimeEstimator {
+  if (opts.estimator === 'exact') {
+    return makeExact();
+  }
+  else if (opts.estimator === 'countdown') {
+    return makeCountdown(opts.timePerElapsed!);
+  }
+  else if (opts.estimator === 'reservoir') {
+    return makeSampleAverage();
+  }
+  else if (opts.estimator === 'velocity') {
+    return makeVelocityEstimator(opts.resampleInterval);
+  }
+  else {
+    return unreachable();
+  }
 }

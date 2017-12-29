@@ -24,23 +24,9 @@ export class RuntimeWithSuspend {
     public continuation = function() {}  ) {
   }
 
-  handleNew(constr: any, ...args: any[]): any {
-    return this.rts.handleNew(constr, ...args);
-  }
-
-  captureCC(f: (k: any) => any): void {
-    return this.rts.captureCC(f);
-  }
-
-  delimit(thunk: () => any): any {
-    return this.rts.delimit(thunk);
-  }
-
   resumeFromCaptured(): any {
     this.rts.resumeFromSuspension(this.continuation);
   }
-
-
 
   suspend(): void {
     assert(!this.rts.isSuspended);

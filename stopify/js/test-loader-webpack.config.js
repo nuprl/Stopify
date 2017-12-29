@@ -1,9 +1,7 @@
 module.exports = {
-  entry: './dist/src/runtime/rts.js',
+  entry: './dist/src/testing/loader.js',
   output: {
-    filename: 'dist/stopify.bundle.js',
-    library: 'stopify',
-    libraryTarget: 'var'
+    filename: 'dist/test-loader.bundle.js',
   },
   node: {
     // Commander has these as dependencies

@@ -22,3 +22,9 @@ export interface Opts {
    */
   env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari'
 }
+
+export interface AsyncRun {
+  run(onDone: () => void, onYield?: () => void): void;
+  pause(onPaused: () => void): void;
+  resume(): void;
+}

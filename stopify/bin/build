@@ -2,9 +2,5 @@
 set -x
 set -e
 ./node_modules/.bin/tsc
-
-if [ ! -L node_modules/Stopify ]; then
-    (cd node_modules; ln -s .. Stopify)
-fi
-
-./node_modules/.bin/webpack
+./node_modules/.bin/webpack --config js/stopify-webpack.config.js
+./node_modules/.bin/webpack --config js/test-loader-webpack.config.js

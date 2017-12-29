@@ -8,8 +8,6 @@ import { SourceMapConsumer, RawSourceMap } from 'source-map';
 import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
 import * as fs from 'fs-extra';
 export { CompilerOpts } from './types';
-import * as rts from './runtime/rts';
-export { rts };
 
 export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<string> {
 

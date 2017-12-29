@@ -128,35 +128,32 @@ The `stopify` compiler takes several command-line options:
 The `stopify-url` program produces a URL that runs a stopified program in
 the browser. This program also takes several command-line options:
 
-- `--transform <transform>` (required). This must be the same that was
+- `--transform <transform>` (required) This must be the same that was
   used during compilation. This flag should be removed.
 
-- `--variance` (internal). This flag is required for benchmarking.
-
-- `--stop <time>` (interval). Force the program to terminate after `<time>`
-  milliseconds elapse.
-
-- `-y, --yield <interval>` (optional). The time (in milliseconds) between
+- `-y, --yield <interval>` (optional) The time (in milliseconds) between
   yields to the browser. The default value is 100.
 
-- `-r, --resample-interval <interval>` How frequently should Stopify check the
-  system time? By default, it is the same as `--yield`.
+- `-r, --resample-interval <interval>` (optional) How frequently should Stopify
+  check the system time? By default, it is the same as `--yield`.
 
 - `--require-runtime` (optional) Set this flag to have Stopify use `require()`
   to load its runtime system. This is necessary to run stopified programs
   in Node.
 
-- `--estimator <estimator>` (optional, for benchmarking and testing only). How
+- `--estimator <estimator>` (optional, for benchmarking and testing only) How
   should Stopify estimate the elapsed time? The default estimator, `velocity`,
   samples the system time and estimates the rate at which the program is
   running. The other options are `exact`, which reports the exact system time,
   but is very slow and `countdown`, which never checks the system time, but
   results in high variance. The `reservoir` option in deprecated.
 
-- `--env <browser>` (optional, for testing only). We use this flag to launch
-  `<browser>` using Selenium for our integration tests.
+- `--variance` (internal) This flag is required for benchmarking.
 
-- `--time-per-elapsed` ???
+- `--stop <time>` (internal) Force the program to terminate after `<time>`
+  milliseconds elapse.
+
+- `--time-per-elapsed` (TODO--document)
 
 ## Development
 

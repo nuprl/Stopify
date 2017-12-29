@@ -65,7 +65,8 @@ export const visitor: Visitor = {
     callcc.fastFreshId.cleanup()
 
     if (opts.requireRuntime) {
-      // var $S = require('stopify/built/src/runtime/rts').init($__R);
+      // var $S = require('stopify/dist/src/runtime/rts').init($__R);;
+
       path.node.body.splice(2, 0,
       t.variableDeclaration('var',
           [t.variableDeclarator(
@@ -73,7 +74,7 @@ export const visitor: Visitor = {
             t.callExpression(
               t.memberExpression(
                 t.callExpression(t.identifier('require'),
-                  [t.stringLiteral('stopify/built/src/runtime/rts')]),
+                  [t.stringLiteral('stopify/dist/src/runtime/node')]),
                 t.identifier('init')),
                 [t.identifier('$__R')]))]));
     }

@@ -2,8 +2,6 @@
 // relies on them.
 "use strict";
 
-const assert = require('assert');
-
 function odd(n) {
   if (n === 0) {
     return false;
@@ -23,4 +21,4 @@ function even(n) {
   }
 }
 
-assert(even(10000) === true);
+if (even(10000) !== true) { throw 'bad' }

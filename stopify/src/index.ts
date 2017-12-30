@@ -8,11 +8,37 @@ import { SourceMapConsumer, RawSourceMap } from 'source-map';
 import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
 import * as fs from 'fs-extra';
 export { CompilerOpts } from './types';
+import { pack }from 'stopify-continuations';
+import * as tmp from 'tmp';
+
+function mustWebPack(opts: types.CompilerOpts): boolean {
+  return !opts.noWebpack && (opts.es === 'es5' || opts.hofs === 'fill');
+}
+
+function stopifyPack(srcPath: string, opts: types.CompilerOpts): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const dstPath = tmp.fileSync({ postfix: '.js' }).name;
+    pack(srcPath, dstPath, [stopifyCallCC, opts], err => {
+      if (err !== null) {
+        fs.removeSync(dstPath);
+        return reject(err);
+      }
+      const jsCode = fs.readFileSync(dstPath, 'utf-8');
+      console.log(jsCode);
+      fs.removeSync(dstPath);
+      return resolve(jsCode);
+    });
+  });
+}
 
 export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<string> {
 
   if (opts.captureMethod === 'original') {
     return fs.readFile(srcPath, 'utf-8');
+  }
+  console.log(mustWebPack(opts));
+  if (mustWebPack(opts)) {
+    return stopifyPack(srcPath, opts);
   }
 
   return fs.readFile(srcPath, 'utf-8')

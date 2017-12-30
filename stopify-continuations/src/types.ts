@@ -9,5 +9,6 @@ export interface CompilerOpts {
   hofs: 'builtin' | 'fill',
   jsArgs: 'simple' | 'faithful',
   requireRuntime: boolean,
+  noWebpack: boolean
 }
 

@@ -12,7 +12,9 @@ export class LazyRuntime extends common.Runtime {
   }
 
   makeCont(stack: common.Stack) {
+    const savedDelimitDepth = this.delimitDepth;
     return (v: any) => {
+      this.delimitDepth = savedDelimitDepth;
       throw new common.Restore([this.topK(() => v), ...stack]);
     };
   }

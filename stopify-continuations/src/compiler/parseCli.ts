@@ -41,6 +41,9 @@ commander.option(
     'invalid --js-args, see --help'),
   'simple');
 
+  commander.option(
+    '--no-webpack',
+    'Do not apply Webpack, even if necessary');
 
 commander.option('--require-runtime',
   `use require('stopify') to load the runtime system, which necessary to run
@@ -62,7 +65,8 @@ export const compilerOpts: CompilerOpts = {
   es: args.es,
   hofs: args.hofs,
   jsArgs: args.jsArgs,
-  requireRuntime: args.requireRuntime
+  requireRuntime: args.requireRuntime,
+  noWebpack: args.noWebpack || false
 };
 
 export const srcPath: string = args.args[0];

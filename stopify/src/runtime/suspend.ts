@@ -29,7 +29,8 @@ export class RuntimeWithSuspend {
   }
 
   suspend(): void {
-    assert(!this.rts.isSuspended);
+    if (this.rts.isSuspended) { debugger; }
+    assert(!this.rts.isSuspended, 'already suspended');
     // Do not suspend at the top-level of required modules.
     if (this.rts.delimitDepth > 1) {
       return;

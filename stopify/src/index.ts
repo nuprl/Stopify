@@ -24,7 +24,6 @@ function stopifyPack(srcPath: string, opts: types.CompilerOpts): Promise<string>
         return reject(err);
       }
       const jsCode = fs.readFileSync(dstPath, 'utf-8');
-      console.log(jsCode);
       fs.removeSync(dstPath);
       return resolve(jsCode);
     });
@@ -36,7 +35,7 @@ export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<stri
   if (opts.captureMethod === 'original') {
     return fs.readFile(srcPath, 'utf-8');
   }
-  console.log(mustWebPack(opts));
+  mustWebPack(opts);
   if (mustWebPack(opts)) {
     return stopifyPack(srcPath, opts);
   }

@@ -12,7 +12,14 @@ let continuationsRTS: Runtime | undefined;
 
 export function init(rts: Runtime) {
   continuationsRTS = rts;
-  return new RuntimeWithSuspend(continuationsRTS,
+  const suspendRTS = new RuntimeWithSuspend(continuationsRTS,
     opts.yieldInterval,
     makeEstimator(opts));
+
+    if (typeof opts.stop !== 'undefined') {
+      setTimeout(function() {
+        suspendRTS.onYield = () => false;
+      }, opts.stop * 1000);
+    }
+  return suspendRTS;
 }

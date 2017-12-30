@@ -6,7 +6,7 @@ const result = t.identifier("$result");
 
 function handleBlock(body: t.BlockStatement) {
   body.body.unshift(t.expressionStatement(
-    t.callExpression( t.memberExpression(t.identifier("$__R"),
+    t.callExpression( t.memberExpression(t.identifier("$S"),
       t.identifier("suspend")), [])));
 }
 

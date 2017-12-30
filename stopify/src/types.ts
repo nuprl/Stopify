@@ -1,14 +1,15 @@
+import { HandleNew, CaptureMethod, CompilerOpts }
+  from 'stopify-continuations';
+export { HandleNew, CaptureMethod, CompilerOpts } from 'stopify-continuations';
+
 export type Stoppable = (isStop: () => boolean,
                          onStop: () => void,
                          onDone: () => void,
                          opts: Opts) => void
 
 export type ElapsedTimeEstimatorName = 'exact' | 'reservoir' | 'countdown';
-export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original'
-export type HandleNew = 'direct' | 'wrapper'
 
 export interface Opts {
-  transform: CaptureMethod,
   filename: string,
   estimator: ElapsedTimeEstimatorName;
   yieldInterval: number,
@@ -19,17 +20,11 @@ export interface Opts {
   /** These are strings that Selenium recognizes, which is why it says
    * 'MicrosoftEdge' instead of 'edge'.
    */
-  env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari',
-  requireRuntime: boolean,
+  env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari'
 }
 
-export interface CompilerOpts {
-  debug?: boolean,
-  transform?: CaptureMethod,
-  newMethod?: HandleNew,
-  es?: 'sane' | 'es5',
-  hofs?: 'builtin' | 'fill',
-  jsArgs?: 'simple' | 'faithful',
-  requireRuntime?: boolean,
+export interface AsyncRun {
+  run(onDone: () => void, onYield?: () => void): void;
+  pause(onPaused: () => void): void;
+  resume(): void;
 }
-

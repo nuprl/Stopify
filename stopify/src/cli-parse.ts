@@ -45,13 +45,6 @@ commander.option(
     'invalid --estimator value'),
   'velocity');
 
-commander.option(
-  '-t, --transform <transform>',
-  'the transformation used to compile the program',
-  parseArg(x => x,
-    (x) => /^(eager|retval|lazy|original)$/.test(x),
-    'invalid --transform'));
-
 commander.option('--remote <url>',
   'URL of a remote WebDriver server (usually http://<hostname>:4444/wd/hub)');
 
@@ -71,27 +64,19 @@ export function parseRuntimeOpts(rawArgs: string[]): Opts {
 
   const args = commander.parse(["", "", ...rawArgs]);
 
-  const filename = args.args[0];
-  if (typeof filename !== 'string') {
-    throw new Error(`Missing filename`);
-  }
-
   let resampleInterval = args.resampleInterval || args.yield;
   if (isNaN(resampleInterval)) {
     resampleInterval = 100;
   }
 
   return {
-    transform: args.transform,
-    filename: filename,
+    filename: args.args[0],
     yieldInterval: args.yield,
     resampleInterval: args.resampleInterval,
     estimator: args.estimator,
     timePerElapsed: args.timePerElapsed,
     stop: args.stop,
     env: args.env,
-    variance: args.variance,
-    requireRuntime: false
+    variance: args.variance
   };
-  return <any>null;
 }

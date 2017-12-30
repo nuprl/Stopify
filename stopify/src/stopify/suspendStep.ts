@@ -25,10 +25,10 @@ const insertSuspend: Visitor = {
           if (ln) {
             newBody.push(
               t.expressionStatement(t.assignmentExpression('=',
-                t.memberExpression(t.identifier('$__R'), t.identifier('linenum')),
+                t.memberExpression(t.identifier('$S'), t.identifier('linenum')),
                 t.numericLiteral(ln))),
               t.expressionStatement(
-                t.callExpression(t.memberExpression(t.identifier("$__R"),
+                t.callExpression(t.memberExpression(t.identifier("$S"),
                   t.identifier("suspend")), [])),
               v);
             (<any>newBody).suspends = true;

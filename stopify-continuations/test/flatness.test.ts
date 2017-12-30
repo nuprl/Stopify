@@ -1,6 +1,6 @@
 import * as h from '../src/common/helpers';
-import markFunc from '../src/common/markFlatFunctions'
-import markApp from '../src/common/markFlatApplications'
+import { markFlatFunctions } from '../src/compiler/markFlatFunctions'
+import { markFlatApplications } from '../src/compiler/markFlatApplications'
 import * as babel from 'babel-core';
 import {NodePath, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
@@ -42,12 +42,12 @@ const visitor = {
 function check(src: string, ...mapping: [string, h.FlatTag][]) {
   let { ast } = babel.transform(src, {
     babelrc: false,
-    plugins: [[markFunc]]
+    plugins: [[markFlatFunctions]]
   })
 
   babel.transformFromAst(ast!, undefined, {
     babelrc: false,
-    plugins: [[markApp]]
+    plugins: [[markFlatApplications]]
   })
 
   const state = { mapping: new Map(mapping) }

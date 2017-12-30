@@ -30,26 +30,27 @@ import * as babylon from 'babylon';
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import * as fastFreshId from '../fastFreshId';
-import { timeSlow } from '../generic';
+import { timeSlow, unreachable } from '../generic';
 import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeHOFs from '../exposeHOFs';
 import * as types from '../types';
+import { transformFile } from 'babel-core';
 
 const $__R = t.identifier('$__R')
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
-    const opts: types.Opts  = state.opts;
+    const opts: types.CompilerOpts  = state.opts;
 
-    if (state.opts.handleNew === 'wrapper') {
+    if (opts.newMethod === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
     }
 
-    if (state.opts.esMode === 'es5') {
+    if (opts.es === 'es5') {
       h.transformFromAst(path, [exposeImplicitApps.plugin]);
     }
 
-    if (state.opts.hofs === 'fill') {
+    if (opts.hofs === 'fill') {
       h.transformFromAst(path, [exposeHOFs.plugin]);
     }
 
@@ -79,7 +80,7 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[jumper.plugin, opts]]));
 
     let toShift;
-    if (state.opts.compileFunction) {
+    if ((<any>opts).compileFunction) {
       if (t.isFunctionDeclaration(path.node.body[0])) {
         toShift = (<t.FunctionDeclaration>path.node.body[0]).body.body
       }
@@ -116,23 +117,25 @@ const visitor: Visitor = {
             t.identifier("handleNew")), t.identifier('bind')),
           [$__R]),
         "const"));
-    toShift.unshift(
-      h.letExpression(
-        $__R,
-        t.callExpression(
-          t.memberExpression(t.identifier('$__T'), t.identifier('getRTS')), []),
-        'const'));
     if (!state.opts.compileFunction) {
       path.node.body.unshift(
         h.letExpression(
+          t.identifier('$__R'),
+           t.callExpression(
+             t.memberExpression(t.identifier('$__T'),
+               t.identifier('newRTS')),
+              [t.stringLiteral(opts.captureMethod)]),
+          'const'));
+      path.node.body.unshift(
+        h.letExpression(
           t.identifier("$__T"),
-          !opts.requireRuntime ? t.identifier('stopify')
-            : t.memberExpression(
-                t.callExpression(t.identifier('require'),
-                  [t.stringLiteral('stopify-continuations')]),
-                  t.identifier('rts')),
+          !opts.requireRuntime
+            ?  t.identifier('stopify')
+            : t.callExpression(t.identifier('require'),
+                [t.stringLiteral('stopify-continuations/dist/src/runtime/runtime')]),
           'const'));
     }
+
     path.stop();
   }
 };

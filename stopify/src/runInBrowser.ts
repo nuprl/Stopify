@@ -24,7 +24,7 @@ import * as express from 'express';
 process.env.MOZ_HEADLESS = "1";
 
 const stdout = process.stdout;
-const args = process.argv.slice(2);
+const [ _, __, browser, ...args ] = process.argv;
 const opts = parseRuntimeOpts(args);
 const src = benchmarkUrl(args);
 
@@ -39,7 +39,7 @@ const loggingPrefs = new selenium.logging.Preferences();
 loggingPrefs.setLevel('browser', 'all');
 
 let builder = new selenium.Builder()
-  .forBrowser(opts.env)
+  .forBrowser(browser)
   .setLoggingPrefs(loggingPrefs)
   .setChromeOptions(chromeOpts);
 
@@ -48,10 +48,10 @@ const app = express();
 
 const benchmarkName = path.basename(opts.filename);
 
-app.use(express.static(path.join(__dirname, '../../../stopify-continuations/dist')));
 app.use(express.static(path.join(__dirname, '../../dist')));
 app.use(express.static(path.dirname(opts.filename)));
 
+let exitCode = 0;
 const server = app.listen(() => {
   const port = server.address().port
   const url = `http://127.0.0.1:${port}/benchmark.html#${src}`;
@@ -60,8 +60,17 @@ const server = app.listen(() => {
     .then(_ => driver.wait(selenium.until.titleIs('done'), 8 * 60 * 1000))
     .then(_ => driver.findElement(selenium.By.id('data')))
     .then(e => e.getAttribute("value"))
-    .then(s => stdout.write(s))
-    .catch(exn => stdout.write(`Got an exception from Selenium: ${exn}`))
+    .then(s => {
+      stdout.write(s);
+      if (!s.endsWith('OK.\n')) {
+        exitCode = 1;
+      }
+    })
+    .catch(exn => {
+      stdout.write(`Got an exception: ${exn}`);
+      exitCode = 1;
+    })
     .then(_ => driver.quit())
-    .then(_ => server.close());
+    .then(_ => server.close())
+    .then(_ => process.exit(exitCode));
 });

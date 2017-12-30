@@ -63,7 +63,7 @@ npm install -g stopify
 3. Apply Stopify to the program:
 
    ```
-   stopify -t lazy input.js output.js
+   stopify input.js output.js
    ```
 
 4. To run the program in a browser, we need to (1) create an HTML page that
@@ -73,7 +73,7 @@ npm install -g stopify
    The following command prints a (long!) URL:
 
    ```
-   stopify-url -t lazy output.js
+   stopify-url output.js
    ```
 
 5. Visit the URL that it generates in your Web browser. You'll see that the
@@ -121,6 +121,10 @@ The `stopify` compiler takes several command-line options:
   use `arguments` to access declared formal arguments (`--js-args=simple`).
   Use `--js-args=faithful` if the input program does not behave this way.
 
+- `--hofs` (optional) By default, Stopify assumes that the program does not use
+  built-in higher-order functions (e.g., `Array.prototype.map`). Use
+  `--hofs=fill` to transparently support builtin higher-order functions.
+  *NOTE*: applies Webpack.
 
 - `--debug` (optional) Set this flag if you trying to use Stopify to support
    single-stepping and breakpoints.
@@ -136,6 +140,11 @@ the browser. This program also takes several command-line options:
 
 - `-r, --resample-interval <interval>` (optional) How frequently should Stopify
   check the system time? By default, it is the same as `--yield`.
+
+- `--no-webpack` (optional). Stopify may use Webpack to support certain
+  command-line flags. Use `--no-webpack` to disable Webpack. Note that programs
+  that require Webpack will not run in the browser with `--no-webpack`.
+  If you use this flag, you'll need to apply Webpack yourself.
 
 - `--require-runtime` (optional) Set this flag to have Stopify use `require()`
   to load its runtime system. This is necessary to run stopified programs

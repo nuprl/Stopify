@@ -16,7 +16,7 @@ console.log = function (str: any) {
 }
 
 window.onerror = (message, url, line, col, error) => {
-  console.log('An error occered');
+  console.log('An error occurred');
   console.log(message);
   if (error && error.stack) {
     console.log(error.stack);

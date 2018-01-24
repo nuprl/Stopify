@@ -16,7 +16,7 @@
  *     }
  *     F();
  *
- *   This makes it difficult to define the jumper transformation. This 
+ *   This makes it difficult to define the jumper transformation. This
  *   transformation turns every try-catch statement:
  *
  *     try { ... } catch (exn) { ... }
@@ -38,8 +38,10 @@ import * as t from 'babel-types';
 import * as bh from '../babelHelpers';
 import { fresh } from '../fastFreshId';
 
-const finallySentinal = t.identifier('finally_rv');
-const sentinal = t.identifier('SENTINAL');
+const returnSentinal = t.identifier('finally_rv');
+const throwSentinal = t.identifier('finally_exn');
+const sentinal = t.identifier('RV_SENTINAL');
+const sentinalExn = t.identifier('EXN_SENTINAL');
 
 type VisitorState = {
   inTryWithFinally: boolean,
@@ -59,19 +61,26 @@ const visitor: Visitor = {
           t.variableDeclaration('var', [t.variableDeclarator(x)]));
         (<any>path.node.handler).eVar = x;
         path.node.handler.body.body.unshift(
-          t.expressionStatement(
-            t.assignmentExpression('=', x, path.node.handler.param)));
+          t.expressionStatement( t.assignmentExpression('=', x,
+            path.node.handler.param)),
+          t.expressionStatement(t.assignmentExpression('=', throwSentinal,
+            sentinalExn)));
       }
     },
     exit(this: VisitorState, path: NodePath<t.TryStatement>): void {
       if (path.node.finalizer) {
         // NOTE(arjun): If we have several finally blocks in the same scope,
         // this probably creates duplicate declarations.
-        const sentinalDecl = bh.varDecl(finallySentinal, sentinal);
+        const sentinalDecl = t.variableDeclaration('let', [
+            t.variableDeclarator(returnSentinal, sentinal),
+            t.variableDeclarator(throwSentinal, sentinalExn),
+          ]);
         bh.enclosingScopeBlock(path).unshift(sentinalDecl);
         path.node.finalizer.body.push(bh.sIf(t.binaryExpression('!==',
-          finallySentinal, sentinal),
-          t.returnStatement(finallySentinal)));
+          returnSentinal, sentinal),
+          t.returnStatement(returnSentinal),
+          bh.sIf(t.binaryExpression('!==', throwSentinal, sentinalExn),
+            t.throwStatement(throwSentinal))));
       }
       this.inTryWithFinally = this.inTryBlockStack.pop()!;
     }
@@ -83,8 +92,21 @@ const visitor: Visitor = {
         const arg = path.node.argument ||
           t.unaryExpression('void', t.numericLiteral(0))
         path.insertBefore(t.expressionStatement(t.assignmentExpression('=',
-          finallySentinal, arg)));
-        path.replaceWith(t.returnStatement(finallySentinal));
+          returnSentinal, arg)));
+        path.replaceWith(t.returnStatement(returnSentinal));
+        path.skip();
+      }
+    }
+  },
+
+  ThrowStatement: {
+    exit(this: VisitorState, path: NodePath<t.ThrowStatement>) {
+      if (this.inTryWithFinally) {
+        const arg = path.node.argument ||
+          t.unaryExpression('void', t.numericLiteral(0))
+        path.insertBefore(t.expressionStatement(t.assignmentExpression('=',
+          throwSentinal, arg)));
+        path.replaceWith(t.throwStatement(throwSentinal));
         path.skip();
       }
     }

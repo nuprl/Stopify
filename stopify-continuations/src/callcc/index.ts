@@ -23,7 +23,9 @@ export const reserved = [
   "captureLocals",
   jumper.restoreNextFrame.name,
   "frame",
-  "SENTINAL",
+  "RV_SENTINAL",
+  "EXN_SENTINAL",
   "finally_rv",
+  "finally_exn",
   "captureCC",
 ];

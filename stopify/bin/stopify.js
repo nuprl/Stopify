@@ -1,2 +1,2 @@
-#!/usr/bin/env node  --max_old_space_size=4096
+#!/usr/bin/env node
 require('../dist/src/compile')

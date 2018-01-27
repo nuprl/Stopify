@@ -20,20 +20,39 @@ export function $set(...args: t.Expression[]): t.Expression {
 const visitor: Visitor = {
   MemberExpression(path: NodePath<t.MemberExpression>) {
     const p = path.parent
-    if(t.isAssignmentExpression(p) || t.isUpdateExpression(p) ||
+    const { object, property } = path.node;
+
+    // Setters
+    if(t.isAssignmentExpression(p) && p.operator === '=') {
+      if(path.node.computed) {
+        path.parentPath.replaceWith(
+          $set(object, property, p.right))
+      }
+      else if(t.isIdentifier(property)) {
+        path.parentPath.replaceWith(
+          $set(object, t.stringLiteral(property.name), p.right))
+      }
+      else {
+        throw new Error("Unexpected property type in setter " + property.type)
+      }
+    }
+
+    else if(t.isUpdateExpression(p) || t.isAssignmentExpression(p) ||
        (<any>path.node).exposed) {
-      // TODO(rachit): Fix for setters
       return
     }
-    const { object, property } = path.node;
-    if (path.node.computed) {
-      path.replaceWith($get(object, property))
-    }
-    else if(t.isIdentifier(property)) {
-      path.replaceWith($get(object, t.stringLiteral(property.name)))
-    }
+
+    // Getters
     else {
-      throw new Error("Unexpected property type " + property.type)
+      if (path.node.computed) {
+        path.replaceWith($get(object, property))
+      }
+      else if(t.isIdentifier(property)) {
+        path.replaceWith($get(object, t.stringLiteral(property.name)))
+      }
+      else {
+        throw new Error("Unexpected property type in getter " + property.type)
+      }
     }
   }
 

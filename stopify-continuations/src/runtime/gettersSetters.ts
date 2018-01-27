@@ -7,3 +7,7 @@ export function get_prop(obj: any, prop: any) {
     return v
   }
 }
+
+export function set_prop(obj: any, prop: any, value: any) {
+  return obj[prop] = value
+}

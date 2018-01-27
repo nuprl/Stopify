@@ -28,6 +28,11 @@ commander.option(
   'sane');
 
 commander.option(
+  '--eval',
+  'Support eval',
+  false);
+
+commander.option(
   '--hofs <mode>',
   'either builtin or fill (default: builtin)',
   parseArg(x => x, x => /^(builtin|fill)$/.test(x),
@@ -36,8 +41,8 @@ commander.option(
 
 commander.option(
   '--js-args <mode>',
-  'either simple or faithful (default: simple)',
-  parseArg(x => x, x => /^(simple|faithful)$/.test(x),
+  'either simple, faithful, or full (default: simple)',
+  parseArg(x => x, x => /^(simple|faithful|full)$/.test(x),
     'invalid --js-args, see --help'),
   'simple');
 
@@ -74,6 +79,7 @@ export const compilerOpts: CompilerOpts = {
   debug: args.debug,
   captureMethod: args.transform,
   newMethod: args.new,
+  eval: args.eval,
   es: args.es,
   hofs: args.hofs,
   jsArgs: args.jsArgs,

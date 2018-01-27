@@ -18,10 +18,12 @@ import * as assert from 'assert';
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, { opts }) {
     path.stop()
-    assert.equal(path.node.body.length, 1)
-    const func = path.node.body[0]
-    assert.equal(func.type, 'FunctionDeclaration',
-      'Must compile a top-level function')
+    if (!opts.eval) {
+      assert.equal(path.node.body.length, 1)
+      const func = path.node.body[0]
+      assert.equal(func.type, 'FunctionDeclaration',
+        'Must compile a top-level function')
+    }
     callcc.transformFromAst(path, [[stopifyCallCC.plugin, opts]])
   }
 }
@@ -32,6 +34,7 @@ const defaultOpts: callcc.CompilerOpts = {
     debug: false,
     captureMethod: 'lazy',
     newMethod: 'wrapper',
+    eval: false,
     es: 'sane',
     hofs: 'builtin',
     jsArgs: 'simple',
@@ -51,6 +54,26 @@ export function compileFunction(
     throw new Error("Failed to transform function")
   }
   return transformed
+}
+
+export function compileEval(code: string, type: string, renames: { [key: string]: string }, boxes: string[]): string {
+
+  const transformed = compileFunction(code, <any>{
+    compileFunction: true,
+    getters: false,
+    debug: false,
+    captureMethod: type,
+    newMethod: 'wrapper',
+    eval: true,
+    es: 'sane',
+    hofs: 'builtin',
+    jsArgs: 'simple',
+    requireRuntime: true,
+    noWebpack: true,
+    renames,
+    boxes
+  });
+  return transformed!;
 }
 
 export default function () {

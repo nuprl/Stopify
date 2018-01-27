@@ -7,9 +7,10 @@ export interface CompilerOpts {
   debug: boolean,
   captureMethod: CaptureMethod,
   newMethod: HandleNew,
+  eval: boolean,
   es: 'sane' | 'es5',
   hofs: 'builtin' | 'fill',
-  jsArgs: 'simple' | 'faithful',
+  jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
   noWebpack: boolean,
   sourceMap?: any

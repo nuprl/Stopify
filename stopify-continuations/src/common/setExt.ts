@@ -6,3 +6,11 @@ export function diff<T>(setA: Set<T>, setB: Set<T>): Set<T> {
   }
   return difference;
 }
+
+export function union<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  let union = new Set<T>(setA);
+  for (const elem of setB) {
+    union.add(elem);
+  }
+  return union;
+}

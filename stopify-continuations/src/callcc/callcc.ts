@@ -13,6 +13,7 @@ import * as desugarLogical from '../common/desugarLogical';
 import * as singleVarDecls from '../common/singleVarDecls';
 import * as makeBlocks from '../common/makeBlockStmt';
 import * as boxAssignables from './boxAssignables';
+import * as supportEval from './eval';
 import * as desugarNew from '../common/desugarNew';
 import * as anf from '../common/anf';
 import * as label from './label';
@@ -34,6 +35,7 @@ import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
 
 const $__R = t.identifier('$__R')
+const $__C = t.identifier('$__C')
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -56,11 +58,15 @@ const visitor: Visitor = {
     }
 
     timeSlow('singleVarDecl', () =>
-      h.transformFromAst(path, [singleVarDecls]));
+      h.transformFromAst(path, [[singleVarDecls, opts]]));
     timeSlow('free ID initialization', () =>
-      freeIds.annotate(path));
+      freeIds.annotate(path, opts.eval));
     timeSlow('box assignables', () =>
       h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
+    if (opts.eval) {
+      timeSlow('instrument eval calls', () =>
+        h.transformFromAst(path, [[supportEval.plugin, opts]]));
+    }
 
 
     timeSlow('desugaring passes', () =>
@@ -73,15 +79,21 @@ const visitor: Visitor = {
       h.transformFromAst(path, [anf]));
     timeSlow('declVars', () =>
       h.transformFromAst(path, [declVars]));
-    timeSlow('delimit', () =>
-      h.transformFromAst(path, [[delimitTopLevel, opts]]));
+    // If stopifying eval'd string at runtime, don't delimit statements so that
+    // we can suspend through the eval.
+    if (!(<any>opts).renames) {
+      timeSlow('delimit', () =>
+        h.transformFromAst(path, [[delimitTopLevel, opts]]));
+    }
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
     timeSlow('jumper', () =>
       h.transformFromAst(path, [[jumper.plugin, opts]]));
 
+    path.stop();
+
     let toShift;
-    if (opts.compileFunction) {
+    if (opts.compileFunction && !opts.eval) {
       if (t.isFunctionDeclaration(path.node.body[0])) {
         toShift = (<t.FunctionDeclaration>path.node.body[0]).body.body
       }
@@ -141,8 +153,14 @@ const visitor: Visitor = {
                 [t.stringLiteral(`${h.runtimePath}/runtime`)]),
           'const'));
     }
-
-    path.stop();
+    if (opts.eval) {
+      path.node.body.unshift(
+        h.letExpression(
+          $__C,
+          t.callExpression(t.identifier('require'),
+            [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]),
+          'const'));
+    }
   }
 };
 

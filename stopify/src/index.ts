@@ -9,13 +9,13 @@ import { pack }from './stopify/webpack';
 import * as tmp from 'tmp';
 
 export { CompilerOpts, Opts } from './types';
-export { compileFunction } from './stopify/compileFunction'
+export { compileFunction, compileEval } from './stopify/compileFunction'
 export { stopify as precompiledStopify } from './runtime/precompiled';
 export { plugin } from './stopify/stopifyCallCC';
 
 function mustWebPack(opts: types.CompilerOpts): boolean {
   return !opts.noWebpack &&
-    (opts.es === 'es5' || opts.hofs === 'fill' || opts.getters)
+    (opts.es === 'es5' || opts.hofs === 'fill' || opts.getters || opts.eval)
 }
 
 function stopifyPack(srcPath: string, opts: types.CompilerOpts): Promise<string> {
@@ -31,6 +31,25 @@ function stopifyPack(srcPath: string, opts: types.CompilerOpts): Promise<string>
       return resolve(jsCode);
     });
   });
+}
+
+export function stopifySourceSync(src: string, opts: types.CompilerOpts): string {
+  const babelOpts = {
+    plugins: [[ stopifyCallCC, opts ]],
+    babelrc: false,
+    ast: false,
+    code: true,
+    minified: true,
+    comments: false,
+  };
+
+  const { code } = babel.transform(src, babelOpts);
+  return code!;
+}
+
+export function stopifySource(src: string, opts: types.CompilerOpts): Promise<string> {
+  return new Promise((resolve, reject) =>
+    resolve(stopifySourceSync(src, opts)));
 }
 
 export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<string> {
@@ -56,25 +75,8 @@ export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<stri
         return { src: src, sourceMap: generateLineMapping(<RawSourceMap>map) };
       })
       .then(({src, sourceMap}) => {
-
         opts.sourceMap = sourceMap;
-        const babelOpts = {
-          plugins: [[ stopifyCallCC, opts ]],
-          babelrc: false,
-          ast: false,
-          code: true,
-          minified: false,
-          comments: false,
-        };
-
-        return new Promise((resolve, reject) =>
-          babel.transformFile(srcPath, babelOpts, (err, result) => {
-            if (err !== null) {
-              return reject(err);
-            }
-            const { code } = result;
-            return resolve(code!);
-          }));
+        return stopifySource(src, opts);
       });
   }
 }

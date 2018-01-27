@@ -198,9 +198,16 @@ Unless you're modifying the representation of continuations, it is usually
 adequate ot test your changes with only one continuation representation.
 
 You can run a Stopified program in the terminal (using Node), which is usually
-the fastest way to test a small change. To do so, compile it without
-the `--external-rts` flag and then it using `./bin/run`. This program
-takes the same command-line arguments as `stopify-url`.
+the fastest way to test a small change. To do so, compile it with
+the `--require-runtime` flag and then run the output file using node.
+For example:
+
+```
+stopify --require-runtime src.js dst.js
+node dst.js
+```
+
+The output file (`dst.js` above) takes the same command-line arguments as `stopify-url`.
 
 ## Stopify with Webpack
 

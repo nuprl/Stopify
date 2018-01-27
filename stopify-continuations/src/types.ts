@@ -3,6 +3,7 @@ export type HandleNew = 'direct' | 'wrapper'
 
 export interface CompilerOpts {
   compileFunction?: boolean,
+  getters: boolean,
   debug: boolean,
   captureMethod: CaptureMethod,
   newMethod: HandleNew,

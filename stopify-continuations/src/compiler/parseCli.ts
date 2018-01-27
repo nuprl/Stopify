@@ -42,6 +42,11 @@ commander.option(
   'simple');
 
 commander.option(
+  '--getters',
+  'enable support for getters/setters (default: false)',
+  false)
+
+commander.option(
   '--no-webpack',
   'Do not apply Webpack, even if necessary');
 
@@ -65,6 +70,7 @@ const args = commander.parse(process.argv);
 
 export const compilerOpts: CompilerOpts = {
   compileFunction: args.func,
+  getters: args.getters,
   debug: args.debug,
   captureMethod: args.transform,
   newMethod: args.new,

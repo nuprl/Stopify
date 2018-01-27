@@ -33,6 +33,7 @@ import * as fastFreshId from '../fastFreshId';
 import { timeSlow, unreachable } from '../generic';
 import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeHOFs from '../exposeHOFs';
+import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
 import { transformFile } from 'babel-core';
 
@@ -48,6 +49,10 @@ const visitor: Visitor = {
 
     if (opts.es === 'es5') {
       h.transformFromAst(path, [exposeImplicitApps.plugin]);
+    }
+
+    if (opts.getters) {
+      h.transformFromAst(path, [exposeGS.plugin])
     }
 
     if (opts.hofs === 'fill') {
@@ -121,6 +126,16 @@ const visitor: Visitor = {
             t.identifier("handleNew")), t.identifier('bind')),
           [$__R]),
         "const"));
+
+    if(state.opts.getters) {
+      path.node.body.unshift(
+        t.variableDeclaration('var',
+          [t.variableDeclarator(t.identifier('$gs'),
+            t.callExpression(t.identifier('require'),
+              [t.stringLiteral(
+                'stopify-continuations/dist/src/runtime/gettersSetters.js')]))]));
+    }
+
     if (!state.opts.compileFunction) {
       path.node.body.unshift(
         h.letExpression(

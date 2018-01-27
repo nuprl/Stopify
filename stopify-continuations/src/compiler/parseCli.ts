@@ -41,9 +41,14 @@ commander.option(
     'invalid --js-args, see --help'),
   'simple');
 
-  commander.option(
-    '--no-webpack',
-    'Do not apply Webpack, even if necessary');
+commander.option(
+  '--getters',
+  'enable support for getters/setters (default: false)',
+  false)
+
+commander.option(
+  '--no-webpack',
+  'Do not apply Webpack, even if necessary');
 
 commander.option('--require-runtime',
   `use require('stopify') to load the runtime system, which necessary to run
@@ -59,6 +64,7 @@ commander.arguments('<srcPath> <dstPath>');
 const args = commander.parse(process.argv);
 
 export const compilerOpts: CompilerOpts = {
+  getters: args.getters,
   debug: args.debug,
   captureMethod: args.transform,
   newMethod: args.new,

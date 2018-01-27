@@ -1,7 +1,5 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as bh from './babelHelpers';
-import * as imm from 'immutable';
 
 export const hofIdentifier = t.identifier('$hof');
 

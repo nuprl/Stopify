@@ -188,6 +188,33 @@ of its impact will help us continue development.
 </p>
 </div>
 </div>
+
+<div class="row">
+<div class="rte col-md-offset-2 col-md-8 col-sm-12 col-sm-offset-0">
+<h4 class="stopify-heading">I received an unexpected compiler error or runtime error.</h4>
+<p class="p1">
+There are three kinds of errors that you may encounter on this demo site:
+<ol>
+  <li>Stopify uses a third-party compiler to translate the source language
+    <i>X</i> to JavaScript. You may have written a program in language <i>X</i>
+   that the third-party compiler does not support. For example, none of the
+   compilers support featured on this site support the file system.
+   We have curated a suite
+   <a href="https://github.com/plasma-umass/stopify-benchmarks">suite of benchmarks</a>
+  that do work both natively and on the Web.
+  </li>
+
+  <li>This website uses <a href="https://cloud.google.com/functions/">Google Cloud Functions</a>
+  to run the Stopify compiler and all third-party compilers. Large source programs
+  may not compile within the strict memory limits of Cloud Functions. Stopify will
+  not have this issue when running on a reasonable desktop or laptop.</li>
+
+  <li>You may have encountered a bug in Stopify. We use <a href="https://github.com/plasma-umass/Stopify/issues">GitHub Issues</a>
+  to track bugs. Please let us know.</li>
+</ol>
+</div>
+</div>
+
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>

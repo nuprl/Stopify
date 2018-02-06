@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "./node_modules/.bin/tsc",
-    "serve": "node dist/main"
+    "serve": "node dist/server"
   },
   "contributors": [
     {

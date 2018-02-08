@@ -2,8 +2,8 @@
   "name": "stopify",
   "version": "0.0.12",
   "description": "Stopify makes JavaScript a better target language for high-level languages and web-based programming tools",
-  "main": "built/src/index.js",
-  "typings": "built/src/index",
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index",
   "devDependencies": {
     "@types/babel-core": "^6.7.14",
     "@types/babel-generator": "^6.7.14",

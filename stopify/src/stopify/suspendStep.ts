@@ -67,7 +67,7 @@ const insertSuspend: Visitor = {
       if (t.isBlockStatement(path.node.body) &&
         !(<any>path.node.body).suspends) {
         path.node.body.body.push(t.expressionStatement(
-          t.callExpression(t.memberExpression(t.identifier("$__R"),
+          t.callExpression(t.memberExpression(t.identifier("$S"),
             t.identifier("suspend")), [])));
       }
     }

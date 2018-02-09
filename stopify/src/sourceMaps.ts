@@ -10,7 +10,6 @@ export class LineMapping {
  */
 export function generateLineMapping(map: RawSourceMap | undefined): LineMapping {
   if (map) {
-    console.log('// Mapping found');
     const sourceMap = new SourceMapConsumer(map);
     return new LineMapping((line: number, column: number) => {
       const mapping = sourceMap.originalPositionFor({ line, column });

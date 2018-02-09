@@ -7,9 +7,10 @@ import { generateLineMapping, LineMapping } from './sourceMaps';
 import { SourceMapConsumer, RawSourceMap } from 'source-map';
 import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
 import * as fs from 'fs-extra';
-export { CompilerOpts } from './types';
+export { CompilerOpts, Opts } from './types';
 import { pack }from 'stopify-continuations';
 import * as tmp from 'tmp';
+export { stopify as precompiledStopify } from './runtime/precompiled';
 
 function mustWebPack(opts: types.CompilerOpts): boolean {
   return !opts.noWebpack && (opts.es === 'es5' || opts.hofs === 'fill');
@@ -51,6 +52,7 @@ export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<stri
     })
     .then(({src, sourceMap}) => {
 
+      opts.sourceMap = sourceMap;
       const babelOpts = {
         plugins: [[ stopifyCallCC, opts ]],
         babelrc: false,

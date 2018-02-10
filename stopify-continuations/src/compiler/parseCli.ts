@@ -55,10 +55,16 @@ commander.option(
   'Insert suspensions between every line of code in the source program',
   false);
 
+commander.option(
+  '--func',
+  'Compile a top-level function. Doesnt add runtime initialization or cleanup',
+  false)
+
 commander.arguments('<srcPath> <dstPath>');
 const args = commander.parse(process.argv);
 
 export const compilerOpts: CompilerOpts = {
+  compileFunction: args.func,
   debug: args.debug,
   captureMethod: args.transform,
   newMethod: args.new,

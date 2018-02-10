@@ -80,7 +80,7 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[jumper.plugin, opts]]));
 
     let toShift;
-    if ((<any>opts).compileFunction) {
+    if (opts.compileFunction) {
       if (t.isFunctionDeclaration(path.node.body[0])) {
         toShift = (<t.FunctionDeclaration>path.node.body[0]).body.body
       }
@@ -121,6 +121,7 @@ const visitor: Visitor = {
             t.identifier("handleNew")), t.identifier('bind')),
           [$__R]),
         "const"));
+
     if (!state.opts.compileFunction) {
       path.node.body.unshift(
         h.letExpression(

@@ -187,10 +187,10 @@ const assign = {
 }
 
 const program: VisitNode<t.Program> = {
-  enter(path) {
+  enter(path: NodePath<t.Program>) {
     globalEnv = new Env()
   },
-  exit(path) {
+  exit(path: NodePath<t.Program>) {
     if (debug > 1) {
       console.error(`\n-------program----------`)
       console.error(globalEnv.toString())

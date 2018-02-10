@@ -2,6 +2,7 @@ export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
 export type HandleNew = 'direct' | 'wrapper'
 
 export interface CompilerOpts {
+  compileFunction: boolean,
   debug: boolean,
   captureMethod: CaptureMethod,
   newMethod: HandleNew,

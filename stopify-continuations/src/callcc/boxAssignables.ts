@@ -124,13 +124,26 @@ function exitFunction(self: State, path: NodePath<t.FunctionExpression>) {
 
 const visitor = {
   Program(this: State, path: NodePath<t.Program>, state: any) {
-    const binds = path.scope.bindings;
-    const vars = Object.keys(path.scope.bindings)
-      .filter(x => shouldBox(x, path));
     this.parentPathStack = [];
     this.varsStack = [];
     this.parentPath = path;
-    this.vars = Set.of(...vars);
+    // Stopify has used the top-level as a implicit continuation delimiter.
+    // i.e., Stopify's continuations are like Racket continuations, which
+    // don't capture the rest of a module:
+    //
+    // (define saved #f)
+    // (define f (call/cc (lambda (k) (set! saved k) 100)))
+    // (display 200)
+    // ; Applying saved will not run (display 200) again
+    //
+    // Since continuations don't capture top-level definitions, we do not
+    // need to box top-level assignable variables, which why we initialize
+    // this.vars to the empty set.
+    //
+    // Note that boxing top-level assignables is also wrong: a boxed top-level
+    // variable X is also available as window.X, which we would not know to
+    // unbox.
+    this.vars = Set<string>();
   },
   ReferencedIdentifier(this: State, path: NodePath<t.Identifier>) {
     path.skip();

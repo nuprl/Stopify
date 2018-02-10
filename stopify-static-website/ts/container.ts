@@ -1,13 +1,22 @@
-import * as browser from 'detect-browser'
-import { encodeArgs } from 'stopify/built/src/browserLine';
-
-// compiled bundle must be available
-declare const stopify: any;
-
 // This code runs on the right-hand side IFRAME that displays the output
 // from the running program. The code receives two kinds of messages
 // from the container (1) a message containing the JavaScript to run,
 // before it has been stopified and (2) a message directing execution to stop.
+
+import * as browser from 'detect-browser'
+
+// compiled bundle must be available
+declare const stopify: any;
+
+const data = <HTMLTextAreaElement>document.getElementById('data')!;
+
+console.log = function (str: any) {
+  data.value = data.value + str + '\n';
+  const evt = new Event('change');
+  data.dispatchEvent(evt);
+}
+
+let task: any; // of type AsyncRunner
 
 window.addEventListener('message', evt => {
   if (evt.source !== window.parent) {
@@ -17,19 +26,27 @@ window.addEventListener('message', evt => {
   const { type } = message;
   switch (type) {
     case 'start':
-      stopify.loadScript(() => stopify.setBreakpoints(message.breakpoints), 'https://storage.googleapis.com/stopify-compiler-output');
+      task = stopify.stopify('https://storage.googleapis.com/stopify-compiler-output/' + message.path, message.opts);
+      task.setBreakpoints(message.breakpoints);
+      task.run(() => { },
+        () => { },
+        updateCurrentLine);
       break;
     case 'pause':
-      stopify.stopScript();
+      task.pause(updateCurrentLine);
       break;
     case 'continue':
-      stopify.setBreakpoints(message.breakpoints);
-      stopify.resumeScript();
+      task.setBreakpoints(message.breakpoints);
+      task.resume();
       break;
     case 'step':
-      stopify.stepScript();
+      task.step(updateCurrentLine);
   }
 });
+
+function updateCurrentLine(line?: number) {
+  window.parent.postMessage({ type: 'paused', linenum: line }, '*');
+}
 
 document.body.style.fontFamily = 'Monaco';
 
@@ -42,7 +59,7 @@ const postLineNum = () => {
     linenum: rts.linenum
   }, '*');
 };
-stopify.setOnStop(postLineNum);
+//stopify.setOnStop(postLineNum);
 
 const textarea = document.getElementById('data')!;
 textarea.onchange = function () {

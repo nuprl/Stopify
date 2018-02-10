@@ -10,6 +10,7 @@ import { resolve } from 'path';
 import * as crypto from 'crypto';
 import * as stopifyCompiler from 'stopify';
 
+const thirdPartyCompilers = 'http://104.198.65.105:8000';
 const sto = storage();
 const bucket = sto.bucket('stopify-compiler-output');
 
@@ -70,35 +71,93 @@ function reject(response: express.Response) {
 //   .catch(reject(resp)));
 
 function genericCompiler(lang: string, url: string, opts: stopifyCompiler.CompilerOpts) {
-  stopify.post(`/${lang}`, bodyParser.text({ type: '*/*' }), (req, resp) =>
-    checkCache(lang, req.body)
-    .then(({ filename,  exists }) => {
+  stopify.post(`/${lang}`, bodyParser.text({ type: '*/*' }), async (req, resp) => {
+    try {
+      resp.set('Access-Control-Allow-Origin', '*');
+      resp.set('Access-Control-Allow-Methods', 'POST');
+
+      const { filename, exists } = await checkCache(lang, req.body);
       if (exists) {
-        resp.set('Access-Control-Allow-Origin', '*');
-        resp.set('Access-Control-Allow-Methods', 'POST');
         return resp.send(filename);
       }
-      else {
-        console.info(`Compiling ${lang} program (${req.body.length} bytes)`);
-        return request.post(url,
-                            { headers, body: req.body })
-          .then(stopifiedJsCode => runStopify(resp, stopifiedJsCode, filename, opts))
-          .catch(err => {
-            if (err.name === 'StatusCodeError') {
-              throw err.response.body;
-            }
-            else {
-              throw err;
-            }
-          });
-      }
-    })
-    .catch(reject(resp)));
+
+      console.info(`Compiling ${lang} program (${req.body.length} bytes)`);
+      const jsCode = await request.post(url, { headers, body: req.body });
+      console.info(`Stopifying program (${jsCode.length} bytes)`);
+      return await runStopify(resp, jsCode, filename, opts);
+    }
+    catch (exn) {
+      resp.statusCode = 503;
+      const reason =
+        (exn.name === 'StatusCodeError' ? exn.response.body : exn).toString();
+      console.error(`Error: ${reason}`);
+      return resp.send(reason.toString());
+    }
+  });
 }
 
-genericCompiler('pyjs', 'http://35.184.26.215:8080/pyjs', { jsArgs: 'faithful' });
-genericCompiler('emscripten',  'http://35.184.26.215:8080/emscripten', { debug: true });
-genericCompiler('bucklescript',  'http://35.184.26.215:8080/bucklescript', {});
-genericCompiler('scalajs', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileScalaJS', { debug: true });
-genericCompiler('clojurescript',  'http://35.184.26.215:8080/clojurescript', { debug: true });
-genericCompiler('dart2js', 'https://us-central1-arjun-umass.cloudfunctions.net/stopifyCompileDart2JS', { });
+genericCompiler('pyjs', `${thirdPartyCompilers}/pyjs`, {
+  debug: false,
+  captureMethod: 'lazy',
+  newMethod: 'wrapper',
+  es: 'sane',
+  hofs: 'builtin',
+  jsArgs: 'faithful',
+  requireRuntime: false,
+  noWebpack: false
+});
+
+genericCompiler('emscripten', `${thirdPartyCompilers}/emscripten`, {
+  debug: true,
+  captureMethod: 'lazy',
+  newMethod: 'wrapper',
+  es: 'sane',
+  hofs: 'builtin',
+  jsArgs: 'simple',
+  requireRuntime: false,
+  noWebpack: false
+});
+
+genericCompiler('bucklescript', `${thirdPartyCompilers}/bucklescript`, {
+  debug: true,
+  captureMethod: 'lazy',
+  newMethod: 'wrapper',
+  es: 'sane',
+  hofs: 'builtin',
+  jsArgs: 'simple',
+  requireRuntime: false,
+  noWebpack: false
+});
+
+genericCompiler('scalajs',  `${thirdPartyCompilers}/scalajs`, {
+  debug: true,
+  captureMethod: 'lazy',
+  newMethod: 'wrapper',
+  es: 'sane',
+  hofs: 'builtin',
+  jsArgs: 'simple',
+  requireRuntime: false,
+  noWebpack: false
+});
+
+genericCompiler('clojurescript', `${thirdPartyCompilers}/clojurescript`, {
+  debug: true,
+  captureMethod: 'lazy',
+  newMethod: 'wrapper',
+  es: 'sane',
+  hofs: 'builtin',
+  jsArgs: 'simple',
+  requireRuntime: false,
+  noWebpack: false
+});
+
+genericCompiler('dart2js',  `${thirdPartyCompilers}/dart2js`, {
+  debug: false,
+  captureMethod: 'lazy',
+  newMethod: 'wrapper',
+  es: 'sane',
+  hofs: 'builtin',
+  jsArgs: 'simple',
+  requireRuntime: false,
+  noWebpack: false
+});

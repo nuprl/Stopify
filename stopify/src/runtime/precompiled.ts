@@ -16,8 +16,30 @@ class Runner implements AsyncRun {
   private suspendRTS: RuntimeWithSuspend;
   private onDone: () => void = function() { };
   private onYield: () => void = function() {  };
+  private onBreakpoint: (line: number) => void = function() { };
+  private breakpoints: number[] = [];
 
   constructor(private url: string, private opts: Opts) { }
+
+  mayYieldRunning(): boolean {
+    const n = this.suspendRTS.rts.linenum;
+    if (typeof n !== 'number') {
+      return false;
+    }
+    return this.breakpoints.includes(n);
+  }
+
+  onYieldRunning() {
+    if (this.mayYieldRunning()) {
+      this.onBreakpoint(this.suspendRTS.rts.linenum!);
+      return false;
+    }
+    else {
+      this.onYield();
+      return true;
+    }
+  }
+
 
   /**
    * Indirectly called by the stopified program.
@@ -27,10 +49,8 @@ class Runner implements AsyncRun {
     const estimator = makeEstimator(this.opts);
     this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS,
       this.opts.yieldInterval, estimator);
-    this.suspendRTS.onYield = () => {
-      this.onYield(); 
-      return true; 
-    }
+    this.suspendRTS.mayYield = () => this.mayYieldRunning();
+    this.suspendRTS.onYield = () => this.onYieldRunning();
     return this;
   }
 
@@ -48,9 +68,14 @@ class Runner implements AsyncRun {
     this.onDone();
   }
 
-  run(onDone: () => void, onYield?: () => void) {
+  run(onDone: () => void,
+    onYield?: () => void,
+    onBreakpoint?: (line: number) => void) {
     if (onYield) {
       this.onYield = onYield;
+    }
+    if (onBreakpoint) {
+      this.onBreakpoint = onBreakpoint;
     }
     this.onDone = onDone;
     const script = document.createElement('script');
@@ -58,18 +83,52 @@ class Runner implements AsyncRun {
     document.body.appendChild(script);
   }
 
-  pause(onPaused: () => void) {
+  pause(onPaused: (line?: number) => void) {
     this.suspendRTS.onYield = () => {
       this.suspendRTS.onYield = () => {
         this.onYield();
         return true;
       }
-      onPaused();
+      const maybeLine = this.suspendRTS.rts.linenum;
+      if (typeof maybeLine === 'number') {
+        onPaused(maybeLine);
+      }
+      else {
+        onPaused();
+      }
       return false;
     }
   }
 
+  setBreakpoints(lines: number[]): void {
+    this.breakpoints = lines;
+  }
+
   resume() {
+    this.suspendRTS.mayYield = () => this.mayYieldRunning();
+    this.suspendRTS.onYield = () => this.onYieldRunning();
+    this.suspendRTS.resumeFromCaptured();
+  }
+
+  step(onStep: (line: number) => void) {
+    const currentLine = this.suspendRTS.rts.linenum;
+    // Yield control if the line number changes.
+    const mayYield = () => {
+      const n = this.suspendRTS.rts.linenum;
+      if (typeof n !== 'number') {
+        return false;
+      }
+      if (n !== currentLine) {
+        onStep(n);
+        return true;
+      }
+      else {
+        return false;
+      }
+    };
+    this.suspendRTS.mayYield = mayYield;
+    // Pause if the line number changes.
+    this.suspendRTS.onYield = () => !mayYield();
     this.suspendRTS.resumeFromCaptured();
   }
 

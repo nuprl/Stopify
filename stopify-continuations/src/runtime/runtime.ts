@@ -11,7 +11,7 @@ import { FudgeRuntime } from './fudgeRuntime';
 import { transformFile } from 'babel-core';
 
 let savedRTS: Runtime | undefined;
-export function newRTS(transform: string) : Runtime{
+export function newRTS(transform: string) : Runtime {
   if (savedRTS) {
     return savedRTS;
   }

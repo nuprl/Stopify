@@ -6,12 +6,15 @@ import {  Runtime } from 'stopify-continuations/dist/src/runtime';
 
 
 export class RuntimeWithSuspend {
-  breakpoints: number[];
 
   constructor(
     public rts: Runtime,
     public yieldInterval: number,
     public estimator: ElapsedTimeEstimator,
+    /** The runtime system yields control whenever this function produces
+     * 'true' or when the estimated elapsed time exceeds 'yieldInterval'.
+     */
+    public mayYield = function(): boolean { return false },
     /** This function is applied immediately before stopify yields control to
      *  the browser's event loop. If the function produces 'false', the
      *  computation terminates.
@@ -36,8 +39,7 @@ export class RuntimeWithSuspend {
       return;
     }
     // If this.yieldInterval is NaN, the condition will be false
-    if (this.hitBreakpoint() ||
-      this.estimator.elapsedTime() >= this.yieldInterval) {
+    if (this.mayYield() || this.estimator.elapsedTime() >= this.yieldInterval) {
       this.estimator.reset();
       this.rts.isSuspended = true;
       return this.rts.captureCC((continuation) => {
@@ -51,13 +53,4 @@ export class RuntimeWithSuspend {
       });
     }
   }
-
-  setBreakpoints(breaks: number[]): void {
-    this.breakpoints = breaks;
-  }
-
-  hitBreakpoint(): boolean {
-    return this.breakpoints && this.breakpoints.includes(<number>this.rts.linenum);
-  }
-
 }

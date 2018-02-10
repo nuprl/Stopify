@@ -1,13 +1,20 @@
 /**
  * Runs Webpack for Stopify.
  */
-import * as webpack from 'webpack';
 import * as path from 'path';
 import * as babel from 'babel-core';
 import * as tmp from 'tmp';
 import * as fs from 'fs-extra';
 
-export function pack(srcPath: string, dstPath: string, plugin: any, callback: (err: Error | null) => void) {
+export function pack(srcPath: string, dstPath: string, plugin: any, callback: (err: Error | null) => void): void {
+
+  /**
+   * This is required for the stopify module to be browserified properly. If
+   * this require is changed into an import, webpack and its 332 transitive
+   * dependencies.
+   */
+  const fakeRequire = require
+  const webpack = fakeRequire('webpack');
   const babelOpts = {
     plugins: [plugin],
     babelrc: false,
@@ -44,11 +51,11 @@ export function pack(srcPath: string, dstPath: string, plugin: any, callback: (e
         path.resolve('node_modules'),
         path.resolve('../node_modules'),
       ],
-    }    
+    }
 
   };
 
-  webpack(webpackConfig, (err, stats) => {
+  webpack(webpackConfig, (err: any, stats: any) => {
     if (err) {
       return callback(err);
     }

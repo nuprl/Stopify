@@ -24,7 +24,11 @@ export interface Opts {
 }
 
 export interface AsyncRun {
-  run(onDone: () => void, onYield?: () => void): void;
-  pause(onPaused: () => void): void;
+  run(onDone: () => void,
+    onYield?: () => void,
+    onBreakpoint?: (line: number) => void): void;
+  pause(onPaused: (line?: number) => void): void;
   resume(): void;
+  setBreakpoints(line: number[]): void;
+  step(onStep: (line: number) => void): void;
 }

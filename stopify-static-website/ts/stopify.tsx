@@ -5,7 +5,8 @@ import { StopifyAce } from './StopifyAce';
 import * as browser from 'detect-browser'
 import * as ace from 'brace';
 import { langs } from './languages';
-import { encodeArgs } from 'stopify/built/src/browserLine';
+
+import * as stopifyCompiler from 'stopify';
 
 type Mode = 'stopped' | 'paused' | 'compiling' | 'running';
 
@@ -59,7 +60,8 @@ interface StopifyEditorState {
   program: string,
   breakpoints: number[],
   line: number | null,
-  rhs: { type: 'iframe', url: string } | { type: 'message', text: string }
+  rhs: { type: 'iframe', url: string, path: string, opts: stopifyCompiler.Opts } |
+    { type: 'message', text: string }
 }
 
 class StopifyEditor extends React.Component<{ language: string }, StopifyEditorState> {
@@ -84,30 +86,33 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     };
 
     window.addEventListener('message', evt => {
-      console.log(this.state.language);
       // Message could be from somethign else, e.g., React DevTools
       if (this.iframe === null || evt.source !== this.iframe.contentWindow) {
         return;
       }
       if (evt.data.type === 'ready') {
-        if (this.state.mode === 'compiling') {
+        if (this.state.mode === 'compiling' &&
+            this.state.rhs.type === 'iframe') {
           this.setState({ mode: 'running' });
           this.iframe!.contentWindow.postMessage({
             type: 'start',
+            path: this.state.rhs.path,
+            opts: this.state.rhs.opts,
             breakpoints: this.state.breakpoints
           }, '*');
         }
+        else {
+          console.warn(`Unexpected ready from container when not compiling`);
+        }
       }
-      else if (this.state.language !== 'Dart' &&
-        evt.data.linenum &&
-        evt.data.linenum-1 === this.state.line) {
-        this.iframe!.contentWindow.postMessage({ type: 'step' }, '*');
-      }
-      else {
+      else if (evt.data.type === 'paused') {
         this.setState({
           mode: 'paused',
           line: evt.data.linenum - 1 || null
         });
+      }
+      else {
+        console.warn(`Unexpected message from container`, evt.data);
       }
     });
   }
@@ -136,10 +141,18 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
         }
       }))
     .then(path => {
-      const fragment = encodeArgs(['--env', browser.name, '-t', 'lazy',
-        '--estimator', 'countdown', '-y', '1', path]);
+      const opts: stopifyCompiler.Opts = {
+        filename: path,
+        estimator: 'countdown',
+        yieldInterval: 1,
+        timePerElapsed: 1,
+        resampleInterval: 1,
+        variance: false,
+        env: browser.name as any,
+        stop: undefined
+      };
       this.setState({
-        rhs: { type: 'iframe', url: `./container.html#${fragment}` }
+        rhs: { type: 'iframe', url: './container.html', opts: opts, path: path }
       });
     }).catch(reason => {
       this.setState({
@@ -271,7 +284,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
           language={this.props.language}>
         </StopifyAce>
       </div>
-      <div className="col-md-3 col-xs-12" id="output" style={{overflow: "hidden"}}>
+      <div className="col-md-4 col-xs-12" id="output" style={{overflow: "hidden"}}>
         <div style={{height: "100%"}}>{rhs}</div>
       </div>
     </div>;

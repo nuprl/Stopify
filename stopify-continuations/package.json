@@ -33,8 +33,7 @@
     "glob": "^7.1.1",
     "jest": "^20.0.4",
     "jest-junit": "^3.1.0",
-    "typescript": "~2.3",
-    "webpack": "^3.4.1"
+    "typescript": "~2.3"
   },
   "scripts": {
     "build": "./bin/build",

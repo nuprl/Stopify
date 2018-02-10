@@ -1,6 +1,11 @@
 {
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "link:stopify": "cd stopify && ln -s `pwd`/. `npm -g root`/stopify",
+    "link:stopify-continuations": "cd stopify-continuations && ln -s `pwd`/. `npm -g root`/stopify-continuations",
+    "link:all": "npm run link:stopify && npm run link:stopify-continuations"
+  },
   "workspaces": [
       "stopify",
       "stopify-third-party-compile-server",

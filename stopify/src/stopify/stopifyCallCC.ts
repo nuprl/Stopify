@@ -78,6 +78,9 @@ export const visitor: Visitor = {
                 t.identifier('init')),
                 [t.identifier('$__R')]))]));
     }
+    else if (opts.compileFunction) {
+      // Do nothing
+    }
     else {
       // var $S = stopify.init($__R);
       path.node.body.splice(2, 0,
@@ -91,16 +94,18 @@ export const visitor: Visitor = {
                   [t.identifier('$__R')]))]));
     }
 
-    path.node.body.push(
-      t.expressionStatement(
-        t.callExpression(
-          t.memberExpression(t.identifier('$__R'), t.identifier('delimit')),
-          [t.functionExpression(undefined, [],
-            t.blockStatement([
-              t.expressionStatement(
-                t.callExpression(
-                  t.memberExpression(t.identifier('$S'), t.identifier('onEnd')), 
-                  []))]))])));
+    if (!opts.compileFunction) {
+      path.node.body.push(
+        t.expressionStatement(
+          t.callExpression(
+            t.memberExpression(t.identifier('$__R'), t.identifier('delimit')),
+            [t.functionExpression(undefined, [],
+              t.blockStatement([
+                t.expressionStatement(
+                  t.callExpression(
+                    t.memberExpression(t.identifier('$S'), t.identifier('onEnd')),
+                    []))]))])));
+    }
   }
 }
 

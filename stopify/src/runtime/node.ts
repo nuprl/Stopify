@@ -1,11 +1,11 @@
 /**
  * Runtime system for Node
  */
-import { Opts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
-import { RuntimeWithSuspend } from './suspend';
-import { makeEstimator } from './elapsedTimeEstimator';
-import { parseRuntimeOpts } from '../cli-parse';
+import { Runtime } from "stopify-continuations/dist/src/runtime/abstractRuntime";
+import { parseRuntimeOpts } from "../cli-parse";
+import { Opts } from "../types";
+import { makeEstimator } from "./elapsedTimeEstimator";
+import { RuntimeWithSuspend } from "./suspend";
 
 const opts = parseRuntimeOpts(process.argv.slice(2));
 let continuationsRTS: Runtime | undefined;
@@ -16,7 +16,7 @@ export function init(rts: Runtime) {
     opts.yieldInterval,
     makeEstimator(opts));
 
-    if (typeof opts.stop !== 'undefined') {
+  if (typeof opts.stop !== "undefined") {
       setTimeout(function() {
         suspendRTS.onYield = () => false;
       }, opts.stop * 1000);

@@ -1,10 +1,9 @@
-import * as path from 'path';
-import { parseRuntimeOpts } from './cli-parse';
+import * as path from "path";
 
 export function localBenchmarkUrl(args: string[]) {
-  args[0] = 'file://' + path.resolve(args[0]);
-  const ret = 'file://' + path.resolve(__dirname, '../../dist/benchmark.html') +
-    '#' + encodeURIComponent(JSON.stringify(args));
+  args[0] = "file://" + path.resolve(args[0]);
+  const ret = "file://" + path.resolve(__dirname, "../../dist/benchmark.html") +
+    "#" + encodeURIComponent(JSON.stringify(args));
   return ret;
 }
 

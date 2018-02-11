@@ -1,28 +1,28 @@
-import { sum } from '../generic';
-import { sprintf } from 'sprintf';
+import { sprintf } from "sprintf";
+import { sum } from "../generic";
 
 declare var stopify: any;
 
-const data = <HTMLTextAreaElement>document.getElementById('data')!;
+const data = document.getElementById("data")! as HTMLTextAreaElement;
 const startTime = Date.now();
 let lastYieldTime: number | undefined;
-let yieldIntervals: number[] = [];
+const yieldIntervals: number[] = [];
 let yields = 0;
 
-console.log = function (str: any) {
-  data.value = data.value + str + '\n';
-  const evt = new Event('change');
+console.log = function(str: any) {
+  data.value = data.value + str + "\n";
+  const evt = new Event("change");
   data.dispatchEvent(evt);
-}
+};
 
 window.onerror = (message, url, line, col, error) => {
-  console.log('An error occurred');
+  console.log("An error occurred");
   console.log(message);
   if (error && error.stack) {
     console.log(error.stack);
   }
-  window.document.title = "done"
-}
+  window.document.title = "done";
+};
 
 const opts = stopify.parseRuntimeOpts(
   JSON.parse(decodeURIComponent(window.location.hash.slice(1))));
@@ -36,39 +36,37 @@ function onDone() {
   let latencyVar;
   console.log("BEGIN STOPIFY BENCHMARK RESULTS");
   if (opts.variance) {
-    console.log("BEGIN VARIANCE")
+    console.log("BEGIN VARIANCE");
     for (let i = 0; i < yieldIntervals.length; i++) {
       console.log(`${i},${yieldIntervals[i]}`);
     }
     console.log("END VARIANCE");
     if (yields === 0) {
       latencyVar = "0";
-    }
-    else {
+    } else {
       latencyVar = sprintf("%.2f",
-        sum(yieldIntervals.map(x =>
+        sum(yieldIntervals.map((x) =>
           (latencyAvg - x) * (latencyAvg - x))) / yields);
     }
-  }
-  else {
-    latencyVar = 'NA';
+  } else {
+    latencyVar = "NA";
   }
   console.log(`${runningTime},${yields},${sprintf("%.2f", latencyAvg)},${latencyVar}`);
-  console.log('OK.');
-  window.document.title = 'done';
+  console.log("OK.");
+  window.document.title = "done";
 }
 
 handle.run(onDone, () => {
   yields++;
   if (opts.variance) {
     const now = Date.now();
-    if (typeof lastYieldTime === 'number') {
+    if (typeof lastYieldTime === "number") {
       yieldIntervals.push(now - lastYieldTime);
     }
     lastYieldTime = now;
   }
 });
 
-if (typeof opts.stop !== 'undefined') {
+if (typeof opts.stop !== "undefined") {
   window.setTimeout(() => handle.pause(onDone), opts.stop * 1000);
 }

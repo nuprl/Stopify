@@ -1,14 +1,13 @@
-import * as babel from 'babel-core';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
-import { execSync } from 'child_process';
-import * as tmp from 'tmp';
-const glob = require('glob');
+import { execSync } from "child_process";
+import * as fs from "fs";
+import * as os from "os";
+import * as path from "path";
+import * as tmp from "tmp";
+const glob = require("glob");
 
-export const unitTests = glob.sync('test/should-run/*.js', {})
-export const intTests = glob.sync('test/should-run/source-language/*.js', {})
-export const stopTests = glob.sync('test/should-stop/*.js', {})
+export const unitTests = glob.sync("test/should-run/*.js", {});
+export const intTests = glob.sync("test/should-run/source-language/*.js", {});
+export const stopTests = glob.sync("test/should-stop/*.js", {});
 
 export function callCCTest(srcPath: string, transform: string, opts: string = "") {
   const testName = `${srcPath} ${opts} (${transform})`;
@@ -20,7 +19,7 @@ export function callCCTest(srcPath: string, transform: string, opts: string = ""
   }
 
   it(testName, () => {
-    const basename = path.basename(srcPath, '.js')
+    const basename = path.basename(srcPath, ".js");
     const { name: dstPath } =
       tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
     execSync(
@@ -37,7 +36,7 @@ export function callCCTest(srcPath: string, transform: string, opts: string = ""
 
 export function browserTest(srcPath: string, transform: string) {
   const testName = `${srcPath} (${transform}) (in-browser)`;
-  const basename = path.basename(srcPath, '.js')
+  const basename = path.basename(srcPath, ".js");
 
   // Skip tests we know we can't handle
   if ( srcPath.indexOf("dart") >= 0 ||
@@ -46,7 +45,7 @@ export function browserTest(srcPath: string, transform: string) {
     return;
   }
 
-  if (srcPath.endsWith('forever.js')) {
+  if (srcPath.endsWith("forever.js")) {
     test(`${testName} (may run forever)`, () => {
       const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
       execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
@@ -54,8 +53,7 @@ export function browserTest(srcPath: string, transform: string) {
       execSync(`./bin/browser firefox ${dstPath} --estimator=countdown -y 1 --stop 5`);
       fs.unlinkSync(dstPath);
     });
-  }
-  else {
+  } else {
     it(testName, () => {
       const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
       execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
@@ -70,7 +68,7 @@ export function stopCallCCTest(srcPath: string, transform: string) {
   const testName = `${srcPath} (${transform}) (infinite loop)`;
 
   // Don't even try this on a non-Linux platform!
-  if (os.platform() !== 'linux') {
+  if (os.platform() !== "linux") {
     it.skip(testName);
     return;
   }
@@ -85,8 +83,7 @@ export function stopCallCCTest(srcPath: string, transform: string) {
     execSync(`./bin/compile --require-runtime --transform ${transform} ${srcPath} ${dstPath}`);
     try {
       execSync(`node ${dstPath} --estimator=countdown --yield 10 --stop 1`, { timeout: 5000 });
-    }
-    finally {
+    } finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.
       fs.unlinkSync(dstPath);
     }

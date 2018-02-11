@@ -1,50 +1,48 @@
-import { Opts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
-import { RuntimeWithSuspend } from './suspend';
-import { makeEstimator } from './elapsedTimeEstimator';
+import { Runtime } from "stopify-continuations/dist/src/runtime/abstractRuntime";
+import { AsyncRun, Opts } from "../types";
+import { makeEstimator } from "./elapsedTimeEstimator";
+import { RuntimeWithSuspend } from "./suspend";
 
 // We need to provide these for stopify-continuations
-export * from 'stopify-continuations/dist/src/runtime/runtime';
+export * from "stopify-continuations/dist/src/runtime/runtime";
 
 // For testing / benchmarking convenience.
-export { parseRuntimeOpts } from '../cli-parse';
+export { parseRuntimeOpts } from "../cli-parse";
 
-let runner : Runner | undefined;
+let runner: Runner | undefined;
 
 class Runner implements AsyncRun {
   private continuationsRTS: Runtime;
   private suspendRTS: RuntimeWithSuspend;
-  private onDone: () => void = function() { };
-  private onYield: () => void = function() {  };
-  private onBreakpoint: (line: number) => void = function() { };
+  private onDone: () => void = function() { return; };
+  private onYield: () => void = function() { return; };
+  private onBreakpoint: (line: number) => void = function() { return; };
   private breakpoints: number[] = [];
 
   constructor(private url: string, private opts: Opts) { }
 
-  mayYieldRunning(): boolean {
+  public mayYieldRunning(): boolean {
     const n = this.suspendRTS.rts.linenum;
-    if (typeof n !== 'number') {
+    if (typeof n !== "number") {
       return false;
     }
     return this.breakpoints.includes(n);
   }
 
-  onYieldRunning() {
+  public onYieldRunning() {
     if (this.mayYieldRunning()) {
       this.onBreakpoint(this.suspendRTS.rts.linenum!);
       return false;
-    }
-    else {
+    } else {
       this.onYield();
       return true;
     }
   }
 
-
   /**
    * Indirectly called by the stopified program.
    */
-  init(rts: Runtime) {
+  public init(rts: Runtime) {
     this.continuationsRTS = rts;
     const estimator = makeEstimator(this.opts);
     this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS,
@@ -57,20 +55,20 @@ class Runner implements AsyncRun {
   /**
    * Called by the stopified program.
    */
-  suspend() {
+  public suspend() {
     return this.suspendRTS.suspend();
   }
 
   /**
    * Called by the stopfied program.
    */
-  onEnd(): void {
+  public onEnd(): void {
     this.onDone();
   }
 
-  run(onDone: () => void,
-    onYield?: () => void,
-    onBreakpoint?: (line: number) => void) {
+  public run(onDone: () => void,
+             onYield?: () => void,
+             onBreakpoint?: (line: number) => void) {
     if (onYield) {
       this.onYield = onYield;
     }
@@ -78,51 +76,49 @@ class Runner implements AsyncRun {
       this.onBreakpoint = onBreakpoint;
     }
     this.onDone = onDone;
-    const script = document.createElement('script');
-    script.setAttribute('src', this.url);
+    const script = document.createElement("script");
+    script.setAttribute("src", this.url);
     document.body.appendChild(script);
   }
 
-  pause(onPaused: (line?: number) => void) {
+  public pause(onPaused: (line?: number) => void) {
     this.suspendRTS.onYield = () => {
       this.suspendRTS.onYield = () => {
         this.onYield();
         return true;
-      }
+      };
       const maybeLine = this.suspendRTS.rts.linenum;
-      if (typeof maybeLine === 'number') {
+      if (typeof maybeLine === "number") {
         onPaused(maybeLine);
-      }
-      else {
+      } else {
         onPaused();
       }
       return false;
-    }
+    };
   }
 
-  setBreakpoints(lines: number[]): void {
+  public setBreakpoints(lines: number[]): void {
     this.breakpoints = lines;
   }
 
-  resume() {
+  public resume() {
     this.suspendRTS.mayYield = () => this.mayYieldRunning();
     this.suspendRTS.onYield = () => this.onYieldRunning();
     this.suspendRTS.resumeFromCaptured();
   }
 
-  step(onStep: (line: number) => void) {
+  public step(onStep: (line: number) => void) {
     const currentLine = this.suspendRTS.rts.linenum;
     // Yield control if the line number changes.
     const mayYield = () => {
       const n = this.suspendRTS.rts.linenum;
-      if (typeof n !== 'number') {
+      if (typeof n !== "number") {
         return false;
       }
       if (n !== currentLine) {
         onStep(n);
         return true;
-      }
-      else {
+      } else {
         return false;
       }
     };
@@ -139,7 +135,7 @@ class Runner implements AsyncRun {
  */
 export function init(rts: Runtime): AsyncRun {
   if (runner === undefined) {
-    throw new Error('stopify not called');
+    throw new Error("stopify not called");
   }
   return runner.init(rts);
 }

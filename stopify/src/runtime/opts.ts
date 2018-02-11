@@ -1,9 +1,9 @@
-import { Opts } from '../types';
-import * as browser from 'detect-browser';
-import { parseRuntimeOpts } from '../cli-parse';
+import * as browser from "detect-browser";
+import { parseRuntimeOpts } from "../cli-parse";
+import { Opts } from "../types";
 
 function getOpts(): Opts {
-  if (<any>browser.name === 'node') {
+  if (browser.name as any === "node") {
     return parseRuntimeOpts(process.argv.slice(2));
   }
   const optsArr = JSON.parse(decodeURIComponent(window.location.hash.slice(1)));

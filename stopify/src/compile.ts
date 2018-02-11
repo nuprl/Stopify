@@ -1,19 +1,17 @@
-import 'source-map-support/register'
-import * as fs from 'fs-extra';
-import { stopify } from './index';
-import * as parseCli from 'stopify-continuations/dist/src/compiler/parseCli';
-const stderr = process.stderr;
+import * as fs from "fs-extra";
+import "source-map-support/register";
+import * as parseCli from "stopify-continuations/dist/src/compiler/parseCli";
+import { stopify } from "./index";
 
 stopify(parseCli.srcPath, parseCli.compilerOpts)
-  .then(dstCode => {
+  .then((dstCode) => {
     if (parseCli.dstPath) {
       return fs.writeFile(parseCli.dstPath, dstCode);
-    }
-    else {
+    } else {
       return console.log(dstCode);
     }
   })
-  .catch(reason => {
+  .catch((reason) => {
     console.log(`Stopify error`);
     console.log(reason);
     process.exit(1);

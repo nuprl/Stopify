@@ -44,8 +44,7 @@ export function groupBy<T>(inGroup: (x: T, y: T) => boolean, arr: T[]): T[][] {
     if (inGroup(last, current)) {
       currentGroup.push(current);
       last = current;
-    }
-    else {
+    } else {
       currentGroup = [current];
       groups.push(currentGroup);
       last = current;
@@ -62,8 +61,7 @@ export function parseArg<T>(
     const parsed = convert(arg);
     if (validate(parsed)) {
       return parsed;
-    }
-    else {
+    } else {
       throw new Error(error);
     }
   };

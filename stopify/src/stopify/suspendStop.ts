@@ -1,8 +1,5 @@
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
-
-const opts = t.identifier("$opts");
-const result = t.identifier("$result");
+import { NodePath, Visitor } from "babel-traverse";
+import * as t from "babel-types";
 
 function handleBlock(body: t.BlockStatement) {
   body.body.unshift(t.expressionStatement(
@@ -10,12 +7,12 @@ function handleBlock(body: t.BlockStatement) {
       t.identifier("suspend")), [])));
 }
 
-type BlockBody = {
-  node: { body: t.BlockStatement }
+interface BlockBody {
+  node: { body: t.BlockStatement };
 }
 
 function handleFunction(path: NodePath<t.Node> & BlockBody) {
-  if ((<any>path.node).mark === 'Flat') {
+  if ((path.node as any).mark === "Flat") {
     return;
   }
   handleBlock(path.node.body);
@@ -33,8 +30,7 @@ const insertSuspend: Visitor = {
   Loop(path: NodePath<t.Loop>) {
     if (path.node.body.type === "BlockStatement") {
       handleBlock(path.node.body);
-    }
-    else {
+    } else {
       const body = t.blockStatement([path.node.body]);
       path.node.body = body;
       handleBlock(body);
@@ -43,19 +39,18 @@ const insertSuspend: Visitor = {
 
   Program: {
     exit(path: NodePath<t.Program>, { opts }) {
-      if(opts.compileFunction) {
-        if(path.node.body[0].type === 'FunctionDeclaration') {
-          (<any>path.node.body[0]).topFunction = true
-        }
-        else {
+      if (opts.compileFunction) {
+        if (path.node.body[0].type === "FunctionDeclaration") {
+          (path.node.body[0] as any).topFunction = true;
+        } else {
           throw new Error(
-            `Compile function expected top-level functionDeclaration`)
+            `Compile function expected top-level functionDeclaration`);
         }
       }
-    }
+    },
   },
-}
+};
 
-export default function () {
+export default function() {
   return { visitor: insertSuspend};
 }

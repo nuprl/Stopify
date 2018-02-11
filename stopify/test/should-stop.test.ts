@@ -1,9 +1,9 @@
-import * as f from './testFixtures.js';
+import * as f from "./testFixtures.js";
 
-describe('Call/CC stopping tests', function () {
+describe("Call/CC stopping tests", () => {
   f.stopTests.forEach((filename: string) => {
-    f.stopCallCCTest(filename, 'lazy');
-    f.stopCallCCTest(filename, 'eager');
-    f.stopCallCCTest(filename, 'retval');
+    f.stopCallCCTest(filename, "lazy");
+    f.stopCallCCTest(filename, "eager");
+    f.stopCallCCTest(filename, "retval");
   });
 });

@@ -6,7 +6,7 @@
   "author": "Rachit Nigam",
   "license": "MIT",
   "scripts": {
-    "build": "yarn add stopify && yarn add stopify-continuations",
+    "build": "yarn link stopify && yarn link stopify-continuations",
     "test:build": "./node_modules/.bin/browserify index.js -o index.out.js",
     "test": "yarn run test:build && node index.out.js"
   },

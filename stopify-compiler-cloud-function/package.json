@@ -15,7 +15,7 @@
   },
   "main": "dist/index.js",
   "scripts": {
-    "build": "cd ../stopify && yarn run build && cd ../stopify-compiler-cloud-function && ./bin/build.sh",
+    "build": "./bin/build.sh",
     "init-bucket": "./bin/init-bucket.sh",
     "deploy": "gcloud beta functions deploy stopify --memory=2048MB --timeout=300 --stage-bucket stopify-cloud-function --trigger-http",
     "deploy-testing": "gcloud beta functions deploy stopifyTesting --memory=2048MB --timeout=300 --stage-bucket stopify-cloud-function --trigger-http"

@@ -21,20 +21,16 @@ import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
 import jumperizeTry from './jumperizeTry';
 import delimitTopLevel from './delimitTopLevel';
-import hygiene from '../common/hygiene';
 import * as freeIds from '../common/freeIds';
 import cleanup from './cleanup';
 import * as h from '../common/helpers';
 import { NodePath, Visitor } from 'babel-traverse';
-import * as babylon from 'babylon';
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
-import * as fastFreshId from '../fastFreshId';
-import { timeSlow, unreachable } from '../generic';
+import { timeSlow } from '../generic';
 import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeHOFs from '../exposeHOFs';
 import * as types from '../types';
-import { transformFile } from 'babel-core';
 
 const $__R = t.identifier('$__R')
 

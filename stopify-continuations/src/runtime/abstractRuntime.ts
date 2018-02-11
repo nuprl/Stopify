@@ -42,7 +42,8 @@ export class Capture {
   constructor(public f: (k: any) => any, public stack: Stack) {}
 }
 
-interface RuntimeInterface {
+// TODO(rachit): Is this still used?
+export interface RuntimeInterface {
   captureCC(f: (k: any) => any): void;
   // Wraps a stack in a function that throws an exception to discard the current
   // continuation. The exception carries the provided stack with a final frame

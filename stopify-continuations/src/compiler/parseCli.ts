@@ -2,7 +2,7 @@
  * Command-line to compile continuations.
  */
 import * as commander from 'commander';
-import { CompilerOpts, HandleNew, CaptureMethod } from '../types';
+import { CompilerOpts } from '../types';
 import { parseArg } from '../generic';
 
 commander.option(

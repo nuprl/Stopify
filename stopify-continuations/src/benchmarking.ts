@@ -22,10 +22,8 @@
  *
  */
 
-import { sprintf } from 'sprintf';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as cp from 'child_process';
 import { spawnSync, execSync } from 'child_process';
 import * as minimist from 'minimist';
 import * as os from 'os';
@@ -35,28 +33,7 @@ import * as process from 'process';
 
 const nodeBin = which.sync("node");
 
-const stdout = process.stdout;
-const stderr = process.stderr;
-
 const opts = minimist(process.argv.slice(2));
-
-/**
- * Creates a working directory for this run, specialized for Swarm.
- * (No longer in use.)
- */
-function createWorkingDirectory(): string {
-  const now = new Date();
-  const user = process.env.USER;
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  const d = now.getDate();
-  const h = now.getHours();
-  const min = now.getMinutes();
-  const date = sprintf('%d-%02d-%02dT%02d_%02d', y, m, d, h, min);
-  const dirName = `/mnt/nfs/work1/arjun/${user}/${date}`;
-  fs.mkdirSync(dirName);
-  return dirName;
-}
 
 /**
  * Simple wrapper around child_process.execSync. We need to use 'bash'
@@ -117,11 +94,6 @@ function main() {
   csv();
 }
 
-
-type byPlatformResult = {
-  cmd: string,
-  src: string
-}
 
 function run() {
   const platform: string = opts.platform;

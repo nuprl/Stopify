@@ -220,7 +220,6 @@ function array_sort(o: any, comparator?: any): any {
 
   // Move undefineds and holes to the end of a sparse array. Result is [values..., undefineds..., holes...].
   function compactSparse(array: any, dst: any, src: any, length: any) {
-    var values = [ ];
     var seen: any = { };
     var valueCount = 0;
     var undefinedCount = 0;

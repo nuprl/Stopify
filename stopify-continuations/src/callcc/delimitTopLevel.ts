@@ -1,7 +1,7 @@
 /**
  * This Babel plugin transforms top-level statements to use '$__R.delimit'.
  */
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';

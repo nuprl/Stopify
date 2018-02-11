@@ -3,7 +3,6 @@
  */
 import {NodePath, VisitNode, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
-import * as h from './helpers';
 
 // Consequents and alternatives in if statements must always be blocked,
 // otherwise variable declaration get pulled outside the branch.

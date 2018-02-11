@@ -2,7 +2,7 @@
  * This module generates fresh identifiers much faster than Babel's
  * own functions to do so.
  */
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath } from 'babel-traverse';
 import * as h from './common/helpers';
 import * as t from 'babel-types';
 import * as assert from 'assert';

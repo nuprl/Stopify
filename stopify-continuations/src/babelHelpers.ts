@@ -1,4 +1,3 @@
-import * as babel from 'babel-core';
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 

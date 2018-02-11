@@ -14,7 +14,6 @@
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as fs from 'fs';
 
 interface S {
   found: Set<string>,

@@ -11,7 +11,8 @@
         "noImplicitAny": true,
         "strictNullChecks": true,
         "declaration": true,
-        "inlineSourceMap": true
+        "inlineSourceMap": true,
+        "noUnusedLocals": true
     },
     "include": [
       "src",

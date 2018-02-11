@@ -8,7 +8,7 @@
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import * as assert from 'assert';
-import { NodePath, Visitor } from 'babel-traverse';
+import { NodePath } from 'babel-traverse';
 import * as freeIds from '../common/freeIds';
 import * as fastFreshId from '../fastFreshId';
 import * as bh from '../babelHelpers';
@@ -42,7 +42,6 @@ function unbox(e: t.Expression): t.Expression {
  * @param path the path to the enclosing Function or Program
  */
 function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
-  const binds = path.scope.bindings;
   if (path.node.type === 'FunctionExpression' &&
       path.node.id &&
       path.node.id.name === x) {

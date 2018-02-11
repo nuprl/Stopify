@@ -8,7 +8,6 @@ import { LazyRuntime } from './lazyRuntime';
 import { EagerRuntime } from './eagerRuntime';
 import { RetvalRuntime } from './retvalRuntime';
 import { FudgeRuntime } from './fudgeRuntime';
-import { transformFile } from 'babel-core';
 
 let savedRTS: Runtime | undefined;
 export function newRTS(transform: string) : Runtime {

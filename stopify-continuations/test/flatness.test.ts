@@ -2,7 +2,7 @@ import * as h from '../src/common/helpers';
 import { markFlatFunctions } from '../src/compiler/markFlatFunctions'
 import { markFlatApplications } from '../src/compiler/markFlatApplications'
 import * as babel from 'babel-core';
-import {NodePath, Visitor} from 'babel-traverse';
+import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 
 /**

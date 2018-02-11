@@ -7,7 +7,7 @@
  */
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
-import { NodePath, Visitor } from 'babel-traverse';
+import { NodePath } from 'babel-traverse';
 import * as SetExt from "./setExt";
 
 export interface NestedFunctionFree {

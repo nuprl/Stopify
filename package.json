@@ -10,6 +10,7 @@
       "stopify",
       "stopify-third-party-compile-server",
       "stopify-static-website",
-      "stopify-continuations"
+      "stopify-continuations",
+      "stopify-module-test"
   ]
 }

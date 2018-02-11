@@ -1,5 +1,5 @@
-import { Opts } from '../types';
-import { unreachable } from '../generic';
+import { unreachable } from "../generic";
+import { Opts } from "../types";
 
 /**
  * Interface for an object that estimates elapsed time.
@@ -8,27 +8,27 @@ export interface ElapsedTimeEstimator {
   /**
    * See 'elapsedTime' documentation.
    */
-  reset(): void,
+  reset(): void;
   /** Produces an estimate of time elapsed, in milliseconds, since the last
    * application of 'reset' or since the object was created.
    */
-  elapsedTime(): number
+  elapsedTime(): number;
 }
 
 class ExactTimeEstimator implements ElapsedTimeEstimator {
   public constructor(private last = Date.now()) { }
 
-  reset() {
+  public reset() {
     this.last = Date.now();
   }
 
-  elapsedTime(): number {
+  public elapsedTime(): number {
     return Date.now() - this.last;
   }
 }
 
 /**
- * Checks the current time whenever 'elapsedTime' is applied, instead of 
+ * Checks the current time whenever 'elapsedTime' is applied, instead of
  * estimating the elapsed time.
  */
 export function makeExact(): ElapsedTimeEstimator {
@@ -41,11 +41,11 @@ class CountdownTimeEstimator implements ElapsedTimeEstimator {
     private i = 0) {
   }
 
-  reset() {
+  public reset() {
     this.i = 0;
   }
 
-  elapsedTime(): number {
+  public elapsedTime(): number {
     this.i++;
     return this.i * this.timePerElapsed;
   }
@@ -54,7 +54,7 @@ class CountdownTimeEstimator implements ElapsedTimeEstimator {
 /**
  * Assumes that 'elapsedTime' is applied every 'timePerElapsed' milliseconds
  * and uses this to estimate the elapsed time.
- * 
+ *
  * @param timePerElapsed time (in milliseconds) between successive calls to
  *                       'elapsedTime'
  */
@@ -63,8 +63,8 @@ export function makeCountdown(timePerElapsed: number): ElapsedTimeEstimator {
 }
 
 /** Draws a number from a geometric distribution. */
-function geom(p: number): number { 
-  return Math.ceil(Math.log(1 - Math.random()) / Math.log(1 - p)); 
+function geom(p: number): number {
+  return Math.ceil(Math.log(1 - Math.random()) / Math.log(1 - p));
 }
 
 class SampleAverageTimeEstimator implements ElapsedTimeEstimator {
@@ -84,7 +84,7 @@ class SampleAverageTimeEstimator implements ElapsedTimeEstimator {
     private elapsedTimeCounter = 0) {
   }
 
-  elapsedTime() {
+  public elapsedTime() {
     this.i = (this.i + 1) | 0;
     this.elapsedTimeCounter = (this.elapsedTimeCounter + 1) | 0;
     if (this.countDown-- === 0) {
@@ -98,7 +98,7 @@ class SampleAverageTimeEstimator implements ElapsedTimeEstimator {
     return this.timePerElapsed * this.elapsedTimeCounter;
   }
 
-  reset() {
+  public reset() {
     this.elapsedTimeCounter = 0;
   }
 }
@@ -106,7 +106,7 @@ class SampleAverageTimeEstimator implements ElapsedTimeEstimator {
 /**
  * Estimates 'elapsedTime' by sampling the current time when 'elapsedTime'
  * is applied.
- * 
+ *
  * We use reservoir sampling with a reservoir of size 1, thus all times are
  * equally likely to be selected.
  */
@@ -133,7 +133,7 @@ class VelocityEstimator implements ElapsedTimeEstimator {
     private distance = 0) {
   }
 
-  elapsedTime() {
+  public elapsedTime() {
     this.i = (this.i + 1) | 0;
     this.distance = (this.distance + 1) | 0;
     if (this.countDown-- === 0) {
@@ -148,7 +148,7 @@ class VelocityEstimator implements ElapsedTimeEstimator {
     return (this.distance / this.velocityEstimate) | 0;
   }
 
-  reset() {
+  public reset() {
     this.distance = 0;
   }
 }
@@ -163,19 +163,15 @@ export function makeVelocityEstimator(resample: number = 100): ElapsedTimeEstima
 }
 
 export function makeEstimator(opts: Opts): ElapsedTimeEstimator {
-  if (opts.estimator === 'exact') {
+  if (opts.estimator === "exact") {
     return makeExact();
-  }
-  else if (opts.estimator === 'countdown') {
+  } else if (opts.estimator === "countdown") {
     return makeCountdown(opts.timePerElapsed!);
-  }
-  else if (opts.estimator === 'reservoir') {
+  } else if (opts.estimator === "reservoir") {
     return makeSampleAverage();
-  }
-  else if (opts.estimator === 'velocity') {
+  } else if (opts.estimator === "velocity") {
     return makeVelocityEstimator(opts.resampleInterval);
-  }
-  else {
+  } else {
     return unreachable();
   }
 }

@@ -1,17 +1,16 @@
-import * as f from './testFixtures.js';
-import * as tmp from 'tmp';
-import * as fs from 'fs';
-import { execSync } from 'child_process';
-const glob = require('glob');
+import { execSync } from "child_process";
+import * as fs from "fs";
+import * as tmp from "tmp";
+const glob = require("glob");
 
-describe('separate compilation using --hofs=builtin', () => {
-  const files = glob.sync('test/hofs/*.js');
+describe("separate compilation using --hofs=builtin", () => {
+  const files = glob.sync("test/hofs/*.js");
 
   for (const src of files) {
     test(src, () => {
-      const { name: dst } = tmp.fileSync({ dir: ".", postfix: '.js' });
+      const { name: dst } = tmp.fileSync({ dir: ".", postfix: ".js" });
       execSync(`./bin/compile -t lazy --hofs=fill ${src} ${dst}`);
-      const r = execSync(`./bin/browser chrome -t lazy --estimator countdown -y 1 ${dst}`);
+      execSync(`./bin/browser chrome -t lazy --estimator countdown -y 1 ${dst}`);
       fs.unlinkSync(dst);
     });
   }

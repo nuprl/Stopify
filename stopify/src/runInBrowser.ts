@@ -13,32 +13,31 @@
  *
  * 3. Using Selenium, we direct the browser to fetch the page.
  */
-import * as selenium from 'selenium-webdriver';
-import * as chrome from 'selenium-webdriver/chrome';
-import * as path from 'path';
-import { parseRuntimeOpts } from './cli-parse';
-import * as os from 'os';
-import { benchmarkUrl } from './browserLine';
-import * as express from 'express';
+import * as express from "express";
+import * as path from "path";
+import * as selenium from "selenium-webdriver";
+import * as chrome from "selenium-webdriver/chrome";
+import { benchmarkUrl } from "./browserLine";
+import { parseRuntimeOpts } from "./cli-parse";
 
 process.env.MOZ_HEADLESS = "1";
 
 const stdout = process.stdout;
-const [ _, __, browser, ...args ] = process.argv;
+const [ browser, ...args ] = process.argv.slice(2);
 const opts = parseRuntimeOpts(args);
 const src = benchmarkUrl(args);
 
 // NOTE(sam): No typing for `headless()` option as of 8/30/2017.
 // I've opened a PR to DefinitelyTyped to fix this.
 // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/19463
-const chromeOpts = (<any>new chrome.Options())
+const chromeOpts = (new chrome.Options() as any)
   .headless()
-  .addArguments(['--js-flags', '--harmony_tailcalls']);
+  .addArguments(["--js-flags", "--harmony_tailcalls"]);
 
 const loggingPrefs = new selenium.logging.Preferences();
-loggingPrefs.setLevel('browser', 'all');
+loggingPrefs.setLevel("browser", "all");
 
-let builder = new selenium.Builder()
+const builder = new selenium.Builder()
   .forBrowser(browser)
   .setLoggingPrefs(loggingPrefs)
   .setChromeOptions(chromeOpts);
@@ -46,31 +45,29 @@ let builder = new selenium.Builder()
 const driver = builder.build();
 const app = express();
 
-const benchmarkName = path.basename(opts.filename);
-
-app.use(express.static(path.join(__dirname, '../../dist')));
+app.use(express.static(path.join(__dirname, "../../dist")));
 app.use(express.static(path.dirname(opts.filename)));
 
 let exitCode = 0;
 const server = app.listen(() => {
-  const port = server.address().port
+  const port = server.address().port;
   const url = `http://127.0.0.1:${port}/benchmark.html#${src}`;
   console.log(`GET ${url}`);
   driver.get(url)
-    .then(_ => driver.wait(selenium.until.titleIs('done'), 8 * 60 * 1000))
-    .then(_ => driver.findElement(selenium.By.id('data')))
-    .then(e => e.getAttribute("value"))
-    .then(s => {
+    .then((_) => driver.wait(selenium.until.titleIs("done"), 8 * 60 * 1000))
+    .then((_) => driver.findElement(selenium.By.id("data")))
+    .then((e) => e.getAttribute("value"))
+    .then((s) => {
       stdout.write(s);
-      if (!s.endsWith('OK.\n')) {
+      if (!s.endsWith("OK.\n")) {
         exitCode = 1;
       }
     })
-    .catch(exn => {
+    .catch((exn) => {
       stdout.write(`Got an exception: ${exn}`);
       exitCode = 1;
     })
-    .then(_ => driver.quit())
-    .then(_ => server.close())
-    .then(_ => process.exit(exitCode));
+    .then((_) => driver.quit())
+    .then((_) => server.close())
+    .then((_) => process.exit(exitCode));
 });

@@ -40,6 +40,7 @@
     "stopify-url": "bin/stopify-url.js"
   },
   "scripts": {
+    "lint": "tslint -c ../tslint.json -p . -t msbuild",
     "build": "./bin/build",
     "test": "./node_modules/.bin/jest",
     "test:integration": "./bin/test -int",

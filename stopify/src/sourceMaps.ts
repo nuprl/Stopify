@@ -1,5 +1,4 @@
-import { SourceMapConsumer, RawSourceMap } from 'source-map';
-import * as smc from 'convert-source-map';
+import { RawSourceMap, SourceMapConsumer } from "source-map";
 
 export class LineMapping {
   constructor(public getLine: (line: number, column: number) => number | null) {}
@@ -14,12 +13,12 @@ export function generateLineMapping(map: RawSourceMap | undefined): LineMapping 
     return new LineMapping((line: number, column: number) => {
       const mapping = sourceMap.originalPositionFor({ line, column });
       if (mapping.source === null ||
-        mapping.source.includes('node_modules/') ||
-        mapping.source.includes('https://') ||
-        mapping.source.includes('goog/') ||
-        mapping.source.includes('cljs/') ||
-        mapping.source.includes('opt/') ||
-        mapping.source.includes('user_code/') ||
+        mapping.source.includes("node_modules/") ||
+        mapping.source.includes("https://") ||
+        mapping.source.includes("goog/") ||
+        mapping.source.includes("cljs/") ||
+        mapping.source.includes("opt/") ||
+        mapping.source.includes("user_code/") ||
         mapping.line === null) {
         return null;
       } else {
@@ -27,17 +26,7 @@ export function generateLineMapping(map: RawSourceMap | undefined): LineMapping 
       }
     });
   } else {
-    console.log('// No mapping found, using one-to-one map');
+    console.log("// No mapping found, using one-to-one map");
     return new LineMapping((line: number, column: number) => line);
-  }
-}
-
-function parseMapping(code: string) {
-  const mapConverter = smc.fromSource(code);
-  // No match
-  if (mapConverter === null) {
-    return generateLineMapping(undefined);
-  } else {
-    return generateLineMapping(mapConverter.toObject());
   }
 }

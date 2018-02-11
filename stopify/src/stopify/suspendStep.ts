@@ -1,37 +1,32 @@
-import { NodePath, Visitor } from 'babel-traverse';
-import { SourceMapConsumer } from 'source-map';
-import * as t from 'babel-types';
-import {LineMapping} from '../sourceMaps';
+import { NodePath, Visitor } from "babel-traverse";
+import * as t from "babel-types";
+import {LineMapping} from "../sourceMaps";
 
 interface Options {
   sourceMap: LineMapping;
 }
-
-const opts = t.identifier("$opts");
-const result = t.identifier("$result");
 
 const insertSuspend: Visitor = {
   BlockStatement: {
     exit(path: NodePath<t.BlockStatement>, s: { opts: Options }): void {
       const { body } = path.node;
       const newBody: t.Statement[] = [];
-      (<any>newBody).suspends = false;
+      (newBody as any).suspends = false;
       body.forEach((v, i) => {
         const loc = v.loc;
-        let mark;
         let ln: number | null;
         if (loc) {
           ln = s.opts.sourceMap.getLine(loc.start.line, loc.start.column);
           if (ln) {
             newBody.push(
-              t.expressionStatement(t.assignmentExpression('=',
-                t.memberExpression(t.identifier('$__R'), t.identifier('linenum')),
+              t.expressionStatement(t.assignmentExpression("=",
+                t.memberExpression(t.identifier("$__R"), t.identifier("linenum")),
                 t.numericLiteral(ln))),
               t.expressionStatement(
                 t.callExpression(t.memberExpression(t.identifier("$S"),
                   t.identifier("suspend")), [])),
               v);
-            (<any>newBody).suspends = true;
+            (newBody as any).suspends = true;
           } else {
             newBody.push(v);
           }
@@ -40,7 +35,7 @@ const insertSuspend: Visitor = {
         }
       });
       path.node.body = newBody;
-    }
+    },
   },
 
   IfStatement(path: NodePath<t.IfStatement>): void {
@@ -65,29 +60,28 @@ const insertSuspend: Visitor = {
 
     exit(path: NodePath<t.Loop>): void {
       if (t.isBlockStatement(path.node.body) &&
-        !(<any>path.node.body).suspends) {
+        !(path.node.body as any).suspends) {
         path.node.body.body.push(t.expressionStatement(
           t.callExpression(t.memberExpression(t.identifier("$S"),
             t.identifier("suspend")), [])));
       }
-    }
+    },
   },
 
   Program: {
     exit(path: NodePath<t.Program>, { opts }): void {
-      if(opts.compileFunction) {
-        if(path.node.body[0].type === 'FunctionDeclaration') {
-          (<any>path.node.body[0]).topFunction = true
-        }
-        else {
+      if (opts.compileFunction) {
+        if (path.node.body[0].type === "FunctionDeclaration") {
+          (path.node.body[0] as any).topFunction = true;
+        } else {
           throw new Error(
-            `Compile function expected top-level functionDeclaration`)
+            `Compile function expected top-level functionDeclaration`);
         }
       }
-    }
+    },
   },
-}
+};
 
-export default function () {
+export default function() {
   return { visitor: insertSuspend};
 }

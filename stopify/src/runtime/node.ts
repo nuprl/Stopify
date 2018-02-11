@@ -7,10 +7,12 @@ import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './elapsedTimeEstimator';
 import { parseRuntimeOpts } from '../cli-parse';
 
-const opts = parseRuntimeOpts(process.argv.slice(2));
 let continuationsRTS: Runtime | undefined;
 
-export function init(rts: Runtime) {
+export function init(
+  rts: Runtime,
+  opts: Opts = parseRuntimeOpts(process.argv.slice(2))) {
+
   continuationsRTS = rts;
   const suspendRTS = new RuntimeWithSuspend(continuationsRTS,
     opts.yieldInterval,

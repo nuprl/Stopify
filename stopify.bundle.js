@@ -61,7 +61,7 @@ var stopify =
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,10 +71,9 @@ var stopify =
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {
 Object.defineProperty(exports, "__esModule", { value: true });
-const setImmediate_1 = __webpack_require__(10);
-const cannotCapture_1 = __webpack_require__(14);
-const generic_1 = __webpack_require__(2);
-const assert = __webpack_require__(4);
+const cannotCapture_1 = __webpack_require__(17);
+const generic_1 = __webpack_require__(18);
+const assert = __webpack_require__(3);
 // We throw this exception when a continuation value is applied. i.e.,
 // captureCC applies its argument to a function that throws this exception.
 class Restore {
@@ -94,24 +93,15 @@ class Capture {
 }
 exports.Capture = Capture;
 class Runtime {
-    constructor(yieldInterval, estimator, capturing = false, delimitDepth = 0, 
+    constructor(capturing = false, delimitDepth = 0, 
         // true if computation is suspended by 'suspend'
         isSuspended = false, 
         // a queue of computations that need to run
-        pendingRuns = [], 
-        /** This function is applied immediately before stopify yields control to
-         *  the browser's event loop. If the function produces 'false', the
-         *  computation terminates.
-         */
-        onYield = function () { return true; }, continuation = function () { }) {
-        this.yieldInterval = yieldInterval;
-        this.estimator = estimator;
+        pendingRuns = []) {
         this.capturing = capturing;
         this.delimitDepth = delimitDepth;
         this.isSuspended = isSuspended;
         this.pendingRuns = pendingRuns;
-        this.onYield = onYield;
-        this.continuation = continuation;
         this.stack = [];
         this.mode = true;
     }
@@ -124,9 +114,6 @@ class Runtime {
         this.isSuspended = false;
         this.runtime_(thunk);
         this.resume();
-    }
-    resumeFromCaptured() {
-        this.resumeFromSuspension(this.continuation);
     }
     /**
      * Evaluates 'thunk' either now or later.
@@ -150,27 +137,6 @@ class Runtime {
             return this.delimit(this.pendingRuns.shift());
         }
     }
-    suspend() {
-        assert(!this.isSuspended);
-        // Do not suspend at the top-level of required modules.
-        if (this.delimitDepth > 1) {
-            return;
-        }
-        // If this.yieldInterval is NaN, the condition will be false
-        if (this.hitBreakpoint() ||
-            this.estimator.elapsedTime() >= this.yieldInterval) {
-            this.estimator.reset();
-            this.isSuspended = true;
-            return this.captureCC((continuation) => {
-                this.continuation = continuation;
-                if (this.onYield()) {
-                    return setImmediate_1.setImmediate(() => {
-                        this.resumeFromSuspension(continuation);
-                    });
-                }
-            });
-        }
-    }
     topK(f) {
         return {
             kind: 'top',
@@ -180,12 +146,6 @@ class Runtime {
                 return f();
             }
         };
-    }
-    setBreakpoints(breaks) {
-        this.breakpoints = breaks;
-    }
-    hitBreakpoint() {
-        return this.breakpoints && this.breakpoints.includes(this.linenum);
     }
     runtime(body) {
         while (true) {
@@ -214,8 +174,10 @@ class Runtime {
     }
 }
 exports.Runtime = Runtime;
-exports.knownBuiltIns = cannotCapture_1.knowns.map(o => eval(o));
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicnVudGltZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9jYWxsY2MvcnVudGltZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLGtEQUErQztBQUUvQywyREFBZ0Q7QUFDaEQsd0NBQXlDO0FBQ3pDLGlDQUFpQztBQTZCakMsc0VBQXNFO0FBQ3RFLDJFQUEyRTtBQUMzRTtJQUNFLFlBQW1CLEtBQVk7UUFBWixVQUFLLEdBQUwsS0FBSyxDQUFPO0lBQUcsQ0FBQztDQUNwQztBQUZELDBCQUVDO0FBRUQscUVBQXFFO0FBQ3JFLDZFQUE2RTtBQUM3RSxpRUFBaUU7QUFDakU7SUFDRSxZQUFtQixDQUFrQixFQUFTLEtBQVk7UUFBdkMsTUFBQyxHQUFELENBQUMsQ0FBaUI7UUFBUyxVQUFLLEdBQUwsS0FBSyxDQUFPO0lBQUcsQ0FBQztDQUMvRDtBQUZELDBCQUVDO0FBYUQ7SUFNRSxZQUNTLGFBQXFCLEVBQ3JCLFNBQStCLEVBQy9CLFlBQXFCLEtBQUssRUFDekIsZUFBdUIsQ0FBQztRQUNoQyxnREFBZ0Q7UUFDeEMsY0FBdUIsS0FBSztRQUNwQywyQ0FBMkM7UUFDbkMsY0FBOEIsRUFBRTtRQUN4Qzs7O1dBR0c7UUFDSSxVQUFVLGNBQXNCLE1BQU0sQ0FBQyxJQUFJLENBQUMsQ0FBQyxDQUFDLEVBQzdDLGVBQWUsY0FBWSxDQUFDO1FBYjdCLGtCQUFhLEdBQWIsYUFBYSxDQUFRO1FBQ3JCLGNBQVMsR0FBVCxTQUFTLENBQXNCO1FBQy9CLGNBQVMsR0FBVCxTQUFTLENBQWlCO1FBQ3pCLGlCQUFZLEdBQVosWUFBWSxDQUFZO1FBRXhCLGdCQUFXLEdBQVgsV0FBVyxDQUFpQjtRQUU1QixnQkFBVyxHQUFYLFdBQVcsQ0FBcUI7UUFLakMsWUFBTyxHQUFQLE9BQU8sQ0FBdUM7UUFDN0MsaUJBQVksR0FBWixZQUFZLENBQWdCO1FBQ3BDLElBQUksQ0FBQyxLQUFLLEdBQUcsRUFBRSxDQUFDO1FBQ2hCLElBQUksQ0FBQyxJ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
+const unavailableOnNode = ['TextDecoder'];
+exports.knownBuiltIns = cannotCapture_1.knowns.filter(x => !unavailableOnNode.includes(x))
+    .map(o => eval(o));
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYWJzdHJhY3RSdW50aW1lLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL3J1bnRpbWUvYWJzdHJhY3RSdW50aW1lLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsMkRBQWdEO0FBQ2hELHdDQUF5QztBQUN6QyxpQ0FBaUM7QUE2QmpDLHNFQUFzRTtBQUN0RSwyRUFBMkU7QUFDM0U7SUFDRSxZQUFtQixLQUFZO1FBQVosVUFBSyxHQUFMLEtBQUssQ0FBTztJQUFHLENBQUM7Q0FDcEM7QUFGRCwwQkFFQztBQUVELHFFQUFxRTtBQUNyRSw2RUFBNkU7QUFDN0UsaUVBQWlFO0FBQ2pFO0lBQ0UsWUFBbUIsQ0FBa0IsRUFBUyxLQUFZO1FBQXZDLE1BQUMsR0FBRCxDQUFDLENBQWlCO1FBQVMsVUFBSyxHQUFMLEtBQUssQ0FBTztJQUFHLENBQUM7Q0FDL0Q7QUFGRCwwQkFFQztBQWFEO0lBS0UsWUFDUyxZQUFxQixLQUFLLEVBQzFCLGVBQXVCLENBQUM7UUFDL0IsZ0RBQWdEO1FBQ3pDLGNBQXVCLEtBQUs7UUFDbkMsMkNBQTJDO1FBQ25DLGNBQThCLEVBQUU7UUFMakMsY0FBUyxHQUFULFNBQVMsQ0FBaUI7UUFDMUIsaUJBQVksR0FBWixZQUFZLENBQVk7UUFFeEIsZ0JBQVcsR0FBWCxXQUFXLENBQWlCO1FBRTNCLGdCQUFXLEdBQVgsV0FBVyxDQUFxQjtRQUN4QyxJQUFJLENBQUMsS0FBSyxHQUFHLEVBQUUsQ0FBQztRQUNoQixJQUFJLENBQUMsSUFBSSxHQUFHLElBQUksQ0FBQztJQUNuQixDQUFDO0lBRU8sUUFBUSxDQUFDLEtBQWdCO1FBQy9CLElBQUksQ0FBQyxZQUFZLEVBQUUsQ0FBQztRQUNwQixJQUFJLENBQUMsT0FBTyxDQUFDLEtBQUssQ0FBQyxDQUFDO1FBQ3BCLElBQUksQ0FBQyxZQUFZLEVBQUUsQ0FBQztJQUN0QixDQUFDO0lBRUQsb0JBQW9CLENBQUMsS0FBZ0I7UUFDbkMsSUFBSSxDQUFDLFdBQVcsR0FBRyxLQUFLLENBQUM7UUFDekIsSUFBSSxDQUFDLFFBQVEsQ0FBQyxLQUFLLENBQUMsQ0FBQztRQUNyQixJQUFJLENBQUMsTUFBTSxFQUFFLENBQUM7SUFDaEIsQ0FBQztJQUVEOztPQUVHO0lBQ0gsT0FBTyxDQUFDLEtBQWdCO1FBQ3RCLEVBQUUsQ0FBQyxDQUFDLElBQUksQ0FBQyxXQUFXLEtBQUssS0FBSyxDQUFDLENBQUMsQ0FBQztZQUMvQixJQUFJLENBQUMsUUFBUSxDQUFDLEtBQUssQ0FBQyxDQUFDO1lBQ3JCLEVBQUUsQ0FBQyxDQUFDLElBQUksQ0FBQyxZQUFZLEtBQUssQ0FBQyxDQUFDLENBQUMsQ0FBQztnQkFDNUIsSUFBSSxDQUFDLE1BQU0sRUFBRSxDQUFDO1lBQ2hCLENBQUM7UUFDSCxDQUFDO1FBQ0QsSUFBSSxDQUFDLENBQUM7WUFDSixNQUFNLENBQUMsSUFBSSxDQUFDLFdBQVcsQ0FBQyxJQUFJLENBQUMsS0FBSyxDQUFDLENBQUM7UUFDdEMsQ0FBQztJQUNILENBQUM7SUFFRCxNQUFNO1FBQ0osRUFBRSxDQUFDLENBQUMsSUFBSSxDQUFDLFdBQVcsQ0FBQyxDQUFDLENBQUM7WUFDckIsTUFBTSxDQUFDO1FBQ1QsQ0FBQztRQUNELEVBQUUsQ0FBQyxDQUFDLElBQUksQ0FBQyxXQUFXLENBQUMsTUFBTSxHQUFHLENBQUMsQ0FBQyxDQUFDLENBQUM7WUFDaEMsTUFBTSxDQUFDLElBQUksQ0FBQyxPQUFPLENBQUMsSUFBSSxDQUFDLFdBQVcsQ0FBQyxLQUFLLEVBQUcsQ0FBQyxDQUFDO1FBQ2pELENBQUM7SUFDSCxDQUFDO0lBRUQsSUFBSSxDQUFDLENBQVk7UUFDZixNQUFNLENBQUM7WUFDTCxJQUFJLEVBQUUsS0FBSztZQUNYLENBQUMsRUFBRTtnQkFDRCxJQUFJLENBQUMsS0FBSyxHQUFHLEVBQUUsQ0FBQztnQkFDaEIsSUFBSSxDQUFDLElBQUksR0FBRyxJQUFJLENBQUM7Z0JBQ2pCLE1BQU0sQ0FBQyxDQUFDLEVBQUUsQ0FBQztZQUNiLENBQUM7U0FDRixDQUFDO0lBQ0osQ0FBQztJQUVELE9BQU8sQ0FBQyxJQUFlO1FBQ3JCLE9BQU8sSUFBSSxFQUFFLENBQUM7WUFDWixNQUFNLE1BQU0sR0FBRyxJQUFJLENBQUMsV0FBVyxDQUFDLElBQUksQ0FBQyxDQUFBO1lBQ3JDLEVBQUUsQ0FBQyxDQUFDLE1BQU0sQ0FBQyxJQUFJLEtBQUssUUFBUSxDQUFDLENBQUMsQ0FBQztnQkFDN0IsTUFBTSxDQUFDLElBQUksQ0FBQyxJQUFJLEVBQUUscUNBQXFDLENBQUMsQ0FBQztnQkFDekQsTUFBTSxDQUFDO1lBQ1QsQ0FBQztZQUNELElBQUksQ0FBQyxFQUFFLENBQUMsQ0FBQyxNQUFNLENBQUMsSUFBSSxLQUFLLFNBQVMsQ0FBQyxDQUFDLENBQUM7Z0JBQ25DLElBQUksR0FBRyxNQUFNLE1BQU0sQ0FBQyxDQUFDLENBQUMsSUFBSSxDQUFDLE1BQU0sRUFBRSxJQUFJLENBQUMsUUFBUSxDQUFDLE1BQU0sQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDO1lBQ2xFLENBQUM7WUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLENBQUMsTUFBTSxDQUFDLElBQUksS0FBSyxTQUFTLENBQUMsQ0FBQyxDQUFDO2dCQUNuQyxJQUFJLEdBQUc7b0JBQ0wsSUFBSSxDQUFDLElBQUksR0FBRyxLQUFLLENBQUM7b0JBQ2xCLElBQUksQ0FBQyxLQUFLLEdBQUcsTUFBTSxDQUFDLEtBQUssQ0FBQztvQkFDMUIsTUFBTSxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQyxNQUFNLEdBQUcsQ0FBQyxDQUFDLENBQUMsQ0FBQyxFQUFFLENBQUM7Z0JBQy9DLENBQUMsQ0FBQztZQUNKLENBQUM7WUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLENBQUMsTUFBTSxDQUFDLElBQUksS0FBSyxXQUFXLENBQUMsQ0FBQyxDQUFDO2dCQUNyQyxNQUFNLE1BQU0sQ0FBQyxLQUFLLENBQUMsQ0FBQyxxQkFBcUI7WUFDM0MsQ0FBQztZQUNELElBQUksQ0FBQyxDQUFDO2dCQUNKLE1BQU0sQ0FBQyxxQkFBVyxFQUFFLENBQUM7WUFDdkIsQ0FBQztRQUNILENBQUM7SUFDSCxDQUFDO0NBU0Y7QUFoR0QsMEJBZ0dDO0FBRUQsTUFBTSxpQkFBaUIsR0FBRyxDQUFFLGFBQWEsQ0FBRSxDQUFDO0FBQy9CLFFBQUEsYUFBYSxHQUFHLHNCQUFNLENBQUMsTUFBTSxDQUFDLENBQUMsSUFBSSxDQUFDLGlCQUFpQixDQUFDLFFBQVEsQ0FBQyxDQUFDLENBQUMsQ0FBQztLQUM1RSxHQUFHLENBQUMsQ0FBQyxJQUFJLElBQUksQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDIn0=
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
@@ -247,222 +209,196 @@ module.exports = g;
 
 /***/ }),
 /* 2 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
+// shim for using process in browser
+var process = module.exports = {};
 
-Object.defineProperty(exports, "__esModule", { value: true });
-function sum(arr) {
-    return arr.reduce((x, y) => x + y, 0);
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
 }
-exports.sum = sum;
-function dropWhile(f, arr) {
-    for (let i = 0; i < arr.length; i++) {
-        if (f(arr[i]) === false) {
-            return arr.slice(i);
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
         }
     }
-    return [];
+
+
 }
-exports.dropWhile = dropWhile;
-function takeWhile(f, arr) {
-    for (let i = 0; i < arr.length; i++) {
-        if (f(arr[i]) === false) {
-            return arr.slice(0, i);
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
         }
     }
-    return arr.slice(0);
+
+
+
 }
-exports.takeWhile = takeWhile;
-function time(label, thunk) {
-    const start = Date.now();
-    const result = thunk();
-    const end = Date.now();
-    console.info(`${label} (${start - end} ms)`);
-    return result;
-}
-exports.time = time;
-function timeSlow(label, thunk) {
-    const start = Date.now();
-    const result = thunk();
-    const end = Date.now();
-    const delay = end - start;
-    if (delay > 2000) {
-        console.info(`${label} (${delay} ms)`);
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
     }
-    return result;
-}
-exports.timeSlow = timeSlow;
-function groupBy(inGroup, arr) {
-    if (arr.length === 0) {
-        return [];
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
     }
-    const groups = [[arr[0]]];
-    let currentGroup = groups[0];
-    let last = arr[0];
-    for (let i = 1; i < arr.length; i++) {
-        const current = arr[i];
-        if (inGroup(last, current)) {
-            currentGroup.push(current);
-            last = current;
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
-        else {
-            currentGroup = [current];
-            groups.push(currentGroup);
-            last = current;
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
         }
     }
-    return groups;
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
 }
-exports.groupBy = groupBy;
-function parseArg(convert, validate, error) {
-    return (arg) => {
-        const parsed = convert(arg);
-        if (validate(parsed)) {
-            return parsed;
-        }
-        else {
-            throw new Error(error);
-        }
-    };
-}
-exports.parseArg = parseArg;
-function unreachable() {
-    throw new Error("unreachable code was reached!");
-}
-exports.unreachable = unreachable;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZ2VuZXJpYy5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9nZW5lcmljLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsYUFBb0IsR0FBYTtJQUMvQixNQUFNLENBQUMsR0FBRyxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEtBQUssQ0FBQyxHQUFHLENBQUMsRUFBRSxDQUFDLENBQUMsQ0FBQztBQUN4QyxDQUFDO0FBRkQsa0JBRUM7QUFFRCxtQkFBNkIsQ0FBc0IsRUFBRSxHQUFRO0lBQzNELEdBQUcsQ0FBQyxDQUFDLElBQUksQ0FBQyxHQUFHLENBQUMsRUFBRSxDQUFDLEdBQUcsR0FBRyxDQUFDLE1BQU0sRUFBRSxDQUFDLEVBQUUsRUFBRSxDQUFDO1FBQ3BDLEVBQUUsQ0FBQyxDQUFDLENBQUMsQ0FBQyxHQUFHLENBQUMsQ0FBQyxDQUFDLENBQUMsS0FBSyxLQUFLLENBQUMsQ0FBQyxDQUFDO1lBQ3hCLE1BQU0sQ0FBQyxHQUFHLENBQUMsS0FBSyxDQUFDLENBQUMsQ0FBQyxDQUFDO1FBQ3RCLENBQUM7SUFDSCxDQUFDO0lBQ0QsTUFBTSxDQUFDLEVBQUUsQ0FBQztBQUNaLENBQUM7QUFQRCw4QkFPQztBQUVELG1CQUE2QixDQUFzQixFQUFFLEdBQVE7SUFDM0QsR0FBRyxDQUFDLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQyxFQUFFLENBQUMsR0FBRyxHQUFHLENBQUMsTUFBTSxFQUFFLENBQUMsRUFBRSxFQUFFLENBQUM7UUFDcEMsRUFBRSxDQUFDLENBQUMsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUMsQ0FBQyxLQUFLLEtBQUssQ0FBQyxDQUFDLENBQUM7WUFDeEIsTUFBTSxDQUFDLEdBQUcsQ0FBQyxLQUFLLENBQUMsQ0FBQyxFQUFFLENBQUMsQ0FBQyxDQUFDO1FBQ3pCLENBQUM7SUFDSCxDQUFDO0lBQ0QsTUFBTSxDQUFDLEdBQUcsQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENB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
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
 
 /***/ }),
 /* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-const assert = __webpack_require__(4);
-const eagerRuntime_1 = __webpack_require__(9);
-const lazyRuntime_1 = __webpack_require__(15);
-const retvalRuntime_1 = __webpack_require__(16);
-const fudgeRuntime_1 = __webpack_require__(17);
-const elapsedTimeEstimator = __webpack_require__(18);
-const generic_1 = __webpack_require__(2);
-const default_1 = __webpack_require__(19);
-__export(__webpack_require__(23));
-__export(__webpack_require__(0));
-function makeEstimator(opts) {
-    if (opts.estimator === 'exact') {
-        return elapsedTimeEstimator.makeExact();
-    }
-    else if (opts.estimator === 'countdown') {
-        return elapsedTimeEstimator.makeCountdown(opts.timePerElapsed);
-    }
-    else if (opts.estimator === 'reservoir') {
-        return elapsedTimeEstimator.makeSampleAverage();
-    }
-    else if (opts.estimator === 'velocity') {
-        return elapsedTimeEstimator.makeVelocityEstimator(opts.resampleInterval);
-    }
-    else {
-        return generic_1.unreachable();
-    }
-}
-function modeToBase(transform) {
-    if (transform === 'eager') {
-        return eagerRuntime_1.default;
-    }
-    else if (transform === 'lazy') {
-        return lazyRuntime_1.default;
-    }
-    else if (transform === 'retval') {
-        return retvalRuntime_1.default;
-    }
-    else if (transform === 'fudge') {
-        return fudgeRuntime_1.default;
-    }
-    else {
-        throw new Error(`unknown transformation: ${transform}`);
-    }
-}
-let rts = undefined;
-/**
- * Initializes the runtime system. This function must be called once and before
- * any stopified code starts running.
- */
-function makeRTS(opts) {
-    assert(rts === undefined, 'runtime already initialized');
-    const estimator = makeEstimator(opts);
-    const base = modeToBase(opts.transform);
-    rts = new base(opts.yieldInterval, estimator);
-    return rts;
-}
-exports.makeRTS = makeRTS;
-/**
- * Produces a reference to the runtime system, assuming it is initialized.
- */
-function getRTS() {
-    if (rts === undefined) {
-        throw new assert.AssertionError({ message: 'runtime not initialized' });
-    }
-    else {
-        return rts;
-    }
-}
-exports.getRTS = getRTS;
-function getOpts() {
-    const opts = JSON.parse(decodeURIComponent(window.location.hash.slice(1)));
-    // JSON turns undefined into null, which compare differently with numbers.
-    for (const k of Object.keys(opts)) {
-        if (opts[k] === null) {
-            delete opts[k];
-        }
-    }
-    return opts;
-}
-function afterScriptLoad(M) {
-    // NOTE(arjun): Idiotic that we are doing this twice
-    const opts = getOpts();
-    default_1.default.run(M, opts, () => {
-        window.document.title = "done";
-    });
-}
-exports.afterScriptLoad = afterScriptLoad;
-function loadScript(onload, prefix) {
-    const opts = getOpts();
-    // Dynamically load the file
-    const script = document.createElement('script');
-    script.setAttribute('src', (prefix || '') + opts.filename);
-    script.onload = onload;
-    document.body.appendChild(script);
-}
-exports.loadScript = loadScript;
-function setOnStop(onStop) {
-    default_1.default.onStop = onStop;
-}
-exports.setOnStop = setOnStop;
-function setBreakpoints(breaks) {
-    getRTS().setBreakpoints(breaks);
-}
-exports.setBreakpoints = setBreakpoints;
-function resumeScript() {
-    default_1.default.resume();
-}
-exports.resumeScript = resumeScript;
-function stopScript() {
-    default_1.default.stop();
-}
-exports.stopScript = stopScript;
-function stepScript() {
-    default_1.default.step();
-}
-exports.stepScript = stepScript;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicnRzLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vc3JjL3J0cy50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7OztBQUVBLGlDQUFpQztBQUNqQyx3REFBMEM7QUFDMUMsc0RBQXdDO0FBQ3hDLDBEQUE0QztBQUM1Qyx3REFBMEM7QUFDMUMsK0RBQStEO0FBQy9ELHVDQUF3QztBQUN4QywrQ0FBd0M7QUFFeEMsNENBQXVDO0FBQ3ZDLHNDQUFpQztBQUVqQyx1QkFBdUIsSUFBVTtJQUMvQixFQUFFLENBQUMsQ0FBQyxJQUFJLENBQUMsU0FBUyxLQUFLLE9BQU8sQ0FBQyxDQUFDLENBQUM7UUFDL0IsTUFBTSxDQUFDLG9CQUFvQixDQUFDLFNBQVMsRUFBRSxDQUFDO0lBQzFDLENBQUM7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLENBQUMsSUFBSSxDQUFDLFNBQVMsS0FBSyxXQUFXLENBQUMsQ0FBQyxDQUFDO1FBQ3hDLE1BQU0sQ0FBQyxvQkFBb0IsQ0FBQyxhQUFhLENBQUMsSUFBSSxDQUFDLGNBQWUsQ0FBQyxDQUFDO0lBQ2xFLENBQUM7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLENBQUMsSUFBSSxDQUFDLFNBQVMsS0FBSyxXQUFXLENBQUMsQ0FBQyxDQUFDO1FBQ3hDLE1BQU0sQ0FBQyxvQkFBb0IsQ0FBQyxpQkFBaUIsRUFBRSxDQUFDO0lBQ2xELENBQUM7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLENBQUMsSUFBSSxDQUFDLFNBQVMsS0FBSyxVQUFVLENBQUMsQ0FBQyxDQUFDO1FBQ3ZDLE1BQU0sQ0FBQyxvQkFBb0IsQ0FBQyxxQkFBcUIsQ0FBQyxJQUFJLENBQUMsZ0JBQWdCLENBQUMsQ0FBQztJQUMzRSxDQUFDO0lBQ0QsSUFBSSxDQUFDLENBQUM7UUFDSixNQUFNLENBQUMscUJBQVcsRUFBRSxDQUFDO0lBQ3ZCLENBQUM7QUFDSCxDQUFDO0FBRUQsb0JBQW9CLFNBQWlCO0lBQ3BDLEVBQUUsQ0FBQyxDQUFDLFNBQVMs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
-
-/***/ }),
-/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -534,7 +470,7 @@ function isBuffer(b) {
 // ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var util = __webpack_require__(6);
+var util = __webpack_require__(12);
 var hasOwn = Object.prototype.hasOwnProperty;
 var pSlice = Array.prototype.slice;
 var functionsHaveNames = (function () {
@@ -960,197 +896,554 @@ var objectKeys = Object.keys || function (obj) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function sum(arr) {
+    return arr.reduce((x, y) => x + y, 0);
+}
+exports.sum = sum;
+function dropWhile(f, arr) {
+    for (let i = 0; i < arr.length; i++) {
+        if (f(arr[i]) === false) {
+            return arr.slice(i);
+        }
+    }
+    return [];
+}
+exports.dropWhile = dropWhile;
+function takeWhile(f, arr) {
+    for (let i = 0; i < arr.length; i++) {
+        if (f(arr[i]) === false) {
+            return arr.slice(0, i);
+        }
+    }
+    return arr.slice(0);
+}
+exports.takeWhile = takeWhile;
+function timeSlow(label, thunk) {
+    const start = Date.now();
+    const result = thunk();
+    const end = Date.now();
+    const delay = end - start;
+    if (delay > 2000) {
+        console.info(`${label} (${delay} ms)`);
+    }
+    return result;
+}
+exports.timeSlow = timeSlow;
+function groupBy(inGroup, arr) {
+    if (arr.length === 0) {
+        return [];
+    }
+    const groups = [[arr[0]]];
+    let currentGroup = groups[0];
+    let last = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+        const current = arr[i];
+        if (inGroup(last, current)) {
+            currentGroup.push(current);
+            last = current;
+        }
+        else {
+            currentGroup = [current];
+            groups.push(currentGroup);
+            last = current;
+        }
+    }
+    return groups;
+}
+exports.groupBy = groupBy;
+function parseArg(convert, validate, error) {
+    return (arg) => {
+        const parsed = convert(arg);
+        if (validate(parsed)) {
+            return parsed;
+        }
+        else {
+            throw new Error(error);
+        }
+    };
+}
+exports.parseArg = parseArg;
+function unreachable() {
+    throw new Error("unreachable code was reached!");
+}
+exports.unreachable = unreachable;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZ2VuZXJpYy5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9nZW5lcmljLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsYUFBb0IsR0FBYTtJQUMvQixNQUFNLENBQUMsR0FBRyxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEtBQUssQ0FBQyxHQUFHLENBQUMsRUFBRSxDQUFDLENBQUMsQ0FBQztBQUN4QyxDQUFDO0FBRkQsa0JBRUM7QUFFRCxtQkFBNkIsQ0FBc0IsRUFBRSxHQUFRO0lBQzNELEdBQUcsQ0FBQyxDQUFDLElBQUksQ0FBQyxHQUFHLENBQUMsRUFBRSxDQUFDLEdBQUcsR0FBRyxDQUFDLE1BQU0sRUFBRSxDQUFDLEVBQUUsRUFBRSxDQUFDO1FBQ3BDLEVBQUUsQ0FBQyxDQUFDLENBQUMsQ0FBQyxHQUFHLENBQUMsQ0FBQyxDQUFDLENBQUMsS0FBSyxLQUFLLENBQUMsQ0FBQyxDQUFDO1lBQ3hCLE1BQU0sQ0FBQyxHQUFHLENBQUMsS0FBSyxDQUFDLENBQUMsQ0FBQyxDQUFDO1FBQ3RCLENBQUM7SUFDSCxDQUFDO0lBQ0QsTUFBTSxDQUFDLEVBQUUsQ0FBQztBQUNaLENBQUM7QUFQRCw4QkFPQztBQUVELG1CQUE2QixDQUFzQixFQUFFLEdBQVE7SUFDM0QsR0FBRyxDQUFDLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQyxFQUFFLENBQUMsR0FBRyxHQUFHLENBQUMsTUFBTSxFQUFFLENBQUMsRUFBRSxFQUFFLENBQUM7UUFDcEMsRUFBRSxDQUFDLENBQUMsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUMsQ0FBQyxLQUFLLEtBQUssQ0FBQyxDQUFDLENBQUM7WUFDeEIsTUFBTSxDQUFDLEdBQUcsQ0FBQyxLQUFLLENBQUMsQ0FBQyxFQUFFLENBQUMsQ0FBQyxDQUFDO1FBQ3pCLENBQUM7SUFDSCxDQUFDO0lBQ0QsTUFBTSxDQUFDLEdBQUcsQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFDdEIsQ0FBQztBQVBELDhCQU9DO0FBRUQsa0JBQTRCLEtBQWEsRUFBRSxLQUFjO0lBQ3ZELE1BQU0sS0FBSyxHQUFHLElBQUksQ0FBQyxHQUFHLEVBQUUsQ0FBQztJQUN6QixNQUFNLE1BQU0sR0FBRyxLQUFLLEVBQUUsQ0FBQztJQUN2QixNQUFNLEdBQUcsR0FBRyxJQUFJLENBQUMsR0FBRyxFQUFFLENBQUM7SUFDdkIsTUFBTSxLQUFLLEdBQUcsR0FBRyxHQUFHLEtBQUssQ0FBQztJQUMxQixFQUFFLENBQUMsQ0FBQyxLQUFLLEdBQUcsSUFBSSxDQUFDLENBQUMsQ0FBQztRQUNqQixPQUFPLENBQUMsSUFBSSxDQUFDLEdBQUcsS0FBSyxLQUFLLEtBQUssTUFBTSxDQUFDLENBQUM7SUFDekMsQ0FBQztJQUNELE1BQU0sQ0FBQyxNQUFNLENBQUM7QUFDaEIsQ0FBQztBQVRELDRCQVNDO0FBRUQsaUJBQTJCLE9BQWdDLEVBQUUsR0FBUTtJQUNuRSxFQUFFLENBQUMsQ0FBQyxHQUFHLENBQUMsTUFBTSxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUM7UUFDckIsTUFBTSxDQUFDLEVBQUUsQ0FBQztJQUNaLENBQUM7SUFFRCxNQUFNLE1BQU0sR0FBRyxDQUFDLENBQUMsR0FBRyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztJQUMxQixJQUFJLFlBQVksR0FBRyxNQUFNLENBQUMsQ0FBQyxDQUFDLENBQUM7SUFDN0IsSUFBSSxJQUFJLEdBQUcsR0FBRyxDQUFDLENBQUMsQ0FBQyxDQUFDO0lBQ2xCLEdBQUcsQ0FBQyxDQUFDLElBQUksQ0FBQyxHQUFHLENBQUMsRUFBRSxDQUFDLEdBQUcsR0FBRyxDQUFDLE1BQU0sRUFBRSxDQUFDLEVBQUUsRUFBRSxDQUFDO1FBQ3BDLE1BQU0sT0FBTyxHQUFHLEdBQUcsQ0FBQyxDQUFDLENBQUMsQ0FBQztRQUN2QixFQUFFLENBQUMsQ0FBQyxPQUFPLENBQUMsSUFBSSxFQUFFLE9BQU8sQ0FBQyxDQUFDLENBQUMsQ0FBQztZQUMzQixZQUFZLENBQUMsSUFBSSxDQUFDLE9BQU8sQ0FBQyxDQUFDO1lBQzNCLElBQUksR0FBRyxPQUFPLENBQUM7UUFDakIsQ0FBQztRQUNELElBQUksQ0FBQyxDQUFDO1lBQ0osWUFBWSxHQUFHLENBQUMsT0FBTyxDQUFDLENBQUM7WUFDekIsTUFBTSxDQUFDLElBQUksQ0FBQyxZQUFZLENBQUMsQ0FBQztZQUMxQixJQUFJLEdBQUcsT0FBTyxDQUFDO1FBQ2pCLENBQUM7SUFDSCxDQUFDO0lBQ0QsTUFBTSxDQUFDLE1BQU0sQ0FBQztBQUNoQixDQUFDO0FBckJELDBCQXFCQztBQUVELGtCQUNFLE9BQTJCLEVBQzNCLFFBQWdDLEVBQ2hDLEtBQWE7SUFDYixNQUFNLENBQUMsQ0FBQyxHQUFRO1FBQ2QsTUFBTSxNQUFNLEdBQUcsT0FBTyxDQUFDLEdBQUcsQ0FBQyxDQUFDO1FBQzVCLEVBQUUsQ0FBQyxDQUFDLFFBQVEsQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDLENBQUM7WUFDckIsTUFBTSxDQUFDLE1BQU0sQ0FBQztRQUNoQixDQUFDO1FBQ0QsSUFBSSxDQUFDLENBQUM7WUFDSixNQUFNLElBQUksS0FBSyxDQUFDLEtBQUssQ0FBQyxDQUFDO1FBQ3pCLENBQUM7SUFDSCxDQUFDLENBQUM7QUFDSixDQUFDO0FBYkQsNEJBYUM7QUFFRDtJQUNFLE1BQU0sSUFBSSxLQUFLLENBQUMsK0JBQStCLENBQUMsQ0FBQztBQUNuRCxDQUFDO0FBRkQsa0NBRUMifQ==
+
+/***/ }),
 /* 5 */
 /***/ (function(module, exports) {
 
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
 
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+const suspend_1 = __webpack_require__(7);
+const elapsedTimeEstimator_1 = __webpack_require__(15);
+// We need to provide these for stopify-continuations
+__export(__webpack_require__(16));
+// For testing / benchmarking convenience.
+var cli_parse_1 = __webpack_require__(23);
+exports.parseRuntimeOpts = cli_parse_1.parseRuntimeOpts;
+let runner;
+class Runner {
+    constructor(url, opts) {
+        this.url = url;
+        this.opts = opts;
+        this.onDone = function () { };
+        this.onYield = function () { };
+        this.onBreakpoint = function () { };
+        this.breakpoints = [];
+    }
+    mayYieldRunning() {
+        const n = this.suspendRTS.rts.linenum;
+        if (typeof n !== 'number') {
+            return false;
+        }
+        return this.breakpoints.includes(n);
+    }
+    onYieldRunning() {
+        if (this.mayYieldRunning()) {
+            this.onBreakpoint(this.suspendRTS.rts.linenum);
+            return false;
+        }
+        else {
+            this.onYield();
+            return true;
+        }
+    }
+    /**
+     * Indirectly called by the stopified program.
+     */
+    init(rts) {
+        this.continuationsRTS = rts;
+        const estimator = elapsedTimeEstimator_1.makeEstimator(this.opts);
+        this.suspendRTS = new suspend_1.RuntimeWithSuspend(this.continuationsRTS, this.opts.yieldInterval, estimator);
+        this.suspendRTS.mayYield = () => this.mayYieldRunning();
+        this.suspendRTS.onYield = () => this.onYieldRunning();
+        return this;
+    }
+    /**
+     * Called by the stopified program.
+     */
+    suspend() {
+        return this.suspendRTS.suspend();
+    }
+    /**
+     * Called by the stopfied program.
+     */
+    onEnd() {
+        this.onDone();
+    }
+    run(onDone, onYield, onBreakpoint) {
+        if (onYield) {
+            this.onYield = onYield;
+        }
+        if (onBreakpoint) {
+            this.onBreakpoint = onBreakpoint;
+        }
+        this.onDone = onDone;
+        const script = document.createElement('script');
+        script.setAttribute('src', this.url);
+        document.body.appendChild(script);
+    }
+    pause(onPaused) {
+        this.suspendRTS.onYield = () => {
+            this.suspendRTS.onYield = () => {
+                this.onYield();
+                return true;
+            };
+            const maybeLine = this.suspendRTS.rts.linenum;
+            if (typeof maybeLine === 'number') {
+                onPaused(maybeLine);
+            }
+            else {
+                onPaused();
+            }
+            return false;
+        };
+    }
+    setBreakpoints(lines) {
+        this.breakpoints = lines;
+    }
+    resume() {
+        this.suspendRTS.mayYield = () => this.mayYieldRunning();
+        this.suspendRTS.onYield = () => this.onYieldRunning();
+        this.suspendRTS.resumeFromCaptured();
+    }
+    step(onStep) {
+        const currentLine = this.suspendRTS.rts.linenum;
+        // Yield control if the line number changes.
+        const mayYield = () => {
+            const n = this.suspendRTS.rts.linenum;
+            if (typeof n !== 'number') {
+                return false;
+            }
+            if (n !== currentLine) {
+                onStep(n);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+        this.suspendRTS.mayYield = mayYield;
+        // Pause if the line number changes.
+        this.suspendRTS.onYield = () => !mayYield();
+        this.suspendRTS.resumeFromCaptured();
+    }
+}
+/**
+ * Called by the stopified program to get suspend() and other functions.
+ */
+function init(rts) {
+    if (runner === undefined) {
+        throw new Error('stopify not called');
+    }
+    return runner.init(rts);
+}
+exports.init = init;
+/**
+ * Control the execution of a pre-compiled program.
+ *
+ * @param url URL of a pre-compiled program
+ * @param opts runtime settings
+ */
+function stopify(url, opts) {
+    runner = new Runner(url, opts);
+    return runner;
+}
+exports.stopify = stopify;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicHJlY29tcGlsZWQuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvcnVudGltZS9wcmVjb21waWxlZC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7OztBQUVBLHVDQUErQztBQUMvQyxpRUFBdUQ7QUFFdkQscURBQXFEO0FBQ3JELG9FQUErRDtBQUUvRCwwQ0FBMEM7QUFDMUMsMENBQWdEO0FBQXZDLHVDQUFBLGdCQUFnQixDQUFBO0FBRXpCLElBQUksTUFBMkIsQ0FBQztBQUVoQztJQVFFLFlBQW9CLEdBQVcsRUFBVSxJQUFVO1FBQS9CLFFBQUcsR0FBSCxHQUFHLENBQVE7UUFBVSxTQUFJLEdBQUosSUFBSSxDQUFNO1FBTDNDLFdBQU0sR0FBZSxjQUFhLENBQUMsQ0FBQztRQUNwQyxZQUFPLEdBQWUsY0FBYyxDQUFDLENBQUM7UUFDdEMsaUJBQVksR0FBMkIsY0FBYSxDQUFDLENBQUM7UUFDdEQsZ0JBQVcsR0FBYSxFQUFFLENBQUM7SUFFb0IsQ0FBQztJQUV4RCxlQUFlO1FBQ2IsTUFBTSxDQUFDLEdBQUcsSUFBSSxDQUFDLFVBQVUsQ0FBQyxHQUFHLENBQUMsT0FBTyxDQUFDO1FBQ3RDLEVBQUUsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxLQUFLLFFBQVEsQ0FBQyxDQUFDLENBQUM7WUFDMUIsTUFBTSxDQUFDLEtBQUssQ0FBQztRQUNmLENBQUM7UUFDRCxNQUFNLENBQUMsSUFBSSxDQUFDLFdBQVcsQ0FBQyxRQUFRLENBQUMsQ0FBQyxDQUFDLENBQUM7SUFDdEMsQ0FBQztJQUVELGNBQWM7UUFDWixFQUFFLENBQUMsQ0FBQyxJQUFJLENBQUMsZUFBZSxFQUFFLENBQUMsQ0FBQyxDQUFDO1lBQzNCLElBQUksQ0FBQyxZQUFZLENBQUMsSUFBSSxDQUFDLFVBQVUsQ0FBQyxHQUFHLENBQUMsT0FBUSxDQUFDLENBQUM7WUFDaEQsTUFBTSxDQUFDLEtBQUssQ0FBQztRQUNmLENBQUM7UUFDRCxJQUFJLENBQUMsQ0FBQztZQUNK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
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const setImmediate_1 = __webpack_require__(8);
+const assert = __webpack_require__(3);
+class RuntimeWithSuspend {
+    constructor(rts, yieldInterval, estimator, 
+        /** The runtime system yields control whenever this function produces
+         * 'true' or when the estimated elapsed time exceeds 'yieldInterval'.
+         */
+        mayYield = function () { return false; }, 
+        /** This function is applied immediately before stopify yields control to
+         *  the browser's event loop. If the function produces 'false', the
+         *  computation terminates.
+         */
+        onYield = function () { return true; }, 
+        /**
+          Called when execution reaches the end of any stopified module.
+         */
+        onEnd = function () { }, continuation = function () { }) {
+        this.rts = rts;
+        this.yieldInterval = yieldInterval;
+        this.estimator = estimator;
+        this.mayYield = mayYield;
+        this.onYield = onYield;
+        this.onEnd = onEnd;
+        this.continuation = continuation;
+    }
+    resumeFromCaptured() {
+        this.rts.resumeFromSuspension(this.continuation);
+    }
+    suspend() {
+        if (this.rts.isSuspended) {
+            debugger;
+        }
+        assert(!this.rts.isSuspended, 'already suspended');
+        // Do not suspend at the top-level of required modules.
+        if (this.rts.delimitDepth > 1) {
+            return;
+        }
+        // If this.yieldInterval is NaN, the condition will be false
+        if (this.mayYield() || this.estimator.elapsedTime() >= this.yieldInterval) {
+            this.estimator.reset();
+            this.rts.isSuspended = true;
+            return this.rts.captureCC((continuation) => {
+                this.continuation = continuation;
+                if (this.onYield()) {
+                    return setImmediate_1.setImmediate(() => {
+                        this.rts.resumeFromSuspension(continuation);
+                    });
+                }
+            });
+        }
+    }
+}
+exports.RuntimeWithSuspend = RuntimeWithSuspend;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic3VzcGVuZC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9ydW50aW1lL3N1c3BlbmQudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFBQSxpREFBOEM7QUFHOUMsaUNBQWlDO0FBSWpDO0lBRUUsWUFDUyxHQUFZLEVBQ1osYUFBcUIsRUFDckIsU0FBK0I7UUFDdEM7O1dBRUc7UUFDSSxXQUFXLGNBQXNCLE1BQU0sQ0FBQyxLQUFLLENBQUEsQ0FBQyxDQUFDO1FBQ3REOzs7V0FHRztRQUNJLFVBQVUsY0FBc0IsTUFBTSxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUM7UUFDckQ7O1dBRUc7UUFDSSxRQUFRLGNBQWEsQ0FBQyxFQUN0QixlQUFlLGNBQVksQ0FBQztRQWhCNUIsUUFBRyxHQUFILEdBQUcsQ0FBUztRQUNaLGtCQUFhLEdBQWIsYUFBYSxDQUFRO1FBQ3JCLGNBQVMsR0FBVCxTQUFTLENBQXNCO1FBSS9CLGFBQVEsR0FBUixRQUFRLENBQXVDO1FBSy9DLFlBQU8sR0FBUCxPQUFPLENBQXVDO1FBSTlDLFVBQUssR0FBTCxLQUFLLENBQWlCO1FBQ3RCLGlCQUFZLEdBQVosWUFBWSxDQUFnQjtJQUNyQyxDQUFDO0lBRUQsa0JBQWtCO1FBQ2hCLElBQUksQ0FBQyxHQUFHLENBQUMsb0JBQW9CLENBQUMsSUFBSSxDQUFDLFlBQVksQ0FBQyxDQUFDO0lBQ25ELENBQUM7SUFFRCxPQUFPO1FBQ0wsRUFBRSxDQUFDLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQyxXQUFXLENBQUMsQ0FBQyxDQUFDO1lBQUMsUUFBUSxDQUFDO1FBQUMsQ0FBQztRQUN2QyxNQUFNLENBQUMsQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLFdBQVcsRUFBRSxtQkFBbUIsQ0FBQyxDQUFDO1FBQ25ELHVEQUF1RDtRQUN2RCxFQUFFLENBQUMsQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLFlBQVksR0FBRyxDQUFDLENBQUMsQ0FBQyxDQUFDO1lBQzlCLE1BQU0sQ0FBQztRQUNULENBQUM7UUFDRCw0REFBNEQ7UUFDNUQsRUFBRSxDQUFDLENBQUMsSUFBSSxDQUFDLFFBQVEsRUFBRSxJQUFJLElBQUksQ0FBQyxTQUFTLENBQUMsV0FBVyxFQUFFLElBQUksSUFBSSxDQUFDLGFBQWEsQ0FBQyxDQUFDLENBQUM7WUFDMUUsSUFBSSxDQUFDLFNBQVMsQ0FBQyxLQUFLLEVBQUUsQ0FBQztZQUN2QixJQUFJLENBQUMsR0FBRyxDQUFDLFdBQVcsR0FBRyxJQUFJLENBQUM7WUFDNUIsTUFBTSxDQUFDLElBQUksQ0FBQyxHQUFHLENBQUMsU0FBUyxDQUFDLENBQUMsWUFBWTtnQkFDckMsSUFBSSxDQUFDLFlBQVksR0FBRyxZQUFZLENBQUM7Z0JBRWpDLEVBQUUsQ0FBQyxDQUFDLElBQUksQ0FBQyxPQUFPLEVBQUUsQ0FBQyxDQUFDLENBQUM7b0JBQ25CLE1BQU0sQ0FBQywyQkFBWSxDQUFDO3dCQUNsQixJQUFJLENBQUMsR0FBRyxDQUFDLG9CQUFvQixDQUFDLFlBQVksQ0FBQyxDQUFDO29CQUM5QyxDQUFDLENBQUMsQ0FBQztnQkFDTCxDQUFDO1lBQ0gsQ0FBQyxDQUFDLENBQUM7UUFDTCxDQUFDO0lBQ0gsQ0FBQztDQUNGO0FBaERELGdEQWdEQyJ9
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * A browser-dependent implementation of setImmediate. We have performed
+ * simple experiments to determine which implementation of setImmediate is
+ * fastest on each browser. We use postMessage for any browser that we haven't
+ * tested.
+ */
+const browser = __webpack_require__(9);
+function makeSetImmediateMC() {
+    const chan = new MessageChannel();
+    // We can't send closures over MessageChannels.
+    const chanThunks = [];
+    chan.port2.onmessage = function (evt) {
+        // Assumes that there is a function to apply.
+        return chanThunks.pop()();
+    };
+    return (thunk) => {
+        chanThunks.push(thunk);
+        return chan.port1.postMessage(true);
+    };
+}
+function setImmediateT0(thunk) {
+    setTimeout(thunk, 0);
+}
+exports.setImmediateT0 = setImmediateT0;
+function makeSetImmediatePM() {
+    const thunks = [];
+    window.addEventListener('message', (evt) => {
+        if (evt.data === true) {
+            return thunks.pop()();
+        }
+    });
+    return (thunk) => {
+        thunks.push(thunk);
+        // NOTE(arjun): This likely conflicts with other uses of postMessage.
+        window.postMessage(true, '*');
+    };
+}
+function makeSetImmediate() {
+    // browser can be null
+    if (!browser || browser.name === 'node') {
+        return setImmediateT0;
+    }
+    else if (browser.name === 'safari') {
+        return makeSetImmediateMC();
+    }
+    else if (browser.name === 'firefox') {
+        return makeSetImmediateMC();
+    }
+    else if (browser.name === 'chrome') {
+        return makeSetImmediatePM();
+    }
+    else if (browser.name === 'edge') {
+        return makeSetImmediateMC();
+    }
+    else {
+        console.warn(`Stopify has not been benchmarked with ${browser.name}.`);
+        return makeSetImmediatePM();
+    }
+}
+exports.setImmediate = makeSetImmediate();
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic2V0SW1tZWRpYXRlLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL3J1bnRpbWUvc2V0SW1tZWRpYXRlLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUE7Ozs7O0dBS0c7QUFDSCwwQ0FBeUM7QUFFekM7SUFDRSxNQUFNLElBQUksR0FBRyxJQUFJLGNBQWMsRUFBRSxDQUFDO0lBRWxDLCtDQUErQztJQUMvQyxNQUFNLFVBQVUsR0FBbUIsRUFBRSxDQUFDO0lBRXRDLElBQUksQ0FBQyxLQUFLLENBQUMsU0FBUyxHQUFHLFVBQVMsR0FBRztRQUNoQyw2Q0FBNkM7UUFDOUMsTUFBTSxDQUFDLFVBQVUsQ0FBQyxHQUFHLEVBQUcsRUFBRSxDQUFDO0lBQzdCLENBQUMsQ0FBQTtJQUVELE1BQU0sQ0FBQyxDQUFDLEtBQUs7UUFDWCxVQUFVLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQyxDQUFDO1FBQ3ZCLE1BQU0sQ0FBQyxJQUFJLENBQUMsS0FBSyxDQUFDLFdBQVcsQ0FBQyxJQUFJLENBQUMsQ0FBQztJQUN0QyxDQUFDLENBQUE7QUFDSCxDQUFDO0FBRUQsd0JBQStCLEtBQWlCO0lBQzlDLFVBQVUsQ0FBQyxLQUFLLEVBQUUsQ0FBQyxDQUFDLENBQUM7QUFDdkIsQ0FBQztBQUZELHdDQUVDO0FBRUQ7SUFDRSxNQUFNLE1BQU0sR0FBbUIsRUFBRSxDQUFDO0lBQ2xDLE1BQU0sQ0FBQyxnQkFBZ0IsQ0FBQyxTQUFTLEVBQUUsQ0FBQyxHQUFHO1FBQ3JDLEVBQUUsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxJQUFJLEtBQUssSUFBSSxDQUFDLENBQUMsQ0FBQztZQUN0QixNQUFNLENBQUMsTUFBTSxDQUFDLEdBQUcsRUFBRyxFQUFFLENBQUM7UUFDekIsQ0FBQztJQUNILENBQUMsQ0FBQyxDQUFDO0lBQ0gsTUFBTSxDQUFDLENBQUMsS0FBSztRQUNYLE1BQU0sQ0FBQyxJQUFJLENBQUMsS0FBSyxDQUFDLENBQUM7UUFDbkIscUVBQXFFO1FBQ3JFLE1BQU0sQ0FBQyxXQUFXLENBQUMsSUFBSSxFQUFFLEdBQUcsQ0FBQyxDQUFDO0lBQ2hDLENBQUMsQ0FBQztBQUNKLENBQUM7QUFFRDtJQUNFLHNCQUFzQjtJQUN0QixFQUFFLENBQUMsQ0FBQyxDQUFDLE9BQU8sSUFBUyxPQUFPLENBQUMsSUFBSSxLQUFLLE1BQU0sQ0FBQyxDQUFDLENBQUM7UUFDN0MsTUFBTSxDQUFDLGNBQWMsQ0FBQztJQUN4QixDQUFDO0lBQ0QsSUFBSSxDQUFDLEVBQUUsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxJQUFJLEtBQUssUUFBUSxDQUFDLENBQUMsQ0FBQztRQUNuQyxNQUFNLENBQUMsa0JBQWtCLEVBQUUsQ0FBQztJQUM5QixDQUFDO0lBQ0QsSUFBSSxDQUFDLEVBQUUsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxJQUFJLEtBQUssU0FBUyxDQUFDLENBQUMsQ0FBQztRQUNwQyxNQUFNLENBQUMsa0JBQWtCLEVBQUUsQ0FBQztJQUM5QixDQUFDO0lBQ0QsSUFBSSxDQUFDLEVBQUUsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxJQUFJLEtBQUssUUFBUSxDQUFDLENBQUMsQ0FBQztRQUNuQyxNQUFNLENBQUMsa0JBQWtCLEVBQUUsQ0FBQztJQUM5QixDQUFDO0lBQ0QsSUFBSSxDQUFDLEVBQUUsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxJQUFJLEtBQUssTUFBTSxDQUFDLENBQUMsQ0FBQztRQUNqQyxNQUFNLENBQUMsa0JBQWtCLEVBQUUsQ0FBQztJQUM5QixDQUFDO0lBQ0QsSUFBSSxDQUFDLENBQUM7UUFDSixPQUFPLENBQUMsSUFBSSxDQUFDLHlDQUF5QyxPQUFPLENBQUMsSUFBSSxHQUFHLENBQUMsQ0FBQztRQUN2RSxNQUFNLENBQUMsa0JBQWtCLEVBQUUsQ0FBQztJQUM5QixDQUFDO0FBQ0gsQ0FBQztBQUVZLFFBQUEsWUFBWSxHQUFHLGdCQUFnQixFQUFFLENBQUMifQ==
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var detectBrowser = __webpack_require__(10);
+
+var agent;
+
+if (typeof navigator !== 'undefined' && navigator) {
+  agent = navigator.userAgent;
+}
+
+module.exports = detectBrowser(agent);
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var detectOS = __webpack_require__(11);
+
+module.exports = function detectBrowser(userAgentString) {
+  if (!userAgentString) return null;
+
+  var browsers = [
+    [ 'edge', /Edge\/([0-9\._]+)/ ],
+    [ 'yandexbrowser', /YaBrowser\/([0-9\._]+)/ ],
+    [ 'vivaldi', /Vivaldi\/([0-9\.]+)/ ],
+    [ 'kakaotalk', /KAKAOTALK\s([0-9\.]+)/ ],
+    [ 'chrome', /(?!Chrom.*OPR)Chrom(?:e|ium)\/([0-9\.]+)(:?\s|$)/ ],
+    [ 'phantomjs', /PhantomJS\/([0-9\.]+)(:?\s|$)/ ],
+    [ 'crios', /CriOS\/([0-9\.]+)(:?\s|$)/ ],
+    [ 'firefox', /Firefox\/([0-9\.]+)(?:\s|$)/ ],
+    [ 'fxios', /FxiOS\/([0-9\.]+)/ ],
+    [ 'opera', /Opera\/([0-9\.]+)(?:\s|$)/ ],
+    [ 'opera', /OPR\/([0-9\.]+)(:?\s|$)$/ ],
+    [ 'ie', /Trident\/7\.0.*rv\:([0-9\.]+).*\).*Gecko$/ ],
+    [ 'ie', /MSIE\s([0-9\.]+);.*Trident\/[4-7].0/ ],
+    [ 'ie', /MSIE\s(7\.0)/ ],
+    [ 'bb10', /BB10;\sTouch.*Version\/([0-9\.]+)/ ],
+    [ 'android', /Android\s([0-9\.]+)/ ],
+    [ 'ios', /Version\/([0-9\._]+).*Mobile.*Safari.*/ ],
+    [ 'safari', /Version\/([0-9\._]+).*Safari/ ]
+  ];
+
+  return browsers.map(function (rule) {
+      if (rule[1].test(userAgentString)) {
+          var match = rule[1].exec(userAgentString);
+          var version = match && match[1].split(/[._]/).slice(0,3);
+
+          if (version && version.length < 3) {
+              Array.prototype.push.apply(version, (version.length == 1) ? [0, 0] : [0]);
+          }
+
+          return {
+              name: rule[0],
+              version: version.join('.'),
+              os: detectOS(userAgentString)
+          };
+      }
+  }).filter(Boolean).shift();
+};
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+module.exports = function detectOS(userAgentString) {
+  var operatingSystems = [
+    {
+      name: 'iOS',
+      rule: /iP(hone|od|ad)/
+    },
+    {
+      name: 'Android OS',
+      rule: /Android/
+    },
+    {
+      name: 'BlackBerry OS',
+      rule: /BlackBerry|BB10/
+    },
+    {
+      name: 'Windows Mobile',
+      rule: /IEMobile/
+    },
+    {
+      name: 'Amazon OS',
+      rule: /Kindle/
+    },
+    {
+      name: 'Windows 3.11',
+      rule: /Win16/
+    },
+    {
+      name: 'Windows 95',
+      rule: /(Windows 95)|(Win95)|(Windows_95)/
+    },
+    {
+      name: 'Windows 98',
+      rule: /(Windows 98)|(Win98)/
+    },
+    {
+      name: 'Windows 2000',
+      rule: /(Windows NT 5.0)|(Windows 2000)/
+    },
+    {
+      name: 'Windows XP',
+      rule: /(Windows NT 5.1)|(Windows XP)/
+    },
+    {
+      name: 'Windows Server 2003',
+      rule: /(Windows NT 5.2)/
+    },
+    {
+      name: 'Windows Vista',
+      rule: /(Windows NT 6.0)/
+    },
+    {
+      name: 'Windows 7',
+      rule: /(Windows NT 6.1)/
+    },
+    {
+      name: 'Windows 8',
+      rule: /(Windows NT 6.2)/
+    },
+    {
+      name: 'Windows 8.1',
+      rule: /(Windows NT 6.3)/
+    },
+    {
+      name: 'Windows 10',
+      rule: /(Windows NT 10.0)/
+    },
+    {
+      name: 'Windows ME',
+      rule: /Windows ME/
+    },
+    {
+      name: 'Open BSD',
+      rule: /OpenBSD/
+    },
+    {
+      name: 'Sun OS',
+      rule: /SunOS/
+    },
+    {
+      name: 'Linux',
+      rule: /(Linux)|(X11)/
+    },
+    {
+      name: 'Mac OS',
+      rule: /(Mac_PowerPC)|(Macintosh)/
+    },
+    {
+      name: 'QNX',
+      rule: /QNX/
+    },
+    {
+      name: 'BeOS',
+      rule: /BeOS/
+    },
+    {
+      name: 'OS/2',
+      rule: /OS\/2/
+    },
+    {
+      name: 'Search Bot',
+      rule: /(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/
+    }
+  ];
+
+  var detected = operatingSystems.filter(function (os) {
+    if (userAgentString.match(os.rule)) {
+      return true;
+    }
+  });
+
+  return detected && detected[0] ? detected[0].name : null;
+};
+
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -1678,7 +1971,7 @@ function isPrimitive(arg) {
 }
 exports.isPrimitive = isPrimitive;
 
-exports.isBuffer = __webpack_require__(7);
+exports.isBuffer = __webpack_require__(13);
 
 function objectToString(o) {
   return Object.prototype.toString.call(o);
@@ -1722,7 +2015,7 @@ exports.log = function() {
  *     prototype.
  * @param {function} superCtor Constructor function to inherit prototype from.
  */
-exports.inherits = __webpack_require__(8);
+exports.inherits = __webpack_require__(14);
 
 exports._extend = function(origin, add) {
   // Don't do anything if add isn't an object
@@ -1740,10 +2033,10 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(2)))
 
 /***/ }),
-/* 7 */
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = function isBuffer(arg) {
@@ -1754,7 +2047,7 @@ module.exports = function isBuffer(arg) {
 }
 
 /***/ }),
-/* 8 */
+/* 14 */
 /***/ (function(module, exports) {
 
 if (typeof Object.create === 'function') {
@@ -1783,618 +2076,13 @@ if (typeof Object.create === 'function') {
 
 
 /***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const common = __webpack_require__(0);
-class EagerRuntime extends common.Runtime {
-    constructor(yieldInterval, estimator) {
-        super(yieldInterval, estimator);
-        this.eagerStack = [];
-    }
-    captureCC(f) {
-        this.capturing = true;
-        throw new common.Capture(f, [...this.eagerStack]);
-    }
-    makeCont(stack) {
-        return (v) => {
-            this.eagerStack = [...stack];
-            throw new common.Restore([this.topK(() => v), ...stack]);
-        };
-    }
-    abstractRun(body) {
-        try {
-            const v = body();
-            return { type: 'normal', value: v };
-        }
-        catch (exn) {
-            if (exn instanceof common.Capture) {
-                this.capturing = false;
-                return { type: 'capture', stack: exn.stack, f: exn.f };
-            }
-            else if (exn instanceof common.Restore) {
-                return { type: 'restore', stack: exn.stack };
-            }
-            else {
-                return { type: 'exception', value: exn };
-            }
-        }
-    }
-    handleNew(constr, ...args) {
-        if (common.knownBuiltIns.includes(constr)) {
-            return new constr(...args);
-        }
-        let obj, result;
-        if (this.mode) {
-            obj = Object.create(constr.prototype);
-        }
-        else {
-            const frame = this.stack[this.stack.length - 1];
-            if (frame.kind === "rest") {
-                [obj] = frame.locals;
-            }
-            else {
-                throw "bad";
-            }
-            this.stack.pop();
-        }
-        if (this.mode) {
-            this.eagerStack.unshift({
-                kind: "rest",
-                f: () => this.handleNew(constr, ...args),
-                locals: [obj],
-                index: 0
-            });
-            result = constr.apply(obj, args);
-            this.eagerStack.shift();
-        }
-        else {
-            result = this.stack[this.stack.length - 1].f.apply(obj, []);
-            this.eagerStack.shift();
-        }
-        return typeof result === 'object' ? result : obj;
-    }
-}
-exports.EagerRuntime = EagerRuntime;
-exports.default = EagerRuntime;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZWFnZXJSdW50aW1lLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL2NhbGxjYy9lYWdlclJ1bnRpbWUudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFBQSxvQ0FBb0M7QUFHcEMsa0JBQTBCLFNBQVEsTUFBTSxDQUFDLE9BQU87SUFHOUMsWUFBWSxhQUFxQixFQUFFLFNBQStCO1FBQ2hFLEtBQUssQ0FBQyxhQUFhLEVBQUUsU0FBUyxDQUFDLENBQUM7UUFDaEMsSUFBSSxDQUFDLFVBQVUsR0FBRyxFQUFFLENBQUM7SUFDdkIsQ0FBQztJQUVELFNBQVMsQ0FBQyxDQUFrQjtRQUMxQixJQUFJLENBQUMsU0FBUyxHQUFHLElBQUksQ0FBQztRQUN0QixNQUFNLElBQUksTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLEVBQUUsQ0FBQyxHQUFHLElBQUksQ0FBQyxVQUFVLENBQUMsQ0FBQyxDQUFDO0lBQ3BELENBQUM7SUFFRCxRQUFRLENBQUMsS0FBbUI7UUFDMUIsTUFBTSxDQUFDLENBQUMsQ0FBTTtZQUNaLElBQUksQ0FBQyxVQUFVLEdBQUcsQ0FBQyxHQUFHLEtBQUssQ0FBQyxDQUFDO1lBQzdCLE1BQU0sSUFBSSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLENBQUMsQ0FBQyxFQUFFLEdBQUcsS0FBSyxDQUFDLENBQUMsQ0FBQztRQUMzRCxDQUFDLENBQUE7SUFDSCxDQUFDO0lBRUQsV0FBVyxDQUFDLElBQWU7UUFDekIsSUFBSSxDQUFDO1lBQ0gsTUFBTSxDQUFDLEdBQUcsSUFBSSxFQUFFLENBQUM7WUFDakIsTUFBTSxDQUFDLEVBQUUsSUFBSSxFQUFFLFFBQVEsRUFBRSxLQUFLLEVBQUUsQ0FBQyxFQUFFLENBQUM7UUFDdEMsQ0FBQztRQUNELEtBQUssQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUM7WUFDWCxFQUFFLENBQUMsQ0FBQyxHQUFHLFlBQVksTUFBTSxDQUFD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
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const browser = __webpack_require__(11);
-function makeSetImmediateMC() {
-    const chan = new MessageChannel();
-    // We can't send closures over MessageChannels.
-    const chanThunks = [];
-    chan.port2.onmessage = function (evt) {
-        // Assumes that there is a function to apply.
-        return chanThunks.pop()();
-    };
-    return (thunk) => {
-        chanThunks.push(thunk);
-        return chan.port1.postMessage(true);
-    };
-}
-function setImmediateT0(thunk) {
-    setTimeout(thunk, 0);
-}
-exports.setImmediateT0 = setImmediateT0;
-function makeSetImmediatePM() {
-    const thunks = [];
-    window.addEventListener('message', (evt) => {
-        if (evt.data === true) {
-            return thunks.pop()();
-        }
-    });
-    return (thunk) => {
-        thunks.push(thunk);
-        window.postMessage(true, '*');
-    };
-}
-function makeSetImmediate() {
-    // browser can be null
-    if (!browser || browser.name === 'node') {
-        return setImmediateT0;
-    }
-    else if (browser.name === 'safari') {
-        return makeSetImmediateMC();
-    }
-    else if (browser.name === 'firefox') {
-        return makeSetImmediateMC();
-    }
-    else if (browser.name === 'chrome') {
-        return makeSetImmediatePM();
-    }
-    else if (browser.name === 'edge') {
-        return makeSetImmediateMC();
-    }
-    else {
-        console.warn(`Stopify has not been benchmarked with ${browser.name}.`);
-        return makeSetImmediatePM();
-    }
-}
-exports.setImmediate = makeSetImmediate();
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic2V0SW1tZWRpYXRlLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vc3JjL3NldEltbWVkaWF0ZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLDBDQUF5QztBQUd6QztJQUNFLE1BQU0sSUFBSSxHQUFHLElBQUksY0FBYyxFQUFFLENBQUM7SUFFbEMsK0NBQStDO0lBQy9DLE1BQU0sVUFBVSxHQUFtQixFQUFFLENBQUM7SUFFdEMsSUFBSSxDQUFDLEtBQUssQ0FBQyxTQUFTLEdBQUcsVUFBUyxHQUFHO1FBQ2hDLDZDQUE2QztRQUM5QyxNQUFNLENBQUMsVUFBVSxDQUFDLEdBQUcsRUFBRyxFQUFFLENBQUM7SUFDN0IsQ0FBQyxDQUFBO0lBRUQsTUFBTSxDQUFDLENBQUMsS0FBSztRQUNYLFVBQVUsQ0FBQyxJQUFJLENBQUMsS0FBSyxDQUFDLENBQUM7UUFDdkIsTUFBTSxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsV0FBVyxDQUFDLElBQUksQ0FBQyxDQUFDO0lBQ3RDLENBQUMsQ0FBQTtBQUNILENBQUM7QUFFRCx3QkFBK0IsS0FBaUI7SUFDOUMsVUFBVSxDQUFDLEtBQUssRUFBRSxDQUFDLENBQUMsQ0FBQztBQUN2QixDQUFDO0FBRkQsd0NBRUM7QUFFRDtJQUNFLE1BQU0sTUFBTSxHQUFtQixFQUFFLENBQUM7SUFDbEMsTUFBTSxDQUFDLGdCQUFnQixDQUFDLFNBQVMsRUFBRSxDQUFDLEdBQUc7UUFDckMsRUFBRSxDQUFDLENBQUMsR0FBRyxDQUFDLElBQUksS0FBSyxJQUFJLENBQUMsQ0FBQyxDQUFDO1lBQ3RCLE1BQU0sQ0FBQyxNQUFNLENBQUMsR0FBRyxFQUFHLEVBQUUsQ0FBQztRQUN6QixDQUFDO0lBQ0gsQ0FBQyxDQUFDLENBQUM7SUFDSCxNQUFNLENBQUMsQ0FBQyxLQUFLO1FBQ1gsTUFBTSxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsQ0FBQztRQUNuQixNQUFNLENBQUMsV0FBVyxDQUFDLElBQUksRUFBRSxHQUFHLENBQUMsQ0FBQztJQUNoQyxDQUFDLENBQUM7QUFDSixDQUFDO0FBRUQ7SUFDRSxzQkFBc0I7SUFDdEIsRUFBRSxDQUFDLENBQUMsQ0FBQyxPQUFPLElBQVMsT0FBTyxDQUFDLElBQUksS0FBSyxNQUFNLENBQUMsQ0FBQyxDQUFDO1FBQzdDLE1BQU0sQ0FBQyxjQUFjLENBQUM7SUFDeEIsQ0FBQztJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsQ0FBQyxPQUFPLENBQUMsSUFBSSxLQUFLLFFBQVEsQ0FBQyxDQUFDLENBQUM7UUFDbkMsTUFBTSxDQUFDLGtCQUFrQixFQUFFLENBQUM7SUFDOUIsQ0FBQztJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsQ0FBQyxPQUFPLENBQUMsSUFBSSxLQUFLLFNBQVMsQ0FBQyxDQUFDLENBQUM7UUFDcEMsTUFBTSxDQUFDLGtCQUFrQixFQUFFLENBQUM7SUFDOUIsQ0FBQztJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsQ0FBQyxPQUFPLENBQUMsSUFBSSxLQUFLLFFBQVEsQ0FBQyxDQUFDLENBQUM7UUFDbkMsTUFBTSxDQUFDLGtCQUFrQixFQUFFLENBQUM7SUFDOUIsQ0FBQztJQUNELElBQUksQ0FBQyxFQUFFLENBQUMsQ0FBQyxPQUFPLENBQUMsSUFBSSxLQUFLLE1BQU0sQ0FBQyxDQUFDLENBQUM7UUFDakMsTUFBTSxDQUFDLGtCQUFrQixFQUFFLENBQUM7SUFDOUIsQ0FBQztJQUNELElBQUksQ0FBQyxDQUFDO1FBQ0osT0FBTyxDQUFDLElBQUksQ0FBQyx5Q0FBeUMsT0FBTyxDQUFDLElBQUksR0FBRyxDQUFDLENBQUM7UUFDdkUsTUFBTSxDQUFDLGtCQUFrQixFQUFFLENBQUM7SUFDOUIsQ0FBQztBQUNILENBQUM7QUFFWSxRQUFBLFlBQVksR0FBRyxnQkFBZ0IsRUFBRSxDQUFDIn0=
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var detectBrowser = __webpack_require__(12);
-
-var agent;
-
-if (typeof navigator !== 'undefined' && navigator) {
-  agent = navigator.userAgent;
-}
-
-module.exports = detectBrowser(agent);
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var detectOS = __webpack_require__(13);
-
-module.exports = function detectBrowser(userAgentString) {
-  if (!userAgentString) return null;
-
-  var browsers = [
-    [ 'edge', /Edge\/([0-9\._]+)/ ],
-    [ 'yandexbrowser', /YaBrowser\/([0-9\._]+)/ ],
-    [ 'vivaldi', /Vivaldi\/([0-9\.]+)/ ],
-    [ 'kakaotalk', /KAKAOTALK\s([0-9\.]+)/ ],
-    [ 'chrome', /(?!Chrom.*OPR)Chrom(?:e|ium)\/([0-9\.]+)(:?\s|$)/ ],
-    [ 'phantomjs', /PhantomJS\/([0-9\.]+)(:?\s|$)/ ],
-    [ 'crios', /CriOS\/([0-9\.]+)(:?\s|$)/ ],
-    [ 'firefox', /Firefox\/([0-9\.]+)(?:\s|$)/ ],
-    [ 'fxios', /FxiOS\/([0-9\.]+)/ ],
-    [ 'opera', /Opera\/([0-9\.]+)(?:\s|$)/ ],
-    [ 'opera', /OPR\/([0-9\.]+)(:?\s|$)$/ ],
-    [ 'ie', /Trident\/7\.0.*rv\:([0-9\.]+).*\).*Gecko$/ ],
-    [ 'ie', /MSIE\s([0-9\.]+);.*Trident\/[4-7].0/ ],
-    [ 'ie', /MSIE\s(7\.0)/ ],
-    [ 'bb10', /BB10;\sTouch.*Version\/([0-9\.]+)/ ],
-    [ 'android', /Android\s([0-9\.]+)/ ],
-    [ 'ios', /Version\/([0-9\._]+).*Mobile.*Safari.*/ ],
-    [ 'safari', /Version\/([0-9\._]+).*Safari/ ]
-  ];
-
-  return browsers.map(function (rule) {
-      if (rule[1].test(userAgentString)) {
-          var match = rule[1].exec(userAgentString);
-          var version = match && match[1].split(/[._]/).slice(0,3);
-
-          if (version && version.length < 3) {
-              Array.prototype.push.apply(version, (version.length == 1) ? [0, 0] : [0]);
-          }
-
-          return {
-              name: rule[0],
-              version: version.join('.'),
-              os: detectOS(userAgentString)
-          };
-      }
-  }).filter(Boolean).shift();
-};
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports) {
-
-module.exports = function detectOS(userAgentString) {
-  var operatingSystems = [
-    {
-      name: 'iOS',
-      rule: /iP(hone|od|ad)/
-    },
-    {
-      name: 'Android OS',
-      rule: /Android/
-    },
-    {
-      name: 'BlackBerry OS',
-      rule: /BlackBerry|BB10/
-    },
-    {
-      name: 'Windows Mobile',
-      rule: /IEMobile/
-    },
-    {
-      name: 'Amazon OS',
-      rule: /Kindle/
-    },
-    {
-      name: 'Windows 3.11',
-      rule: /Win16/
-    },
-    {
-      name: 'Windows 95',
-      rule: /(Windows 95)|(Win95)|(Windows_95)/
-    },
-    {
-      name: 'Windows 98',
-      rule: /(Windows 98)|(Win98)/
-    },
-    {
-      name: 'Windows 2000',
-      rule: /(Windows NT 5.0)|(Windows 2000)/
-    },
-    {
-      name: 'Windows XP',
-      rule: /(Windows NT 5.1)|(Windows XP)/
-    },
-    {
-      name: 'Windows Server 2003',
-      rule: /(Windows NT 5.2)/
-    },
-    {
-      name: 'Windows Vista',
-      rule: /(Windows NT 6.0)/
-    },
-    {
-      name: 'Windows 7',
-      rule: /(Windows NT 6.1)/
-    },
-    {
-      name: 'Windows 8',
-      rule: /(Windows NT 6.2)/
-    },
-    {
-      name: 'Windows 8.1',
-      rule: /(Windows NT 6.3)/
-    },
-    {
-      name: 'Windows 10',
-      rule: /(Windows NT 10.0)/
-    },
-    {
-      name: 'Windows ME',
-      rule: /Windows ME/
-    },
-    {
-      name: 'Open BSD',
-      rule: /OpenBSD/
-    },
-    {
-      name: 'Sun OS',
-      rule: /SunOS/
-    },
-    {
-      name: 'Linux',
-      rule: /(Linux)|(X11)/
-    },
-    {
-      name: 'Mac OS',
-      rule: /(Mac_PowerPC)|(Macintosh)/
-    },
-    {
-      name: 'QNX',
-      rule: /QNX/
-    },
-    {
-      name: 'BeOS',
-      rule: /BeOS/
-    },
-    {
-      name: 'OS/2',
-      rule: /OS\/2/
-    },
-    {
-      name: 'Search Bot',
-      rule: /(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves\/Teoma)|(ia_archiver)/
-    }
-  ];
-
-  var detected = operatingSystems.filter(function (os) {
-    if (userAgentString.match(os.rule)) {
-      return true;
-    }
-  });
-
-  return detected && detected[0] ? detected[0].name : null;
-};
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const knowns = ['Object',
-    'Function',
-    'Boolean',
-    'Symbol',
-    'Error',
-    'EvalError',
-    //'InternalError',
-    'RangeError',
-    'ReferenceError',
-    'SyntaxError',
-    'TypeError',
-    'URIError',
-    'Number',
-    'Math',
-    'Date',
-    'String',
-    'RegExp',
-    'Array',
-    'Int8Array',
-    'Uint8Array',
-    'Uint8ClampedArray',
-    'Int16Array',
-    'Uint16Array',
-    'Int32Array',
-    'Uint32Array',
-    'Float32Array',
-    'Float64Array',
-    'Map',
-    'Set',
-    'WeakMap',
-    'WeakSet',
-    'ArrayBuffer'
-];
-exports.knowns = knowns;
-function cannotCapture(node) {
-    if (node.callee.type !== 'Identifier') {
-        return false;
-    }
-    return knowns.includes(node.callee.name);
-}
-exports.cannotCapture = cannotCapture;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY2Fubm90Q2FwdHVyZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9jb21tb24vY2Fubm90Q2FwdHVyZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUVBLE1BQU0sTUFBTSxHQUFHLENBQUMsUUFBUTtJQUN0QixVQUFVO0lBQ1YsU0FBUztJQUNULFFBQVE7SUFDUixPQUFPO0lBQ1AsV0FBVztJQUNYLGtCQUFrQjtJQUNsQixZQUFZO0lBQ1osZ0JBQWdCO0lBQ2hCLGFBQWE7SUFDYixXQUFXO0lBQ1gsVUFBVTtJQUNWLFFBQVE7SUFDUixNQUFNO0lBQ04sTUFBTTtJQUNOLFFBQVE7SUFDUixRQUFRO0lBQ1IsT0FBTztJQUNQLFdBQVc7SUFDWCxZQUFZO0lBQ1osbUJBQW1CO0lBQ25CLFlBQVk7SUFDWixhQUFhO0lBQ2IsWUFBWTtJQUNaLGFBQWE7SUFDYixjQUFjO0lBQ2QsY0FBYztJQUNkLEtBQUs7SUFDTCxLQUFLO0lBQ0wsU0FBUztJQUNULFNBQVM7SUFDVCxhQUFhO0NBQ2QsQ0FBQztBQVVBLHdCQUFNO0FBUlIsdUJBQXVCLElBQXdDO0lBQzdELEVBQUUsQ0FBQyxDQUFDLElBQUksQ0FBQyxNQUFNLENBQUMsSUFBSSxLQUFLLFlBQVksQ0FBQyxDQUFDLENBQUM7UUFDdEMsTUFBTSxDQUFDLEtBQUssQ0FBQztJQUNmLENBQUM7SUFDRCxNQUFNLENBQUMsTUFBTSxDQUFDLFFBQVEsQ0FBQyxJQUFJLENBQUMsTUFBTSxDQUFDLElBQUksQ0FBQyxDQUFDO0FBQzNDLENBQUM7QUFJQyxzQ0FBYSJ9
-
-/***/ }),
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
 Object.defineProperty(exports, "__esModule", { value: true });
-const common = __webpack_require__(0);
-__export(__webpack_require__(0));
-class LazyRuntime extends common.Runtime {
-    constructor(yieldInterval, estimator) {
-        super(yieldInterval, estimator);
-    }
-    captureCC(f) {
-        this.capturing = true;
-        throw new common.Capture(f, []);
-    }
-    makeCont(stack) {
-        return (v) => {
-            throw new common.Restore([this.topK(() => v), ...stack]);
-        };
-    }
-    abstractRun(body) {
-        try {
-            const v = body();
-            return { type: 'normal', value: v };
-        }
-        catch (exn) {
-            if (exn instanceof common.Capture) {
-                this.capturing = false;
-                return { type: 'capture', stack: exn.stack, f: exn.f };
-            }
-            else if (exn instanceof common.Restore) {
-                return { type: 'restore', stack: exn.stack };
-            }
-            else {
-                return { type: 'exception', value: exn };
-            }
-        }
-    }
-    handleNew(constr, ...args) {
-        if (common.knownBuiltIns.includes(constr)) {
-            return new constr(...args);
-        }
-        let obj;
-        if (this.mode) {
-            obj = Object.create(constr.prototype);
-        }
-        else {
-            const frame = this.stack[this.stack.length - 1];
-            if (frame.kind === "rest") {
-                [obj] = frame.locals;
-            }
-            else {
-                throw "bad";
-            }
-            this.stack.pop();
-        }
-        let result;
-        try {
-            if (this.mode) {
-                result = constr.apply(obj, args);
-            }
-            else {
-                result = this.stack[this.stack.length - 1].f.apply(obj, []);
-            }
-        }
-        catch (exn) {
-            if (exn instanceof common.Capture) {
-                exn.stack.push({
-                    kind: "rest",
-                    f: () => this.handleNew(constr, ...args),
-                    locals: [obj],
-                    index: 0
-                });
-            }
-            throw exn;
-        }
-        if (typeof result === 'object') {
-            return result;
-        }
-        else {
-            return obj;
-        }
-    }
-}
-exports.LazyRuntime = LazyRuntime;
-exports.default = LazyRuntime;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibGF6eVJ1bnRpbWUuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvY2FsbGNjL2xhenlSdW50aW1lLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7O0FBQUEsb0NBQW9DO0FBQ3BDLCtCQUEwQjtBQUkxQixpQkFBeUIsU0FBUSxNQUFNLENBQUMsT0FBTztJQUM3QyxZQUFZLGFBQXFCLEVBQUUsU0FBK0I7UUFDaEUsS0FBSyxDQUFDLGFBQWEsRUFBRSxTQUFTLENBQUMsQ0FBQztJQUNsQyxDQUFDO0lBRUQsU0FBUyxDQUFDLENBQWtCO1FBQzFCLElBQUksQ0FBQyxTQUFTLEdBQUcsSUFBSSxDQUFDO1FBQ3RCLE1BQU0sSUFBSSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsRUFBRSxFQUFFLENBQUMsQ0FBQztJQUNsQyxDQUFDO0lBRUQsUUFBUSxDQUFDLEtBQW1CO1FBQzFCLE1BQU0sQ0FBQyxDQUFDLENBQU07WUFDWixNQUFNLElBQUksTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsTUFBTSxDQUFDLENBQUMsRUFBRSxHQUFHLEtBQUssQ0FBQyxDQUFDLENBQUM7UUFDM0QsQ0FBQyxDQUFDO0lBQ0osQ0FBQztJQUVELFdBQVcsQ0FBQyxJQUFlO1FBQ3pCLElBQUksQ0FBQztZQUNILE1BQU0sQ0FBQyxHQUFHLElBQUksRUFBRSxDQUFDO1lBQ2pCLE1BQU0sQ0FBQyxFQUFFLElBQUksRUFBRSxRQUFRLEVBQUUsS0FBSyxFQUFFLENBQUMsRUFBRSxDQUFDO1FBQ3RDLENBQUM7UUFDRCxLQUFLLENBQUMsQ0FBQyxHQUFHLENBQUMsQ0FBQyxDQUFDO1lBQ1gsRUFBRSxDQUFDLENBQUMsR0FBRyxZQUFZLE1BQU0sQ0FBQyxPQUFPLENBQUMsQ0FBQyxDQUFDO2dCQUNsQyxJQUFJLENBQUMsU0FBUyxHQUFHLEtBQUssQ0FBQztnQkFDdkIsTUFBTSxDQUFDLEVBQUUsSUFBSSxFQUFFLFNBQVMsRUFB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
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const common = __webpack_require__(0);
-class RetValRuntime extends common.Runtime {
-    constructor(yieldInterval, estimator) {
-        super(yieldInterval, estimator);
-    }
-    captureCC(f) {
-        this.capturing = true;
-        return new common.Capture(f, []);
-    }
-    makeCont(stack) {
-        return (v) => new common.Restore([this.topK(() => v), ...stack]);
-    }
-    abstractRun(body) {
-        try {
-            const v = body();
-            if (v instanceof common.Capture) {
-                this.capturing = false;
-                return { type: 'capture', stack: v.stack, f: v.f };
-            }
-            else if (v instanceof common.Restore) {
-                return { type: 'restore', stack: v.stack };
-            }
-            else {
-                return { type: 'normal', value: v };
-            }
-        }
-        catch (exn) {
-            return { type: 'exception', value: exn };
-        }
-    }
-    handleNew(constr, ...args) {
-        if (common.knownBuiltIns.includes(constr)) {
-            return new constr(...args);
-        }
-        let obj, result;
-        if (this.mode) {
-            obj = Object.create(constr.prototype);
-        }
-        else {
-            const frame = this.stack[this.stack.length - 1];
-            if (frame.kind === "rest") {
-                [obj] = frame.locals;
-            }
-            else {
-                throw "bad";
-            }
-            this.stack.pop();
-        }
-        if (this.mode) {
-            result = constr.apply(obj, args);
-        }
-        else {
-            result = this.stack[this.stack.length - 1].f.apply(obj, []);
-        }
-        if (result instanceof common.Capture) {
-            result.stack.push({
-                kind: "rest",
-                f: () => this.handleNew(constr, ...args),
-                locals: [obj],
-                index: 0
-            });
-            return result;
-        }
-        else if (result instanceof common.Restore) {
-            return result;
-        }
-        return typeof result === 'object' ? result : obj;
-    }
-}
-exports.default = RetValRuntime;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicmV0dmFsUnVudGltZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9jYWxsY2MvcmV0dmFsUnVudGltZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLG9DQUFvQztBQUdwQyxtQkFBb0IsU0FBUSxNQUFNLENBQUMsT0FBTztJQUN4QyxZQUFZLGFBQXFCLEVBQUUsU0FBK0I7UUFDaEUsS0FBSyxDQUFDLGFBQWEsRUFBRSxTQUFTLENBQUMsQ0FBQztJQUNsQyxDQUFDO0lBRUQsU0FBUyxDQUFDLENBQWtCO1FBQzFCLElBQUksQ0FBQyxTQUFTLEdBQUcsSUFBSSxDQUFDO1FBQ3RCLE1BQU0sQ0FBQyxJQUFJLE1BQU0sQ0FBQyxPQUFPLENBQUMsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDO0lBQ25DLENBQUM7SUFFRCxRQUFRLENBQUMsS0FBbUI7UUFDMUIsTUFBTSxDQUFDLENBQUMsQ0FBTSxLQUNaLElBQUksTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsTUFBTSxDQUFDLENBQUMsRUFBRSxHQUFHLEtBQUssQ0FBQyxDQUFDLENBQUM7SUFDdkQsQ0FBQztJQUVELFdBQVcsQ0FBQyxJQUFlO1FBQ3pCLElBQUksQ0FBQztZQUNILE1BQU0sQ0FBQyxHQUFHLElBQUksRUFBRSxDQUFDO1lBQ2pCLEVBQUUsQ0FBQyxDQUFDLENBQUMsWUFBWSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQztnQkFDaEMsSUFBSSxDQUFDLFNBQVMsR0FBRyxLQUFLLENBQUM7Z0JBQ3ZCLE1BQU0sQ0FBQyxFQUFFLElBQUksRUFBRSxTQUFTLEVBQUUsS0FBSyxFQUFFLENBQUMsQ0FBQyxLQUFLLEVBQUUsQ0FBQyxFQUFFLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQztZQUNyRCxDQUFDO1lBQ0QsSUFBSSxDQUFDLEVBQUUsQ0FBQyxDQUFDLENBQUMsWUFBWSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMs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
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const common = __webpack_require__(0);
-class FudgedContinuationError {
-    constructor(v) {
-        this.v = v;
-    }
-    toString() {
-        return `FudgedContinuationError(${this.v})`;
-    }
-}
-/** This runtime system doesn't actually implement any control operators.
- * Functions such as 'captureCC' are defined and will call their argument,
- * but don't save the stack.
- *
- * Unfortunately, all our program end by invoking the top continuation with
- * "done". Therefore, a program that runs correctly will terminate with
- * 'FudgedContinuationError(done)'. This is unfortunate. But, this
- * transformation still helps with debugging.
- */
-class FudgeRuntime extends common.Runtime {
-    constructor(yieldInterval, estimator) {
-        super(yieldInterval, estimator);
-    }
-    captureCC(f) {
-        throw new common.Capture(f, []);
-    }
-    makeCont(stack) {
-        return (v) => {
-            throw new FudgedContinuationError(v);
-        };
-    }
-    abstractRun(body) {
-        try {
-            const v = body();
-            return { type: 'normal', value: v };
-        }
-        catch (exn) {
-            if (exn instanceof common.Capture) {
-                this.capturing = false;
-                return { type: 'capture', stack: exn.stack, f: exn.f };
-            }
-            else {
-                return { type: 'exception', value: exn };
-            }
-        }
-    }
-    handleNew(constr, ...args) {
-        return new constr(...args);
-    }
-}
-exports.FudgeRuntime = FudgeRuntime;
-exports.default = FudgeRuntime;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZnVkZ2VSdW50aW1lLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL2NhbGxjYy9mdWRnZVJ1bnRpbWUudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFBQSxvQ0FBb0M7QUFHcEM7SUFFRSxZQUFtQixDQUFNO1FBQU4sTUFBQyxHQUFELENBQUMsQ0FBSztJQUFJLENBQUM7SUFFOUIsUUFBUTtRQUNOLE1BQU0sQ0FBQywyQkFBMkIsSUFBSSxDQUFDLENBQUMsR0FBRyxDQUFDO0lBQzlDLENBQUM7Q0FFRjtBQUVEOzs7Ozs7OztHQVFHO0FBQ0gsa0JBQTBCLFNBQVEsTUFBTSxDQUFDLE9BQU87SUFDOUMsWUFBWSxhQUFxQixFQUFFLFNBQStCO1FBQ2hFLEtBQUssQ0FBQyxhQUFhLEVBQUUsU0FBUyxDQUFDLENBQUM7SUFDbEMsQ0FBQztJQUVELFNBQVMsQ0FBQyxDQUFrQjtRQUMxQixNQUFNLElBQUksTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLEVBQUUsRUFBRSxDQUFDLENBQUM7SUFDbEMsQ0FBQztJQUVELFFBQVEsQ0FBQyxLQUFtQjtRQUMxQixNQUFNLENBQUMsQ0FBQyxDQUFNO1lBQ1osTUFBTSxJQUFJLHVCQUF1QixDQUFDLENBQUMsQ0FBQyxDQUFDO1FBQ3ZDLENBQUMsQ0FBQztJQUNKLENBQUM7SUFFRCxXQUFXLENBQUMsSUFBZTtRQUN6QixJQUFJLENBQUM7WUFDSCxNQUFNLENBQUMsR0FBRyxJQUFJLEVBQUUsQ0FBQztZQUNqQixNQUFNLENBQUMsRUFBRSxJQUFJLEVBQUUsUUFBUSxFQUFFLEtBQUssRUFBRSxDQUFDLEVBQUUsQ0FBQztRQUN0QyxDQUFDO1FBQ0QsS0FBSyxDQUFDLENBQUMsR0FBRyxDQUFDLENBQUMsQ0FBQztZQUNYLEVBQUUsQ0FBQyxDQUFDLEdBQUcsWUFBWSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQztnQkFDbEMsSUFBSSxDQUFDLFNBQVMsR0FBRyxLQUFLLENBQUM7Z0JBQ3ZCLE1BQU0sQ0FBQyxFQUFFLElBQUksRUFBRSxTQUFTLEVBQUUsS0FBSyxFQUFFLEdBQUcsQ0FBQyxLQUFLLEVBQUUsQ0FBQyxFQUFFLEdBQUcsQ0FBQyxDQUFDLEVBQUUsQ0FBQztZQUN6RCxDQUFDO1lBQ0QsSUFBSSxDQUFDLENBQUM7Z0JBQ0osTUFBTSxDQUFDLEVBQUUsSUFBSSxFQUFFLFdBQVcsRUFBRSxLQUFLLEVBQUUsR0FBRyxFQUFFLENBQUM7WUFDM0MsQ0FBQztRQUNILENBQUM7SUFDSCxDQUFDO0lBRUQsU0FBUyxDQUFDLE1BQVcsRUFBRSxHQUFHLElBQVc7UUFDbkMsTUFBTSxDQUFDLElBQUksTUFBTSxDQUFDLEdBQUcsSUFBSSxDQUFDLENBQUM7SUFDN0IsQ0FBQztDQUNGO0FBbENELG9DQWtDQztBQUVELGtCQUFlLFlBQVksQ0FBQyJ9
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
+const generic_1 = __webpack_require__(4);
 class ExactTimeEstimator {
     constructor(last = Date.now()) {
         this.last = last;
@@ -2541,7 +2229,199 @@ function makeVelocityEstimator(resample = 100) {
     return new VelocityEstimator(resample);
 }
 exports.makeVelocityEstimator = makeVelocityEstimator;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZWxhcHNlZFRpbWVFc3RpbWF0b3IuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvZWxhcHNlZFRpbWVFc3RpbWF0b3IudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFjQTtJQUNFLFlBQTJCLE9BQU8sSUFBSSxDQUFDLEdBQUcsRUFBRTtRQUFqQixTQUFJLEdBQUosSUFBSSxDQUFhO0lBQUksQ0FBQztJQUVqRCxLQUFLO1FBQ0gsSUFBSSxDQUFDLElBQUksR0FBRyxJQUFJLENBQUMsR0FBRyxFQUFFLENBQUM7SUFDekIsQ0FBQztJQUVELFdBQVc7UUFDVCxNQUFNLENBQUMsSUFBSSxDQUFDLEdBQUcsRUFBRSxHQUFHLElBQUksQ0FBQyxJQUFJLENBQUM7SUFDaEMsQ0FBQztDQUNGO0FBRUQ7OztHQUdHO0FBQ0g7SUFDRSxNQUFNLENBQUMsSUFBSSxrQkFBa0IsRUFBRSxDQUFDO0FBQ2xDLENBQUM7QUFGRCw4QkFFQztBQUVEO0lBQ0UsWUFDVSxjQUFzQixFQUN0QixJQUFJLENBQUM7UUFETCxtQkFBYyxHQUFkLGNBQWMsQ0FBUTtRQUN0QixNQUFDLEdBQUQsQ0FBQyxDQUFJO0lBQ2YsQ0FBQztJQUVELEtBQUs7UUFDSCxJQUFJLENBQUMsQ0FBQyxHQUFHLENBQUMsQ0FBQztJQUNiLENBQUM7SUFFRCxXQUFXO1FBQ1QsSUFBSSxDQUFDLENBQUMsRUFBRSxDQUFDO1FBQ1QsTUFBTSxDQUFDLElBQUksQ0FBQyxDQUFDLEdBQUcsSUFBSSxDQUFDLGNBQWMsQ0FBQztJQUN0QyxDQUFDO0NBQ0Y7QUFFRDs7Ozs7O0dBTUc7QUFDSCx1QkFBOEIsY0FBc0I7SUFDbEQsTUFBTSxDQUFDLElBQUksc0JBQXNCLENBQUMsY0FBYyxDQUFDLENBQUM7QUFDcEQsQ0FBQztBQUZELHNDQUVDO0FBRUQsb0RBQW9EO0FBQ3BELGNBQWMsQ0FBUztJQUNyQixNQUFNLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLENB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
+function makeEstimator(opts) {
+    if (opts.estimator === 'exact') {
+        return makeExact();
+    }
+    else if (opts.estimator === 'countdown') {
+        return makeCountdown(opts.timePerElapsed);
+    }
+    else if (opts.estimator === 'reservoir') {
+        return makeSampleAverage();
+    }
+    else if (opts.estimator === 'velocity') {
+        return makeVelocityEstimator(opts.resampleInterval);
+    }
+    else {
+        return generic_1.unreachable();
+    }
+}
+exports.makeEstimator = makeEstimator;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZWxhcHNlZFRpbWVFc3RpbWF0b3IuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvcnVudGltZS9lbGFwc2VkVGltZUVzdGltYXRvci50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUNBLHdDQUF5QztBQWdCekM7SUFDRSxZQUEyQixPQUFPLElBQUksQ0FBQyxHQUFHLEVBQUU7UUFBakIsU0FBSSxHQUFKLElBQUksQ0FBYTtJQUFJLENBQUM7SUFFakQsS0FBSztRQUNILElBQUksQ0FBQyxJQUFJLEdBQUcsSUFBSSxDQUFDLEdBQUcsRUFBRSxDQUFDO0lBQ3pCLENBQUM7SUFFRCxXQUFXO1FBQ1QsTUFBTSxDQUFDLElBQUksQ0FBQyxHQUFHLEVBQUUsR0FBRyxJQUFJLENBQUMsSUFBSSxDQUFDO0lBQ2hDLENBQUM7Q0FDRjtBQUVEOzs7R0FHRztBQUNIO0lBQ0UsTUFBTSxDQUFDLElBQUksa0JBQWtCLEVBQUUsQ0FBQztBQUNsQyxDQUFDO0FBRkQsOEJBRUM7QUFFRDtJQUNFLFlBQ1UsY0FBc0IsRUFDdEIsSUFBSSxDQUFDO1FBREwsbUJBQWMsR0FBZCxjQUFjLENBQVE7UUFDdEIsTUFBQyxHQUFELENBQUMsQ0FBSTtJQUNmLENBQUM7SUFFRCxLQUFLO1FBQ0gsSUFBSSxDQUFDLENBQUMsR0FBRyxDQUFDLENBQUM7SUFDYixDQUFDO0lBRUQsV0FBVztRQUNULElBQUksQ0FBQyxDQUFDLEVBQUUsQ0FBQztRQUNULE1BQU0sQ0FBQyxJQUFJLENBQUMsQ0FBQyxHQUFHLElBQUksQ0FBQyxjQUFjLENBQUM7SUFDdEMsQ0FBQztDQUNGO0FBRUQ7Ozs7OztHQU1HO0FBQ0gsdUJBQThCLGNBQXNCO0lBQ2xELE1BQU0sQ0FBQyxJQUFJLHNCQUFzQixDQUFDLGNBQWMsQ0FBQyxDQUFDO0FBQ3BELENBQUM7QUFGRCxzQ0FFQztBQUVELG9EQUFvRDtBQUNwRCxjQUFjLENBQVM7SUFDckIsTUFBTSxDQUFDLElBQUksQ0FBQyxJQUFJLENB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
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ * Entrypoint of the stopify-continuations bundle
+ */
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(0));
+const lazyRuntime_1 = __webpack_require__(19);
+const eagerRuntime_1 = __webpack_require__(20);
+const retvalRuntime_1 = __webpack_require__(21);
+const fudgeRuntime_1 = __webpack_require__(22);
+let savedRTS;
+function newRTS(transform) {
+    if (savedRTS) {
+        return savedRTS;
+    }
+    if (transform === 'lazy') {
+        savedRTS = new lazyRuntime_1.LazyRuntime();
+    }
+    else if (transform === 'eager') {
+        savedRTS = new eagerRuntime_1.EagerRuntime();
+    }
+    else if (transform === 'retval') {
+        savedRTS = new retvalRuntime_1.RetvalRuntime();
+    }
+    else if (transform === 'fudge') {
+        savedRTS = new fudgeRuntime_1.FudgeRuntime();
+    }
+    else {
+        throw new Error(`bad runtime: ${transform}`);
+    }
+    return savedRTS;
+}
+exports.newRTS = newRTS;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicnVudGltZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9ydW50aW1lL3J1bnRpbWUudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtBQUFBOztHQUVHOzs7OztBQUVILHVDQUFrQztBQUVsQywrQ0FBNEM7QUFDNUMsaURBQThDO0FBQzlDLG1EQUFnRDtBQUNoRCxpREFBOEM7QUFHOUMsSUFBSSxRQUE2QixDQUFDO0FBQ2xDLGdCQUF1QixTQUFpQjtJQUN0QyxFQUFFLENBQUMsQ0FBQyxRQUFRLENBQUMsQ0FBQyxDQUFDO1FBQ2IsTUFBTSxDQUFDLFFBQVEsQ0FBQztJQUNsQixDQUFDO0lBQ0QsRUFBRSxDQUFDLENBQUMsU0FBUyxLQUFLLE1BQU0sQ0FBQyxDQUFDLENBQUM7UUFDekIsUUFBUSxHQUFHLElBQUkseUJBQVcsRUFBRSxDQUFDO0lBQy9CLENBQUM7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLENBQUMsU0FBUyxLQUFLLE9BQU8sQ0FBQyxDQUFDLENBQUM7UUFDL0IsUUFBUSxHQUFHLElBQUksMkJBQVksRUFBRSxDQUFDO0lBQ2hDLENBQUM7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLENBQUMsU0FBUyxLQUFLLFFBQVEsQ0FBQyxDQUFDLENBQUM7UUFDaEMsUUFBUSxHQUFHLElBQUksNkJBQWEsRUFBRSxDQUFDO0lBQ2pDLENBQUM7SUFDRCxJQUFJLENBQUMsRUFBRSxDQUFDLENBQUMsU0FBUyxLQUFLLE9BQU8sQ0FBQyxDQUFDLENBQUM7UUFDL0IsUUFBUSxHQUFHLElBQUksMkJBQVksRUFBRSxDQUFDO0lBQ2hDLENBQUM7SUFDRCxJQUFJLENBQUMsQ0FBQztRQUNKLE1BQU0sSUFBSSxLQUFLLENBQUMsZ0JBQWdCLFNBQVMsRUFBRSxDQUFDLENBQUM7SUFDL0MsQ0FBQztJQUNELE1BQU0sQ0FBQyxRQUFRLENBQUM7QUFDbEIsQ0FBQztBQXBCRCx3QkFvQkMifQ==
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const knowns = ['Object',
+    'Function',
+    'Boolean',
+    'Symbol',
+    'Error',
+    'EvalError',
+    //'InternalError',
+    'RangeError',
+    'ReferenceError',
+    'SyntaxError',
+    'TypeError',
+    'URIError',
+    'Number',
+    'Math',
+    'Date',
+    'String',
+    'RegExp',
+    'Array',
+    'Int8Array',
+    'Uint8Array',
+    'Uint8ClampedArray',
+    'Int16Array',
+    'Uint16Array',
+    'Int32Array',
+    'Uint32Array',
+    'Float32Array',
+    'Float64Array',
+    'Map',
+    'Set',
+    'WeakMap',
+    'WeakSet',
+    'ArrayBuffer',
+    'TextDecoder'
+];
+exports.knowns = knowns;
+function cannotCapture(node) {
+    if (node.callee.type !== 'Identifier') {
+        return false;
+    }
+    return knowns.includes(node.callee.name);
+}
+exports.cannotCapture = cannotCapture;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY2Fubm90Q2FwdHVyZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9jb21tb24vY2Fubm90Q2FwdHVyZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUVBLE1BQU0sTUFBTSxHQUFHLENBQUMsUUFBUTtJQUN0QixVQUFVO0lBQ1YsU0FBUztJQUNULFFBQVE7SUFDUixPQUFPO0lBQ1AsV0FBVztJQUNYLGtCQUFrQjtJQUNsQixZQUFZO0lBQ1osZ0JBQWdCO0lBQ2hCLGFBQWE7SUFDYixXQUFXO0lBQ1gsVUFBVTtJQUNWLFFBQVE7SUFDUixNQUFNO0lBQ04sTUFBTTtJQUNOLFFBQVE7SUFDUixRQUFRO0lBQ1IsT0FBTztJQUNQLFdBQVc7SUFDWCxZQUFZO0lBQ1osbUJBQW1CO0lBQ25CLFlBQVk7SUFDWixhQUFhO0lBQ2IsWUFBWTtJQUNaLGFBQWE7SUFDYixjQUFjO0lBQ2QsY0FBYztJQUNkLEtBQUs7SUFDTCxLQUFLO0lBQ0wsU0FBUztJQUNULFNBQVM7SUFDVCxhQUFhO0lBQ2IsYUFBYTtDQUNkLENBQUM7QUFVQSx3QkFBTTtBQVJSLHVCQUF1QixJQUF3QztJQUM3RCxFQUFFLENBQUMsQ0FBQyxJQUFJLENBQUMsTUFBTSxDQUFDLElBQUksS0FBSyxZQUFZLENBQUMsQ0FBQyxDQUFDO1FBQ3RDLE1BQU0sQ0FBQyxLQUFLLENBQUM7SUFDZixDQUFDO0lBQ0QsTUFBTSxDQUFDLE1BQU0sQ0FBQyxRQUFRLENBQUMsSUFBSSxDQUFDLE1BQU0sQ0FBQyxJQUFJLENBQUMsQ0FBQztBQUMzQyxDQUFDO0FBSUMsc0NBQWEifQ==
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function sum(arr) {
+    return arr.reduce((x, y) => x + y, 0);
+}
+exports.sum = sum;
+function dropWhile(f, arr) {
+    for (let i = 0; i < arr.length; i++) {
+        if (f(arr[i]) === false) {
+            return arr.slice(i);
+        }
+    }
+    return [];
+}
+exports.dropWhile = dropWhile;
+function takeWhile(f, arr) {
+    for (let i = 0; i < arr.length; i++) {
+        if (f(arr[i]) === false) {
+            return arr.slice(0, i);
+        }
+    }
+    return arr.slice(0);
+}
+exports.takeWhile = takeWhile;
+function timeSlow(label, thunk) {
+    const start = Date.now();
+    const result = thunk();
+    const end = Date.now();
+    const delay = end - start;
+    if (delay > 2000) {
+        console.info(`${label} (${delay} ms)`);
+    }
+    return result;
+}
+exports.timeSlow = timeSlow;
+function groupBy(inGroup, arr) {
+    if (arr.length === 0) {
+        return [];
+    }
+    const groups = [[arr[0]]];
+    let currentGroup = groups[0];
+    let last = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+        const current = arr[i];
+        if (inGroup(last, current)) {
+            currentGroup.push(current);
+            last = current;
+        }
+        else {
+            currentGroup = [current];
+            groups.push(currentGroup);
+            last = current;
+        }
+    }
+    return groups;
+}
+exports.groupBy = groupBy;
+function parseArg(convert, validate, error) {
+    return (arg) => {
+        const parsed = convert(arg);
+        if (validate(parsed)) {
+            return parsed;
+        }
+        else {
+            throw new Error(error);
+        }
+    };
+}
+exports.parseArg = parseArg;
+function unreachable() {
+    throw new Error("unreachable code was reached!");
+}
+exports.unreachable = unreachable;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZ2VuZXJpYy5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9nZW5lcmljLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsYUFBb0IsR0FBYTtJQUMvQixNQUFNLENBQUMsR0FBRyxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEtBQUssQ0FBQyxHQUFHLENBQUMsRUFBRSxDQUFDLENBQUMsQ0FBQztBQUN4QyxDQUFDO0FBRkQsa0JBRUM7QUFFRCxtQkFBNkIsQ0FBc0IsRUFBRSxHQUFRO0lBQzNELEdBQUcsQ0FBQyxDQUFDLElBQUksQ0FBQyxHQUFHLENBQUMsRUFBRSxDQUFDLEdBQUcsR0FBRyxDQUFDLE1BQU0sRUFBRSxDQUFDLEVBQUUsRUFBRSxDQUFDO1FBQ3BDLEVBQUUsQ0FBQyxDQUFDLENBQUMsQ0FBQyxHQUFHLENBQUMsQ0FBQyxDQUFDLENBQUMsS0FBSyxLQUFLLENBQUMsQ0FBQyxDQUFDO1lBQ3hCLE1BQU0sQ0FBQyxHQUFHLENBQUMsS0FBSyxDQUFDLENBQUMsQ0FBQyxDQUFDO1FBQ3RCLENBQUM7SUFDSCxDQUFDO0lBQ0QsTUFBTSxDQUFDLEVBQUUsQ0FBQztBQUNaLENBQUM7QUFQRCw4QkFPQztBQUVELG1CQUE2QixDQUFzQixFQUFFLEdBQVE7SUFDM0QsR0FBRyxDQUFDLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQyxFQUFFLENBQUMsR0FBRyxHQUFHLENBQUMsTUFBTSxFQUFFLENBQUMsRUFBRSxFQUFFLENBQUM7UUFDcEMsRUFBRSxDQUFDLENBQUMsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUMsQ0FBQyxLQUFLLEtBQUssQ0FBQyxDQUFDLENBQUM7WUFDeEIsTUFBTSxDQUFDLEdBQUcsQ0FBQyxLQUFLLENBQUMsQ0FBQyxFQUFFLENBQUMsQ0FBQyxDQUFDO1FBQ3pCLENBQUM7SUFDSCxDQUFDO0lBQ0QsTUFBTSxDQUFDLEdBQUcsQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENB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
 
 /***/ }),
 /* 19 */
@@ -2549,383 +2429,1822 @@ exports.makeVelocityEstimator = makeVelocityEstimator;
 
 "use strict";
 
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-const generic_1 = __webpack_require__(2);
-const sprintf_1 = __webpack_require__(20);
-const rts_1 = __webpack_require__(3);
-const path = __webpack_require__(21);
-const fakeRTS = {
-    delimit(thunk) {
-        thunk();
-    },
-    hitBreakpoint() {
-        return false;
-    }
-};
-class Default {
+const common = __webpack_require__(0);
+__export(__webpack_require__(0));
+class LazyRuntime extends common.Runtime {
     constructor() {
-        this.yields = 0;
-        this.mustStop = false;
+        super();
     }
-    setOnStop(onStop) {
-        this.onStop = onStop;
+    captureCC(f) {
+        this.capturing = true;
+        throw new common.Capture(f, []);
     }
-    resume() {
-        this.mustStop = false;
-        this.isStopped = false;
-        this.step();
-    }
-    stop() {
-        if (this.isStopped) {
-            return;
-        }
-        this.mustStop = true;
-        this.isStopped = true;
-    }
-    step() {
-        const rts = rts_1.getRTS();
-        rts.resumeFromCaptured();
-    }
-    run(M, opts, done) {
-        const rts = opts.transform === 'original' ? fakeRTS : rts_1.makeRTS(opts);
-        let lastStopTime;
-        let stopIntervals = [];
-        this.mustStop = false;
-        this.isStopped = false;
-        rts.onYield = () => {
-            this.yields++;
-            if (opts.variance) {
-                const now = Date.now();
-                if (typeof lastStopTime === 'number') {
-                    stopIntervals.push(now - lastStopTime);
-                }
-                lastStopTime = now;
-            }
-            const hit = rts.hitBreakpoint();
-            if (hit) {
-                this.stop();
-            }
-            if (this.mustStop) {
-                this.onStop();
-            }
-            return !this.mustStop;
+    makeCont(stack) {
+        const savedDelimitDepth = this.delimitDepth;
+        return (v) => {
+            this.delimitDepth = savedDelimitDepth;
+            throw new common.Restore([this.topK(() => v), ...stack]);
         };
-        const onDone = () => {
-            const endTime = Date.now();
-            const runningTime = endTime - startTime;
-            const latencyAvg = runningTime / this.yields;
-            let latencyVar;
-            console.log("BEGIN STOPIFY BENCHMARK RESULTS");
-            if (opts.variance) {
-                console.log("BEGIN VARIANCE");
-                for (let i = 0; i < stopIntervals.length; i++) {
-                    console.log(`${i},${stopIntervals[i]}`);
-                }
-                console.log("END VARIANCE");
-                if (this.yields === 0) {
-                    latencyVar = "0";
-                }
-                else {
-                    latencyVar = sprintf_1.sprintf("%.2f", generic_1.sum(stopIntervals.map(x => (latencyAvg - x) * (latencyAvg - x))) / this.yields);
-                }
+    }
+    abstractRun(body) {
+        try {
+            const v = body();
+            return { type: 'normal', value: v };
+        }
+        catch (exn) {
+            if (exn instanceof common.Capture) {
+                this.capturing = false;
+                return { type: 'capture', stack: exn.stack, f: exn.f };
+            }
+            else if (exn instanceof common.Restore) {
+                return { type: 'restore', stack: exn.stack };
             }
             else {
-                latencyVar = 'NA';
+                return { type: 'exception', value: exn };
             }
-            console.log(`${runningTime},${this.yields},${sprintf_1.sprintf("%.2f", latencyAvg)},${latencyVar}`);
-            done();
-        };
-        if (opts.env !== 'node') {
-            const data = document.getElementById('data');
-            console.log = function (str) {
-                data.value = data.value + str + '\n';
-                const evt = new Event('change');
-                data.dispatchEvent(evt);
-            };
-            window.onerror = (message) => {
-                data.value = data.value + '\nAn error occurred:\n' + message + '\n';
-                window.document.title = "done";
-                const evt = new Event('change');
-                data.dispatchEvent(evt);
-            };
         }
-        const startTime = Date.now();
-        if (typeof opts.stop !== 'undefined') {
-            this.setOnStop(onDone);
-            setTimeout(() => this.stop(), opts.stop * 1000);
+    }
+    handleNew(constr, ...args) {
+        if (common.knownBuiltIns.includes(constr)) {
+            return new constr(...args);
         }
-        if (M) {
-            M();
+        let obj;
+        if (this.mode) {
+            obj = Object.create(constr.prototype);
         }
         else {
-            // This causes a "critical dependency" warning in Webpack. However, it is
-            // never evaluated on the browser.
-            !(function webpackMissingModule() { var e = new Error("Cannot find module \".\""); e.code = 'MODULE_NOT_FOUND'; throw e; }());
+            const frame = this.stack[this.stack.length - 1];
+            if (frame.kind === "rest") {
+                [obj] = frame.locals;
+            }
+            else {
+                throw "bad";
+            }
+            this.stack.pop();
         }
-        rts.delimit(onDone);
+        let result;
+        try {
+            if (this.mode) {
+                result = constr.apply(obj, args);
+            }
+            else {
+                result = this.stack[this.stack.length - 1].f.apply(obj, []);
+            }
+        }
+        catch (exn) {
+            if (exn instanceof common.Capture) {
+                exn.stack.push({
+                    kind: "rest",
+                    f: () => this.handleNew(constr, ...args),
+                    locals: [obj],
+                    index: 0
+                });
+            }
+            throw exn;
+        }
+        if (typeof result === 'object') {
+            return result;
+        }
+        else {
+            return obj;
+        }
     }
 }
-exports.Default = Default;
-exports.default = new Default();
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZGVmYXVsdC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9ydW50aW1lL2RlZmF1bHQudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFHQSx3Q0FBaUM7QUFDakMscUNBQWtDO0FBQ2xDLGdDQUF5QztBQUN6Qyw2QkFBNkI7QUFFN0IsTUFBTSxPQUFPLEdBQVE7SUFDbkIsT0FBTyxDQUFDLEtBQWlCO1FBQ3ZCLEtBQUssRUFBRSxDQUFBO0lBQ1QsQ0FBQztJQUNELGFBQWE7UUFDWCxNQUFNLENBQUMsS0FBSyxDQUFDO0lBQ2YsQ0FBQztDQUNGLENBQUE7QUFFRDtJQUtFO1FBQ0UsSUFBSSxDQUFDLE1BQU0sR0FBRyxDQUFDLENBQUM7UUFDaEIsSUFBSSxDQUFDLFFBQVEsR0FBRyxLQUFLLENBQUM7SUFDeEIsQ0FBQztJQUlELFNBQVMsQ0FBQyxNQUFpQjtRQUN6QixJQUFJLENBQUMsTUFBTSxHQUFHLE1BQU0sQ0FBQztJQUN2QixDQUFDO0lBRUQsTUFBTTtRQUNKLElBQUksQ0FBQyxRQUFRLEdBQUcsS0FBSyxDQUFDO1FBQ3RCLElBQUksQ0FBQyxTQUFTLEdBQUcsS0FBSyxDQUFDO1FBQ3ZCLElBQUksQ0FBQyxJQUFJLEVBQUUsQ0FBQztJQUNkLENBQUM7SUFFRCxJQUFJO1FBQ0YsRUFBRSxDQUFDLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxDQUFDLENBQUM7WUFDbkIsTUFBTSxDQUFDO1FBQ1QsQ0FBQztRQUNELElBQUksQ0FBQyxRQUFRLEdBQUcsSUFBSSxDQUFDO1FBQ3JCLElBQUksQ0FBQyxTQUFTLEdBQUcsSUFBSSxDQUFDO0lBQ3hCLENBQUM7SUFFRCxJQUFJO1FBQ0YsTUFBTSxHQUFHLEdBQUcsWUFBTSxFQUFFLENBQUM7UUFDckIsR0FBRyxDQUFDLGtCQUFrQixFQUFFLENBQUM7SUFDM0IsQ0FBQztJQUVELEdBQUcsQ0FBQyxDQUEyQixFQUFFLElBQVUsRUFBRSxJQUFnQjtRQUMzRCxNQUFNLEdBQUcsR0FB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
+exports.LazyRuntime = LazyRuntime;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibGF6eVJ1bnRpbWUuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvcnVudGltZS9sYXp5UnVudGltZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7OztBQUFBLDRDQUE0QztBQUM1Qyx1Q0FBa0M7QUFFbEMsaUJBQXlCLFNBQVEsTUFBTSxDQUFDLE9BQU87SUFDN0M7UUFDRSxLQUFLLEVBQUUsQ0FBQztJQUNWLENBQUM7SUFFRCxTQUFTLENBQUMsQ0FBa0I7UUFDMUIsSUFBSSxDQUFDLFNBQVMsR0FBRyxJQUFJLENBQUM7UUFDdEIsTUFBTSxJQUFJLE1BQU0sQ0FBQyxPQUFPLENBQUMsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDO0lBQ2xDLENBQUM7SUFFRCxRQUFRLENBQUMsS0FBbUI7UUFDMUIsTUFBTSxpQkFBaUIsR0FBRyxJQUFJLENBQUMsWUFBWSxDQUFDO1FBQzVDLE1BQU0sQ0FBQyxDQUFDLENBQU07WUFDWixJQUFJLENBQUMsWUFBWSxHQUFHLGlCQUFpQixDQUFDO1lBQ3RDLE1BQU0sSUFBSSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLENBQUMsQ0FBQyxFQUFFLEdBQUcsS0FBSyxDQUFDLENBQUMsQ0FBQztRQUMzRCxDQUFDLENBQUM7SUFDSixDQUFDO0lBRUQsV0FBVyxDQUFDLElBQWU7UUFDekIsSUFBSSxDQUFDO1lBQ0gsTUFBTSxDQUFDLEdBQUcsSUFBSSxFQUFFLENBQUM7WUFDakIsTUFBTSxDQUFDLEVBQUUsSUFBSSxFQUFFLFFBQVEsRUFBRSxLQUFLLEVBQUUsQ0FBQyxFQUFFLENBQUM7UUFDdEMsQ0FBQztRQUNELEtBQUssQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUM7WUFDWCxFQUFFLENBQUMsQ0FBQyxHQUFHLFlBQVksTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLENBQUM7Z0JBQ2xDLElBQUksQ0FBQyxTQUFTLEdBQUcsS0FBSyxDQUFDO2dC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
 
 /***/ }),
 /* 20 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-/**
-sprintf() for JavaScript 0.7-beta1
-http://www.diveintojavascript.com/projects/javascript-sprintf
+"use strict";
 
-Copyright (c) Alexandru Marasteanu <alexaholic [at) gmail (dot] com>
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of sprintf() for JavaScript nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL Alexandru Marasteanu BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-Changelog:
-2010.11.07 - 0.7-beta1-node
-  - converted it to a node.js compatible module
-
-2010.09.06 - 0.7-beta1
-  - features: vsprintf, support for named placeholders
-  - enhancements: format cache, reduced global namespace pollution
-
-2010.05.22 - 0.6:
- - reverted to 0.4 and fixed the bug regarding the sign of the number 0
- Note:
- Thanks to Raphael Pigulla <raph (at] n3rd [dot) org> (http://www.n3rd.org/)
- who warned me about a bug in 0.5, I discovered that the last update was
- a regress. I appologize for that.
-
-2010.05.09 - 0.5:
- - bug fix: 0 is now preceeded with a + sign
- - bug fix: the sign was not at the right position on padded results (Kamal Abdali)
- - switched from GPL to BSD license
-
-2007.10.21 - 0.4:
- - unit test and patch (David Baird)
-
-2007.09.17 - 0.3:
- - bug fix: no longer throws exception on empty paramenters (Hans Pufal)
-
-2007.09.11 - 0.2:
- - feature: added argument swapping
-
-2007.04.03 - 0.1:
- - initial release
-**/
-
-var sprintf = (function() {
-	function get_type(variable) {
-		return Object.prototype.toString.call(variable).slice(8, -1).toLowerCase();
-	}
-	function str_repeat(input, multiplier) {
-		for (var output = []; multiplier > 0; output[--multiplier] = input) {/* do nothing */}
-		return output.join('');
-	}
-
-	var str_format = function() {
-		if (!str_format.cache.hasOwnProperty(arguments[0])) {
-			str_format.cache[arguments[0]] = str_format.parse(arguments[0]);
-		}
-		return str_format.format.call(null, str_format.cache[arguments[0]], arguments);
-	};
-
-	// convert object to simple one line string without indentation or
-	// newlines. Note that this implementation does not print array
-	// values to their actual place for sparse arrays. 
-	//
-	// For example sparse array like this
-	//    l = []
-	//    l[4] = 1
-	// Would be printed as "[1]" instead of "[, , , , 1]"
-	// 
-	// If argument 'seen' is not null and array the function will check for 
-	// circular object references from argument.
-	str_format.object_stringify = function(obj, depth, maxdepth, seen) {
-		var str = '';
-		if (obj != null) {
-			switch( typeof(obj) ) {
-			case 'function': 
-				return '[Function' + (obj.name ? ': '+obj.name : '') + ']';
-			    break;
-			case 'object':
-				if ( obj instanceof Error) { return '[' + obj.toString() + ']' };
-				if (depth >= maxdepth) return '[Object]'
-				if (seen) {
-					// add object to seen list
-					seen = seen.slice(0)
-					seen.push(obj);
-				}
-				if (obj.length != null) { //array
-					str += '[';
-					var arr = []
-					for (var i in obj) {
-						if (seen && seen.indexOf(obj[i]) >= 0) arr.push('[Circular]');
-						else arr.push(str_format.object_stringify(obj[i], depth+1, maxdepth, seen));
-					}
-					str += arr.join(', ') + ']';
-				} else if ('getMonth' in obj) { // date
-					return 'Date(' + obj + ')';
-				} else { // object
-					str += '{';
-					var arr = []
-					for (var k in obj) { 
-						if(obj.hasOwnProperty(k)) {
-							if (seen && seen.indexOf(obj[k]) >= 0) arr.push(k + ': [Circular]');
-							else arr.push(k +': ' +str_format.object_stringify(obj[k], depth+1, maxdepth, seen)); 
-						}
-					}
-					str += arr.join(', ') + '}';
-				}
-				return str;
-				break;
-			case 'string':				
-				return '"' + obj + '"';
-				break
-			}
-		}
-		return '' + obj;
-	}
-
-	str_format.format = function(parse_tree, argv) {
-		var cursor = 1, tree_length = parse_tree.length, node_type = '', arg, output = [], i, k, match, pad, pad_character, pad_length;
-		for (i = 0; i < tree_length; i++) {
-			node_type = get_type(parse_tree[i]);
-			if (node_type === 'string') {
-				output.push(parse_tree[i]);
-			}
-			else if (node_type === 'array') {
-				match = parse_tree[i]; // convenience purposes only
-				if (match[2]) { // keyword argument
-					arg = argv[cursor];
-					for (k = 0; k < match[2].length; k++) {
-						if (!arg.hasOwnProperty(match[2][k])) {
-							throw new Error(sprintf('[sprintf] property "%s" does not exist', match[2][k]));
-						}
-						arg = arg[match[2][k]];
-					}
-				}
-				else if (match[1]) { // positional argument (explicit)
-					arg = argv[match[1]];
-				}
-				else { // positional argument (implicit)
-					arg = argv[cursor++];
-				}
-
-				if (/[^sO]/.test(match[8]) && (get_type(arg) != 'number')) {
-					throw new Error(sprintf('[sprintf] expecting number but found %s "' + arg + '"', get_type(arg)));
-				}
-				switch (match[8]) {
-					case 'b': arg = arg.toString(2); break;
-					case 'c': arg = String.fromCharCode(arg); break;
-					case 'd': arg = parseInt(arg, 10); break;
-					case 'e': arg = match[7] ? arg.toExponential(match[7]) : arg.toExponential(); break;
-					case 'f': arg = match[7] ? parseFloat(arg).toFixed(match[7]) : parseFloat(arg); break;
-				    case 'O': arg = str_format.object_stringify(arg, 0, parseInt(match[7]) || 5); break;
-					case 'o': arg = arg.toString(8); break;
-					case 's': arg = ((arg = String(arg)) && match[7] ? arg.substring(0, match[7]) : arg); break;
-					case 'u': arg = Math.abs(arg); break;
-					case 'x': arg = arg.toString(16); break;
-					case 'X': arg = arg.toString(16).toUpperCase(); break;
-				}
-				arg = (/[def]/.test(match[8]) && match[3] && arg >= 0 ? '+'+ arg : arg);
-				pad_character = match[4] ? match[4] == '0' ? '0' : match[4].charAt(1) : ' ';
-				pad_length = match[6] - String(arg).length;
-				pad = match[6] ? str_repeat(pad_character, pad_length) : '';
-				output.push(match[5] ? arg + pad : pad + arg);
-			}
-		}
-		return output.join('');
-	};
-
-	str_format.cache = {};
-
-	str_format.parse = function(fmt) {
-		var _fmt = fmt, match = [], parse_tree = [], arg_names = 0;
-		while (_fmt) {
-			if ((match = /^[^\x25]+/.exec(_fmt)) !== null) {
-				parse_tree.push(match[0]);
-			}
-			else if ((match = /^\x25{2}/.exec(_fmt)) !== null) {
-				parse_tree.push('%');
-			}
-			else if ((match = /^\x25(?:([1-9]\d*)\$|\(([^\)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-fosOuxX])/.exec(_fmt)) !== null) {
-				if (match[2]) {
-					arg_names |= 1;
-					var field_list = [], replacement_field = match[2], field_match = [];
-					if ((field_match = /^([a-z_][a-z_\d]*)/i.exec(replacement_field)) !== null) {
-						field_list.push(field_match[1]);
-						while ((replacement_field = replacement_field.substring(field_match[0].length)) !== '') {
-							if ((field_match = /^\.([a-z_][a-z_\d]*)/i.exec(replacement_field)) !== null) {
-								field_list.push(field_match[1]);
-							}
-							else if ((field_match = /^\[(\d+)\]/.exec(replacement_field)) !== null) {
-								field_list.push(field_match[1]);
-							}
-							else {
-								throw new Error('[sprintf] ' + replacement_field);
-							}
-						}
-					}
-					else {
-                        throw new Error('[sprintf] ' + replacement_field);
-					}
-					match[2] = field_list;
-				}
-				else {
-					arg_names |= 2;
-				}
-				if (arg_names === 3) {
-					throw new Error('[sprintf] mixing positional and named placeholders is not (yet) supported');
-				}
-				parse_tree.push(match);
-			}
-			else {
-				throw new Error('[sprintf] ' + _fmt);
-			}
-			_fmt = _fmt.substring(match[0].length);
-		}
-		return parse_tree;
-	};
-
-	return str_format;
-})();
-
-var vsprintf = function(fmt, argv) {
-	var argvClone = argv.slice();
-	argvClone.unshift(fmt);
-	return sprintf.apply(null, argvClone);
-};
-
-module.exports = sprintf;
-sprintf.sprintf = sprintf;
-sprintf.vsprintf = vsprintf;
-
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+const common = __webpack_require__(0);
+__export(__webpack_require__(0));
+class EagerRuntime extends common.Runtime {
+    constructor() {
+        super();
+        this.eagerStack = [];
+    }
+    captureCC(f) {
+        this.capturing = true;
+        throw new common.Capture(f, [...this.eagerStack]);
+    }
+    makeCont(stack) {
+        return (v) => {
+            this.eagerStack = [...stack];
+            throw new common.Restore([this.topK(() => v), ...stack]);
+        };
+    }
+    abstractRun(body) {
+        try {
+            const v = body();
+            return { type: 'normal', value: v };
+        }
+        catch (exn) {
+            if (exn instanceof common.Capture) {
+                this.capturing = false;
+                return { type: 'capture', stack: exn.stack, f: exn.f };
+            }
+            else if (exn instanceof common.Restore) {
+                return { type: 'restore', stack: exn.stack };
+            }
+            else {
+                return { type: 'exception', value: exn };
+            }
+        }
+    }
+    handleNew(constr, ...args) {
+        if (common.knownBuiltIns.includes(constr)) {
+            return new constr(...args);
+        }
+        let obj, result;
+        if (this.mode) {
+            obj = Object.create(constr.prototype);
+        }
+        else {
+            const frame = this.stack[this.stack.length - 1];
+            if (frame.kind === "rest") {
+                [obj] = frame.locals;
+            }
+            else {
+                throw "bad";
+            }
+            this.stack.pop();
+        }
+        if (this.mode) {
+            this.eagerStack.unshift({
+                kind: "rest",
+                f: () => this.handleNew(constr, ...args),
+                locals: [obj],
+                index: 0
+            });
+            result = constr.apply(obj, args);
+            this.eagerStack.shift();
+        }
+        else {
+            result = this.stack[this.stack.length - 1].f.apply(obj, []);
+            this.eagerStack.shift();
+        }
+        return typeof result === 'object' ? result : obj;
+    }
+}
+exports.EagerRuntime = EagerRuntime;
+exports.default = new EagerRuntime();
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZWFnZXJSdW50aW1lLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL3J1bnRpbWUvZWFnZXJSdW50aW1lLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7O0FBQUEsNENBQTRDO0FBQzVDLHVDQUFrQztBQUVsQyxrQkFBMEIsU0FBUSxNQUFNLENBQUMsT0FBTztJQUc5QztRQUNFLEtBQUssRUFBRSxDQUFDO1FBQ1IsSUFBSSxDQUFDLFVBQVUsR0FBRyxFQUFFLENBQUM7SUFDdkIsQ0FBQztJQUVELFNBQVMsQ0FBQyxDQUFrQjtRQUMxQixJQUFJLENBQUMsU0FBUyxHQUFHLElBQUksQ0FBQztRQUN0QixNQUFNLElBQUksTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLEVBQUUsQ0FBQyxHQUFHLElBQUksQ0FBQyxVQUFVLENBQUMsQ0FBQyxDQUFDO0lBQ3BELENBQUM7SUFFRCxRQUFRLENBQUMsS0FBbUI7UUFDMUIsTUFBTSxDQUFDLENBQUMsQ0FBTTtZQUNaLElBQUksQ0FBQyxVQUFVLEdBQUcsQ0FBQyxHQUFHLEtBQUssQ0FBQyxDQUFDO1lBQzdCLE1BQU0sSUFBSSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLENBQUMsQ0FBQyxFQUFFLEdBQUcsS0FBSyxDQUFDLENBQUMsQ0FBQztRQUMzRCxDQUFDLENBQUE7SUFDSCxDQUFDO0lBRUQsV0FBVyxDQUFDLElBQWU7UUFDekIsSUFBSSxDQUFDO1lBQ0gsTUFBTSxDQUFDLEdBQUcsSUFBSSxFQUFFLENBQUM7WUFDakIsTUFBTSxDQUFDLEVBQUUsSUFBSSxFQUFFLFFBQVEsRUFBRSxLQUFLLEVBQUUsQ0FBQyxFQUFFLENBQUM7UUFDdEMsQ0FBQztRQUNELEtBQUssQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUM7WUFDWCxFQUFFLENBQUMsQ0FBQyxHQUFHLFlBQVksTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLENBQUM7Z0JBQ2xD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
 
 /***/ }),
 /* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+const common = __webpack_require__(0);
+__export(__webpack_require__(0));
+class RetvalRuntime extends common.Runtime {
+    constructor() {
+        super();
+    }
+    captureCC(f) {
+        this.capturing = true;
+        return new common.Capture(f, []);
+    }
+    makeCont(stack) {
+        return (v) => new common.Restore([this.topK(() => v), ...stack]);
+    }
+    abstractRun(body) {
+        try {
+            const v = body();
+            if (v instanceof common.Capture) {
+                this.capturing = false;
+                return { type: 'capture', stack: v.stack, f: v.f };
+            }
+            else if (v instanceof common.Restore) {
+                return { type: 'restore', stack: v.stack };
+            }
+            else {
+                return { type: 'normal', value: v };
+            }
+        }
+        catch (exn) {
+            return { type: 'exception', value: exn };
+        }
+    }
+    handleNew(constr, ...args) {
+        if (common.knownBuiltIns.includes(constr)) {
+            return new constr(...args);
+        }
+        let obj, result;
+        if (this.mode) {
+            obj = Object.create(constr.prototype);
+        }
+        else {
+            const frame = this.stack[this.stack.length - 1];
+            if (frame.kind === "rest") {
+                [obj] = frame.locals;
+            }
+            else {
+                throw "bad";
+            }
+            this.stack.pop();
+        }
+        if (this.mode) {
+            result = constr.apply(obj, args);
+        }
+        else {
+            result = this.stack[this.stack.length - 1].f.apply(obj, []);
+        }
+        if (result instanceof common.Capture) {
+            result.stack.push({
+                kind: "rest",
+                f: () => this.handleNew(constr, ...args),
+                locals: [obj],
+                index: 0
+            });
+            return result;
+        }
+        else if (result instanceof common.Restore) {
+            return result;
+        }
+        return typeof result === 'object' ? result : obj;
+    }
+}
+exports.RetvalRuntime = RetvalRuntime;
+exports.default = new RetvalRuntime();
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicmV0dmFsUnVudGltZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9ydW50aW1lL3JldHZhbFJ1bnRpbWUudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBQSw0Q0FBNEM7QUFDNUMsdUNBQWtDO0FBRWxDLG1CQUEyQixTQUFRLE1BQU0sQ0FBQyxPQUFPO0lBQy9DO1FBQ0UsS0FBSyxFQUFFLENBQUM7SUFDVixDQUFDO0lBRUQsU0FBUyxDQUFDLENBQWtCO1FBQzFCLElBQUksQ0FBQyxTQUFTLEdBQUcsSUFBSSxDQUFDO1FBQ3RCLE1BQU0sQ0FBQyxJQUFJLE1BQU0sQ0FBQyxPQUFPLENBQUMsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDO0lBQ25DLENBQUM7SUFFRCxRQUFRLENBQUMsS0FBbUI7UUFDMUIsTUFBTSxDQUFDLENBQUMsQ0FBTSxLQUNaLElBQUksTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsTUFBTSxDQUFDLENBQUMsRUFBRSxHQUFHLEtBQUssQ0FBQyxDQUFDLENBQUM7SUFDdkQsQ0FBQztJQUVELFdBQVcsQ0FBQyxJQUFlO1FBQ3pCLElBQUksQ0FBQztZQUNILE1BQU0sQ0FBQyxHQUFHLElBQUksRUFBRSxDQUFDO1lBQ2pCLEVBQUUsQ0FBQyxDQUFDLENBQUMsWUFBWSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQztnQkFDaEMsSUFBSSxDQUFDLFNBQVMsR0FBRyxLQUFLLENBQUM7Z0JBQ3ZCLE1BQU0sQ0FBQyxFQUFFLElBQUksRUFBRSxTQUFTLEVBQUUsS0FBSyxFQUFFLENBQUMsQ0FBQyxLQUFLLEVBQUUsQ0FBQyxFQUFFLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQztZQUNyRCxDQUFDO1lBQ0QsSUFBSSxDQUFDLEVBQUUsQ0FBQyxDQUFDLENBQUMsWUFBWSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQztnQkFDckMsTUFBTSxDQUFDLEVBQUUs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
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+const common = __webpack_require__(0);
+__export(__webpack_require__(0));
+class FudgedContinuationError {
+    constructor(v) {
+        this.v = v;
+    }
+    toString() {
+        return `FudgedContinuationError(${this.v})`;
+    }
+}
+/** This runtime system doesn't actually implement any control operators.
+ * Functions such as 'captureCC' are defined and will call their argument,
+ * but don't save the stack.
+ *
+ * Unfortunately, all our program end by invoking the top continuation with
+ * "done". Therefore, a program that runs correctly will terminate with
+ * 'FudgedContinuationError(done)'. This is unfortunate. But, this
+ * transformation still helps with debugging.
+ */
+class FudgeRuntime extends common.Runtime {
+    constructor() {
+        super();
+    }
+    captureCC(f) {
+        throw new common.Capture(f, []);
+    }
+    makeCont(stack) {
+        return (v) => {
+            throw new FudgedContinuationError(v);
+        };
+    }
+    abstractRun(body) {
+        try {
+            const v = body();
+            return { type: 'normal', value: v };
+        }
+        catch (exn) {
+            if (exn instanceof common.Capture) {
+                this.capturing = false;
+                return { type: 'capture', stack: exn.stack, f: exn.f };
+            }
+            else {
+                return { type: 'exception', value: exn };
+            }
+        }
+    }
+    handleNew(constr, ...args) {
+        return new constr(...args);
+    }
+}
+exports.FudgeRuntime = FudgeRuntime;
+exports.default = new FudgeRuntime();
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZnVkZ2VSdW50aW1lLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL3J1bnRpbWUvZnVkZ2VSdW50aW1lLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7O0FBQUEsNENBQTRDO0FBQzVDLHVDQUFrQztBQUVsQztJQUVFLFlBQW1CLENBQU07UUFBTixNQUFDLEdBQUQsQ0FBQyxDQUFLO0lBQUksQ0FBQztJQUU5QixRQUFRO1FBQ04sTUFBTSxDQUFDLDJCQUEyQixJQUFJLENBQUMsQ0FBQyxHQUFHLENBQUM7SUFDOUMsQ0FBQztDQUVGO0FBRUQ7Ozs7Ozs7O0dBUUc7QUFDSCxrQkFBMEIsU0FBUSxNQUFNLENBQUMsT0FBTztJQUM5QztRQUNFLEtBQUssRUFBRSxDQUFDO0lBQ1YsQ0FBQztJQUVELFNBQVMsQ0FBQyxDQUFrQjtRQUMxQixNQUFNLElBQUksTUFBTSxDQUFDLE9BQU8sQ0FBQyxDQUFDLEVBQUUsRUFBRSxDQUFDLENBQUM7SUFDbEMsQ0FBQztJQUVELFFBQVEsQ0FBQyxLQUFtQjtRQUMxQixNQUFNLENBQUMsQ0FBQyxDQUFNO1lBQ1osTUFBTSxJQUFJLHVCQUF1QixDQUFDLENBQUMsQ0FBQyxDQUFDO1FBQ3ZDLENBQUMsQ0FBQztJQUNKLENBQUM7SUFFRCxXQUFXLENBQUMsSUFBZTtRQUN6QixJQUFJLENBQUM7WUFDSCxNQUFNLENBQUMsR0FBRyxJQUFJLEVBQUUsQ0FBQztZQUNqQixNQUFNLENBQUMsRUFBRSxJQUFJLEVBQUUsUUFBUSxFQUFFLEtBQUssRUFBRSxDQUFDLEVBQUUsQ0FBQztRQUN0QyxDQUFDO1FBQ0QsS0FBSyxDQUFDLENBQUMsR0FBRyxDQUFDLENBQUMsQ0FBQztZQUNYLEVBQUUsQ0FBQyxDQUFDLEdBQUcsWUFBWSxNQUFNLENBQUMsT0FBTyxDQUFDLENBQUMsQ0FBQztnQkFDbEMsSUFBSSxDQUFDLFNBQVMsR0FBRyxLQUFLLENBQUM7Z0JBQ3ZCLE1BQU0sQ0FBQyxFQUFFLElBQUksRUFBRSxTQUFTLEVBQUUsS0FBSyxFQUFFLEdBQUcsQ0FBQyxLQUFLLEVBQUUsQ0FBQyxFQUFFLEdBQUcsQ0FBQyxDQUFDLEVBQUUsQ0FBQztZQUN6RCxDQUFDO1lBQ0QsSUFBSSxDQUFDLENBQUM7Z0JBQ0osTUFBTSxDQUFDLEVBQUUsSUFBSSxFQUFFLFdBQVcsRUFBRSxLQUFLLEVBQUUsR0FBRyxFQUFFLENBQUM7WUFDM0MsQ0FBQztRQUNILENBQUM7SUFDSCxDQUFDO0lBRUQsU0FBUyxDQUFDLE1BQVcsRUFBRSxHQUFHLElBQVc7UUFDbkMsTUFBTSxDQUFDLElBQUksTUFBTSxDQUFDLEdBQUcsSUFBSSxDQUFDLENBQUM7SUFDN0IsQ0FBQztDQUNGO0FBbENELG9DQWtDQztBQUVELGtCQUFlLElBQUksWUFBWSxFQUFFLENBQUMifQ==
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const commander = __webpack_require__(24);
+const generic_1 = __webpack_require__(4);
+commander.option('-y, --yield <interval>', 'time (in milliseconds) between yields to the event loop (default: 100)', generic_1.parseArg(parseInt, x => x > 0, '--yield requires a number'), 100);
+commander.option('-e, --env <env>', 'the runtime environment for testing (default: node)', x => x, 'node');
+commander.option('--variance', 'measure time elapsed between each yield (default: false)');
+commander.option('--time-per-elapsed <interval>', `an estimate of the time that elapses between calls to the internal suspend \
+function (default: 1)`, generic_1.parseArg(parseInt, (x) => x > 0, '--time-per-elapsed expects a positive integer'), 1);
+commander.option('-r, --resample-interval <interval>', `interval between resamples. Only valid with --estimator=velocity. Default: \
+same as -y if -y is specified, otherwise 100.`, generic_1.parseArg(parseInt, (x) => x > 0, 'invalid --resample-interval'));
+commander.option('--stop <duration>', 'the time after which the program should be terminated (default: never stop)', generic_1.parseArg(parseInt, (x) => x > 0, '--stop expects a positive integer'));
+commander.option('--estimator <estimator>', `one of exact, reservoir, velocity, or countdown (default: velocity)`, generic_1.parseArg(x => x, x => /^(exact|reservoir|countdown|velocity)$/.test(x), 'invalid --estimator value'), 'velocity');
+commander.option('--remote <url>', 'URL of a remote WebDriver server (usually http://<hostname>:4444/wd/hub)');
+commander.option('--local-host <hostname>', 'The host name of this host (default: localhost)', x => x, 'localhost');
+commander.option('--local-port <port>', 'the port to use on this host (default: OS chooses)', generic_1.parseArg(parseInt, (x) => x > 0 && x < 65536, 'bad --local-port'));
+commander.arguments('<filename>');
+function parseRuntimeOpts(rawArgs) {
+    const args = commander.parse(["", "", ...rawArgs]);
+    let resampleInterval = args.resampleInterval || args.yield;
+    if (isNaN(resampleInterval)) {
+        resampleInterval = 100;
+    }
+    return {
+        filename: args.args[0],
+        yieldInterval: args.yield,
+        resampleInterval: args.resampleInterval,
+        estimator: args.estimator,
+        timePerElapsed: args.timePerElapsed,
+        stop: args.stop,
+        env: args.env,
+        variance: args.variance
+    };
+}
+exports.parseRuntimeOpts = parseRuntimeOpts;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY2xpLXBhcnNlLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vc3JjL2NsaS1wYXJzZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLHVDQUF1QztBQUV2Qyx1Q0FBcUM7QUFFckMsU0FBUyxDQUFDLE1BQU0sQ0FDZCx3QkFBd0IsRUFDeEIsd0VBQXdFLEVBQ3hFLGtCQUFRLENBQUMsUUFBUSxFQUFFLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQyxFQUFFLDJCQUEyQixDQUFDLEVBQzNELEdBQUcsQ0FBQyxDQUFDO0FBRVAsU0FBUyxDQUFDLE1BQU0sQ0FDZCxpQkFBaUIsRUFDakIscURBQXFELEVBQ3JELENBQUMsSUFBSSxDQUFDLEVBQ04sTUFBTSxDQUFDLENBQUM7QUFFVixTQUFTLENBQUMsTUFBTSxDQUNkLFlBQVksRUFDWiwwREFBMEQsQ0FBQyxDQUFDO0FBRTlELFNBQVMsQ0FBQyxNQUFNLENBQ2QsK0JBQStCLEVBQy9CO3NCQUNvQixFQUNuQixrQkFBUSxDQUFDLFFBQVEsRUFBRSxDQUFDLENBQUMsS0FBSyxDQUFDLEdBQUcsQ0FBQyxFQUM5QiwrQ0FBK0MsQ0FBQyxFQUNqRCxDQUFDLENBQUMsQ0FBQztBQUVOLFNBQVMsQ0FBQyxNQUFNLENBQ2Qsb0NBQW9DLEVBQ3BDOzhDQUM0QyxFQUM1QyxrQkFBUSxDQUFDLFFBQVEsRUFBRSxDQUFDLENBQUMsS0FBSyxDQUFDLEdBQUcsQ0FBQyxFQUFFLDZCQUE2QixDQUFDLENBQUMsQ0FBQztBQUVuRSxTQUFTLENBQUMsTUFBTSxDQUNkLG1CQUFtQixFQUNuQiw2RUFBNkUsRUFDN0Usa0JBQVEsQ0FBQyxRQUFRLEVBQUUsQ0FBQyxDQUFDLEtBQUssQ0FBQyxHQUFHLENBQUMsRUFDN0IsbUNBQW1DLENBQUMsQ0FBQyxDQUFDO0FBRTFDLFNBQVMsQ0FBQyxNQUFNLENBQ2QseUJBQXlCLEVBQ3pCLHFFQUFxRSxFQUNyRSxrQkFBUSxDQUFDLENBQUMsSUFBSSxDQUFDLEVBQUUsQ0FBQyxJQUFJLHdDQUF3QyxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUMsRUFDcEUsMkJBQTJCLENBQUMsRUFDOUIsVUFBVSxDQUFDLENBQUM7QUFFZCxTQUFTLENBQUMsTUFBTSxDQUFDLGdCQUFnQixFQUMvQiwwRUFBMEUsQ0FBQyxDQUFDO0FBRTlFLFNBQVMsQ0FBQyxNQUFNLENBQUMseUJBQXlCLEVBQ3hDLGlEQUFpRCxFQUNqRCxDQUFDLElBQUksQ0FBQyxFQUNOLFdBQVcsQ0FBQyxDQUFDO0FBRWYsU0FBUyxDQUFDLE1BQU0sQ0FBQyxxQkFBcUIsRUFDcEMsb0RBQW9ELEVBQ3BELGtCQUFRLENBQUMsUUFBUSxFQUFFLENBQUMsQ0FBQyxLQUFLLENBQUMsR0FBRyxDQUFDLElBQUksQ0FBQyxHQUFHLEtBQUssRUFBRSxrQkFBa0IsQ0FBQyxDQUFDLENBQUM7QUFFckUsU0FBUyxDQUFDLFNBQVMsQ0FBQyxZQUFZLENBQUMsQ0FBQztBQUdsQywwQkFBaUMsT0FBaUI7SUFFaEQsTUFBTSxJQUFJLEdBQUcsU0FBUyxDQUFDLEtBQUssQ0FBQyxDQUFDLEVBQUUsRUFBRSxFQUFFLEVBQUUsR0FBRyxPQUFPLENBQUMsQ0FBQyxDQUFDO0lBRW5ELElBQUksZ0JBQWdCLEdBQUcsSUFBSSxDQUFDLGdCQUFnQixJQUFJLElBQUksQ0FBQyxLQUFLLENBQUM7SUFDM0QsRUFBRSxDQUFDLENBQUMsS0FBSyxDQUFDLGdCQUFnQixDQUFDLENBQUMsQ0FBQyxDQUFDO1FBQzVCLGdCQUFnQixHQUFHLEdBQUcsQ0FBQztJQUN6QixDQUFDO0lBRUQsTUFBTSxDQUFDO1FBQ0wsUUFBUSxFQUFFLElBQUksQ0FBQyxJQUFJLENBQUMsQ0FBQyxDQUFDO1FBQ3RCLGFBQWEsRUFBRSxJQUFJLENBQUMsS0FBSztRQUN6QixnQkFBZ0IsRUFBRSxJQUFJLENBQUMsZ0JBQWdCO1FBQ3ZDLFNBQVMsRUFBRSxJQUFJLENBQUMsU0FBUztRQUN6QixjQUFjLEVBQUUsSUFBSSxDQUFDLGNBQWM7UUFDbkMsSUFBSSxFQUFFLElBQUksQ0FBQyxJQUFJO1FBQ2YsR0FBRyxFQUFFLElBQUksQ0FBQyxHQUFHO1FBQ2IsUUFBUSxFQUFFLElBQUksQ0FBQyxRQUFRO0tBQ3hCLENBQUM7QUFDSixDQUFDO0FBbkJELDRDQW1CQyJ9
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(process) {/**
+ * Module dependencies.
+ */
+
+var EventEmitter = __webpack_require__(25).EventEmitter;
+var spawn = __webpack_require__(5).spawn;
+var path = __webpack_require__(26);
+var dirname = path.dirname;
+var basename = path.basename;
+var fs = __webpack_require__(5);
+
+/**
+ * Expose the root command.
+ */
+
+exports = module.exports = new Command();
+
+/**
+ * Expose `Command`.
+ */
+
+exports.Command = Command;
+
+/**
+ * Expose `Option`.
+ */
+
+exports.Option = Option;
+
+/**
+ * Initialize a new `Option` with the given `flags` and `description`.
+ *
+ * @param {String} flags
+ * @param {String} description
+ * @api public
+ */
+
+function Option(flags, description) {
+  this.flags = flags;
+  this.required = ~flags.indexOf('<');
+  this.optional = ~flags.indexOf('[');
+  this.bool = !~flags.indexOf('-no-');
+  flags = flags.split(/[ ,|]+/);
+  if (flags.length > 1 && !/^[[<]/.test(flags[1])) this.short = flags.shift();
+  this.long = flags.shift();
+  this.description = description || '';
+}
+
+/**
+ * Return option name.
+ *
+ * @return {String}
+ * @api private
+ */
+
+Option.prototype.name = function() {
+  return this.long
+    .replace('--', '')
+    .replace('no-', '');
+};
+
+/**
+ * Check if `arg` matches the short or long flag.
+ *
+ * @param {String} arg
+ * @return {Boolean}
+ * @api private
+ */
+
+Option.prototype.is = function(arg) {
+  return arg == this.short || arg == this.long;
+};
+
+/**
+ * Initialize a new `Command`.
+ *
+ * @param {String} name
+ * @api public
+ */
+
+function Command(name) {
+  this.commands = [];
+  this.options = [];
+  this._execs = {};
+  this._allowUnknownOption = false;
+  this._args = [];
+  this._name = name || '';
+}
+
+/**
+ * Inherit from `EventEmitter.prototype`.
+ */
+
+Command.prototype.__proto__ = EventEmitter.prototype;
+
+/**
+ * Add command `name`.
+ *
+ * The `.action()` callback is invoked when the
+ * command `name` is specified via __ARGV__,
+ * and the remaining arguments are applied to the
+ * function for access.
+ *
+ * When the `name` is "*" an un-matched command
+ * will be passed as the first arg, followed by
+ * the rest of __ARGV__ remaining.
+ *
+ * Examples:
+ *
+ *      program
+ *        .version('0.0.1')
+ *        .option('-C, --chdir <path>', 'change the working directory')
+ *        .option('-c, --config <path>', 'set config path. defaults to ./deploy.conf')
+ *        .option('-T, --no-tests', 'ignore test hook')
+ *
+ *      program
+ *        .command('setup')
+ *        .description('run remote setup commands')
+ *        .action(function() {
+ *          console.log('setup');
+ *        });
+ *
+ *      program
+ *        .command('exec <cmd>')
+ *        .description('run the given remote command')
+ *        .action(function(cmd) {
+ *          console.log('exec "%s"', cmd);
+ *        });
+ *
+ *      program
+ *        .command('teardown <dir> [otherDirs...]')
+ *        .description('run teardown commands')
+ *        .action(function(dir, otherDirs) {
+ *          console.log('dir "%s"', dir);
+ *          if (otherDirs) {
+ *            otherDirs.forEach(function (oDir) {
+ *              console.log('dir "%s"', oDir);
+ *            });
+ *          }
+ *        });
+ *
+ *      program
+ *        .command('*')
+ *        .description('deploy the given env')
+ *        .action(function(env) {
+ *          console.log('deploying "%s"', env);
+ *        });
+ *
+ *      program.parse(process.argv);
+  *
+ * @param {String} name
+ * @param {String} [desc] for git-style sub-commands
+ * @return {Command} the new command
+ * @api public
+ */
+
+Command.prototype.command = function(name, desc, opts) {
+  opts = opts || {};
+  var args = name.split(/ +/);
+  var cmd = new Command(args.shift());
+
+  if (desc) {
+    cmd.description(desc);
+    this.executables = true;
+    this._execs[cmd._name] = true;
+    if (opts.isDefault) this.defaultExecutable = cmd._name;
+  }
+
+  cmd._noHelp = !!opts.noHelp;
+  this.commands.push(cmd);
+  cmd.parseExpectedArgs(args);
+  cmd.parent = this;
+
+  if (desc) return this;
+  return cmd;
+};
+
+/**
+ * Define argument syntax for the top-level command.
+ *
+ * @api public
+ */
+
+Command.prototype.arguments = function (desc) {
+  return this.parseExpectedArgs(desc.split(/ +/));
+};
+
+/**
+ * Add an implicit `help [cmd]` subcommand
+ * which invokes `--help` for the given command.
+ *
+ * @api private
+ */
+
+Command.prototype.addImplicitHelpCommand = function() {
+  this.command('help [cmd]', 'display help for [cmd]');
+};
+
+/**
+ * Parse expected `args`.
+ *
+ * For example `["[type]"]` becomes `[{ required: false, name: 'type' }]`.
+ *
+ * @param {Array} args
+ * @return {Command} for chaining
+ * @api public
+ */
+
+Command.prototype.parseExpectedArgs = function(args) {
+  if (!args.length) return;
+  var self = this;
+  args.forEach(function(arg) {
+    var argDetails = {
+      required: false,
+      name: '',
+      variadic: false
+    };
+
+    switch (arg[0]) {
+      case '<':
+        argDetails.required = true;
+        argDetails.name = arg.slice(1, -1);
+        break;
+      case '[':
+        argDetails.name = arg.slice(1, -1);
+        break;
+    }
+
+    if (argDetails.name.length > 3 && argDetails.name.slice(-3) === '...') {
+      argDetails.variadic = true;
+      argDetails.name = argDetails.name.slice(0, -3);
+    }
+    if (argDetails.name) {
+      self._args.push(argDetails);
+    }
+  });
+  return this;
+};
+
+/**
+ * Register callback `fn` for the command.
+ *
+ * Examples:
+ *
+ *      program
+ *        .command('help')
+ *        .description('display verbose help')
+ *        .action(function() {
+ *           // output help here
+ *        });
+ *
+ * @param {Function} fn
+ * @return {Command} for chaining
+ * @api public
+ */
+
+Command.prototype.action = function(fn) {
+  var self = this;
+  var listener = function(args, unknown) {
+    // Parse any so-far unknown options
+    args = args || [];
+    unknown = unknown || [];
+
+    var parsed = self.parseOptions(unknown);
+
+    // Output help if necessary
+    outputHelpIfNecessary(self, parsed.unknown);
+
+    // If there are still any unknown options, then we simply
+    // die, unless someone asked for help, in which case we give it
+    // to them, and then we die.
+    if (parsed.unknown.length > 0) {
+      self.unknownOption(parsed.unknown[0]);
+    }
+
+    // Leftover arguments need to be pushed back. Fixes issue #56
+    if (parsed.args.length) args = parsed.args.concat(args);
+
+    self._args.forEach(function(arg, i) {
+      if (arg.required && null == args[i]) {
+        self.missingArgument(arg.name);
+      } else if (arg.variadic) {
+        if (i !== self._args.length - 1) {
+          self.variadicArgNotLast(arg.name);
+        }
+
+        args[i] = args.splice(i);
+      }
+    });
+
+    // Always append ourselves to the end of the arguments,
+    // to make sure we match the number of arguments the user
+    // expects
+    if (self._args.length) {
+      args[self._args.length] = self;
+    } else {
+      args.push(self);
+    }
+
+    fn.apply(self, args);
+  };
+  var parent = this.parent || this;
+  var name = parent === this ? '*' : this._name;
+  parent.on('command:' + name, listener);
+  if (this._alias) parent.on('command:' + this._alias, listener);
+  return this;
+};
+
+/**
+ * Define option with `flags`, `description` and optional
+ * coercion `fn`.
+ *
+ * The `flags` string should contain both the short and long flags,
+ * separated by comma, a pipe or space. The following are all valid
+ * all will output this way when `--help` is used.
+ *
+ *    "-p, --pepper"
+ *    "-p|--pepper"
+ *    "-p --pepper"
+ *
+ * Examples:
+ *
+ *     // simple boolean defaulting to false
+ *     program.option('-p, --pepper', 'add pepper');
+ *
+ *     --pepper
+ *     program.pepper
+ *     // => Boolean
+ *
+ *     // simple boolean defaulting to true
+ *     program.option('-C, --no-cheese', 'remove cheese');
+ *
+ *     program.cheese
+ *     // => true
+ *
+ *     --no-cheese
+ *     program.cheese
+ *     // => false
+ *
+ *     // required argument
+ *     program.option('-C, --chdir <path>', 'change the working directory');
+ *
+ *     --chdir /tmp
+ *     program.chdir
+ *     // => "/tmp"
+ *
+ *     // optional argument
+ *     program.option('-c, --cheese [type]', 'add cheese [marble]');
+ *
+ * @param {String} flags
+ * @param {String} description
+ * @param {Function|*} [fn] or default
+ * @param {*} [defaultValue]
+ * @return {Command} for chaining
+ * @api public
+ */
+
+Command.prototype.option = function(flags, description, fn, defaultValue) {
+  var self = this
+    , option = new Option(flags, description)
+    , oname = option.name()
+    , name = camelcase(oname);
+
+  // default as 3rd arg
+  if (typeof fn != 'function') {
+    if (fn instanceof RegExp) {
+      var regex = fn;
+      fn = function(val, def) {
+        var m = regex.exec(val);
+        return m ? m[0] : def;
+      }
+    }
+    else {
+      defaultValue = fn;
+      fn = null;
+    }
+  }
+
+  // preassign default value only for --no-*, [optional], or <required>
+  if (false == option.bool || option.optional || option.required) {
+    // when --no-* we make sure default is true
+    if (false == option.bool) defaultValue = true;
+    // preassign only if we have a default
+    if (undefined !== defaultValue) self[name] = defaultValue;
+  }
+
+  // register the option
+  this.options.push(option);
+
+  // when it's passed assign the value
+  // and conditionally invoke the callback
+  this.on('option:' + oname, function(val) {
+    // coercion
+    if (null !== val && fn) val = fn(val, undefined === self[name]
+      ? defaultValue
+      : self[name]);
+
+    // unassigned or bool
+    if ('boolean' == typeof self[name] || 'undefined' == typeof self[name]) {
+      // if no value, bool true, and we have a default, then use it!
+      if (null == val) {
+        self[name] = option.bool
+          ? defaultValue || true
+          : false;
+      } else {
+        self[name] = val;
+      }
+    } else if (null !== val) {
+      // reassign
+      self[name] = val;
+    }
+  });
+
+  return this;
+};
+
+/**
+ * Allow unknown options on the command line.
+ *
+ * @param {Boolean} arg if `true` or omitted, no error will be thrown
+ * for unknown options.
+ * @api public
+ */
+Command.prototype.allowUnknownOption = function(arg) {
+    this._allowUnknownOption = arguments.length === 0 || arg;
+    return this;
+};
+
+/**
+ * Parse `argv`, settings options and invoking commands when defined.
+ *
+ * @param {Array} argv
+ * @return {Command} for chaining
+ * @api public
+ */
+
+Command.prototype.parse = function(argv) {
+  // implicit help
+  if (this.executables) this.addImplicitHelpCommand();
+
+  // store raw args
+  this.rawArgs = argv;
+
+  // guess name
+  this._name = this._name || basename(argv[1], '.js');
+
+  // github-style sub-commands with no sub-command
+  if (this.executables && argv.length < 3 && !this.defaultExecutable) {
+    // this user needs help
+    argv.push('--help');
+  }
+
+  // process argv
+  var parsed = this.parseOptions(this.normalize(argv.slice(2)));
+  var args = this.args = parsed.args;
+
+  var result = this.parseArgs(this.args, parsed.unknown);
+
+  // executable sub-commands
+  var name = result.args[0];
+
+  var aliasCommand = null;
+  // check alias of sub commands
+  if (name) {
+    aliasCommand = this.commands.filter(function(command) {
+      return command.alias() === name;
+    })[0];
+  }
+
+  if (this._execs[name] && typeof this._execs[name] != "function") {
+    return this.executeSubCommand(argv, args, parsed.unknown);
+  } else if (aliasCommand) {
+    // is alias of a subCommand
+    args[0] = aliasCommand._name;
+    return this.executeSubCommand(argv, args, parsed.unknown);
+  } else if (this.defaultExecutable) {
+    // use the default subcommand
+    args.unshift(this.defaultExecutable);
+    return this.executeSubCommand(argv, args, parsed.unknown);
+  }
+
+  return result;
+};
+
+/**
+ * Execute a sub-command executable.
+ *
+ * @param {Array} argv
+ * @param {Array} args
+ * @param {Array} unknown
+ * @api private
+ */
+
+Command.prototype.executeSubCommand = function(argv, args, unknown) {
+  args = args.concat(unknown);
+
+  if (!args.length) this.help();
+  if ('help' == args[0] && 1 == args.length) this.help();
+
+  // <cmd> --help
+  if ('help' == args[0]) {
+    args[0] = args[1];
+    args[1] = '--help';
+  }
+
+  // executable
+  var f = argv[1];
+  // name of the subcommand, link `pm-install`
+  var bin = basename(f, '.js') + '-' + args[0];
+
+
+  // In case of globally installed, get the base dir where executable
+  //  subcommand file should be located at
+  var baseDir
+    , link = fs.lstatSync(f).isSymbolicLink() ? fs.readlinkSync(f) : f;
+
+  // when symbolink is relative path
+  if (link !== f && link.charAt(0) !== '/') {
+    link = path.join(dirname(f), link)
+  }
+  baseDir = dirname(link);
+
+  // prefer local `./<bin>` to bin in the $PATH
+  var localBin = path.join(baseDir, bin);
+
+  // whether bin file is a js script with explicit `.js` extension
+  var isExplicitJS = false;
+  if (exists(localBin + '.js')) {
+    bin = localBin + '.js';
+    isExplicitJS = true;
+  } else if (exists(localBin)) {
+    bin = localBin;
+  }
+
+  args = args.slice(1);
+
+  var proc;
+  if (process.platform !== 'win32') {
+    if (isExplicitJS) {
+      args.unshift(bin);
+      // add executable arguments to spawn
+      args = (process.execArgv || []).concat(args);
+
+      proc = spawn('node', args, { stdio: 'inherit', customFds: [0, 1, 2] });
+    } else {
+      proc = spawn(bin, args, { stdio: 'inherit', customFds: [0, 1, 2] });
+    }
+  } else {
+    args.unshift(bin);
+    proc = spawn(process.execPath, args, { stdio: 'inherit'});
+  }
+
+  var signals = ['SIGUSR1', 'SIGUSR2', 'SIGTERM', 'SIGINT', 'SIGHUP'];
+  signals.forEach(function(signal) {
+    process.on(signal, function(){
+      if ((proc.killed === false) && (proc.exitCode === null)){
+        proc.kill(signal);
+      }
+    });
+  });
+  proc.on('close', process.exit.bind(process));
+  proc.on('error', function(err) {
+    if (err.code == "ENOENT") {
+      console.error('\n  %s(1) does not exist, try --help\n', bin);
+    } else if (err.code == "EACCES") {
+      console.error('\n  %s(1) not executable. try chmod or run with root\n', bin);
+    }
+    process.exit(1);
+  });
+
+  // Store the reference to the child process
+  this.runningCommand = proc;
+};
+
+/**
+ * Normalize `args`, splitting joined short flags. For example
+ * the arg "-abc" is equivalent to "-a -b -c".
+ * This also normalizes equal sign and splits "--abc=def" into "--abc def".
+ *
+ * @param {Array} args
+ * @return {Array}
+ * @api private
+ */
+
+Command.prototype.normalize = function(args) {
+  var ret = []
+    , arg
+    , lastOpt
+    , index;
+
+  for (var i = 0, len = args.length; i < len; ++i) {
+    arg = args[i];
+    if (i > 0) {
+      lastOpt = this.optionFor(args[i-1]);
+    }
+
+    if (arg === '--') {
+      // Honor option terminator
+      ret = ret.concat(args.slice(i));
+      break;
+    } else if (lastOpt && lastOpt.required) {
+      ret.push(arg);
+    } else if (arg.length > 1 && '-' == arg[0] && '-' != arg[1]) {
+      arg.slice(1).split('').forEach(function(c) {
+        ret.push('-' + c);
+      });
+    } else if (/^--/.test(arg) && ~(index = arg.indexOf('='))) {
+      ret.push(arg.slice(0, index), arg.slice(index + 1));
+    } else {
+      ret.push(arg);
+    }
+  }
+
+  return ret;
+};
+
+/**
+ * Parse command `args`.
+ *
+ * When listener(s) are available those
+ * callbacks are invoked, otherwise the "*"
+ * event is emitted and those actions are invoked.
+ *
+ * @param {Array} args
+ * @return {Command} for chaining
+ * @api private
+ */
+
+Command.prototype.parseArgs = function(args, unknown) {
+  var name;
+
+  if (args.length) {
+    name = args[0];
+    if (this.listeners('command:' + name).length) {
+      this.emit('command:' + args.shift(), args, unknown);
+    } else {
+      this.emit('command:*', args);
+    }
+  } else {
+    outputHelpIfNecessary(this, unknown);
+
+    // If there were no args and we have unknown options,
+    // then they are extraneous and we need to error.
+    if (unknown.length > 0) {
+      this.unknownOption(unknown[0]);
+    }
+  }
+
+  return this;
+};
+
+/**
+ * Return an option matching `arg` if any.
+ *
+ * @param {String} arg
+ * @return {Option}
+ * @api private
+ */
+
+Command.prototype.optionFor = function(arg) {
+  for (var i = 0, len = this.options.length; i < len; ++i) {
+    if (this.options[i].is(arg)) {
+      return this.options[i];
+    }
+  }
+};
+
+/**
+ * Parse options from `argv` returning `argv`
+ * void of these options.
+ *
+ * @param {Array} argv
+ * @return {Array}
+ * @api public
+ */
+
+Command.prototype.parseOptions = function(argv) {
+  var args = []
+    , len = argv.length
+    , literal
+    , option
+    , arg;
+
+  var unknownOptions = [];
+
+  // parse options
+  for (var i = 0; i < len; ++i) {
+    arg = argv[i];
+
+    // literal args after --
+    if (literal) {
+      args.push(arg);
+      continue;
+    }
+
+    if ('--' == arg) {
+      literal = true;
+      continue;
+    }
+
+    // find matching Option
+    option = this.optionFor(arg);
+
+    // option is defined
+    if (option) {
+      // requires arg
+      if (option.required) {
+        arg = argv[++i];
+        if (null == arg) return this.optionMissingArgument(option);
+        this.emit('option:' + option.name(), arg);
+      // optional arg
+      } else if (option.optional) {
+        arg = argv[i+1];
+        if (null == arg || ('-' == arg[0] && '-' != arg)) {
+          arg = null;
+        } else {
+          ++i;
+        }
+        this.emit('option:' + option.name(), arg);
+      // bool
+      } else {
+        this.emit('option:' + option.name());
+      }
+      continue;
+    }
+
+    // looks like an option
+    if (arg.length > 1 && '-' == arg[0]) {
+      unknownOptions.push(arg);
+
+      // If the next argument looks like it might be
+      // an argument for this option, we pass it on.
+      // If it isn't, then it'll simply be ignored
+      if (argv[i+1] && '-' != argv[i+1][0]) {
+        unknownOptions.push(argv[++i]);
+      }
+      continue;
+    }
+
+    // arg
+    args.push(arg);
+  }
+
+  return { args: args, unknown: unknownOptions };
+};
+
+/**
+ * Return an object containing options as key-value pairs
+ *
+ * @return {Object}
+ * @api public
+ */
+Command.prototype.opts = function() {
+  var result = {}
+    , len = this.options.length;
+
+  for (var i = 0 ; i < len; i++) {
+    var key = camelcase(this.options[i].name());
+    result[key] = key === 'version' ? this._version : this[key];
+  }
+  return result;
+};
+
+/**
+ * Argument `name` is missing.
+ *
+ * @param {String} name
+ * @api private
+ */
+
+Command.prototype.missingArgument = function(name) {
+  console.error();
+  console.error("  error: missing required argument `%s'", name);
+  console.error();
+  process.exit(1);
+};
+
+/**
+ * `Option` is missing an argument, but received `flag` or nothing.
+ *
+ * @param {String} option
+ * @param {String} flag
+ * @api private
+ */
+
+Command.prototype.optionMissingArgument = function(option, flag) {
+  console.error();
+  if (flag) {
+    console.error("  error: option `%s' argument missing, got `%s'", option.flags, flag);
+  } else {
+    console.error("  error: option `%s' argument missing", option.flags);
+  }
+  console.error();
+  process.exit(1);
+};
+
+/**
+ * Unknown option `flag`.
+ *
+ * @param {String} flag
+ * @api private
+ */
+
+Command.prototype.unknownOption = function(flag) {
+  if (this._allowUnknownOption) return;
+  console.error();
+  console.error("  error: unknown option `%s'", flag);
+  console.error();
+  process.exit(1);
+};
+
+/**
+ * Variadic argument with `name` is not the last argument as required.
+ *
+ * @param {String} name
+ * @api private
+ */
+
+Command.prototype.variadicArgNotLast = function(name) {
+  console.error();
+  console.error("  error: variadic arguments must be last `%s'", name);
+  console.error();
+  process.exit(1);
+};
+
+/**
+ * Set the program version to `str`.
+ *
+ * This method auto-registers the "-V, --version" flag
+ * which will print the version number when passed.
+ *
+ * @param {String} str
+ * @param {String} [flags]
+ * @return {Command} for chaining
+ * @api public
+ */
+
+Command.prototype.version = function(str, flags) {
+  if (0 == arguments.length) return this._version;
+  this._version = str;
+  flags = flags || '-V, --version';
+  this.option(flags, 'output the version number');
+  this.on('option:version', function() {
+    process.stdout.write(str + '\n');
+    process.exit(0);
+  });
+  return this;
+};
+
+/**
+ * Set the description to `str`.
+ *
+ * @param {String} str
+ * @return {String|Command}
+ * @api public
+ */
+
+Command.prototype.description = function(str) {
+  if (0 === arguments.length) return this._description;
+  this._description = str;
+  return this;
+};
+
+/**
+ * Set an alias for the command
+ *
+ * @param {String} alias
+ * @return {String|Command}
+ * @api public
+ */
+
+Command.prototype.alias = function(alias) {
+  var command = this;
+  if(this.commands.length !== 0) {
+    command = this.commands[this.commands.length - 1]
+  }
+
+  if (arguments.length === 0) return command._alias;
+
+  command._alias = alias;
+  return this;
+};
+
+/**
+ * Set / get the command usage `str`.
+ *
+ * @param {String} str
+ * @return {String|Command}
+ * @api public
+ */
+
+Command.prototype.usage = function(str) {
+  var args = this._args.map(function(arg) {
+    return humanReadableArgName(arg);
+  });
+
+  var usage = '[options]'
+    + (this.commands.length ? ' [command]' : '')
+    + (this._args.length ? ' ' + args.join(' ') : '');
+
+  if (0 == arguments.length) return this._usage || usage;
+  this._usage = str;
+
+  return this;
+};
+
+/**
+ * Get or set the name of the command
+ *
+ * @param {String} str
+ * @return {String|Command}
+ * @api public
+ */
+
+Command.prototype.name = function(str) {
+  if (0 === arguments.length) return this._name;
+  this._name = str;
+  return this;
+};
+
+/**
+ * Return the largest option length.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+Command.prototype.largestOptionLength = function() {
+  return this.options.reduce(function(max, option) {
+    return Math.max(max, option.flags.length);
+  }, 0);
+};
+
+/**
+ * Return help for options.
+ *
+ * @return {String}
+ * @api private
+ */
+
+Command.prototype.optionHelp = function() {
+  var width = this.largestOptionLength();
+
+  // Append the help information
+  return this.options.map(function(option) {
+      return pad(option.flags, width) + '  ' + option.description;
+    }).concat([pad('-h, --help', width) + '  ' + 'output usage information'])
+    .join('\n');
+};
+
+/**
+ * Return command help documentation.
+ *
+ * @return {String}
+ * @api private
+ */
+
+Command.prototype.commandHelp = function() {
+  if (!this.commands.length) return '';
+
+  var commands = this.commands.filter(function(cmd) {
+    return !cmd._noHelp;
+  }).map(function(cmd) {
+    var args = cmd._args.map(function(arg) {
+      return humanReadableArgName(arg);
+    }).join(' ');
+
+    return [
+      cmd._name
+        + (cmd._alias ? '|' + cmd._alias : '')
+        + (cmd.options.length ? ' [options]' : '')
+        + ' ' + args
+      , cmd._description
+    ];
+  });
+
+  var width = commands.reduce(function(max, command) {
+    return Math.max(max, command[0].length);
+  }, 0);
+
+  return [
+    ''
+    , '  Commands:'
+    , ''
+    , commands.map(function(cmd) {
+      var desc = cmd[1] ? '  ' + cmd[1] : '';
+      return pad(cmd[0], width) + desc;
+    }).join('\n').replace(/^/gm, '    ')
+    , ''
+  ].join('\n');
+};
+
+/**
+ * Return program help documentation.
+ *
+ * @return {String}
+ * @api private
+ */
+
+Command.prototype.helpInformation = function() {
+  var desc = [];
+  if (this._description) {
+    desc = [
+      '  ' + this._description
+      , ''
+    ];
+  }
+
+  var cmdName = this._name;
+  if (this._alias) {
+    cmdName = cmdName + '|' + this._alias;
+  }
+  var usage = [
+    ''
+    ,'  Usage: ' + cmdName + ' ' + this.usage()
+    , ''
+  ];
+
+  var cmds = [];
+  var commandHelp = this.commandHelp();
+  if (commandHelp) cmds = [commandHelp];
+
+  var options = [
+    ''
+    , '  Options:'
+    , ''
+    , '' + this.optionHelp().replace(/^/gm, '    ')
+    , ''
+  ];
+
+  return usage
+    .concat(desc)
+    .concat(options)
+    .concat(cmds)
+    .join('\n');
+};
+
+/**
+ * Output help information for this command
+ *
+ * @api public
+ */
+
+Command.prototype.outputHelp = function(cb) {
+  if (!cb) {
+    cb = function(passthru) {
+      return passthru;
+    }
+  }
+  process.stdout.write(cb(this.helpInformation()));
+  this.emit('--help');
+};
+
+/**
+ * Output help information and exit.
+ *
+ * @api public
+ */
+
+Command.prototype.help = function(cb) {
+  this.outputHelp(cb);
+  process.exit();
+};
+
+/**
+ * Camel-case the given `flag`
+ *
+ * @param {String} flag
+ * @return {String}
+ * @api private
+ */
+
+function camelcase(flag) {
+  return flag.split('-').reduce(function(str, word) {
+    return str + word[0].toUpperCase() + word.slice(1);
+  });
+}
+
+/**
+ * Pad `str` to `width`.
+ *
+ * @param {String} str
+ * @param {Number} width
+ * @return {String}
+ * @api private
+ */
+
+function pad(str, width) {
+  var len = Math.max(0, width - str.length);
+  return str + Array(len + 1).join(' ');
+}
+
+/**
+ * Output help information if necessary
+ *
+ * @param {Command} command to output help for
+ * @param {Array} array of options to search for -h or --help
+ * @api private
+ */
+
+function outputHelpIfNecessary(cmd, options) {
+  options = options || [];
+  for (var i = 0; i < options.length; i++) {
+    if (options[i] == '--help' || options[i] == '-h') {
+      cmd.outputHelp();
+      process.exit(0);
+    }
+  }
+}
+
+/**
+ * Takes an argument an returns its human readable equivalent for help usage.
+ *
+ * @param {Object} arg
+ * @return {String}
+ * @api private
+ */
+
+function humanReadableArgName(arg) {
+  var nameOutput = arg.name + (arg.variadic === true ? '...' : '');
+
+  return arg.required
+    ? '<' + nameOutput + '>'
+    : '[' + nameOutput + ']'
+}
+
+// for versions before node v0.8 when there weren't `fs.existsSync`
+function exists(file) {
+  try {
+    if (fs.statSync(file).isFile()) {
+      return true;
+    }
+  } catch (e) {
+    return false;
+  }
+}
+
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports) {
+
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!isNumber(n) || n < 0 || isNaN(n))
+    throw TypeError('n must be a positive number');
+  this._maxListeners = n;
+  return this;
+};
+
+EventEmitter.prototype.emit = function(type) {
+  var er, handler, len, args, i, listeners;
+
+  if (!this._events)
+    this._events = {};
+
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error ||
+        (isObject(this._events.error) && !this._events.error.length)) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      } else {
+        // At least give some kind of context to the user
+        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
+        err.context = er;
+        throw err;
+      }
+    }
+  }
+
+  handler = this._events[type];
+
+  if (isUndefined(handler))
+    return false;
+
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
+    }
+  } else if (isObject(handler)) {
+    args = Array.prototype.slice.call(arguments, 1);
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++)
+      listeners[i].apply(this, args);
+  }
+
+  return true;
+};
+
+EventEmitter.prototype.addListener = function(type, listener) {
+  var m;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events)
+    this._events = {};
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener)
+    this.emit('newListener', type,
+              isFunction(listener.listener) ?
+              listener.listener : listener);
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  else
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                    this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function(type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events || !this._events[type])
+    return this;
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener ||
+      (isFunction(list.listener) && list.listener === listener)) {
+    delete this._events[type];
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener ||
+          (list[i].listener && list[i].listener === listener)) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0)
+      return this;
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  var key, listeners;
+
+  if (!this._events)
+    return this;
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0)
+      this._events = {};
+    else if (this._events[type])
+      delete this._events[type];
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else if (listeners) {
+    // LIFO order
+    while (listeners.length)
+      this.removeListener(type, listeners[listeners.length - 1]);
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  var ret;
+  if (!this._events || !this._events[type])
+    ret = [];
+  else if (isFunction(this._events[type]))
+    ret = [this._events[type]];
+  else
+    ret = this._events[type].slice();
+  return ret;
+};
+
+EventEmitter.prototype.listenerCount = function(type) {
+  if (this._events) {
+    var evlistener = this._events[type];
+
+    if (isFunction(evlistener))
+      return 1;
+    else if (evlistener)
+      return evlistener.length;
+  }
+  return 0;
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  return emitter.listenerCount(type);
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+
+/***/ }),
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -3153,69 +4472,7 @@ var substr = 'ab'.substr(-1) === 'b'
     }
 ;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports) {
-
-function webpackEmptyContext(req) {
-	throw new Error("Cannot find module '" + req + "'.");
-}
-webpackEmptyContext.keys = function() { return []; };
-webpackEmptyContext.resolve = webpackEmptyContext;
-module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 22;
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-function toPrimitive(x) {
-    // TODO(arjun): This isn't exactly the right order.
-    if (typeof x === 'object' && x !== 'null') {
-        let v = x.valueOf();
-        if (typeof v === 'object' && v !== 'null') {
-            v = x.toString();
-            if (typeof v === 'object' && v !== 'null') {
-                return undefined;
-            }
-            return v;
-        }
-        return v;
-    }
-    return x;
-}
-function toKey(x) {
-    const r = toPrimitive(x);
-    if (typeof r === 'string' || typeof r === 'number') {
-        return r;
-    }
-    else {
-        return String(r);
-    }
-}
-exports.toKey = toKey;
-function add(x, y) {
-    return toPrimitive(x) + toPrimitive(y);
-}
-exports.add = add;
-function mul(x, y) {
-    return toPrimitive(x) * toPrimitive(y);
-}
-exports.mul = mul;
-function sub(x, y) {
-    return toPrimitive(x) - toPrimitive(y);
-}
-exports.sub = sub;
-function div(x, y) {
-    return toPrimitive(x) / toPrimitive(y);
-}
-exports.div = div;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW1wbGljaXRBcHBzLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL3J1bnRpbWUvaW1wbGljaXRBcHBzLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBRUEscUJBQXFCLENBQU07SUFDMUIsbURBQW1EO0lBQ2xELEVBQUUsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxLQUFLLFFBQVEsSUFBSSxDQUFDLEtBQUssTUFBTSxDQUFDLENBQUMsQ0FBQztRQUMxQyxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUMsT0FBTyxFQUFFLENBQUM7UUFDcEIsRUFBRSxDQUFDLENBQUMsT0FBTyxDQUFDLEtBQUssUUFBUSxJQUFJLENBQUMsS0FBSyxNQUFNLENBQUMsQ0FBQyxDQUFDO1lBQzFDLENBQUMsR0FBRyxDQUFDLENBQUMsUUFBUSxFQUFFLENBQUM7WUFDakIsRUFBRSxDQUFDLENBQUMsT0FBTyxDQUFDLEtBQUssUUFBUSxJQUFJLENBQUMsS0FBSyxNQUFNLENBQUMsQ0FBQyxDQUFDO2dCQUMxQyxNQUFNLENBQUMsU0FBUyxDQUFDO1lBQ25CLENBQUM7WUFDRCxNQUFNLENBQUMsQ0FBQyxDQUFDO1FBQ1gsQ0FBQztRQUNELE1BQU0sQ0FBQyxDQUFDLENBQUM7SUFDWCxDQUFDO0lBQ0QsTUFBTSxDQUFDLENBQUMsQ0FBQztBQUNYLENBQUM7QUFFRCxlQUFzQixDQUFNO0lBQzFCLE1BQU0sQ0FBQyxHQUFHLFdBQVcsQ0FBQyxDQUFDLENBQUMsQ0FBQTtJQUN4QixFQUFFLENBQUMsQ0FBQyxPQUFPLENBQUMsS0FBSyxRQUFRLElBQUksT0FBTyxDQUFDLEtBQUssUUFBUSxDQUFDLENBQUMsQ0FBQztRQUNuRCxNQUFNLENBQUMsQ0FBQyxDQUFDO0lBQ1gsQ0FBQztJQUNELElBQUksQ0FBQyxDQUFDO1FBQ0osTUFBTSxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUMsQ0FBQztJQUNuQixDQUFDO0FBQ0gsQ0FBQztBQVJELHNCQVFDO0FBRUQsYUFBb0IsQ0FBTSxFQUFFLENBQU07SUFDaEMsTUFBTSxDQUFNLFdBQVcsQ0FBQyxDQUFDLENBQUMsR0FBUSxXQUFXLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFDbkQsQ0FBQztBQUZELGtCQUVDO0FBRUQsYUFBb0IsQ0FBTSxFQUFFLENBQU07SUFDaEMsTUFBTSxDQUFNLFdBQVcsQ0FBQyxDQUFDLENBQUMsR0FBUSxXQUFXLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFDbkQsQ0FBQztBQUZELGtCQUVDO0FBRUQsYUFBb0IsQ0FBTSxFQUFFLENBQU07SUFDaEMsTUFBTSxDQUFNLFdBQVcsQ0FBQyxDQUFDLENBQUMsR0FBUSxXQUFXLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFDbkQsQ0FBQztBQUZELGtCQUVDO0FBRUQsYUFBb0IsQ0FBTSxFQUFFLENBQU07SUFDaEMsTUFBTSxDQUFNLFdBQVcsQ0FBQyxDQUFDLENBQUMsR0FBUSxXQUFXLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFDbkQsQ0FBQztBQUZELGtCQUVDIn0=
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ })
 /******/ ]);

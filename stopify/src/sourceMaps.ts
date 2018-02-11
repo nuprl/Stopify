@@ -1,5 +1,4 @@
 import { SourceMapConsumer, RawSourceMap } from 'source-map';
-import * as smc from 'convert-source-map';
 
 export class LineMapping {
   constructor(public getLine: (line: number, column: number) => number | null) {}
@@ -29,15 +28,5 @@ export function generateLineMapping(map: RawSourceMap | undefined): LineMapping 
   } else {
     console.log('// No mapping found, using one-to-one map');
     return new LineMapping((line: number, column: number) => line);
-  }
-}
-
-function parseMapping(code: string) {
-  const mapConverter = smc.fromSource(code);
-  // No match
-  if (mapConverter === null) {
-    return generateLineMapping(undefined);
-  } else {
-    return generateLineMapping(mapConverter.toObject());
   }
 }

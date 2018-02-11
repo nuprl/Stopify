@@ -1,7 +1,7 @@
 /**
  * Runtime system for Node
  */
-import { Opts, AsyncRun } from '../types';
+import { Opts } from '../types';
 import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './elapsedTimeEstimator';

@@ -17,14 +17,13 @@ import * as selenium from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
 import * as path from 'path';
 import { parseRuntimeOpts } from './cli-parse';
-import * as os from 'os';
 import { benchmarkUrl } from './browserLine';
 import * as express from 'express';
 
 process.env.MOZ_HEADLESS = "1";
 
 const stdout = process.stdout;
-const [ _, __, browser, ...args ] = process.argv;
+const [ browser, ...args ] = process.argv.slice(2);
 const opts = parseRuntimeOpts(args);
 const src = benchmarkUrl(args);
 
@@ -45,8 +44,6 @@ let builder = new selenium.Builder()
 
 const driver = builder.build();
 const app = express();
-
-const benchmarkName = path.basename(opts.filename);
 
 app.use(express.static(path.join(__dirname, '../../dist')));
 app.use(express.static(path.dirname(opts.filename)));

@@ -1,7 +1,4 @@
-import * as babel from 'babel-core';
 import * as t from 'babel-types';
-import * as fs from 'fs';
-import * as babylon from 'babylon';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as callcc from 'stopify-continuations';
 import suspendStop from './suspendStop';
@@ -37,7 +34,6 @@ export const visitor: Visitor = {
       state.opts.esMode = 'sane';
     }
 
-    let hofs: string = state.opts.hofs;
     if (filename.endsWith('hofs.js')) {
       state.opts.hofs = 'builtin';
     }

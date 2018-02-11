@@ -1,6 +1,5 @@
 import { setImmediate } from './setImmediate';
 import { ElapsedTimeEstimator } from './elapsedTimeEstimator';
-import { unreachable } from '../generic';
 import * as assert from 'assert';
 import {  Runtime } from 'stopify-continuations/dist/src/runtime';
 

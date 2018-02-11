@@ -1,4 +1,3 @@
-import * as f from './testFixtures.js';
 import * as tmp from 'tmp';
 import * as fs from 'fs';
 import { execSync } from 'child_process';
@@ -11,7 +10,7 @@ describe('separate compilation using --hofs=builtin', () => {
     test(src, () => {
       const { name: dst } = tmp.fileSync({ dir: ".", postfix: '.js' });
       execSync(`./bin/compile -t lazy --hofs=fill ${src} ${dst}`);
-      const r = execSync(`./bin/browser chrome -t lazy --estimator countdown -y 1 ${dst}`);
+      execSync(`./bin/browser chrome -t lazy --estimator countdown -y 1 ${dst}`);
       fs.unlinkSync(dst);
     });
   }

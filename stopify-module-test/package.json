@@ -1,0 +1,17 @@
+{
+  "name": "stopify-module-test",
+  "version": "1.0.0",
+  "description": "Requiring stopify and stopify-continuations works when linking",
+  "main": "index.js",
+  "author": "Rachit Nigam",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn add stopify && yarn add stopify-continuations",
+    "test:build": "./node_modules/.bin/browserify index.js -o index.out.js",
+    "test": "yarn run test:build && node index.out.js"
+  },
+  "dependencies": {
+    "assert": "^1.4.1",
+    "browserify": "^16.0.0"
+  }
+}

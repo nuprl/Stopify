@@ -41,9 +41,9 @@ commander.option(
     'invalid --js-args, see --help'),
   'simple');
 
-  commander.option(
-    '--no-webpack',
-    'Do not apply Webpack, even if necessary');
+commander.option(
+  '--no-webpack',
+  'Do not apply Webpack, even if necessary');
 
 commander.option('--require-runtime',
   `use require('stopify') to load the runtime system, which necessary to run

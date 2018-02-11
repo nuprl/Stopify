@@ -27,18 +27,23 @@ const visitor: Visitor = {
   }
 }
 
-export type Opts = {
-  handleNew: HandleNew,
-  captureMethod: CaptureMethod
+const defaultOpts: callcc.CompilerOpts = {
+    compileFunction: true,
+    debug: false,
+    captureMethod: 'lazy',
+    newMethod: 'wrapper',
+    es: 'sane',
+    hofs: 'builtin',
+    jsArgs: 'simple',
+    requireRuntime: false,
+    noWebpack: true
 }
 
-export function compileFunction(code: string,
-    opts: Opts = {handleNew: 'wrapper', captureMethod: 'lazy'}): string {
+export function compileFunction(
+  code: string,
+  opts: callcc.CompilerOpts = defaultOpts): string {
   const babelOpts = {
-    plugins: [[() => ({ visitor }), {
-      ...opts,
-      compileFunction: true
-    }]],
+    plugins: [[() => ({ visitor }), opts]],
     babelrc: false
   };
   const { code:transformed } = babel.transform(code, babelOpts)

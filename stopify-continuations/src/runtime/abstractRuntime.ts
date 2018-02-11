@@ -152,4 +152,6 @@ export abstract class Runtime {
   abstract abstractRun(body: () => any): RunResult;
 }
 
-export const knownBuiltIns = knowns.map(o => eval(o))
+const unavailableOnNode = [ 'TextDecoder' ];
+export const knownBuiltIns = knowns.filter(x => !unavailableOnNode.includes(x))
+  .map(o => eval(o));

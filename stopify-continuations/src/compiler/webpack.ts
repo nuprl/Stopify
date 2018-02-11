@@ -2,9 +2,6 @@
  * Runs Webpack for Stopify.
  */
 import * as path from 'path';
-import * as babel from 'babel-core';
-import * as tmp from 'tmp';
-import * as fs from 'fs-extra';
 
 export function pack(srcPath: string, dstPath: string, plugin: any, callback: (err: Error | null) => void): void {
 

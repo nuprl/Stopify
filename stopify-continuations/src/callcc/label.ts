@@ -25,16 +25,8 @@ function joinAppType(x: AppType, y: AppType): AppType {
   return Math.max(x, y);
 }
 
-function meetAppType(x: AppType, y: AppType): AppType {
-  return Math.min(x, y);
-}
-
 function joinAppTypes(...args: AppType[]): AppType {
   return args.reduce(joinAppType, AppType.None);
-}
-
-function meetAppTypes(x: AppType, ...args: AppType[]): AppType {
-  return args.reduce(meetAppType, x);
 }
 
 function getLabels0(node: Labeled<t.Node>): number[] {
@@ -50,11 +42,6 @@ export function getLabels(...nodes: Labeled<t.Node>[]): number[] {
     r.push(...getLabels0(node));
   }
   return [...(new Set(r)).values()];
-}
-
-function unionLabels(labelsResult: number[], node: Labeled<t.Node>): void {
-  getLabels(node).filter(x => !labelsResult.includes(x)).forEach(x =>
-    labelsResult.push(x));
 }
 
 let counter: number = 0;
@@ -170,7 +157,7 @@ const visitor: Visitor = {
 
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
-      const { test, consequent, alternate } = path.node;
+      const { consequent, alternate } = path.node;
       path.node.labels = getLabels(consequent, alternate);
       path.node.appType = joinAppTypes(
         getAppType(consequent), getAppType(alternate));

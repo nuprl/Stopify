@@ -5,9 +5,9 @@
  * transformation introduces assignment statements where the var statement
  * originally occurred.
  */
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {tag, letExpression} from '../common/helpers';
+import { tag } from '../common/helpers';
 
 type Hoisted<T> = T & {
   hoisted?: boolean

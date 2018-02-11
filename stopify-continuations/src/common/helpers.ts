@@ -1,8 +1,6 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
-import { NodePath, Visitor } from 'babel-traverse';
-import { SourceMapConsumer, RawSourceMap } from 'source-map';
-import * as smc from 'convert-source-map';
+import { NodePath } from 'babel-traverse';
 
 export type FunctionNode =
   t.FunctionDeclaration | t.FunctionExpression | t.ObjectMethod;
@@ -48,10 +46,7 @@ export type KArg<T> = T & {
 export type NewTag<T> = T & {
   new: boolean
 }
-export type IsEval<T> = T & {
-  isEval: boolean
-}
-const isEval = <T>(t:T) => tag('isEval', t, true)
+
 const breakLbl = <T>(t: T, v: t.Identifier) => tag('break_label', t, v);
 const continueLbl = <T>(t: T, v: t.Identifier) => tag('continue_label', t, v);
 const transformed = <T>(t: T) => tag('isTransformed', t, true);
@@ -130,12 +125,6 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   });
 
   return t.blockStatement(newBody);
-}
-
-interface TransformResult {
-  code: string,
-  ast: t.Node,
-  usesEval: boolean
 }
 
 /**

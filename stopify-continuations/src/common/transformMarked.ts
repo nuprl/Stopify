@@ -1,4 +1,4 @@
-import { NodePath, VisitNode, Visitor } from 'babel-traverse';
+import { NodePath, VisitNode } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from './helpers';
 

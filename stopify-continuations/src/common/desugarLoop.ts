@@ -16,7 +16,7 @@
  *   1. The program only has while loops.
  */
 
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';

@@ -4,11 +4,9 @@
  * with native constructors.
  */
 
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath, VisitNode } from 'babel-traverse';
 import * as t from 'babel-types';
-import {
-  letExpression, transformed, FlatnessMark, NewTag, newTag
-} from '../common/helpers';
+import { FlatnessMark } from '../common/helpers';
 
 import { knowns } from './cannotCapture';
 

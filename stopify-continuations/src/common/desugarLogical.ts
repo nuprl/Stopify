@@ -1,18 +1,18 @@
 /**
  * Preconditions:
- * 
+ *
  * 1. The program only contains while loops
- * 
+ *
  * Postconditions:
- * 
- *   1. Function calls do not occur within &&-expressions, ||-expressions, 
+ *
+ *   1. Function calls do not occur within &&-expressions, ||-expressions,
  *      ternary expressions, and  expression sequences (the comma operator).
  *   2. Function applications do not occur in a loop guard.
  */
 import * as babel from 'babel-core';
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {containsCall, letExpression} from '../common/helpers';
+import { containsCall } from '../common/helpers';
 import * as fastFreshId from '../fastFreshId';
 import * as bh from '../babelHelpers';
 

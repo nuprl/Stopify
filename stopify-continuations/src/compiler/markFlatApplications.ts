@@ -132,18 +132,6 @@ const programMarkCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
     }
   }
 
-/**
- * Visitors that collect 'flat' tags from previously marked functions
- */
-const markLetBoundFuncExpr: VisitNode<FlatnessMark<t.FunctionExpression>> = {
-  enter (path: NodePath<FlatnessMark<t.FunctionExpression>>) {
-    const decl = path.parent;
-    if(t.isVariableDeclarator(decl)) {
-      globalEnv.addBinding((<t.Identifier>decl.id).name, path.node.mark)
-    }
-  }
-}
-
 const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> = {
   enter(path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>) {
     let paramsBind : any =
@@ -177,7 +165,7 @@ const assign = {
   enter(path: NodePath<FlatnessMark<t.AssignmentExpression>>) {
     const name = nodeToString(path.node.left)
     if (name) {
-      const tag = globalEnv.addBinding(name, 'NotFlat')
+      globalEnv.addBinding(name, 'NotFlat')
       if (debug > 0) {
         console.error(`${name} -> NotFlat on line ${path.node.loc ?
             path.node.loc.start.line : ""} because of assignment`)

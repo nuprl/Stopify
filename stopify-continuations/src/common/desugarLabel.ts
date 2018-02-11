@@ -4,9 +4,9 @@
  *
  */
 
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {While, Break, continueLbl} from '../common/helpers';
+import { While, Break } from '../common/helpers';
 
 const labelVisitor : Visitor = {
   ContinueStatement: function (path: NodePath<t.ContinueStatement>): void {

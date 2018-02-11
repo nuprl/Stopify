@@ -1,4 +1,4 @@
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
+import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';
@@ -6,7 +6,7 @@ import * as fastFreshId from '../fastFreshId';
 import * as generic from '../generic';
 import { getLabels, AppType } from './label';
 import * as imm from 'immutable';
-import { CompilerOpts, CaptureMethod, HandleNew } from '../types';
+import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
@@ -31,13 +31,6 @@ const captureLogics: { [key: string]: CaptureFun } = {
   fudge: fudgeCaptureLogic,
 };
 
-function split<T>(arr: T[], index: number): { pre: T[], post: T[] } {
-  return {
-    pre: arr.slice(0, index),
-    post: arr.slice(index, arr.length),
-  };
-}
-
 function isFlat(path: NodePath<t.Node>): boolean {
   return (<any>path.getFunctionParent().node).mark === 'Flat'
 }
@@ -58,7 +51,6 @@ const topOfRuntimeStack = t.memberExpression(runtimeStack,
   t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
 const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
-const pushRuntimeStack = t.memberExpression(runtimeStack, t.identifier('push'));
 const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
 const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
 const captureExn = t.memberExpression(types, t.identifier('Capture'));
@@ -134,8 +126,6 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     const boxedArgs = <imm.Set<string>>(<any>path.node).boxedArgs;
 
     if (jsArgs === 'faithful') {
-      const argLen = t.memberExpression(t.identifier('arguments'),
-        t.identifier('length'));
       const initMatArgs: t.Statement[] = [];
       (<t.Identifier[]>path.node.params).forEach((x, i) => {
         if (boxedArgs.contains(x.name)) {
@@ -457,7 +447,6 @@ const jumper = {
       }
       const { test, consequent, alternate } = path.node;
 
-      const alternateLabels = getLabels(alternate);
       const alternateCond = bh.or(
         isNormalMode,
         bh.and(isRestoringMode,
@@ -466,7 +455,6 @@ const jumper = {
       const newAlt = alternate === null ? alternate :
       t.ifStatement(alternateCond, alternate);
 
-      const consequentLabels = getLabels(consequent);
       const consequentCond = bh.or(
         bh.and(isNormalMode, test),
         bh.and(isRestoringMode, labelsIncludeTarget(getLabels(consequent))));

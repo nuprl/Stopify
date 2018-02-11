@@ -3,8 +3,8 @@ export { plugin } from './stopify/stopifyCallCC';
 import *  as types from './types';
 export { compileFunction } from './stopify/compileFunction'
 import * as smc from 'convert-source-map';
-import { generateLineMapping, LineMapping } from './sourceMaps';
-import { SourceMapConsumer, RawSourceMap } from 'source-map';
+import { generateLineMapping } from './sourceMaps';
+import { RawSourceMap } from 'source-map';
 import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
 import * as fs from 'fs-extra';
 export { CompilerOpts, Opts } from './types';

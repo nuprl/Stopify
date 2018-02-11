@@ -14,7 +14,6 @@ import * as callcc from 'stopify-continuations';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
-import { CaptureMethod, HandleNew } from '../types';
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, { opts }) {

@@ -1,5 +1,3 @@
-import { HandleNew, CaptureMethod, CompilerOpts }
-  from 'stopify-continuations';
 export { HandleNew, CaptureMethod, CompilerOpts } from 'stopify-continuations';
 
 export type Stoppable = (isStop: () => boolean,

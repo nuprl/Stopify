@@ -1,5 +1,4 @@
 import * as path from 'path';
-import { parseRuntimeOpts } from './cli-parse';
 
 export function localBenchmarkUrl(args: string[]) {
   args[0] = 'file://' + path.resolve(args[0]);

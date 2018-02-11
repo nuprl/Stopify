@@ -1,7 +1,5 @@
 import * as f from './testFixtures.js';
-import * as path from 'path';
 import * as fs from  'fs';
-const file = require('file');
 const assert = require('assert');
 
 

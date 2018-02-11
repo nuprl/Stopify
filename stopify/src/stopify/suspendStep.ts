@@ -1,14 +1,10 @@
 import { NodePath, Visitor } from 'babel-traverse';
-import { SourceMapConsumer } from 'source-map';
 import * as t from 'babel-types';
 import {LineMapping} from '../sourceMaps';
 
 interface Options {
   sourceMap: LineMapping;
 }
-
-const opts = t.identifier("$opts");
-const result = t.identifier("$result");
 
 const insertSuspend: Visitor = {
   BlockStatement: {
@@ -18,7 +14,6 @@ const insertSuspend: Visitor = {
       (<any>newBody).suspends = false;
       body.forEach((v, i) => {
         const loc = v.loc;
-        let mark;
         let ln: number | null;
         if (loc) {
           ln = s.opts.sourceMap.getLine(loc.start.line, loc.start.column);

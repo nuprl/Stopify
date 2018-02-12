@@ -46,9 +46,9 @@ commander.option(
   'enable support for getters/setters (default: false)',
   false)
 
-commander.option(
-  '--no-webpack',
-  'Do not apply Webpack, even if necessary');
+commander.option('--disable-webpack',
+  'Do not apply Webpack, even if necessary',
+  false);
 
 commander.option('--require-runtime',
   `use require('stopify') to load the runtime system, which necessary to run
@@ -78,7 +78,7 @@ export const compilerOpts: CompilerOpts = {
   hofs: args.hofs,
   jsArgs: args.jsArgs,
   requireRuntime: args.requireRuntime,
-  noWebpack: args.noWebpack || false
+  noWebpack: args.disableWebpack
 };
 
 export const srcPath: string = args.args[0];

@@ -4,10 +4,12 @@ import * as fastFreshId from '../fastFreshId';
 
 const names: Visitor = {
   ObjectMethod: function (path: NodePath<t.ObjectMethod>): void {
-    path.replaceWith(t.objectProperty(path.node.key,
-      t.functionExpression(fastFreshId.fresh('funExpr'),
-        path.node.params, path.node.body),
-      path.node.computed));
+    if (path.node.kind === "method") {
+      path.replaceWith(t.objectProperty(path.node.key,
+        t.functionExpression(fastFreshId.fresh('funExpr'),
+          path.node.params, path.node.body),
+        path.node.computed));
+    }
   },
 
   FunctionExpression: function (path: NodePath<t.FunctionExpression>): void {

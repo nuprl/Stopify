@@ -27,6 +27,7 @@ const visitor: Visitor = {
 }
 
 const defaultOpts: callcc.CompilerOpts = {
+    getters: false,
     compileFunction: true,
     debug: false,
     captureMethod: 'lazy',

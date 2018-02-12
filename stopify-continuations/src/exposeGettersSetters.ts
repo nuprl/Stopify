@@ -3,17 +3,18 @@ import * as t from 'babel-types';
 
 const gettersRuntime = t.identifier('$gs');
 
+// Stops $gs.get_prop and $gs.set_prop from causing an infinite loop.
 const get_prop = t.memberExpression(gettersRuntime, t.identifier('get_prop'));
 (<any>get_prop).exposed = true
 
 const set_prop = t.memberExpression(gettersRuntime, t.identifier('set_prop'));
 (<any>set_prop).exposed = true
 
-export function $get(...args: t.Expression[]): t.Expression {
+function $get(...args: t.Expression[]): t.Expression {
   return t.callExpression(get_prop, args);
 }
 
-export function $set(...args: t.Expression[]): t.Expression {
+function $set(...args: t.Expression[]): t.Expression {
   return t.callExpression(set_prop, args);
 }
 

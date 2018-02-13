@@ -19,6 +19,15 @@ function $set(...args: t.Expression[]): t.Expression {
 }
 
 const visitor: Visitor = {
+  Program(path: NodePath<t.Program>) {
+    path.node.body.unshift(
+      t.variableDeclaration('var',
+        [t.variableDeclarator(gettersRuntime,
+          t.callExpression(t.identifier('require'),
+            [t.stringLiteral(
+              'stopify-continuations/dist/src/runtime/gettersSetters.exclude.js')]))]));
+
+  },
   MemberExpression(path: NodePath<t.MemberExpression>) {
     const p = path.parent
     const { object, property } = path.node;

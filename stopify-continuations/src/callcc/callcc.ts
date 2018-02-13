@@ -123,15 +123,6 @@ const visitor: Visitor = {
           [$__R]),
         "const"));
 
-    if(state.opts.getters) {
-      path.node.body.unshift(
-        t.variableDeclaration('var',
-          [t.variableDeclarator(t.identifier('$gs'),
-            t.callExpression(t.identifier('require'),
-              [t.stringLiteral(
-                'stopify-continuations/dist/src/runtime/gettersSetters.js')]))]));
-    }
-
     if (!state.opts.compileFunction) {
       path.node.body.unshift(
         h.letExpression(

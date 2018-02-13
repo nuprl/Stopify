@@ -1,5 +1,6 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
+import { FlatnessMark } from "./common/helpers";
 
 const gettersRuntime = t.identifier('$gs');
 
@@ -28,12 +29,17 @@ const visitor: Visitor = {
               'stopify-continuations/dist/src/runtime/gettersSetters.exclude.js')]))]));
 
   },
-  MemberExpression(path: NodePath<t.MemberExpression>) {
+  MemberExpression(path: NodePath<FlatnessMark<t.MemberExpression>>) {
     const p = path.parent
     const { object, property } = path.node;
 
+    // Only useful for console.log and various function on Math.
+    if(path.node.mark === 'Flat') {
+      return
+    }
+
     // Setters
-    if(t.isAssignmentExpression(p) && p.operator === '=') {
+    if(t.isAssignmentExpression(p) && p.left === path.node && p.operator === '=') {
       if(path.node.computed) {
         path.parentPath.replaceWith(
           $set(object, property, p.right))

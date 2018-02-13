@@ -9,4 +9,4 @@ const obj = {
 }
 
 assert.equal(obj.count, 1)
-assert.equal(obj.count, 1)
+assert.equal(obj.count, 2)

@@ -13,7 +13,8 @@ import * as tmp from 'tmp';
 export { stopify as precompiledStopify } from './runtime/precompiled';
 
 function mustWebPack(opts: types.CompilerOpts): boolean {
-  return !opts.noWebpack && (opts.es === 'es5' || opts.hofs === 'fill');
+  return !opts.noWebpack &&
+    (opts.es === 'es5' || opts.hofs === 'fill' || opts.getters)
 }
 
 function stopifyPack(srcPath: string, opts: types.CompilerOpts): Promise<string> {

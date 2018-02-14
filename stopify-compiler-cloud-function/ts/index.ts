@@ -97,6 +97,7 @@ function genericCompiler(lang: string, url: string, opts: stopifyCompiler.Compil
 }
 
 genericCompiler('pyjs', `${thirdPartyCompilers}/pyjs`, {
+  getters: false,
   debug: false,
   captureMethod: 'lazy',
   newMethod: 'wrapper',
@@ -108,6 +109,7 @@ genericCompiler('pyjs', `${thirdPartyCompilers}/pyjs`, {
 });
 
 genericCompiler('emscripten', `${thirdPartyCompilers}/emscripten`, {
+  getters: false,
   debug: true,
   captureMethod: 'lazy',
   newMethod: 'wrapper',
@@ -119,6 +121,7 @@ genericCompiler('emscripten', `${thirdPartyCompilers}/emscripten`, {
 });
 
 genericCompiler('bucklescript', `${thirdPartyCompilers}/bucklescript`, {
+  getters: false,
   debug: true,
   captureMethod: 'lazy',
   newMethod: 'wrapper',
@@ -130,6 +133,7 @@ genericCompiler('bucklescript', `${thirdPartyCompilers}/bucklescript`, {
 });
 
 genericCompiler('scalajs',  `${thirdPartyCompilers}/scalajs`, {
+  getters: false,
   debug: true,
   captureMethod: 'lazy',
   newMethod: 'wrapper',
@@ -141,6 +145,7 @@ genericCompiler('scalajs',  `${thirdPartyCompilers}/scalajs`, {
 });
 
 genericCompiler('clojurescript', `${thirdPartyCompilers}/clojurescript`, {
+  getters: false,
   debug: true,
   captureMethod: 'lazy',
   newMethod: 'wrapper',
@@ -152,6 +157,7 @@ genericCompiler('clojurescript', `${thirdPartyCompilers}/clojurescript`, {
 });
 
 genericCompiler('dart2js',  `${thirdPartyCompilers}/dart2js`, {
+  getters: false,
   debug: false,
   captureMethod: 'lazy',
   newMethod: 'wrapper',

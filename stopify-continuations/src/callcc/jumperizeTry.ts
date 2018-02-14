@@ -62,9 +62,12 @@ const visitor: Visitor = {
         (<any>path.node.handler).eVar = x;
         path.node.handler.body.body.unshift(
           t.expressionStatement( t.assignmentExpression('=', x,
-            path.node.handler.param)),
-          t.expressionStatement(t.assignmentExpression('=', throwSentinal,
-            sentinalExn)));
+            path.node.handler.param)));
+        if (path.node.finalizer) {
+          path.node.handler.body.body.unshift(
+            t.expressionStatement(t.assignmentExpression('=', throwSentinal,
+              sentinalExn)));
+        }
       }
     },
     exit(this: VisitorState, path: NodePath<t.TryStatement>): void {

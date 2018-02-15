@@ -58,6 +58,17 @@ function onDone() {
   window.document.title = 'done';
 }
 
+// Function used by `-t original` to signal the completion of a run.
+function originalOnDone() {
+  const runningTime = Date.now() - startTime;
+  console.log("BEGIN STOPIFY BENCHMARK RESULTS");
+  console.log(`${runningTime},0,Infinity,NA`);
+  console.log('OK.');
+  window.document.title = 'done';
+}
+
+(<any>window).originalOnDone = originalOnDone;
+
 handle.run(onDone, () => {
   yields++;
   if (opts.variance) {

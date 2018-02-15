@@ -65,7 +65,9 @@ class Runner implements AsyncRun {
    * Called by the stopfied program.
    */
   onEnd(): void {
-    this.onDone();
+    if (this.continuationsRTS.delimitDepth === 1) {
+      this.onDone();
+    }
   }
 
   run(onDone: () => void,

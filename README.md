@@ -126,6 +126,10 @@ The `stopify` compiler takes several command-line options:
   `--hofs=fill` to transparently support builtin higher-order functions.
   *NOTE*: applies Webpack.
 
+- `--getters` (optional) By default, Stopify assumes that the program does
+   not use JavaScript [getters] and [setters]. Use the boolean flag `--getters`
+   to enable support for getters and setters and JavaScript.
+
 - `--debug` (optional) Set this flag if you trying to use Stopify to support
    single-stepping and breakpoints.
 
@@ -162,7 +166,8 @@ the browser. This program also takes several command-line options:
 - `--stop <time>` (internal) Force the program to terminate after `<time>`
   milliseconds elapse.
 
-- `--time-per-elapsed` (TODO--document)
+- `--time-per-elapsed <time>`: (internal) How many units of time should elapse
+  each internal. This should almost always be 1.
 
 ## Development
 
@@ -171,16 +176,18 @@ We use [Node 8.5+](https://nodejs.org/en/) and
 Stopify's integration tests require Chrome, Firefox, ChromeDriver, and
 GeckoDriver.
 
-The Stopify repository includes the main project and several helpers for the
-Stopify demo, etc. Stopify itself is in the `stopify` sub-directory of the
-repository (`cd stopify`). To build Stopify:
+The Stopify repository includes two modules necessary to build the CLI
+interface: `stopify` and `stopify-continuations`. The `stopify` module depends
+on `stopify-continuations`. To build both the projects in the correct order,
+run the following from the project root:
 
 ```
 yarn install
 yarn run build
 ```
 
-To run all test cases:
+Once built, you can run `cd stopify` to enter use the stopify CLI. To run all
+test cases:
 
 ```
 yarn run test
@@ -198,16 +205,19 @@ Unless you're modifying the representation of continuations, it is usually
 adequate ot test your changes with only one continuation representation.
 
 You can run a Stopified program in the terminal (using Node), which is usually
-the fastest way to test a small change. To do so, compile it with
-the `--require-runtime` flag and then run the output file using node.
+the fastest way to test a small change. To do so, compile it with the
+`--require-runtime` flag and `--disable-webpack` and then run the output file
+using node.
+
 For example:
 
 ```
-stopify --require-runtime src.js dst.js
+stopify --disable-webpack --require-runtime src.js dst.js
 node dst.js
 ```
 
-The output file (`dst.js` above) takes the same command-line arguments as `stopify-url`.
+The output file (`dst.js` above) takes the same command-line arguments as
+`stopify-url`.
 
 ## Stopify with Webpack
 
@@ -217,3 +227,5 @@ that `stopify` is an external variable and load `stopify.bundle.js` before
 the stopified code.
 
 [babel-loader]: https://github.com/babel/babel-loader
+[getters]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get
+[setters]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set

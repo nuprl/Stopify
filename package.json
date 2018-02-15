@@ -2,6 +2,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "build:stopify": "cd stopify/ && yarn run build && cd -",
+    "build:stopify-continuations": "cd stopify-continuations/ && yarn run build && cd -",
+    "build": "yarn run build:stopify && yarn run build:stopify-continuations",
     "link:stopify": "cd stopify && ln -s `pwd`/. `npm -g root`/stopify",
     "link:stopify-continuations": "cd stopify-continuations && ln -s `pwd`/. `npm -g root`/stopify-continuations",
     "link:all": "npm run link:stopify && npm run link:stopify-continuations"

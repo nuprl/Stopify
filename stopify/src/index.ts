@@ -38,7 +38,7 @@ export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<stri
     return fs.readFile(srcPath, 'utf-8').then((prog) => {
       // If the program is running with loader.bundle.js, call the onDone
       // callback.
-      return `${prog}; ${opts.noWebpack ? "" :  "window.originalOnDone()"}`
+      return `${prog};\n${opts.noWebpack ? "" :  "window.originalOnDone();"}`
     })
   }
   else if (mustWebPack(opts)) {

@@ -4,7 +4,7 @@
   "scripts": {
     "build:stopify": "cd stopify/ && yarn run build && cd -",
     "build:stopify-continuations": "cd stopify-continuations/ && yarn run build && cd -",
-    "build": "yarn run build:stopify && yarn run build:stopify-continuations",
+    "build": "yarn run build:stopify-continuations && yarn run build:stopify",
     "link:stopify": "cd stopify && ln -s `pwd`/. `npm -g root`/stopify",
     "link:stopify-continuations": "cd stopify-continuations && ln -s `pwd`/. `npm -g root`/stopify-continuations",
     "link:all": "npm run link:stopify && npm run link:stopify-continuations"

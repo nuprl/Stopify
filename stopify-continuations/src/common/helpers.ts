@@ -79,25 +79,6 @@ export function containsCall<T>(path: NodePath<T>) {
   return o.containsCall;
 }
 
-// Object to wrap the state of the stop, onStop, isStop functions
-class StopWrapper {
-  private hasStopped: boolean;
-  onDone: (arg?: any) => any
-  constructor(onDone: (arg?: any) => any = (value) => console.log(value)) {
-    this.hasStopped = false;
-    this.onDone = onDone;
-  }
-  onStop() {
-    throw 'Execution stopped'
-  }
-  stop() {
-    this.hasStopped = true;
-  }
-  isStop() {
-    return this.hasStopped === true;
-  }
-}
-
 export type kind = 'const' | 'var' | 'let' | undefined;
 function letExpression(name: t.LVal,
   value: t.Expression,
@@ -130,7 +111,7 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
 /**
  * A simple wrapper around Babel's `transformFromAst` function.
  */
-export function transformFromAst(
+function transformFromAst(
   path: NodePath<t.Node>,
   plugins: any[],
   ast = false,
@@ -146,6 +127,7 @@ export function transformFromAst(
 
 
 export {
+  transformFromAst,
   transformed,
   breakLbl,
   continueLbl,
@@ -153,6 +135,5 @@ export {
   newTag,
   letExpression,
   flatBodyStatement,
-  StopWrapper,
 };
 

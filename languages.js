@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const compilerBase = 'https://us-central1-arjun-umass.cloudfunctions.net/stopify';
 function runtimeOpts(name) {
-    if (name === 'pyjs') {
+    if (name === 'pyjs' || name === 'js') {
         return {
             filename: '',
             estimator: 'reservoir',
@@ -100,17 +100,28 @@ object Runner extends JSApp {
     Python: {
         stepSupported: false,
         aceMode: 'python',
-        defaultCode: `def run_forever():
-    i = 0
-    while(True):
-        if i > 10000:
-            i = 0
-        i += 1
-        print i
+        defaultCode: `def fib(n):
+  print "fib(" + str(n) + ")"
+  if n == 0 or n == 1:
+    return 1
+  return fib(n-1) + fib(n-2)
 
-run_forever()
-    `,
+print (fib(15))`,
         compileUrl: `${compilerBase}/pyjs-fast`
-    }
+    },
+    JavaScript: {
+        stepSupported: true,
+        aceMode: 'js',
+        defaultCode: `function fib(n) {
+  console.log('fib(' + n + ')');
+  if (n === 0 || n === 1) {
+    return 1;
+  }
+  return fib(n-1) + fib(n-2);
+}
+
+fib(15);`,
+        compileUrl: `${compilerBase}/js`
+    },
 };
 //# sourceMappingURL=languages.js.map

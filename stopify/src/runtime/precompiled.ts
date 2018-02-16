@@ -5,6 +5,7 @@ import { makeEstimator } from './elapsedTimeEstimator';
 
 // We need to provide these for stopify-continuations
 export * from 'stopify-continuations/dist/src/runtime/runtime';
+export * from 'stopify-continuations/dist/src/runtime/implicitApps';
 
 // For testing / benchmarking convenience.
 export { parseRuntimeOpts } from '../cli-parse';

@@ -46,7 +46,7 @@ const visitor: Visitor = {
     }
 
     if (opts.es === 'es5') {
-      h.transformFromAst(path, [exposeImplicitApps.plugin]);
+      h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
     }
 
     if (opts.getters) {

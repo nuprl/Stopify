@@ -1,6 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const compilerBase = 'https://us-central1-arjun-umass.cloudfunctions.net/stopify';
+function runtimeOpts(name) {
+    if (name === 'pyjs') {
+        return {
+            filename: '',
+            estimator: 'reservoir',
+            yieldInterval: 100,
+            timePerElapsed: 1,
+            resampleInterval: 1,
+            variance: false,
+            env: 'chrome',
+            stop: undefined
+        };
+    }
+    return {
+        filename: '',
+        estimator: 'countdown',
+        yieldInterval: 1,
+        timePerElapsed: 1,
+        resampleInterval: 1,
+        variance: false,
+        env: 'chrome',
+        stop: undefined
+    };
+}
+exports.runtimeOpts = runtimeOpts;
 exports.langs = {
     'Dart': {
         stepSupported: false,
@@ -85,7 +110,7 @@ object Runner extends JSApp {
 
 run_forever()
     `,
-        compileUrl: `${compilerBase}/pyjs`
+        compileUrl: `${compilerBase}/pyjs-fast`
     }
 };
 //# sourceMappingURL=languages.js.map

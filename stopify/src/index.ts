@@ -5,7 +5,7 @@ import { generateLineMapping } from './sourceMaps';
 import { RawSourceMap } from 'source-map';
 import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
 import * as fs from 'fs-extra';
-import { pack }from 'stopify-continuations';
+import { pack }from './stopify/webpack';
 import * as tmp from 'tmp';
 
 export { CompilerOpts, Opts } from './types';

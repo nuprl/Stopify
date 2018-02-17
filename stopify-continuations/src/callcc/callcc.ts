@@ -154,7 +154,7 @@ const visitor: Visitor = {
           'const'));
     }
 
-    if (opts.eval) {
+    if (opts.eval && !opts.compileFunction) {
 
       const req = opts.requireRuntime ?
         t.callExpression(t.identifier('require'),

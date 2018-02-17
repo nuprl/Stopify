@@ -39,7 +39,8 @@ const visitor: Visitor = {
       });
       let props = [];
       for (const x in renames) {
-        props.push(t.objectProperty(t.stringLiteral(x), t.stringLiteral(renames[x])));
+        props.push(
+          t.objectProperty(t.stringLiteral(x), t.stringLiteral(renames[x])));
       }
 
       // Construct boxed array.

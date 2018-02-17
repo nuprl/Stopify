@@ -81,5 +81,11 @@ export const compilerOpts: CompilerOpts = {
   noWebpack: args.disableWebpack
 };
 
-export const srcPath: string = args.args[0];
-export const dstPath: string = args.args[1];
+const srcPath: string = args.args[0];
+const dstPath: string = args.args[1];
+
+if (!srcPath || !dstPath) {
+  throw new Error('<srcPath> or <dstPath> is required')
+}
+
+export { srcPath, dstPath }

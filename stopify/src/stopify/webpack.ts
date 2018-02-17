@@ -25,7 +25,7 @@ export function pack(srcPath: string, dstPath: string, plugin: any, callback: (e
       rules: [ {
         test: /\.js$/,
         // NOTE(arjun): This is a small hack.
-        exclude: /(\.exclude\.js$|stopify\/dist|stopify-continuations\/dist\/src|node_modules\/(?!bs-platform))/,
+        exclude: /(\.exclude\.js$|node_modules\/(?!bs-platform))/,
         loader: 'babel-loader',
         options: babelOpts
       } ]

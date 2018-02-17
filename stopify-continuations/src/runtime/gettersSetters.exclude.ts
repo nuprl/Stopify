@@ -1,7 +1,9 @@
 export function get_prop(obj: any, prop: any) {
   const v = obj[prop]
   if (typeof v === 'function') {
-    return v.bind(obj)
+    const func = v.bind(obj)
+    func.prototype = v.prototype
+    return func
   }
   else {
     return v

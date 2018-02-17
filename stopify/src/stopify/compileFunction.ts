@@ -73,7 +73,7 @@ export function compileEval(code: string, type: string, renames: { [key: string]
     renames,
     boxes
   });
-  return transformed!;
+  return `(function () { ${transformed!} })()`;
 }
 
 export default function () {

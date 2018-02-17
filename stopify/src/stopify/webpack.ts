@@ -2,6 +2,7 @@
  * Runs Webpack for Stopify.
  */
 import * as path from 'path';
+import * as webpack from 'webpack';
 
 export function pack(srcPath: string, dstPath: string, plugin: any, callback: (err: Error | null) => void): void {
 
@@ -10,20 +11,12 @@ export function pack(srcPath: string, dstPath: string, plugin: any, callback: (e
    * this require is changed into an import, webpack and its 332 transitive
    * dependencies.
    */
-  const fakeRequire = require
-  const webpack = fakeRequire('webpack');
   const babelOpts = {
     plugins: [plugin],
     babelrc: false,
     minified: true,
     comments: false,
   };
-
-  // const { code: interCode } = babel.transformFileSync(srcPath, babelOpts);
-  // console.log(interCode);
-  // const interPath = tmp.fileSync({ postfix: '.exclude.js' }).name;
-  // fs.writeFileSync(interPath, interCode);
-
 
   const webpackConfig = {
     entry: './' + path.relative('.', srcPath),

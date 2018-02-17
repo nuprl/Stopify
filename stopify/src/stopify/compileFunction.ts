@@ -11,9 +11,9 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 import * as callcc from 'stopify-continuations';
-import { NodePath, Visitor } from 'babel-traverse';
 import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
+import { NodePath, Visitor } from 'babel-traverse';
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, { opts }) {
@@ -58,7 +58,8 @@ export function compileFunction(
 
 export function compileEval(code: string, type: string, renames: { [key: string]: string }, boxes: string[]): string {
 
-  const transformed = compileFunction(code, <any>{
+  // `any` needed because of the extra renames and boxes fields.
+  const opts: any = {
     compileFunction: true,
     getters: false,
     debug: false,
@@ -68,12 +69,15 @@ export function compileEval(code: string, type: string, renames: { [key: string]
     es: 'sane',
     hofs: 'builtin',
     jsArgs: 'simple',
-    requireRuntime: true,
+    requireRuntime: (typeof window === 'undefined'),
     noWebpack: true,
     renames,
     boxes
-  });
-  return `(function () { ${transformed!} })()`;
+  }
+
+  const transformed = compileFunction(code, opts);
+
+  return `${transformed!}`;
 }
 
 export default function () {

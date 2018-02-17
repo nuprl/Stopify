@@ -1,21 +1,21 @@
 import * as babel from 'babel-core';
 import *  as types from './types';
 import * as smc from 'convert-source-map';
+import * as tmp from 'tmp';
+import * as fs from 'fs-extra';
 import { generateLineMapping } from './sourceMaps';
 import { RawSourceMap } from 'source-map';
 import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
-import * as fs from 'fs-extra';
-import { pack }from './stopify/webpack';
-import * as tmp from 'tmp';
+import { pack }from './stopify/webpack'
 
-export { CompilerOpts, Opts } from './types';
 export { compileFunction, compileEval } from './stopify/compileFunction'
+export { CompilerOpts, Opts } from './types';
 export { stopify as precompiledStopify } from './runtime/precompiled';
 export { plugin } from './stopify/stopifyCallCC';
 
 function mustWebPack(opts: types.CompilerOpts): boolean {
   return !opts.noWebpack &&
-    (opts.es === 'es5' || opts.hofs === 'fill' || opts.getters || opts.eval)
+    (opts.es === 'es5' || opts.hofs === 'fill' || opts.getters)
 }
 
 function stopifyPack(srcPath: string, opts: types.CompilerOpts): Promise<string> {

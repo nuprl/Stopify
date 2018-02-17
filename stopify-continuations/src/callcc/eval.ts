@@ -47,14 +47,21 @@ const visitor: Visitor = {
       this.boxed.filter((x: any) => !!x).forEach((set: Set<string>) =>
           set.forEach(x => vars.add(x)));
 
-      const evalBlock = t.blockStatement([t.returnStatement(t.callExpression(t.identifier('eval'),
-        [t.callExpression(t.memberExpression(t.identifier("$__C"), t.identifier("compileEval")), [
-          ...path.node.arguments,
-          t.memberExpression(t.identifier('$__R'), t.identifier('type')),
-          t.objectExpression(props),
-          t.arrayExpression(Array.from(vars).map(x => t.stringLiteral(x)))
-        ])]))]);
-      path.node.callee = t.functionExpression(fastFreshId.fresh('funExpr'), [], evalBlock);
+      const evalBlock =
+        t.blockStatement([t.returnStatement(t.callExpression(t.identifier('eval'),
+          [t.callExpression(
+            t.memberExpression(t.identifier("$__C"), t.identifier("compileEval")),
+            [
+              ...path.node.arguments,
+              t.memberExpression(t.identifier('$__R'), t.identifier('type')),
+              t.objectExpression(props),
+              t.arrayExpression(Array.from(vars).map(x => t.stringLiteral(x)))
+            ]
+          )]))]);
+
+      path.node.callee = t.functionExpression(
+        fastFreshId.fresh('funExpr'), [], evalBlock);
+
       path.node.arguments = [];
       path.skip();
     }

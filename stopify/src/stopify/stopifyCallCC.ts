@@ -77,6 +77,7 @@ export const visitor: Visitor = {
       // Do nothing
     } else {
       // var $S = stopify.init($__R);
+
       path.node.body.splice(opts.eval ? 3 : 2, 0,
         t.variableDeclaration('var',
             [t.variableDeclarator(

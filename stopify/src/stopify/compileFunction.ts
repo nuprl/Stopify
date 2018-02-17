@@ -16,15 +16,33 @@ import * as assert from 'assert';
 import { NodePath, Visitor } from 'babel-traverse';
 
 const visitor: Visitor = {
-  Program(path: NodePath<t.Program>, { opts }) {
-    path.stop()
-    if (!opts.eval) {
+  Program: {
+    enter(path: NodePath<t.Program>, { opts }) {
+      path.stop()
       assert.equal(path.node.body.length, 1)
       const func = path.node.body[0]
-      assert.equal(func.type, 'FunctionDeclaration',
-        'Must compile a top-level function')
+      if (func.type !== 'FunctionDeclaration') {
+        throw new Error('Must compile a top-level function')
+      }
+
+      else {
+        // If compile a string to be eval'd, convert last statement to a return
+        // statement
+        if (opts.eval) {
+          const lastStatement = (<t.FunctionDeclaration>func).body.body.pop()!
+
+          if (lastStatement.type === 'ExpressionStatement') {
+            func.body.body.push(t.returnStatement(lastStatement.expression))
+          }
+          else {
+            func.body.body.push(lastStatement)
+          }
+        }
+
+      }
+
+      callcc.transformFromAst(path, [[stopifyCallCC.plugin, opts]])
     }
-    callcc.transformFromAst(path, [[stopifyCallCC.plugin, opts]])
   }
 }
 
@@ -75,9 +93,9 @@ export function compileEval(code: string, type: string, renames: { [key: string]
     boxes
   }
 
-  const transformed = compileFunction(code, opts);
-
-  return `${transformed!}`;
+  const toCompile = `function __eval__function() { ${code} }`
+  const transformed = compileFunction(toCompile, opts);
+  return `(${transformed!})()`;
 }
 
 export default function () {

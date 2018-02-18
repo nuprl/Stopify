@@ -17,8 +17,34 @@ function $func(func: t.Expression, ...args: t.Expression[]): t.Expression {
   return t.callExpression(func, args);
 }
 
+let enableGetters = false;
+
+const gettersUsedVisitor = {
+  ObjectMethod(path: NodePath<t.ObjectMethod>) {
+    if (path.node.kind !== 'method') {
+      enableGetters = true;
+      path.stop()
+    }
+  },
+  MemberExpression(path: NodePath<t.MemberExpression>) {
+    const { object, property } = path.node
+    if (t.isIdentifier(object) && object.name === 'Object' &&
+        t.isIdentifier(property) && property.name === 'defineProperty') {
+      enableGetters = true;
+      path.stop()
+    }
+  }
+}
+
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>) {
+    path.traverse(gettersUsedVisitor)
+
+    if (!enableGetters) {
+      console.log('No uses of getters found, disabling --getters')
+      path.stop()
+    }
+
     path.node.body.unshift(
       t.variableDeclaration('var',
         [t.variableDeclarator(gettersRuntime,

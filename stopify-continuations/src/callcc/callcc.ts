@@ -41,16 +41,16 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
 
+    if (opts.getters) {
+      h.transformFromAst(path, [exposeGS.plugin])
+    }
+
     if (opts.newMethod === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
     }
 
     if (opts.es === 'es5') {
       h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
-    }
-
-    if (opts.getters) {
-      h.transformFromAst(path, [exposeGS.plugin])
     }
 
     if (opts.hofs === 'fill') {

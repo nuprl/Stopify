@@ -1,5 +1,6 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
+import { runtimePath } from './common/helpers';
 
 export const hofIdentifier = t.identifier('$hof');
 
@@ -11,13 +12,15 @@ function hof(obj: t.Expression, name: string, args: t.Expression[]): t.Expressio
     [obj, ...args]);
 }
 
+const hofRuntime = `${runtimePath}/hofs`
+
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>): void {
     path.node.body.unshift(
       t.variableDeclaration('var',
       [t.variableDeclarator(hofIdentifier,
         t.callExpression(t.identifier('require'),
-          [t.stringLiteral('stopify-continuations/dist/src/runtime/hofs.js')]))]));
+          [t.stringLiteral(hofRuntime)]))]));
   },
   CallExpression(path: NodePath<t.CallExpression>): void {
     const { callee, arguments: args } = path.node;

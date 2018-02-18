@@ -2,6 +2,7 @@ import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as imm from 'immutable';
 import * as types from './types';
+import { runtimePath } from './common/helpers'
 
 export const implicitsIdentifier = t.identifier('$i');
 
@@ -17,7 +18,7 @@ function implicit(name: string, ...args: t.Expression[]): t.Expression {
     args);
 }
 
-
+const implicitsPath = `${runtimePath}/implicitApps`
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -27,7 +28,7 @@ const visitor: Visitor = {
       [t.variableDeclarator(implicitsIdentifier,
         !opts.requireRuntime ? t.identifier('stopify')
           : t.callExpression(t.identifier('require'),
-            [t.stringLiteral('Stopify/built/src/runtime/implicitApps')]))]));
+            [t.stringLiteral(implicitsPath)]))]));
   },
   BinaryExpression(path: NodePath<t.BinaryExpression>) {
     const fun = binopTable.get(path.node.operator);

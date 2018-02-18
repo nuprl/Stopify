@@ -1,6 +1,7 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { FlatnessMark } from "./common/helpers";
+import { runtimePath } from './common/helpers';
 
 const gettersRuntime = t.identifier('$gs');
 
@@ -19,14 +20,15 @@ function $set(...args: t.Expression[]): t.Expression {
   return t.callExpression(set_prop, args);
 }
 
+const gettersRuntimePath = `${runtimePath}/gettersSetters.exclude.js`
+
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>) {
     path.node.body.unshift(
       t.variableDeclaration('var',
         [t.variableDeclarator(gettersRuntime,
           t.callExpression(t.identifier('require'),
-            [t.stringLiteral(
-              'stopify-continuations/dist/src/runtime/gettersSetters.exclude.js')]))]));
+            [t.stringLiteral(gettersRuntimePath)]))]));
 
   },
   MemberExpression(path: NodePath<FlatnessMark<t.MemberExpression>>) {

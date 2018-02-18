@@ -135,10 +135,10 @@ const visitor: Visitor = {
       path.node.body.unshift(
         h.letExpression(
           t.identifier("$__T"),
-          !opts.requireRuntime
-            ?  t.identifier('stopify')
+          !opts.requireRuntime ?
+            t.identifier('stopify')
             : t.callExpression(t.identifier('require'),
-                [t.stringLiteral('stopify-continuations/dist/src/runtime/runtime')]),
+                [t.stringLiteral(`${h.runtimePath}/runtime`)]),
           'const'));
     }
 

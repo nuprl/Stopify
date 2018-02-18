@@ -56,10 +56,6 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
     }
 
-    if (opts.getters) {
-      h.transformFromAst(path, [exposeGS.plugin])
-    }
-
     if (opts.hofs === 'fill') {
       h.transformFromAst(path, [exposeHOFs.plugin]);
     }

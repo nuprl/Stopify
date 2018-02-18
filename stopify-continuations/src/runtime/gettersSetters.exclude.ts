@@ -13,3 +13,7 @@ export function get_prop(obj: any, prop: any) {
 export function set_prop(obj: any, prop: any, value: any) {
   return obj[prop] = value
 }
+
+export function delete_prop(obj: any, prop: any) {
+  delete obj[prop]
+}

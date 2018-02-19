@@ -3,6 +3,7 @@ module.exports = {
   output: {
     filename: 'dist/test-loader.bundle.js',
   },
+  devtool: 'source-map',
   node: {
     // Commander has these as dependencies
     'fs': 'empty',

@@ -13,8 +13,13 @@ function makeSetImmediateMC(): (thunk: () => void) => void {
   const chanThunks: (() => void)[] = [];
 
   chan.port2.onmessage = function(evt) {
-     // Assumes that there is a function to apply.
-    return chanThunks.pop()!();
+    const func = chanThunks.pop()
+    if (typeof func === 'function') {
+      return func();
+    }
+    else {
+      throw new Error(`makeSetImmediateMC expected a function, received: ${func}`)
+    }
   }
 
   return (thunk) => {
@@ -31,7 +36,13 @@ function makeSetImmediatePM(): (thunk: () => void) => void {
   const thunks: (() => void)[] = [];
   window.addEventListener('message', (evt) => {
     if (evt.data === true) {
-      return thunks.pop()!();
+      const func = thunks.pop();
+      if (typeof func === 'function') {
+        return func()
+      }
+      else {
+        throw new Error(`makeSetImmediatePM expected a function, received: ${func}`)
+      }
     }
   });
   return (thunk) => {
@@ -59,7 +70,7 @@ function makeSetImmediate(): (thunk: () => void) => void {
     return makeSetImmediateMC();
   }
   else {
-    console.warn(`Stopify has not been benchmarked with ${browser.name}.`);
+    console.warn(`Stopify has not been benchmarked with ${browser.name}. Defaulting to slow window.postMessage.`);
     return makeSetImmediatePM();
   }
 }

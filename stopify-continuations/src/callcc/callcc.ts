@@ -41,6 +41,9 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
 
+    timeSlow('cleanup arguments.callee', () =>
+      h.transformFromAst(path, [cleanup]));
+
     if (opts.getters) {
       h.transformFromAst(path, [exposeGS.plugin])
     }
@@ -72,7 +75,7 @@ const visitor: Visitor = {
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
         [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, jumperizeTry,
-         nameExprs, cleanup]));
+         nameExprs]));
     timeSlow('desugar logical', () =>
       h.transformFromAst(path, [desugarLogical]));
     timeSlow('ANF', () =>

@@ -1,16 +1,17 @@
 import * as babel from 'babel-core';
-export { plugin } from './stopify/stopifyCallCC';
 import *  as types from './types';
-export { compileFunction } from './stopify/compileFunction'
 import * as smc from 'convert-source-map';
 import { generateLineMapping } from './sourceMaps';
 import { RawSourceMap } from 'source-map';
 import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
 import * as fs from 'fs-extra';
-export { CompilerOpts, Opts } from './types';
 import { pack }from 'stopify-continuations';
 import * as tmp from 'tmp';
+
+export { CompilerOpts, Opts } from './types';
+export { compileFunction } from './stopify/compileFunction'
 export { stopify as precompiledStopify } from './runtime/precompiled';
+export { plugin } from './stopify/stopifyCallCC';
 
 function mustWebPack(opts: types.CompilerOpts): boolean {
   return !opts.noWebpack &&

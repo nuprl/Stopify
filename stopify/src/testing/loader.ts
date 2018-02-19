@@ -53,7 +53,8 @@ function onDone() {
   else {
     latencyVar = 'NA';
   }
-  console.log(`${runningTime},${yields},${sprintf("%.2f", latencyAvg)},${latencyVar}`);
+  console.log(
+    `${runningTime},${yields},${sprintf("%.2f", latencyAvg)},${latencyVar}`);
   console.log('OK.');
   window.document.title = 'done';
 }

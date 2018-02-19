@@ -2,7 +2,7 @@ export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
 export type HandleNew = 'direct' | 'wrapper'
 
 export interface CompilerOpts {
-  compileFunction?: boolean,
+  // required
   getters: boolean,
   debug: boolean,
   captureMethod: CaptureMethod,
@@ -12,7 +12,8 @@ export interface CompilerOpts {
   hofs: 'builtin' | 'fill',
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
-  sourceMap?: any,
   externals: string[]
+  sourceMap?: any
+  compileFunction?: boolean,
 }
 

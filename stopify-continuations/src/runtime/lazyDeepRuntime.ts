@@ -1,13 +1,14 @@
-import * as common from './abstractRuntime';
+import * as common from './runtime';
 
 export * from './abstractRuntime';
 
-export class LazyRuntime extends common.ShallowRuntime {
-  type: 'lazy';
-
+export class LazyDeepRuntime extends common.DeepRuntime {
+  /**
+   * This is true if the restored value needs to be thrown
+   */
+  throwing: boolean = false;
   constructor() {
     super();
-    this.type = 'lazy';
   }
 
   captureCC(f: (k: any) => any): void {
@@ -16,16 +17,16 @@ export class LazyRuntime extends common.ShallowRuntime {
   }
 
   makeCont(stack: common.Stack) {
-    const savedDelimitDepth = this.delimitDepth;
-
-    return (v: any, err: any=this.noErrorProvided) => {
-      const throwExn = err !== this.noErrorProvided;
-      this.delimitDepth = savedDelimitDepth;
-      let restarter = () => {
-        if(throwExn) { throw err; }
-        else { return v; }
-      }
-      throw new common.Restore([this.topK(restarter), ...stack]);
+    return (v: any) => {
+      var frame: common.KFrameTop = {
+        kind: 'top',
+        f: () => {
+          this.stack.pop();
+          return v;
+        },
+        value: undefined
+      };
+      throw new common.Restore([...stack, frame]);
     };
   }
 
@@ -33,8 +34,7 @@ export class LazyRuntime extends common.ShallowRuntime {
     try {
       const v = body();
       return { type: 'normal', value: v };
-    }
-    catch (exn) {
+    } catch(exn) {
       if (exn instanceof common.Capture) {
         this.capturing = false;
         return { type: 'capture', stack: exn.stack, f: exn.f };
@@ -53,13 +53,14 @@ export class LazyRuntime extends common.ShallowRuntime {
       return new constr(...args);
     }
 
-    let obj;
+    let obj, $value;
     if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
       const frame = this.stack[this.stack.length - 1];
       if (frame.kind === "rest") {
         [obj] = frame.locals;
+        $value = frame.value;
       } else {
         throw "bad";
       }
@@ -72,7 +73,7 @@ export class LazyRuntime extends common.ShallowRuntime {
         result = constr.apply(obj, args);
       }
       else {
-        result = this.stack[this.stack.length - 1].f.apply(obj, []);
+        result = $value
       }
     }
     catch (exn) {
@@ -81,7 +82,8 @@ export class LazyRuntime extends common.ShallowRuntime {
           kind: "rest",
           f: () => this.handleNew(constr, ...args) ,
           locals: [obj],
-          index: 0
+          index: 0,
+          value: undefined
         });
       }
       throw exn;

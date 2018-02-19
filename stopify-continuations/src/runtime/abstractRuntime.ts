@@ -14,6 +14,7 @@ export type KFrame = KFrameTop | KFrameRest;
 export interface KFrameTop {
   kind: 'top';
   f: () => any;
+  value?: any;
 }
 
 export interface KFrameRest {
@@ -21,6 +22,7 @@ export interface KFrameRest {
   f: () => any;   // The function we are in
   locals: any[];  // All locals and parameters
   index: number;  // At this application index
+  value?: any;    // Value to be restored in deep runtimes.
 }
 
 export type Stack = KFrame[];
@@ -134,10 +136,34 @@ export abstract class Runtime {
     };
   }
 
-  // TODO(rachit): Document this.
+  // TODO(rachit): Document.
+  abstract runtime(body: () => any): any;
+
+  // TODO(rachit): Document.
+  abstract captureCC(f: (k: any) => any): void;
+
+  // Wraps a stack in a function that throws an exception to discard the current
+  // continuation. The exception carries the provided stack with a final frame
+  // that returns the supplied value.
+  abstract makeCont(stack: Stack): (v: any) => any;
+
+  // TODO(rachit): Document.
+  abstract handleNew(constr: any, ...args: any[]): any;
+
+  // TODO(rachit): Document.
+  abstract abstractRun(body: () => any): RunResult;
+}
+
+/**
+ * Represents a runtime that does not support heap bounded stacks.
+ *
+ * Abstractly, the stack is restored bottom-up, i.e. from the oldest frame
+ * to the most recent frame.
+ */
+export abstract class ShallowRuntime extends Runtime {
   runtime(body: () => any): any {
     while (true) {
-      const result = this.abstractRun(body)
+      const result = this.abstractRun(body);
       if (result.type === 'normal') {
         assert(this.mode, 'executing completed in restore mode');
         return;
@@ -160,34 +186,94 @@ export abstract class Runtime {
       }
     }
   }
+}
 
-  // Called when the stack needs to be captured.
-  abstract captureCC(f: (k: any) => any): void;
+/**
+ * Represents a runtime that does supports heap bounded stacks.
+ *
+ * Abstractly, the stack is restored top-down, i.e. from the most recent
+ * frame to the oldest frame. The topmost frame is popped off, run, and its
+ * value is threaded into the next frame.
+ */
+export abstract class DeepRuntime extends Runtime {
+  // True if the runtime should restore the next frame by throwing the value
+  // returned from the previous frame.
+  throwing: boolean;
 
-  /**
-   * Wraps a stack in a function that throws an exception to discard the
-   * current continuation. The exception carries the provided stack with a
-   * final frame that returns the supplied value. If err is provided, instead
-   * of returning the supplied value, it throws an exception with the provided
-   * error.
-   */
-  abstract makeCont(stack: Stack): (v: any, err: any) => any;
+  constructor() {
+    super();
+    this.throwing = false;
+  }
 
-  // Used by instrumented programs to suspend correctly from inside a
-  // constructor call.
-  abstract handleNew(constr: any, ...args: any[]): any;
+  runtime(body: () => any): any {
 
-  /**
-   * Run the `body`. It can return four types of values (in the form RunResult):
-   *
-   * 'normal': The execution of the body terminated normally.
-   * 'capture': The execution of the body resulted in a stack capturing operation.
-   * 'restore': The execution of the body resulted in a stack restoration operation.
-   * 'exception': The excution of the body resulted in a userland exception.
-   */
-  abstract abstractRun(body: () => any): RunResult;
+    while(true) {
+      const result = this.abstractRun(body);
+
+      if (result.type === 'normal') {
+        // Inoked the next stack frame with the value field set to the
+        // value returned by the previous frame.
+        if (this.stack.length > 0) {
+          this.stack[this.stack.length - 1].value = result;
+          body = () => {
+            this.mode = false;
+            return this.stack[this.stack.length - 1].f()
+          }
+        }
+        else {
+          assert(this.mode, 'execution completed in restore mode')
+          return
+        }
+      }
+      else if (result.type === 'capture') {
+        const newStack = result.stack;
+        body = () => {
+          for(var i = newStack.length - 1; i >= 0; i -= 1) {
+            this.stack.push(newStack[i]);
+          }
+          let except = result.f.call(global, this.makeCont(this.stack))
+          // Clear the stack here. This is because we only want to start
+          // running the rest of the computation this the continuation
+          // returns a result.
+          this.stack = []
+          return except;
+        }
+      }
+      else if (result.type === 'restore') {
+        body = () => {
+          if (result.stack.length === 0) {
+            throw new Error(`Can't restore from empty stack`);
+          }
+          this.mode = false;
+          this.stack = result.stack;
+          return this.stack[this.stack.length - 1].f();
+        };
+      }
+      else if (result.type === 'exception') {
+
+        // If there is a continuation left to restore, the exception must be
+        // threaded through it in order to invoke any error handlers.
+        if (this.stack.length > 0) {
+          // This is set back to false in the generated code.
+          this.throwing = true;
+          this.stack[this.stack.length - 1].value = result;
+          body = () => {
+            this.mode = false;
+            return this.stack[this.stack.length - 1].f()
+          }
+        }
+        else {
+          throw result.value; // userland exception
+        }
+      }
+      else {
+        return unreachable();
+      }
+    }
+  }
 }
 
 const unavailableOnNode = [ 'TextDecoder' ];
-export const knownBuiltIns = knowns.filter(x => !unavailableOnNode.includes(x))
+export const knownBuiltIns = knowns
+  .filter(x => !unavailableOnNode.includes(x))
   .map(o => eval(o));

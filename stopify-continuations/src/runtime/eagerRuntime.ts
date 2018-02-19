@@ -1,7 +1,7 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 
-export class EagerRuntime extends common.Runtime {
+export class EagerRuntime extends common.ShallowRuntime {
   type: 'eager';
 
   eagerStack: common.Stack;

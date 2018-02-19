@@ -4,3 +4,4 @@ set -e
 ./node_modules/.bin/tsc
 ./node_modules/.bin/webpack --config js/stopify-webpack.config.js
 ./node_modules/.bin/webpack --config js/test-loader-webpack.config.js
+./node_modules/.bin/webpack --config js/pyret-loader-webpack.config.js

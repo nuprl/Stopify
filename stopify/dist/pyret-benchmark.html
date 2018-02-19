@@ -1,0 +1,19 @@
+<!--
+
+NOTE(rachit): We can't use the usual benchmark.html because it uses
+stopify.bundle.js.
+
+On chrome (and other browsers that the runtime can't detect), setImmediate
+instead stopify.bundle.js tries to setup an event listener. Since Pyret
+pulls in its own runtime and sets up the same event listener, the benchmarks
+start failing.
+--->
+
+<!DOCTYPE html>
+<html>
+
+<body>
+  <textarea id='data' style='width: 100%; height: 100%;'></textarea>
+  <script src="pyret-loader.bundle.js"></script>
+</body>
+</html>

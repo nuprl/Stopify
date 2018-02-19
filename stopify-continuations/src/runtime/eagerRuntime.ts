@@ -1,6 +1,7 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 
+var noErrorProvided = {};
 export class EagerRuntime extends common.Runtime {
   eagerStack: common.Stack;
 
@@ -15,9 +16,14 @@ export class EagerRuntime extends common.Runtime {
   }
 
   makeCont(stack: common.Stack) {
-    return (v: any) => {
+    return (v: any, err: any=noErrorProvided) => {
+      var throwExn = err !== noErrorProvided;
+      let restarter = () => {
+        if(throwExn) { throw err; }
+        else { return v; }
+      }
       this.eagerStack = [...stack];
-      throw new common.Restore([this.topK(() => v), ...stack]);
+      throw new common.Restore([this.topK(restarter), ...stack]);
     }
   }
 

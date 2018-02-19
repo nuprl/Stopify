@@ -47,8 +47,9 @@ export interface RuntimeInterface {
   captureCC(f: (k: any) => any): void;
   // Wraps a stack in a function that throws an exception to discard the current
   // continuation. The exception carries the provided stack with a final frame
-  // that returns the supplied value.
-  makeCont(stack: Stack): (v: any) => any;
+  // that returns the supplied value. If err is provided, instead of returning
+  // the supplied value, it throws an exception with the provided error
+  makeCont(stack: Stack): (v: any, err?: any) => any;
   runtime(body: () => any): any;
   handleNew(constr: any, ...args: any[]): any;
   abstractRun(body: () => any): RunResult;

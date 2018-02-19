@@ -1,7 +1,8 @@
 import * as common from './abstractRuntime';
+
 export * from './abstractRuntime';
 
-export class RetvalRuntime extends common.Runtime {
+export class RetvalRuntime extends common.ShallowRuntime {
   constructor() {
     super();
   }

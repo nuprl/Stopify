@@ -5,6 +5,7 @@ module.exports = {
     library: 'stopify',
     libraryTarget: 'var'
   },
+  devtool: 'source-map',
   node: {
     // Commander has these as dependencies
     'fs': 'empty',

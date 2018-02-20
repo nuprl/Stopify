@@ -2,6 +2,7 @@ import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';
+import * as h from '../common/helpers';
 import * as generic from '../generic';
 import { getLabels, AppType } from './label';
 import * as imm from 'immutable';
@@ -9,6 +10,7 @@ import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
 import * as capture from './captureLogics';
 
+const $value = t.identifier('$value');
 const restoreNextFrame = t.identifier('restoreNextFrame');
 const target = t.identifier('target');
 const newTarget = t.identifier('newTarget');
@@ -17,12 +19,11 @@ const captureFrameId = t.identifier('frame');
 const runtime = t.identifier('$__R');
 const types = t.identifier('$__T');
 const matArgs = t.identifier('materializedArguments');
-const runtimeModeKind = t.memberExpression(runtime, t.identifier('mode'));
 const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
 const captureExn = t.memberExpression(types, t.identifier('Capture'));
 const restoreExn = t.memberExpression(types, t.identifier('Restore'));
-const isNormalMode = runtimeModeKind;
-const isRestoringMode = t.unaryExpression('!', runtimeModeKind);
+const isNormalMode = t.memberExpression(runtime, t.identifier('mode'));
+const isRestoringMode = t.unaryExpression('!', isNormalMode);
 const topOfRuntimeStack = t.memberExpression(runtimeStack,
   t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
@@ -30,8 +31,13 @@ const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
 const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
 const argsLen = t.identifier('argsLen');
+const increaseStackSize = t.expressionStatement(t.updateExpression(
+  '++', t.memberExpression(runtime, t.identifier('remainingStack'))))
+const decreaseStackSize = t.expressionStatement(t.updateExpression(
+  '--', t.memberExpression(runtime, t.identifier('remainingStack'))))
 
 export {
+  $value,
   isNormalMode,
   captureExn,
   captureLocals,
@@ -131,6 +137,12 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   // Pop the top of stack.
   restoreBlock.push(t.expressionStatement(popRuntimeStack));
 
+  if(state.opts.captureMethod === 'lazyDeep') {
+    restoreBlock.unshift(
+      t.expressionStatement(t.assignmentExpression(
+        '=', $value, t.memberExpression(topOfRuntimeStack, t.identifier('value')))));
+  }
+
   const ifRestoring = t.ifStatement(isRestoringMode,
     t.blockStatement(restoreBlock));
 
@@ -198,14 +210,22 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     }
   }
 
+  const isLazyDeep = state.opts.captureMethod === 'lazyDeep';
+  const lazyDeepPredule = [
+    h.letExpression($value, t.nullLiteral()),
+    decreaseStackSize
+  ]
+
   path.node.body.body.unshift(...[
     t.variableDeclaration('let',
       [t.variableDeclarator(argsLen,
         t.memberExpression(t.identifier('arguments'), t.identifier('length')))]),
+    ...(isLazyDeep ? lazyDeepPredule : []),
     ifRestoring,
     captureClosure,
     reenterClosure,
-    ...mayMatArgs
+    ...mayMatArgs,
+    isLazyDeep ? increaseStackSize : t.emptyStatement()
   ]);
   path.skip();
 };
@@ -356,6 +376,11 @@ const jumper = {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
       if (path.node.appType !== AppType.Mixed) {
         return;
+      }
+
+      // Increment the stackSize before returning from a non-flat function.
+      if(!isFlat(path) && s.opts.captureMethod === 'lazyDeep') {
+        path.insertBefore(increaseStackSize);
       }
 
       // Labels may occur if this return statement occurs in a try block.

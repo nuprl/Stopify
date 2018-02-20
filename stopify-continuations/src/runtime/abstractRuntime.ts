@@ -189,7 +189,7 @@ export abstract class ShallowRuntime extends Runtime {
 }
 
 /**
- * Represents a runtime that does supports heap bounded stacks.
+ * Represents a runtime that does support heap bounded stacks.
  *
  * Abstractly, the stack is restored top-down, i.e. from the most recent
  * frame to the oldest frame. The topmost frame is popped off, run, and its

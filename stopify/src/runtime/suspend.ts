@@ -3,10 +3,16 @@ import { ElapsedTimeEstimator } from './elapsedTimeEstimator';
 import * as assert from 'assert';
 import {  Runtime } from 'stopify-continuations/dist/src/runtime';
 
-
+/**
+ * Instance of a runtime extended with the suspend() function. Used by
+ * instrumented programs produced by stopify.
+ */
 export class RuntimeWithSuspend {
 
   constructor(
+    /**
+     * Abstract runtime used to implement stack saving and restoring logic
+     */
     public rts: Runtime,
     public yieldInterval: number,
     public estimator: ElapsedTimeEstimator,
@@ -20,25 +26,41 @@ export class RuntimeWithSuspend {
      */
     public onYield = function(): boolean { return true; },
     /**
-      Called when execution reaches the end of any stopified module.
+     * Called when execution reaches the end of any stopified module.
      */
     public onEnd = function() { },
     public continuation = function() {}  ) {
   }
 
+  // Resume a suspended program.
   resumeFromCaptured(): any {
-    this.rts.resumeFromSuspension(this.continuation);
+    return this.rts.resumeFromSuspension(this.continuation);
   }
 
-  suspend(): void {
+  /**
+   * Call this function to suspend a running program. When called, it initiates
+   * stack capturing by calling the `captureCC` function defined by the current
+   * runtime.
+   *
+   * Internally uses stopify's timing mechanism to decide whether or not to
+   * suspend.
+   *
+   * @param force forces a suspension when `true`.
+   */
+  suspend(force?: boolean): void {
     if (this.rts.isSuspended) { debugger; }
     assert(!this.rts.isSuspended, 'already suspended');
-    // Do not suspend at the top-level of required modules.
+
+    // Do not suspend inside a nested runtime. This is used to make sure that
+    // modules that are `require`d do not try to suspend.
+    // (Specifics of delimitDepth documented in abstractRun.ts)
     if (this.rts.delimitDepth > 1) {
       return;
     }
-    // If this.yieldInterval is NaN, the condition will be false
-    if (this.mayYield() || this.estimator.elapsedTime() >= this.yieldInterval) {
+
+    if (force || this.mayYield() ||
+        (this.estimator.elapsedTime() >= this.yieldInterval)) {
+
       this.estimator.reset();
       this.rts.isSuspended = true;
       return this.rts.captureCC((continuation) => {

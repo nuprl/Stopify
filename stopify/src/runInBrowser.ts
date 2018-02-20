@@ -16,7 +16,7 @@
 import * as selenium from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
 import * as path from 'path';
-import { parseRuntimeOpts } from './cli-parse';
+import { parseRuntimeOpts } from './parse-runtime-opts';
 import { benchmarkUrl } from './browserLine';
 import * as express from 'express';
 

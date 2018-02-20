@@ -5,7 +5,7 @@ import { RuntimeOpts } from '../types';
 import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './elapsedTimeEstimator';
-import { parseRuntimeOpts } from '../cli-parse';
+import { parseRuntimeOpts } from '../parse-runtime-opts';
 
 let continuationsRTS: Runtime | undefined;
 

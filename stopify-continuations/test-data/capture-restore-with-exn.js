@@ -1,3 +1,6 @@
+/**
+ * This tests restarting a captured continuation by throwing a value.
+ */
 var assert = require('assert');
 
 function restartWithExn() {
@@ -15,6 +18,8 @@ function f() {
   });
 }
 
+// `k` is a function returned by `makeCont` in the Runtime class.
+// k : (v: any, err?: any) => any
 function g(k) {
   return k(null, "throw-this");
 }

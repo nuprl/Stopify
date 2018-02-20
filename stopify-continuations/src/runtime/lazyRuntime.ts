@@ -1,7 +1,6 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 
-var noErrorProvided = {};
 export class LazyRuntime extends common.Runtime {
   constructor() {
     super();
@@ -14,8 +13,9 @@ export class LazyRuntime extends common.Runtime {
 
   makeCont(stack: common.Stack) {
     const savedDelimitDepth = this.delimitDepth;
-    return (v: any, err: any=noErrorProvided) => {
-      var throwExn = err !== noErrorProvided;
+
+    return (v: any, err: any=this.noErrorProvided) => {
+      const throwExn = err !== this.noErrorProvided;
       this.delimitDepth = savedDelimitDepth;
       let restarter = () => {
         if(throwExn) { throw err; }

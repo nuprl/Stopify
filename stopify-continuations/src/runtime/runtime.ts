@@ -9,6 +9,8 @@ import { RetvalRuntime } from './retvalRuntime';
 import { FudgeRuntime } from './fudgeRuntime';
 import { LazyDeepRuntime } from './lazyDeepRuntime';
 
+export * from './abstractRuntime';
+
 let savedRTS: Runtime | undefined;
 export function newRTS(transform: string) : Runtime {
 
@@ -18,7 +20,7 @@ export function newRTS(transform: string) : Runtime {
   else {
     switch (transform) {
       case 'lazy': savedRTS = new LazyRuntime(); break;
-      case 'eager':     savedRTS = new EagerRuntime(); break;
+      case 'eager': savedRTS = new EagerRuntime(); break;
       case 'retval': savedRTS = new RetvalRuntime(); break;
       case 'lazyDeep': savedRTS = new LazyDeepRuntime(); break;
       case 'fudge': savedRTS = new FudgeRuntime(); break;

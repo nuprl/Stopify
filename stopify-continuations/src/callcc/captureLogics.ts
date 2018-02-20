@@ -3,7 +3,8 @@ import * as t from 'babel-types';
 import * as bh from '../babelHelpers';
 import * as fastFreshId from '../fastFreshId';
 import { getLabels } from './label';
-import {
+
+export {
   $value,
   isNormalMode,
   captureExn,
@@ -11,8 +12,11 @@ import {
   target,
   restoreNextFrame,
   stackFrameCall,
-  runtime
-} from './jumper'
+  runtime,
+  topOfRuntimeStack,
+  runtimeStack,
+  types,
+}
 
 export {
   lazyCaptureLogic,
@@ -21,6 +25,20 @@ export {
   fudgeCaptureLogic,
   lazyDeepCaptureLogic
 }
+
+const types = t.identifier('$__T');
+const $value = t.identifier('$value');
+const restoreNextFrame = t.identifier('restoreNextFrame');
+const target = t.identifier('target');
+const captureLocals = t.identifier('captureLocals');
+const runtime = t.identifier('$__R');
+const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
+const captureExn = t.memberExpression(types, t.identifier('Capture'));
+const isNormalMode = t.memberExpression(runtime, t.identifier('mode'));
+const topOfRuntimeStack = t.memberExpression(runtimeStack,
+  t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
+const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
+  t.identifier('f')), []);
 
 const eagerStack = t.memberExpression(runtime, t.identifier('eagerStack'));
 const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));

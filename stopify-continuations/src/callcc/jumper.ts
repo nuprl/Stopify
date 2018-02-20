@@ -9,34 +9,7 @@ import * as imm from 'immutable';
 import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
 import * as capture from './captureLogics';
-
-const $value = t.identifier('$value');
-const restoreNextFrame = t.identifier('restoreNextFrame');
-const target = t.identifier('target');
-const newTarget = t.identifier('newTarget');
-const captureLocals = t.identifier('captureLocals');
-const captureFrameId = t.identifier('frame');
-const runtime = t.identifier('$__R');
-const types = t.identifier('$__T');
-const matArgs = t.identifier('materializedArguments');
-const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
-const captureExn = t.memberExpression(types, t.identifier('Capture'));
-const restoreExn = t.memberExpression(types, t.identifier('Restore'));
-const isNormalMode = t.memberExpression(runtime, t.identifier('mode'));
-const isRestoringMode = t.unaryExpression('!', isNormalMode);
-const topOfRuntimeStack = t.memberExpression(runtimeStack,
-  t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
-const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
-  t.identifier('f')), []);
-const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
-  t.identifier('pop')), []);
-const argsLen = t.identifier('argsLen');
-const increaseStackSize = t.expressionStatement(t.updateExpression(
-  '++', t.memberExpression(runtime, t.identifier('remainingStack'))))
-const decreaseStackSize = t.expressionStatement(t.updateExpression(
-  '--', t.memberExpression(runtime, t.identifier('remainingStack'))))
-
-export {
+import {
   $value,
   isNormalMode,
   captureExn,
@@ -44,8 +17,26 @@ export {
   target,
   restoreNextFrame,
   stackFrameCall,
-  runtime
-}
+  runtime,
+  topOfRuntimeStack,
+  runtimeStack,
+  types,
+} from './captureLogics';
+
+export { restoreNextFrame };
+
+const newTarget = t.identifier('newTarget');
+const captureFrameId = t.identifier('frame');
+const matArgs = t.identifier('materializedArguments');
+const restoreExn = t.memberExpression(types, t.identifier('Restore'));
+const isRestoringMode = t.unaryExpression('!', isNormalMode);
+const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
+  t.identifier('pop')), []);
+const argsLen = t.identifier('argsLen');
+const increaseStackSize = t.expressionStatement(t.updateExpression(
+  '++', t.memberExpression(runtime, t.identifier('remainingStack'))))
+const decreaseStackSize = t.expressionStatement(t.updateExpression(
+  '--', t.memberExpression(runtime, t.identifier('remainingStack'))))
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
   localVars: t.Identifier[]

@@ -70,7 +70,7 @@ class Runner implements AsyncRun {
     }
   }
 
-  run(onDone: () => void,
+  run(onDone: (err: any) => void,
     onYield?: () => void,
     onBreakpoint?: (line: number) => void) {
     if (onYield) {
@@ -79,7 +79,8 @@ class Runner implements AsyncRun {
     if (onBreakpoint) {
       this.onBreakpoint = onBreakpoint;
     }
-    this.onDone = onDone;
+    this.onDone = () => { onDone(null); };
+    this.suspendRTS.rts.onException = onDone;
     const script = document.createElement('script');
     script.setAttribute('src', this.url);
     document.body.appendChild(script);

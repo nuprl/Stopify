@@ -54,10 +54,17 @@ export interface RuntimeInterface {
   abstractRun(body: () => any): RunResult;
 }
 
+function defaultExceptionHandler(exn: any) {
+  console.error('The stopified program raised an exception', exn);
+  throw exn;
+}
+
 export abstract class Runtime {
   stack: Stack;
   mode: Mode;
   linenum: undefined | number;
+
+  public onException: (exn: any) => void = defaultExceptionHandler;
 
   constructor(
     public capturing: boolean = false,
@@ -135,7 +142,11 @@ export abstract class Runtime {
         };
       }
       else if (result.type === 'exception') {
-        throw result.value; // userland exception
+        this.onException(result.value);
+        // NOTE(arjun): If this.onException does not throw an exception, we will
+        // continue to execute the next computation in pendingRuns. It is not
+        // clear to be what the right behavior should be. Perhaps we should
+        // clear pendingRuns completely?
       }
       else {
         return unreachable();

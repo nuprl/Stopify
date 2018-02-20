@@ -168,6 +168,11 @@ export abstract class Runtime {
 export abstract class ShallowRuntime extends Runtime {
   type: 'shallow';
 
+  constructor() {
+    super();
+    this.type = 'shallow'
+  }
+
   runtime(body: () => any): any {
     while (true) {
       const result = this.abstractRun(body);
@@ -203,21 +208,15 @@ export abstract class ShallowRuntime extends Runtime {
  * value is threaded into the next frame.
  */
 export abstract class DeepRuntime extends Runtime {
-  type: 'deep';
+  public type: 'deep';
 
   // True if the runtime should restore the next frame by throwing the value
   // returned from the previous frame.
   throwing: boolean;
 
-  // The maximum number of stack frames that the program is allowed to consume.
-  stackSize: number;
-
-  // Runtime value representing the amount of stack frames available to the
-  // program.
-  remainingStack: number;
-
   constructor() {
     super();
+    this.type = 'deep';
     this.throwing = false;
   }
 

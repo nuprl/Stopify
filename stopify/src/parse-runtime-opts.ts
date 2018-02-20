@@ -6,7 +6,6 @@ commander.option(
   '-y, --yield <interval>',
   'time (in milliseconds) between yields to the event loop (default: 100)');
 
-
 commander.option(
   '-e, --env <env>',
   'the runtime environment for testing (default: node)');
@@ -32,6 +31,11 @@ commander.option(
 commander.option(
   '--estimator <estimator>',
   `one of exact, reservoir, velocity, or countdown (default: velocity)`);
+
+commander.option(
+  '--stack-size <size>',
+  'Maximum number of stack frames allowed in the runtime stack. Ignored if the runtime does not support deep stacks (default: 1000)',
+  '--stack-size expects a positive integer');
 
 commander.option('--remote <url>',
   'URL of a remote WebDriver server (usually http://<hostname>:4444/wd/hub)');
@@ -64,6 +68,7 @@ export function parseRuntimeOpts(rawArgs: string[]): RuntimeOpts {
     timePerElapsed: args.timePerElapsed,
     stop: args.stop,
     env: args.env,
-    variance: args.variance
-  });
+    variance: args.variance,
+    stackSize: args.stackSize || 1000
+  };
 }

@@ -40,7 +40,7 @@ export abstract class AbstractRunner implements AsyncRun {
     this.continuationsRTS = rts;
     const estimator = makeEstimator(this.opts);
     this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS,
-      this.opts.yieldInterval, estimator);
+      this.opts.yieldInterval, estimator, this.opts.stackSize);
     this.suspendRTS.mayYield = () => this.mayYieldRunning();
     this.suspendRTS.onYield = () => this.onYieldRunning();
     return this;

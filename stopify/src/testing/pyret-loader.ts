@@ -1,4 +1,4 @@
-import { parseRuntimeOpts } from "../cli-parse";
+import { parseRuntimeOpts } from "../parse-runtime-opts";
 
 const opts = parseRuntimeOpts(
   JSON.parse(decodeURIComponent(window.location.hash.slice(1))));

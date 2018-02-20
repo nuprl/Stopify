@@ -2,7 +2,6 @@
  * Entrypoint of the stopify-continuations bundle
  */
 
-export * from './abstractRuntime';
 import { Runtime } from './abstractRuntime';
 import { LazyRuntime } from './lazyRuntime';
 import { EagerRuntime } from './eagerRuntime';

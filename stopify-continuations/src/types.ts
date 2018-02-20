@@ -1,4 +1,4 @@
-export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
+export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge' | 'lazyDeep';
 export type HandleNew = 'direct' | 'wrapper'
 
 export interface CompilerOpts {

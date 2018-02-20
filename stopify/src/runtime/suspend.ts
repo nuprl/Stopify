@@ -58,6 +58,8 @@ export class RuntimeWithSuspend {
       return;
     }
 
+    // If there are no more stack frame left to be consumed, save the stack
+    // and continue running the program.
     if (isDeepRuntime(this.rts) &&  this.rts.remainingStack <= 0) {
       this.rts.remainingStack = this.rts.stackSize;
       this.rts.isSuspended = true;

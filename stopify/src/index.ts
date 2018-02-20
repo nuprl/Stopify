@@ -8,7 +8,7 @@ import * as fs from 'fs-extra';
 import { pack }from './stopify/webpack';
 import * as tmp from 'tmp';
 
-export { CompilerOpts, Opts } from './types';
+export { CompilerOpts, RuntimeOpts } from './types';
 export { compileFunction } from './stopify/compileFunction'
 export { stopify as precompiledStopify } from './runtime/precompiled';
 export { plugin } from './stopify/stopifyCallCC';

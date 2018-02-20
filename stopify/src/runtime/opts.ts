@@ -1,6 +1,6 @@
 import { RuntimeOpts } from '../types';
 import * as browser from 'detect-browser';
-import { parseRuntimeOpts } from '../cli-parse';
+import { parseRuntimeOpts } from '../parse-runtime-opts';
 
 function getOpts(): RuntimeOpts {
   if (<any>browser.name === 'node') {

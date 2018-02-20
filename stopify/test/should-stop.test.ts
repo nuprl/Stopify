@@ -5,5 +5,6 @@ describe('Call/CC stopping tests', function () {
     f.stopCallCCTest(filename, 'lazy');
     f.stopCallCCTest(filename, 'eager');
     f.stopCallCCTest(filename, 'retval');
+    f.stopCallCCTest(filename, 'lazyDeep');
   });
 });

@@ -45,6 +45,12 @@ commander.option(
     'invalid --estimator value'),
   'velocity');
 
+commander.option(
+  '--stack-size <size>',
+  'Maximum number of stack frames allowed in the runtime stack. Ignored if the runtime does not support deep stacks (default: 1000)',
+  parseArg(parseInt, (x) => x > 0,
+    '--stack-size expects a positive integer'));
+
 commander.option('--remote <url>',
   'URL of a remote WebDriver server (usually http://<hostname>:4444/wd/hub)');
 
@@ -77,6 +83,7 @@ export function parseRuntimeOpts(rawArgs: string[]): RuntimeOpts {
     timePerElapsed: args.timePerElapsed,
     stop: args.stop,
     env: args.env,
-    variance: args.variance
+    variance: args.variance,
+    stackSize: args.stackSize || 1000
   };
 }

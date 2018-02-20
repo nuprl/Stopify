@@ -1,7 +1,7 @@
 /**
  * Runtime system for Node
  */
-import { Opts } from '../types';
+import { RuntimeOpts } from '../types';
 import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './elapsedTimeEstimator';
@@ -11,7 +11,7 @@ let continuationsRTS: Runtime | undefined;
 
 export function init(
   rts: Runtime,
-  opts: Opts = parseRuntimeOpts(process.argv.slice(2))) {
+  opts: RuntimeOpts = parseRuntimeOpts(process.argv.slice(2))) {
 
   continuationsRTS = rts;
   const suspendRTS = new RuntimeWithSuspend(continuationsRTS,

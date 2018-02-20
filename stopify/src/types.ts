@@ -3,11 +3,11 @@ export { HandleNew, CaptureMethod, CompilerOpts } from 'stopify-continuations';
 export type Stoppable = (isStop: () => boolean,
                          onStop: () => void,
                          onDone: () => void,
-                         opts: Opts) => void
+                         opts: RuntimeOpts) => void
 
 export type ElapsedTimeEstimatorName = 'exact' | 'reservoir' | 'countdown';
 
-export interface Opts {
+export interface RuntimeOpts {
   filename: string,
   estimator: ElapsedTimeEstimatorName;
   yieldInterval: number,

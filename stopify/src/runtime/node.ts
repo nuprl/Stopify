@@ -14,14 +14,14 @@ export function init(
   opts: RuntimeOpts = parseRuntimeOpts(process.argv.slice(2))) {
 
   continuationsRTS = rts;
-  const suspendRTS = new RuntimeWithSuspend(continuationsRTS,
-    opts.yieldInterval,
-    makeEstimator(opts));
 
-    if (typeof opts.stop !== 'undefined') {
-      setTimeout(function() {
-        suspendRTS.onYield = () => false;
-      }, opts.stop * 1000);
-    }
+  const suspendRTS = new RuntimeWithSuspend(continuationsRTS,
+    opts.yieldInterval, makeEstimator(opts), opts.stackSize);
+
+  if (typeof opts.stop !== 'undefined') {
+    setTimeout(function() {
+      suspendRTS.onYield = () => false;
+    }, opts.stop * 1000);
+  }
   return suspendRTS;
 }

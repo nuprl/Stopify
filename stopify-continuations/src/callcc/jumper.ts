@@ -32,10 +32,11 @@ const restoreExn = t.memberExpression(types, t.identifier('Restore'));
 const isRestoringMode = t.unaryExpression('!', isNormalMode);
 const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
+const suspendRuntime = t.identifier('$S')
 const increaseStackSize = t.expressionStatement(t.updateExpression(
-  '++', t.memberExpression(runtime, t.identifier('remainingStack'))))
+  '++', t.memberExpression(suspendRuntime, t.identifier('remainingStack'))))
 const decreaseStackSize = t.expressionStatement(t.updateExpression(
-  '--', t.memberExpression(runtime, t.identifier('remainingStack'))))
+  '--', t.memberExpression(suspendRuntime, t.identifier('remainingStack'))))
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
   localVars: t.Identifier[]
@@ -57,6 +58,7 @@ const captureLogics: { [key: string]: CaptureFun } = {
   eager: capture.eagerCaptureLogic,
   retval: capture.retvalCaptureLogic,
   fudge: capture.fudgeCaptureLogic,
+  lazyDeep: capture.lazyDeepCaptureLogic
 };
 
 function isFlat(path: NodePath<t.Node>): boolean {
@@ -160,8 +162,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     ifRestoring,
     captureClosure,
     reenterClosure,
-    ...mayMatArgs,
-    isLazyDeep ? increaseStackSize : t.emptyStatement()
+    ...mayMatArgs
   ]);
   path.skip();
 };
@@ -261,6 +262,10 @@ const jumper = {
         (<any>ifConstructor).isTransformed = true;
 
         path.node.body.body.push(ifConstructor);
+      }
+
+      if (state.opts.captureMethod === 'lazyDeep') {
+        path.node.body.body.push(increaseStackSize);
       }
     }
   },

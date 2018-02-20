@@ -35,36 +35,37 @@ export class Restore {
   constructor(public stack: Stack) {}
 }
 
-// We throw this exception to capture the current continuation. i.e.,
-// captureCC throws this exception when it is applied. This class needs to be
-// exported because source programs are instrumented to catch it.
+// This class is used by all the runtimes to start the stack capturing process.
 export class Capture {
   constructor(public f: (k: any) => any, public stack: Stack) {}
 }
 
-// TODO(rachit): Is this still used?
-export interface RuntimeInterface {
-  captureCC(f: (k: any) => any): void;
-  // Wraps a stack in a function that throws an exception to discard the current
-  // continuation. The exception carries the provided stack with a final frame
-  // that returns the supplied value.
-  makeCont(stack: Stack): (v: any) => any;
-  runtime(body: () => any): any;
-  handleNew(constr: any, ...args: any[]): any;
-  abstractRun(body: () => any): RunResult;
-}
-
 export abstract class Runtime {
+  // The runtime stack.
   stack: Stack;
+
+  // Mode of the program. `true` represents 'normal' mode while `false`
+  // represents 'restore' mode.
   mode: Mode;
+
+  noErrorProvided: any = {};
+
   linenum: undefined | number;
 
   constructor(
+    // True when the instrumented program is capturing the stack.
     public capturing: boolean = false,
+
+    /**
+     * Represents the level of nesting in the runtime. Crucially, if the
+     * delimitDepth > 1, then stopify does not allow the program to suspend.
+     */
     public delimitDepth: number = 0,
-    // true if computation is suspended by 'suspend'
+
+    // true if computation is suspended by 'suspend'.
     public isSuspended: boolean = false,
-    // a queue of computations that need to run
+
+    // a queue of computations that need to be run.
     private pendingRuns: (() => void)[] = []) {
     this.stack = [];
     this.mode = true;
@@ -79,17 +80,16 @@ export abstract class Runtime {
   resumeFromSuspension(thunk: () => any): any {
     this.isSuspended = false;
     this.runtime_(thunk);
-    this.resume();
+    return this.resume();
   }
 
-  /**
-   * Evaluates 'thunk' either now or later.
-   */
+  // Queues the thunk to be processed by the runtime.
+  // If there are no other processes running, it is invoked immediately.
   delimit(thunk: () => any): any {
     if (this.isSuspended === false) {
       this.runtime_(thunk);
       if (this.delimitDepth === 0) {
-        this.resume();
+        return this.resume();
       }
     }
     else {
@@ -97,11 +97,15 @@ export abstract class Runtime {
     }
   }
 
+  // Try to resume the program. If the program has been suspended externally,
+  // this does nothing. Otherwise, it runs the next function in the queue.
   resume(): any {
     if (this.isSuspended) {
       return;
     }
     if (this.pendingRuns.length > 0) {
+
+      // TODO(rachit): Don't use shift here. It is slow.
       return this.delimit(this.pendingRuns.shift()!);
     }
   }
@@ -117,6 +121,7 @@ export abstract class Runtime {
     };
   }
 
+  // TODO(rachit): Document this.
   runtime(body: () => any): any {
     while (true) {
       const result = this.abstractRun(body)
@@ -143,12 +148,30 @@ export abstract class Runtime {
     }
   }
 
+  // Called when the stack needs to be captured.
   abstract captureCC(f: (k: any) => any): void;
-  // Wraps a stack in a function that throws an exception to discard the current
-  // continuation. The exception carries the provided stack with a final frame
-  // that returns the supplied value.
-  abstract makeCont(stack: Stack): (v: any) => any;
+
+  /**
+   * Wraps a stack in a function that throws an exception to discard the
+   * current continuation. The exception carries the provided stack with a
+   * final frame that returns the supplied value. If err is provided, instead
+   * of returning the supplied value, it throws an exception with the provided
+   * error.
+   */
+  abstract makeCont(stack: Stack): (v: any, err: any) => any;
+
+  // Used by instrumented programs to suspend correctly from inside a
+  // constructor call.
   abstract handleNew(constr: any, ...args: any[]): any;
+
+  /**
+   * Run the `body`. It can return four types of values (in the form RunResult):
+   *
+   * 'normal': The execution of the body terminated normally.
+   * 'capture': The execution of the body resulted in a stack capturing operation.
+   * 'restore': The execution of the body resulted in a stack restoration operation.
+   * 'exception': The excution of the body resulted in a userland exception.
+   */
   abstract abstractRun(body: () => any): RunResult;
 }
 

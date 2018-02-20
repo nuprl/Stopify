@@ -1,5 +1,5 @@
 import * as commander from 'commander';
-import { Opts } from './types';
+import { RuntimeOpts } from './types';
 import { parseArg } from './generic';
 
 commander.option(
@@ -60,7 +60,7 @@ commander.option('--local-port <port>',
 commander.arguments('<filename>');
 
 
-export function parseRuntimeOpts(rawArgs: string[]): Opts {
+export function parseRuntimeOpts(rawArgs: string[]): RuntimeOpts {
 
   const args = commander.parse(["", "", ...rawArgs]);
 

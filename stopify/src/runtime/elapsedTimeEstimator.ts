@@ -1,4 +1,4 @@
-import { Opts } from '../types';
+import { RuntimeOpts } from '../types';
 import { unreachable } from '../generic';
 
 /**
@@ -28,7 +28,7 @@ class ExactTimeEstimator implements ElapsedTimeEstimator {
 }
 
 /**
- * Checks the current time whenever 'elapsedTime' is applied, instead of 
+ * Checks the current time whenever 'elapsedTime' is applied, instead of
  * estimating the elapsed time.
  */
 export function makeExact(): ElapsedTimeEstimator {
@@ -54,7 +54,7 @@ class CountdownTimeEstimator implements ElapsedTimeEstimator {
 /**
  * Assumes that 'elapsedTime' is applied every 'timePerElapsed' milliseconds
  * and uses this to estimate the elapsed time.
- * 
+ *
  * @param timePerElapsed time (in milliseconds) between successive calls to
  *                       'elapsedTime'
  */
@@ -63,8 +63,8 @@ export function makeCountdown(timePerElapsed: number): ElapsedTimeEstimator {
 }
 
 /** Draws a number from a geometric distribution. */
-function geom(p: number): number { 
-  return Math.ceil(Math.log(1 - Math.random()) / Math.log(1 - p)); 
+function geom(p: number): number {
+  return Math.ceil(Math.log(1 - Math.random()) / Math.log(1 - p));
 }
 
 class SampleAverageTimeEstimator implements ElapsedTimeEstimator {
@@ -106,7 +106,7 @@ class SampleAverageTimeEstimator implements ElapsedTimeEstimator {
 /**
  * Estimates 'elapsedTime' by sampling the current time when 'elapsedTime'
  * is applied.
- * 
+ *
  * We use reservoir sampling with a reservoir of size 1, thus all times are
  * equally likely to be selected.
  */
@@ -162,7 +162,7 @@ export function makeVelocityEstimator(resample: number = 100): ElapsedTimeEstima
   return new VelocityEstimator(resample);
 }
 
-export function makeEstimator(opts: Opts): ElapsedTimeEstimator {
+export function makeEstimator(opts: RuntimeOpts): ElapsedTimeEstimator {
   if (opts.estimator === 'exact') {
     return makeExact();
   }

@@ -3,22 +3,22 @@
  * entrypoint can only run stopified code that is compiled on the server.
  * To run the compiler in the browser, see compiler.ts.
  */
-import { Opts, AsyncRun } from '../types';
+import { RuntimeOpts, AsyncRun } from '../types';
 import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { AbstractRunner } from '../runtime/abstractRunner';
-import { checkAndFillRuntimeOpts } from '../runtime/checkOpts';
+import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
 // We need to provide these for stopify-continuations
 export * from 'stopify-continuations/dist/src/runtime/runtime';
 export * from 'stopify-continuations/dist/src/runtime/implicitApps';
 
 // For testing / benchmarking convenience.
-export { parseRuntimeOpts } from '../cli-parse';
+export { parseRuntimeOpts } from '../parse-runtime-opts';
 
 let runner : Runner | undefined;
 
 class Runner extends AbstractRunner {
 
-  constructor(private url: string, opts: Opts) {
+  constructor(private url: string, opts: RuntimeOpts) {
     super(opts);
    }
 
@@ -49,7 +49,7 @@ export function init(rts: Runtime): AsyncRun {
  * @param opts runtime settings
  */
 export function stopify(url: string,
-  optionalRuntimeOpts: Partial<Opts>): AsyncRun {
+  optionalRuntimeOpts: Partial<RuntimeOpts>): AsyncRun {
   const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
   runner = new Runner(url, runtimeOpts);
   return runner;

@@ -1,6 +1,6 @@
-import { Opts } from '../types';
+import { RuntimeOpts } from '../types';
 import { copyProp, transformProp } from
-  'stopify-continuations/dist/src/compiler/checkOpts';
+  'stopify-continuations/dist/src/compiler/check-compiler-opts';
 
 const validFlags = [
   'filename',
@@ -19,7 +19,7 @@ const validFlags = [
  *
  * @param value a 'CompilerOpts' with elided fields
  */
-export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
+export function checkAndFillRuntimeOpts(value: Partial<RuntimeOpts>): RuntimeOpts {
   if (value === null || typeof value !== 'object') {
     throw new Error(`expected an object for Opts`);
   }
@@ -30,7 +30,7 @@ export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
     }
   });
 
-  const opts: Opts = {
+  const opts: RuntimeOpts = {
     filename: '',
     estimator: 'velocity',
     yieldInterval: 100,

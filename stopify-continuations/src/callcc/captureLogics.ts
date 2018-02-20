@@ -4,6 +4,7 @@ import * as bh from '../babelHelpers';
 import * as fastFreshId from '../fastFreshId';
 import { getLabels } from './label';
 import {
+  $value,
   isNormalMode,
   captureExn,
   captureLocals,
@@ -17,12 +18,100 @@ export {
   lazyCaptureLogic,
   eagerCaptureLogic,
   retvalCaptureLogic,
-  fudgeCaptureLogic
+  fudgeCaptureLogic,
+  lazyDeepCaptureLogic
 }
 
 const eagerStack = t.memberExpression(runtime, t.identifier('eagerStack'));
 const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
 const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
+const isThrowing = t.memberExpression(runtime, t.identifier('throwing'));
+
+/**
+ * Wrap callsites in try/catch block, lazily building the stack on catching a
+ * Capture exception, then rethrowing.
+ *
+ *  jumper [[ x = f_n(...args) ]] =
+ *    try {
+ *      if (mode === 'normal') {
+ *        x = f_n(...args);
+ *      } else if (mode === restoring && target === n && $__R.throwing) {
+ *        $__R.mode = 'normal'
+ *        $__R.throwing = false
+ *        throw $value
+ *      } else if (mode === restoring && target === n && !$__R.throwing) {
+ *        $__R.mode = 'normal'
+ *        x = $value                  // result of running the frame above
+ *      }
+ *    } catch (exn) {
+ *      if (exn instanceof Capture) {
+ *        exn.stack.push(stackFrame);
+ *      }
+ *      throw exn;
+ *    }
+ */
+function lazyDeepCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
+  const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
+  const exn = fastFreshId.fresh('exn');
+
+  const nodeStmt = t.expressionStatement(path.node);
+
+  const restoreNode =
+    t.assignmentExpression(path.node.operator,
+      path.node.left, $value)
+
+  const setRestoreMode = t.expressionStatement(
+    t.assignmentExpression('=',
+      isNormalMode,
+      t.booleanLiteral(true)))
+
+  const ifStmt = t.ifStatement(
+    isNormalMode,
+    t.blockStatement([nodeStmt]),
+    t.ifStatement(
+      t.logicalExpression('&&',
+        t.binaryExpression('===', target, applyLbl),
+        isThrowing),
+      t.blockStatement([
+        setRestoreMode,
+        t.expressionStatement(
+          t.assignmentExpression('=', isThrowing, t.booleanLiteral(false))),
+        t.throwStatement($value)]),
+      t.ifStatement(
+        t.logicalExpression('&&',
+          t.binaryExpression('===', target, applyLbl),
+          t.binaryExpression('===', isThrowing, t.booleanLiteral(false))),
+        t.blockStatement([
+          t.expressionStatement(restoreNode), setRestoreMode]))))
+
+  const exnStack = t.memberExpression(exn, t.identifier('stack'));
+
+  const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
+    t.catchClause(exn, t.blockStatement([
+      t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
+        t.blockStatement([
+          t.expressionStatement(
+            t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
+            t.objectExpression([
+              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+              t.objectProperty(t.identifier('f'), restoreNextFrame),
+              t.objectProperty(t.identifier('index'), applyLbl),
+            ]),
+          ])),
+          t.expressionStatement(t.callExpression(captureLocals, [
+            t.memberExpression(exnStack, t.binaryExpression('-',
+              t.memberExpression(exnStack, t.identifier('length')),
+              t.numericLiteral(1)), true)
+          ])),
+        ])),
+      t.throwStatement(exn)
+    ])));
+
+  const stmtParent = path.getStatementParent();
+  stmtParent.replaceWith(tryStmt);
+  stmtParent.skip();
+}
+
 
 /**
  * Wrap callsites in try/catch block, lazily building the stack on catching a

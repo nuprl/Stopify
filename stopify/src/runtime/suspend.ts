@@ -1,7 +1,7 @@
 import { setImmediate } from './setImmediate';
 import { ElapsedTimeEstimator } from './elapsedTimeEstimator';
 import * as assert from 'assert';
-import {  Runtime } from 'stopify-continuations/dist/src/runtime';
+import { Runtime, isDeepRuntime } from 'stopify-continuations/dist/src/runtime';
 
 /**
  * Instance of a runtime extended with the suspend() function. Used by
@@ -58,8 +58,22 @@ export class RuntimeWithSuspend {
       return;
     }
 
+    if (isDeepRuntime(this.rts) &&  this.rts.remainingStack <= 0) {
+      this.rts.remainingStack = this.rts.stackSize;
+      this.rts.isSuspended = true;
+      return this.rts.captureCC((continuation) => {
+        if(this.onYield()) {
+          return this.rts.resumeFromSuspension(continuation);
+        }
+      })
+    }
+
     if (force || this.mayYield() ||
         (this.estimator.elapsedTime() >= this.yieldInterval)) {
+
+      if (isDeepRuntime(this.rts)) {
+        this.rts.remainingStack = this.rts.stackSize;
+      }
 
       this.estimator.reset();
       this.rts.isSuspended = true;

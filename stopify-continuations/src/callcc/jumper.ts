@@ -2,12 +2,43 @@ import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';
-import * as fastFreshId from '../fastFreshId';
 import * as generic from '../generic';
 import { getLabels, AppType } from './label';
 import * as imm from 'immutable';
 import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
+import * as capture from './captureLogics';
+
+const restoreNextFrame = t.identifier('restoreNextFrame');
+const target = t.identifier('target');
+const newTarget = t.identifier('newTarget');
+const captureLocals = t.identifier('captureLocals');
+const captureFrameId = t.identifier('frame');
+const runtime = t.identifier('$__R');
+const types = t.identifier('$__T');
+const matArgs = t.identifier('materializedArguments');
+const runtimeModeKind = t.memberExpression(runtime, t.identifier('mode'));
+const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
+const captureExn = t.memberExpression(types, t.identifier('Capture'));
+const restoreExn = t.memberExpression(types, t.identifier('Restore'));
+const isNormalMode = runtimeModeKind;
+const isRestoringMode = t.unaryExpression('!', runtimeModeKind);
+const topOfRuntimeStack = t.memberExpression(runtimeStack,
+  t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
+const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
+  t.identifier('f')), []);
+const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
+  t.identifier('pop')), []);
+
+export {
+  isNormalMode,
+  captureExn,
+  captureLocals,
+  target,
+  restoreNextFrame,
+  stackFrameCall,
+  runtime
+}
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
   localVars: t.Identifier[]
@@ -25,41 +56,15 @@ interface State {
 }
 
 const captureLogics: { [key: string]: CaptureFun } = {
-  lazy: lazyCaptureLogic,
-  eager: eagerCaptureLogic,
-  retval: retvalCaptureLogic,
-  fudge: fudgeCaptureLogic,
+  lazy: capture.lazyCaptureLogic,
+  eager: capture.eagerCaptureLogic,
+  retval: capture.retvalCaptureLogic,
+  fudge: capture.fudgeCaptureLogic,
 };
 
 function isFlat(path: NodePath<t.Node>): boolean {
   return (<any>path.getFunctionParent().node).mark === 'Flat'
 }
-
-
-const target = t.identifier('target');
-const newTarget = t.identifier('newTarget');
-const captureLocals = t.identifier('captureLocals');
-export const restoreNextFrame = t.identifier('restoreNextFrame');
-const captureFrameId = t.identifier('frame');
-const runtime = t.identifier('$__R');
-const types = t.identifier('$__T');
-const matArgs = t.identifier('materializedArguments');
-const runtimeModeKind = t.memberExpression(runtime, t.identifier('mode'));
-const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
-const eagerStack = t.memberExpression(runtime, t.identifier('eagerStack'));
-const topOfRuntimeStack = t.memberExpression(runtimeStack,
-  t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
-const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
-  t.identifier('pop')), []);
-const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
-const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
-const captureExn = t.memberExpression(types, t.identifier('Capture'));
-const restoreExn = t.memberExpression(types, t.identifier('Restore'));
-const isNormalMode = runtimeModeKind;
-const isRestoringMode = t.unaryExpression('!', runtimeModeKind);
-
-const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
-  t.identifier('f')), []);
 
 function usesArguments(path: NodePath<t.Function>) {
   let r = false;
@@ -152,192 +157,6 @@ function labelsIncludeTarget(labels: number[]): t.Expression {
   return labels.reduce((acc: t.Expression, lbl) =>
     bh.or(t.binaryExpression('===',  target, t.numericLiteral(lbl)), acc),
     bh.eFalse);
-}
-
-function fudgeCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
-  return;
-}
-
-/**
- * Wrap callsites in try/catch block, lazily building the stack on catching a
- * Capture exception, then rethrowing.
- *
- *  jumper [[ x = f_n(...args) ]] =
- *    try {
- *      if (mode === 'normal') {
- *        x = f_n(...args);
- *      } else if (mode === restoring && target === n) {
- *        x = R.stack[R.stack.length-1].f();
- *      }
- *    } catch (exn) {
- *      if (exn instanceof Capture) {
- *        exn.stack.push(stackFrame);
- *      }
- *      throw exn;
- *    }
- */
-function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
-  const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const exn = fastFreshId.fresh('exn');
-
-  const nodeStmt = t.expressionStatement(path.node);
-
-  const restoreNode =
-    t.assignmentExpression(path.node.operator,
-      path.node.left, stackFrameCall)
-  const ifStmt = t.ifStatement(
-    isNormalMode,
-    t.blockStatement([nodeStmt]),
-    t.ifStatement(
-      t.binaryExpression('===', target, applyLbl),
-      t.expressionStatement(restoreNode)));
-
-  const exnStack = t.memberExpression(exn, t.identifier('stack'));
-
-  const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
-    t.catchClause(exn, t.blockStatement([
-      t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
-        t.blockStatement([
-          t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
-            t.objectExpression([
-              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-              t.objectProperty(t.identifier('f'), restoreNextFrame),
-              t.objectProperty(t.identifier('index'), applyLbl),
-            ]),
-          ])),
-          t.expressionStatement(t.callExpression(captureLocals, [
-            t.memberExpression(exnStack, t.binaryExpression('-',
-              t.memberExpression(exnStack, t.identifier('length')),
-              t.numericLiteral(1)), true)
-          ])),
-        ])),
-      t.throwStatement(exn)
-    ])));
-
-  const stmtParent = path.getStatementParent();
-  stmtParent.replaceWith(tryStmt);
-  stmtParent.skip();
-}
-
-/**
- * Eagerly build the stack, pushing frames before applications and popping on
- * their return. Capture exns are thrown straight to the runtime, passing the
- * eagerly built stack along with it.
- *
- *  jumper [[ x = f_n(...args) ]] =
- *    if (mode === 'normal') {
- *      eagerStack.unshift(stackFrame);
- *      x = f_n(...args);
- *      eagerStack.shift();
- *    } else if (mode === 'restoring' && target === n) {
- *      // Don't have to `unshift` to rebuild stack because the eagerStack is
- *      // preserved from when the Capture exn was thrown.
- *      x = R.stack[R.stack.length-1].f();
- *      eagerStack.shift();
- *    }
- */
-function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
-  const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const nodeStmt = t.expressionStatement(path.node);
-
-  const stackFrame = t.objectExpression([
-    t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-    t.objectProperty(t.identifier('f'), restoreNextFrame),
-    t.objectProperty(t.identifier('index'), applyLbl),
-  ]);
-
-  const restoreNode =
-    t.assignmentExpression(path.node.operator,
-      path.node.left, stackFrameCall)
-  const ifStmt = t.ifStatement(
-    isNormalMode,
-    t.blockStatement([
-      t.expressionStatement(t.callExpression(pushEagerStack, [
-        stackFrame,
-      ])),
-      t.expressionStatement(t.callExpression(captureLocals, [
-        t.memberExpression(eagerStack, t.numericLiteral(0), true),
-      ])),
-      nodeStmt,
-      t.expressionStatement(t.callExpression(shiftEagerStack, [])),
-    ]),
-    t.ifStatement(
-      t.binaryExpression('===', target, applyLbl),
-      t.blockStatement([
-        t.expressionStatement(restoreNode),
-        t.expressionStatement(t.callExpression(shiftEagerStack, [])),
-      ])));
-  (<any>ifStmt).isTransformed = true;
-
-  const stmtParent = path.getStatementParent();
-  stmtParent.replaceWith(ifStmt);
-  stmtParent.skip();
-}
-
-/**
- * Special return-value to conditionally capture stack frames and propogate
- * returns up to the runtime.
- *
- *  jumper [[ x = f_n(...args) ]] =
- *    {
- *      let ret;
- *      if (mode === 'normal') {
- *        ret = f_n(...args);
- *      } else if (mode === 'restoring' && target === n) {
- *        ret = R.stack[R.stack.length-1].f();
- *      }
- *      if (ret instanceof Capture) {
- *        ret.stack.push(stackFrame);
- *        return ret;
- *      }
- *      if (mode === 'normal') x = ret;
- *    }
- */
-function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
-  const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const left: any = path.node.left;
-
-  const stackFrame = t.objectExpression([
-    t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-    t.objectProperty(t.identifier('f'), restoreNextFrame),
-    t.objectProperty(t.identifier('index'), applyLbl),
-  ]);
-
-  const retStack = t.memberExpression(left, t.identifier('stack'));
-  const restoreBlock: t.IfStatement =
-  t.ifStatement(t.binaryExpression('instanceof', left, captureExn),
-    t.blockStatement([
-      t.expressionStatement(t.callExpression(
-        t.memberExpression(retStack, t.identifier('push')), [
-            stackFrame,
-          ])),
-      t.expressionStatement(t.callExpression(captureLocals, [
-        t.memberExpression(retStack, t.binaryExpression('-',
-          t.memberExpression(retStack, t.identifier('length')),
-          t.numericLiteral(1)), true)
-      ])),
-      t.returnStatement(left),
-    ]));
-
-  const ifStmt = t.ifStatement(
-    isNormalMode,
-    t.expressionStatement(path.node),
-    t.ifStatement(
-      t.binaryExpression('===', target, applyLbl),
-      t.expressionStatement(t.assignmentExpression('=',
-        left, stackFrameCall))));
-
-  const replace = t.ifStatement(
-    bh.or(isNormalMode, t.binaryExpression('===', target, applyLbl)),
-    t.blockStatement([
-      ifStmt,
-      restoreBlock,
-    ]));
-  (<any>replace).isTransformed = true;
-
-  const stmtParent = path.getStatementParent();
-  stmtParent.replaceWith(replace);
-  stmtParent.skip();
 }
 
 function isNormalGuarded(stmt: t.Statement): stmt is t.IfStatement {

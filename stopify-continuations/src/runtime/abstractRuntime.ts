@@ -215,7 +215,7 @@ export abstract class DeepRuntime extends Runtime {
         // Inoked the next stack frame with the value field set to the
         // value returned by the previous frame.
         if (this.stack.length > 0) {
-          this.stack[this.stack.length - 1].value = result;
+          this.stack[this.stack.length - 1].value = result.value;
           body = () => {
             this.mode = false;
             return this.stack[this.stack.length - 1].f()

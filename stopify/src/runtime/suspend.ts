@@ -79,13 +79,15 @@ export class RuntimeWithSuspend {
     if (isDeepRuntime(this.rts) &&  this.remainingStack <= 0) {
       this.remainingStack = this.stackSize;
       this.rts.isSuspended = true;
+
       return this.rts.captureCC((continuation) => {
         if(this.onYield()) {
           // TODO(rachit): this direct call causes a nested invocation of the
           // runtime. In the normal case, setTimeout returns instantly causing
           // the delimit depth to be decremented making the program work
           // correctly.
-          return this.rts.resumeFromSuspension(continuation);
+          this.rts.isSuspended = false;
+          return continuation();
         }
       })
     }

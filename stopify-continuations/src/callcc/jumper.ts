@@ -370,13 +370,14 @@ const jumper = {
 
   ReturnStatement: {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
-      if (path.node.appType !== AppType.Mixed) {
-        return;
-      }
 
       // Increment the stackSize before returning from a non-flat function.
       if(!isFlat(path) && s.opts.captureMethod === 'lazyDeep') {
         path.insertBefore(increaseStackSize);
+      }
+
+      if (path.node.appType !== AppType.Mixed) {
+        return;
       }
 
       // Labels may occur if this return statement occurs in a try block.
@@ -387,6 +388,7 @@ const jumper = {
         bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
           t.returnStatement(stackFrameCall)));
       path.replaceWith(ifReturn);
+
       path.skip();
     }
   },

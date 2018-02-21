@@ -15,6 +15,7 @@ export { transformFromAst } from '../common/helpers';
 
 export const reserved = [
   ...knowns,
+  "name",
   exposeImplicitApps.implicitsIdentifier.name,
   exposeHOFs.hofIdentifier.name,
   "$opts",

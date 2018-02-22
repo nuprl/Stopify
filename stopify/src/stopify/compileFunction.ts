@@ -60,27 +60,16 @@ const defaultExternals = [
   "captureCC"
 ];
 
-const defaultOpts: callcc.CompilerOpts = {
-    getters: false,
-    compileFunction: true,
-    debug: false,
-    captureMethod: 'lazy',
-    newMethod: 'wrapper',
-    eval: false,
-    es: 'sane',
-    hofs: 'builtin',
-    jsArgs: 'simple',
-    requireRuntime: false,
-    externals: defaultExternals
-}
+export function compileFunction(code: string, opts: callcc.CompilerOpts): string {
 
-export function compileFunction(
-  code: string,
-  opts: callcc.CompilerOpts = defaultOpts): string {
+  // Require because compileFunction may be called from arbitrary JS.
+  assert(opts !== undefined, 'CompileFunction expects options object');
+
   const babelOpts = {
     plugins: [[() => ({ visitor }), opts]],
     babelrc: false
   };
+
   const { code:transformed } = babel.transform(code, babelOpts)
   if (!transformed) {
     throw new Error("Failed to transform function")

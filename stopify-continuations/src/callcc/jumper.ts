@@ -18,7 +18,6 @@ import {
   restoreNextFrame,
   stackFrameCall,
   runtime,
-  topOfRuntimeStack,
   runtimeStack,
   types,
 } from './captureLogics';
@@ -90,20 +89,22 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   }
   const restoreLocals = path.node.localVars;
 
+  const frame = t.identifier('$frame');
+
   const restoreBlock = t.blockStatement([
+    t.variableDeclaration('const', [t.variableDeclarator(frame, popRuntimeStack)]),
     t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), t.memberExpression(topOfRuntimeStack,
+      t.arrayPattern(restoreLocals), t.memberExpression(frame,
         t.identifier('locals')))),
     t.expressionStatement(t.assignmentExpression('=', target,
-      t.memberExpression(topOfRuntimeStack, t.identifier('index')))),
-    t.expressionStatement(popRuntimeStack)
+      t.memberExpression(frame, t.identifier('index')))),
   ]);
 
   // Restore $value in lazyDeep.
   if(state.opts.captureMethod === 'lazyDeep') {
-    restoreBlock.body.unshift(
+    restoreBlock.body.push(
       t.expressionStatement(t.assignmentExpression(
-        '=', $value, t.memberExpression(topOfRuntimeStack, t.identifier('value')))));
+        '=', $value, t.memberExpression(frame, t.identifier('value')))));
   }
 
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);

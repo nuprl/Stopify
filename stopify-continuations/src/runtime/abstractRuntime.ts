@@ -257,7 +257,7 @@ export abstract class DeepRuntime extends Runtime {
         if (this.stack.length > 0) {
           // This is set back to false in the generated code.
           this.throwing = true;
-          this.stack[this.stack.length - 1].value = result;
+          this.stack[this.stack.length - 1].value = result.value;
           body = () => {
             this.mode = false;
             return this.stack[this.stack.length - 1].f()

@@ -49,17 +49,17 @@ const isThrowing = t.memberExpression(runtime, t.identifier('throwing'));
  * Wrap callsites in try/catch block, lazily building the stack on catching a
  * Capture exception, then rethrowing.
  *
- *  jumper [[ x = f_n(...args) ]] =
  *    try {
  *      if (mode === 'normal') {
  *        x = f_n(...args);
- *      } else if (mode === restoring && target === n && $__R.throwing) {
+ *      }
+ *      else if (target === n) { // mode === 'restoring'
  *        $__R.mode = 'normal'
- *        $__R.throwing = false
- *        throw $value
- *      } else if (mode === restoring && target === n && !$__R.throwing) {
- *        $__R.mode = 'normal'
- *        x = $value                  // result of running the frame above
+ *        x = $value
+ *        if ($__R.throwing) {
+ *          $__R.throwing = false;
+ *          throw $value
+ *        }
  *      }
  *    } catch (exn) {
  *      if (exn instanceof Capture) {
@@ -87,20 +87,16 @@ function lazyDeepCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
     isNormalMode,
     t.blockStatement([nodeStmt]),
     t.ifStatement(
-      t.logicalExpression('&&',
-        t.binaryExpression('===', target, applyLbl),
-        isThrowing),
+      t.binaryExpression('===', target, applyLbl),
       t.blockStatement([
         setRestoreMode,
-        t.expressionStatement(
-          t.assignmentExpression('=', isThrowing, t.booleanLiteral(false))),
-        t.throwStatement($value)]),
-      t.ifStatement(
-        t.logicalExpression('&&',
-          t.binaryExpression('===', target, applyLbl),
-          t.binaryExpression('===', isThrowing, t.booleanLiteral(false))),
-        t.blockStatement([
-          t.expressionStatement(restoreNode), setRestoreMode]))))
+        t.expressionStatement(restoreNode),
+        t.ifStatement(
+          isThrowing,
+          t.blockStatement([
+            t.expressionStatement(
+              t.assignmentExpression('=', isThrowing, t.booleanLiteral(false))),
+              t.throwStatement($value)]))])))
 
   const exnStack = t.memberExpression(exn, t.identifier('stack'));
 

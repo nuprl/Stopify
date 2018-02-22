@@ -16,9 +16,15 @@ export class LazyRuntime extends common.Runtime {
 
   makeCont(stack: common.Stack) {
     const savedDelimitDepth = this.delimitDepth;
-    return (v: any) => {
+
+    return (v: any, err: any=this.noErrorProvided) => {
+      const throwExn = err !== this.noErrorProvided;
       this.delimitDepth = savedDelimitDepth;
-      throw new common.Restore([this.topK(() => v), ...stack]);
+      let restarter = () => {
+        if(throwExn) { throw err; }
+        else { return v; }
+      }
+      throw new common.Restore([this.topK(restarter), ...stack]);
     };
   }
 

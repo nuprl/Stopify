@@ -18,9 +18,14 @@ export class EagerRuntime extends common.Runtime {
   }
 
   makeCont(stack: common.Stack) {
-    return (v: any) => {
+    return (v: any, err: any=this.noErrorProvided) => {
+      var throwExn = err !== this.noErrorProvided;
+      let restarter = () => {
+        if(throwExn) { throw err; }
+        else { return v; }
+      }
       this.eagerStack = [...stack];
-      throw new common.Restore([this.topK(() => v), ...stack]);
+      throw new common.Restore([this.topK(restarter), ...stack]);
     }
   }
 

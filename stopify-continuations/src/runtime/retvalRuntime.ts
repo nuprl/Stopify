@@ -14,9 +14,15 @@ export class RetvalRuntime extends common.Runtime {
     return new common.Capture(f, []);
   }
 
-  makeCont(stack: common.Stack): (v: any) => common.Restore {
-    return (v: any) =>
-      new common.Restore([this.topK(() => v), ...stack]);
+  makeCont(stack: common.Stack) {
+    return (v: any, err: any = this.noErrorProvided) => {
+      const throwExn = err !== this.noErrorProvided;
+      let restarter = () => {
+        if (throwExn) { throw err; }
+        else { return v; }
+      }
+      return new common.Restore([this.topK(restarter), ...stack]);
+    }
   }
 
   abstractRun(body: () => any): common.RunResult {

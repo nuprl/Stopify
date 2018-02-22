@@ -1,14 +1,14 @@
-import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 import * as bh from '../babelHelpers';
 import * as generic from '../generic';
-import { getLabels, AppType } from './label';
 import * as imm from 'immutable';
+import * as capture from './captureLogics';
 import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
-import * as capture from './captureLogics';
-
+import { getLabels, AppType } from './label';
+import { NodePath } from 'babel-traverse';
+import { letExpression } from '../common/helpers'
 import {
   isNormalMode,
   captureExn,
@@ -17,7 +17,6 @@ import {
   restoreNextFrame,
   stackFrameCall,
   runtime,
-  topOfRuntimeStack,
   runtimeStack,
   types,
 } from './captureLogics';
@@ -84,20 +83,16 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   }
   const restoreLocals = path.node.localVars;
 
-  // We instrument every non-flat function to begin with a *restore block*
-  // that is able to re-construct a saved stack frame. When the function is
-  // invoked in restore mode, its formal arguments are already restored.
-  // The restore block must restore the local variables and deal with
-  // the *arguments* object. The arguments object is a real pain and hurts
-  // performance. So, we avoid restoring it faithfully unless we are explicitly
-  // configured to do so.
-  const restoreBlock: t.Statement[] = [ ];
-  // Restore all local variables. Creates the expression:
-  //     [local0, local1, ... ] = topStack.locals;
-  restoreBlock.push(
+  const frame = t.identifier('$frame');
+
+  const restoreBlock = t.blockStatement([
+    t.variableDeclaration('const', [t.variableDeclarator(frame, popRuntimeStack)]),
     t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), t.memberExpression(topOfRuntimeStack,
-        t.identifier('locals')))));
+      t.arrayPattern(restoreLocals), t.memberExpression(frame,
+        t.identifier('locals')))),
+    t.expressionStatement(t.assignmentExpression('=', target,
+      t.memberExpression(frame, t.identifier('index')))),
+  ]);
 
   if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
     // To fully support the arguments object, we need to ensure that the
@@ -105,26 +100,17 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     // aliases using:
     //
     //   [param0, param1, ...] = topStack.formals
-    restoreBlock.push(
+    restoreBlock.body.push(
       t.expressionStatement(t.assignmentExpression('=',
         t.arrayPattern((<any>path.node.params)),
-        t.memberExpression(topOfRuntimeStack, t.identifier('formals')))));
-    restoreBlock.push(
+        t.memberExpression(frame, t.identifier('formals')))));
+
+    restoreBlock.body.push(
       t.expressionStatement(t.assignmentExpression('=',
-        argsLen, t.memberExpression(topOfRuntimeStack, argsLen))));
+        argsLen, t.memberExpression(frame, argsLen))));
   }
 
-  // Save the value of topStack.index in the local variable called target.
-  // This is the local address of the next instruction to run.
-  restoreBlock.push(t.expressionStatement(t.assignmentExpression('=',
-    target,
-    t.memberExpression(topOfRuntimeStack, t.identifier('index')))));
-
-  // Pop the top of stack.
-  restoreBlock.push(t.expressionStatement(popRuntimeStack));
-
-  const ifRestoring = t.ifStatement(isRestoringMode,
-    t.blockStatement(restoreBlock));
+  const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
 
   // The body of a local function that saves the the current stack frame.
   const captureBody: t.Statement[] = [ ];
@@ -190,10 +176,11 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     }
   }
 
+  const defineArgsLen = letExpression(argsLen,
+    t.memberExpression(t.identifier('arguments'), t.identifier('length')))
+
   path.node.body.body.unshift(...[
-    t.variableDeclaration('let',
-      [t.variableDeclarator(argsLen,
-        t.memberExpression(t.identifier('arguments'), t.identifier('length')))]),
+    ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
     ifRestoring,
     captureClosure,
     reenterClosure,

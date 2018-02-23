@@ -1,6 +1,6 @@
 {
   "name": "stopify-continuations",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Continuations for JavaScript",
   "main": "dist/src/callcc/index",
   "typings": "dist/src/callcc/index",
@@ -66,6 +66,7 @@
     "convert-source-map": "^1.5.0",
     "detect-browser": "^1.12.0",
     "express": "^4.16.0",
+    "fs-extra": "^5.0.0",
     "immutable": "^3.8.1",
     "jest-junit": "^3.1.0",
     "path": "^0.12.7",

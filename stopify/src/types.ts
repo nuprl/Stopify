@@ -29,4 +29,6 @@ export interface AsyncRun {
   resume(): void;
   setBreakpoints(line: number[]): void;
   step(onStep: (line: number) => void): void;
+  pauseImmediate(callback: () => void): void;
+  continueImmediate(result: any): void;
 }

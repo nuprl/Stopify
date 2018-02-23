@@ -19,6 +19,7 @@ class Runner implements AsyncRun {
   private onYield: () => void = function() {  };
   private onBreakpoint: (line: number) => void = function() { };
   private breakpoints: number[] = [];
+  private k: any;
 
   constructor(private url: string, private opts: Opts) { }
 
@@ -133,6 +134,17 @@ class Runner implements AsyncRun {
     // Pause if the line number changes.
     this.suspendRTS.onYield = () => !mayYield();
     this.suspendRTS.resumeFromCaptured();
+  }
+
+  pauseImmediate(callback: () => void): void {
+    return this.continuationsRTS.captureCC((k) => {
+      this.k = k;
+      callback();
+    });
+  }
+
+  continueImmediate(result: any): void {
+    return this.continuationsRTS.runtime(() => this.k(result));
   }
 
 }

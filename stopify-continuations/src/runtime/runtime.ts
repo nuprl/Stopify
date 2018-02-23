@@ -22,9 +22,9 @@ export function newRTS(transform: string) : Runtime {
       case 'lazy': savedRTS = new LazyRuntime(); break;
       case 'eager': savedRTS = new EagerRuntime(); break;
       case 'retval': savedRTS = new RetvalRuntime(); break;
-      case 'lazyDeep': savedRTS = new LazyDeepRuntime(); break;
+      case 'lazyDeep': savedRTS = new LazyDeepRuntime(1000); break;
       case 'fudge': savedRTS = new FudgeRuntime(); break;
-      default: throw new Error(`bad runtime: ${transform}`);
+      default: throw new Error(`unknown runtime: ${transform}`);
     }
 
     return savedRTS;

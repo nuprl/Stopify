@@ -1,4 +1,5 @@
 import * as common from './abstractRuntime';
+import { GeneralStack } from '../common/stack'
 
 export * from './abstractRuntime';
 
@@ -10,19 +11,23 @@ export class RetvalRuntime extends common.ShallowRuntime {
     this.type = 'retval';
   }
 
-  captureCC(f: (k: any) => any): common.Capture {
-    this.capturing = true;
-    return new common.Capture(f, []);
+  newStack(initArray?: Array<common.KFrame>): common.RuntimeStack {
+    return new GeneralStack<common.KFrame>(this.sizeHint);
   }
 
-  makeCont(stack: common.Stack) {
+  captureCC(f: (k: any) => any): common.Capture {
+    this.capturing = true;
+    return new common.Capture(f, this.newStack());
+  }
+
+  makeCont(stack: common.RuntimeStack) {
     return (v: any, err: any = this.noErrorProvided) => {
       const throwExn = err !== this.noErrorProvided;
       let restarter = () => {
         if (throwExn) { throw err; }
         else { return v; }
       }
-      return new common.Restore([this.topK(restarter), ...stack]);
+      return new common.Restore(this.newStack([this.topK(restarter), ...stack]));
     }
   }
 
@@ -54,7 +59,7 @@ export class RetvalRuntime extends common.ShallowRuntime {
     if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
-      const frame = this.stack[this.stack.length - 1];
+      const frame = this.stack.peek();
       if (frame.kind === "rest") {
         [obj] = frame.locals;
       } else {
@@ -66,7 +71,7 @@ export class RetvalRuntime extends common.ShallowRuntime {
     if (this.mode) {
       result = constr.apply(obj, args);
     } else {
-      result = this.stack[this.stack.length-1].f.apply(obj, []);
+      result = this.stack.peek().f.apply(obj, []);
     }
     if (result instanceof common.Capture) {
       result.stack.push({

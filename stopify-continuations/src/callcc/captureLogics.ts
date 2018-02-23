@@ -35,11 +35,10 @@ const runtime = t.identifier('$__R');
 const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
 const captureExn = t.memberExpression(types, t.identifier('Capture'));
 const isNormalMode = t.memberExpression(runtime, t.identifier('mode'));
-const topOfRuntimeStack = t.memberExpression(runtimeStack,
-  t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);
+const topOfRuntimeStack = t.callExpression(
+  t.memberExpression(runtimeStack, t.identifier('peek')), []);
 const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
   t.identifier('f')), []);
-
 const eagerStack = t.memberExpression(runtime, t.identifier('eagerStack'));
 const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
 const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
@@ -113,10 +112,9 @@ function lazyDeepCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
             ]),
           ])),
           t.expressionStatement(t.callExpression(captureLocals, [
-            t.memberExpression(exnStack, t.binaryExpression('-',
-              t.memberExpression(exnStack, t.identifier('length')),
-              t.numericLiteral(1)), true)
-          ])),
+            t.callExpression(
+              t.memberExpression(exnStack, t.identifier('peek')),
+              [])])),
         ])),
       t.throwStatement(exn)
     ])));
@@ -175,10 +173,9 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
             ]),
           ])),
           t.expressionStatement(t.callExpression(captureLocals, [
-            t.memberExpression(exnStack, t.binaryExpression('-',
-              t.memberExpression(exnStack, t.identifier('length')),
-              t.numericLiteral(1)), true)
-          ])),
+            t.callExpression(
+              t.memberExpression(exnStack, t.identifier('peek')),
+              [])])),
         ])),
       t.throwStatement(exn)
     ])));

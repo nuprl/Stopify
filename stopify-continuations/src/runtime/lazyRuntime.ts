@@ -1,4 +1,5 @@
 import * as common from './abstractRuntime';
+import { PushPopStack } from '../common/stack';
 
 export * from './abstractRuntime';
 
@@ -10,12 +11,16 @@ export class LazyRuntime extends common.ShallowRuntime {
     this.type = 'lazy';
   }
 
-  captureCC(f: (k: any) => any): void {
-    this.capturing = true;
-    throw new common.Capture(f, []);
+  newStack(initArray?: Array<common.KFrame>): common.RuntimeStack {
+    return new PushPopStack<common.KFrame>(this.sizeHint, initArray);
   }
 
-  makeCont(stack: common.Stack) {
+  captureCC(f: (k: any) => any): void {
+    this.capturing = true;
+    throw new common.Capture(f, this.newStack());
+  }
+
+  makeCont(stack: common.RuntimeStack) {
     const savedDelimitDepth = this.delimitDepth;
 
     return (v: any, err: any=this.noErrorProvided) => {
@@ -25,7 +30,7 @@ export class LazyRuntime extends common.ShallowRuntime {
         if(throwExn) { throw err; }
         else { return v; }
       }
-      throw new common.Restore([this.topK(restarter), ...stack]);
+      throw new common.Restore(this.newStack([this.topK(restarter), ...stack]));
     };
   }
 
@@ -57,7 +62,7 @@ export class LazyRuntime extends common.ShallowRuntime {
     if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
-      const frame = this.stack[this.stack.length - 1];
+      const frame = this.stack.peek();
       if (frame.kind === "rest") {
         [obj] = frame.locals;
       } else {
@@ -72,7 +77,7 @@ export class LazyRuntime extends common.ShallowRuntime {
         result = constr.apply(obj, args);
       }
       else {
-        result = this.stack[this.stack.length - 1].f.apply(obj, []);
+        result = this.stack.peek().f.apply(obj, []);
       }
     }
     catch (exn) {

@@ -1,31 +1,36 @@
 import * as common from './abstractRuntime';
+import { GeneralStack } from "../common/stack";
 export * from './abstractRuntime';
 
 export class EagerRuntime extends common.ShallowRuntime {
   type: 'eager';
 
-  eagerStack: common.Stack;
+  eagerStack: common.RuntimeStack;
 
   constructor() {
     super();
-    this.eagerStack = [];
     this.type = 'eager';
+    this.eagerStack = this.newStack();
+  }
+
+  newStack(initArray?: Array<common.KFrame>): common.RuntimeStack {
+    return new GeneralStack<common.KFrame>(this.sizeHint, initArray);
   }
 
   captureCC(f: (k: any) => any) {
     this.capturing = true;
-    throw new common.Capture(f, [...this.eagerStack]);
+    throw new common.Capture(f, this.newStack([...this.eagerStack]));
   }
 
-  makeCont(stack: common.Stack) {
+  makeCont(stack: common.RuntimeStack) {
     return (v: any, err: any=this.noErrorProvided) => {
       var throwExn = err !== this.noErrorProvided;
       let restarter = () => {
         if(throwExn) { throw err; }
         else { return v; }
       }
-      this.eagerStack = [...stack];
-      throw new common.Restore([this.topK(restarter), ...stack]);
+      this.eagerStack = this.newStack([...stack]);
+      throw new common.Restore(this.newStack([this.topK(restarter), ...stack]))
     }
   }
 
@@ -58,7 +63,7 @@ export class EagerRuntime extends common.ShallowRuntime {
 
       obj = Object.create(constr.prototype);
     } else {
-      const frame = this.stack[this.stack.length - 1];
+      const frame = this.stack.peek();
       if (frame.kind === "rest") {
         [obj] = frame.locals;
       } else {
@@ -77,7 +82,7 @@ export class EagerRuntime extends common.ShallowRuntime {
       result = constr.apply(obj, args);
       this.eagerStack.shift();
     } else {
-      result = this.stack[this.stack.length - 1].f.apply(obj, []);
+      result = this.stack.peek().f.apply(obj, []);
       this.eagerStack.shift();
     }
     return typeof result === 'object' ? result : obj;

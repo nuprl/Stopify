@@ -1,4 +1,5 @@
 import * as common from './abstractRuntime';
+import { PushPopStack } from '../common/stack';
 
 export * from './abstractRuntime';
 
@@ -7,26 +8,38 @@ export class LazyDeepRuntime extends common.DeepRuntime {
    * This is true if the restored value needs to be thrown
    */
   throwing: boolean = false;
-  constructor() {
+  constructor(sizeHint?: number) {
     super();
+    if (sizeHint) {
+      this.sizeHint = sizeHint;
+      this.stack = this.newStack();
+    }
+    else {
+      throw new Error('LazyDeepRuntime requires a size hint');
+    }
+  }
+
+  newStack(initArray?: Array<common.KFrame>) {
+    return new PushPopStack<common.KFrame>(this.sizeHint);
   }
 
   captureCC(f: (k: any) => any): void {
     this.capturing = true;
-    throw new common.Capture(f, []);
+    throw new common.Capture(f, this.newStack());
   }
 
-  makeCont(stack: common.Stack) {
-    return (v: any) => {
-      var frame: common.KFrameTop = {
-        kind: 'top',
-        f: () => {
-          this.stack.pop();
-          return v;
-        },
-        value: undefined
-      };
-      throw new common.Restore([...stack, frame]);
+  makeCont(stack: common.RuntimeStack) {
+    const savedDelimitDepth = this.delimitDepth;
+
+    return (v: any, err: any = this.noErrorProvided) => {
+      const thrownExn = err !== this.noErrorProvided;
+      this.delimitDepth = savedDelimitDepth;
+      let restarter = () => {
+        if (thrownExn) { throw err; }
+        else { return v; }
+      }
+      stack.push(this.topK(restarter))
+      throw new common.Restore(stack);
     };
   }
 
@@ -57,7 +70,7 @@ export class LazyDeepRuntime extends common.DeepRuntime {
     if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
-      const frame = this.stack[this.stack.length - 1];
+      const frame = this.stack.peek();
       if (frame.kind === "rest") {
         [obj] = frame.locals;
         $value = frame.value;

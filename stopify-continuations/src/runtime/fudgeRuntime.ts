@@ -20,7 +20,7 @@ class FudgedContinuationError {
  * 'FudgedContinuationError(done)'. This is unfortunate. But, this
  * transformation still helps with debugging.
  */
-export class FudgeRuntime extends common.Runtime {
+export class FudgeRuntime extends common.ShallowRuntime {
   constructor() {
     super();
   }

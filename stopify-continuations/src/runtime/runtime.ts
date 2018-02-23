@@ -2,32 +2,31 @@
  * Entrypoint of the stopify-continuations bundle
  */
 
-export * from './abstractRuntime';
 import { Runtime } from './abstractRuntime';
 import { LazyRuntime } from './lazyRuntime';
 import { EagerRuntime } from './eagerRuntime';
 import { RetvalRuntime } from './retvalRuntime';
 import { FudgeRuntime } from './fudgeRuntime';
+import { LazyDeepRuntime } from './lazyDeepRuntime';
+
+export * from './abstractRuntime';
 
 let savedRTS: Runtime | undefined;
 export function newRTS(transform: string) : Runtime {
+
   if (savedRTS) {
     return savedRTS;
   }
-  if (transform === 'lazy') {
-    savedRTS = new LazyRuntime();
-  }
-  else if (transform === 'eager') {
-    savedRTS = new EagerRuntime();
-  }
-  else if (transform === 'retval') {
-    savedRTS = new RetvalRuntime();
-  }
-  else if (transform === 'fudge') {
-    savedRTS = new FudgeRuntime();
-  }
   else {
-    throw new Error(`bad runtime: ${transform}`);
+    switch (transform) {
+      case 'lazy': savedRTS = new LazyRuntime(); break;
+      case 'eager': savedRTS = new EagerRuntime(); break;
+      case 'retval': savedRTS = new RetvalRuntime(); break;
+      case 'lazyDeep': savedRTS = new LazyDeepRuntime(); break;
+      case 'fudge': savedRTS = new FudgeRuntime(); break;
+      default: throw new Error(`bad runtime: ${transform}`);
+    }
+
+    return savedRTS;
   }
-  return savedRTS;
 }

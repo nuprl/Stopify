@@ -1,8 +1,8 @@
-export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
+export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge' | 'lazyDeep';
 export type HandleNew = 'direct' | 'wrapper'
 
 export interface CompilerOpts {
-  compileFunction?: boolean,
+  // required
   getters: boolean,
   debug: boolean,
   captureMethod: CaptureMethod,
@@ -12,6 +12,9 @@ export interface CompilerOpts {
   jsArgs: 'simple' | 'faithful',
   requireRuntime: boolean,
   noWebpack: boolean,
+
+  // optional
   sourceMap?: any
+  compileFunction?: boolean,
 }
 

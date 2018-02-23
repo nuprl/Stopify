@@ -1,4 +1,4 @@
-import { Opts, AsyncRun } from '../types';
+import { RuntimeOpts, AsyncRun } from '../types';
 import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './elapsedTimeEstimator';
@@ -7,7 +7,7 @@ import { makeEstimator } from './elapsedTimeEstimator';
 export * from 'stopify-continuations/dist/src/runtime/runtime';
 
 // For testing / benchmarking convenience.
-export { parseRuntimeOpts } from '../cli-parse';
+export { parseRuntimeOpts } from '../parse-runtime-opts';
 
 let runner : Runner | undefined;
 
@@ -19,7 +19,7 @@ class Runner implements AsyncRun {
   private onBreakpoint: (line: number) => void = function() { };
   private breakpoints: number[] = [];
 
-  constructor(private url: string, private opts: Opts) { }
+  constructor(private url: string, private opts: RuntimeOpts) { }
 
   mayYieldRunning(): boolean {
     const n = this.suspendRTS.rts.linenum;
@@ -48,7 +48,7 @@ class Runner implements AsyncRun {
     this.continuationsRTS = rts;
     const estimator = makeEstimator(this.opts);
     this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS,
-      this.opts.yieldInterval, estimator);
+      this.opts.yieldInterval, estimator, this.opts.stackSize);
     this.suspendRTS.mayYield = () => this.mayYieldRunning();
     this.suspendRTS.onYield = () => this.onYieldRunning();
     return this;
@@ -152,7 +152,7 @@ export function init(rts: Runtime): AsyncRun {
  * @param url URL of a pre-compiled program
  * @param opts runtime settings
  */
-export function stopify(url: string, opts: Opts): AsyncRun {
+export function stopify(url: string, opts: RuntimeOpts): AsyncRun {
   runner = new Runner(url, opts);
   return runner;
 }

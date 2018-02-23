@@ -2,6 +2,11 @@ import { setImmediate } from './setImmediate';
 import { ElapsedTimeEstimator } from './elapsedTimeEstimator';
 import * as assert from 'assert';
 import {  Runtime } from 'stopify-continuations/dist/src/runtime';
+import { emptyThunk } from '../generic';
+
+export function badResume() {
+  throw new Error('program is not paused. (Did you call .resume() twice?)');
+}
 
 /**
  * Instance of a runtime extended with the suspend() function. Used by
@@ -28,13 +33,17 @@ export class RuntimeWithSuspend {
     /**
      * Called when execution reaches the end of any stopified module.
      */
-    public onEnd = function() { },
-    public continuation = function() {}  ) {
+    public onEnd = emptyThunk,
+    public continuation = badResume) {
   }
 
   // Resume a suspended program.
   resumeFromCaptured(): any {
-    return this.rts.resumeFromSuspension(this.continuation);
+    const cont = this.continuation;
+    // Clear the saved continuation, or invoking .resumeFromCaptured() twice
+    // in a row will restart the computation.
+    this.continuation = badResume;
+    return this.rts.resumeFromSuspension(cont);
   }
 
   /**

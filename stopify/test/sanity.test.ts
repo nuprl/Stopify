@@ -12,7 +12,8 @@ describe('Sanity check -- All tests pass without plugins', function () {
         eval(prog)
         assert(true)
       } catch(e) {
-        assert(false, `Sanity check failure: Failed to eval ${filename}`)
+        assert(false, `Sanity check failure: Failed to eval ${filename}
+${e.stack}`)
       }
     })
   })

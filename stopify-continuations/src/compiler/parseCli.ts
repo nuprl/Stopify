@@ -36,8 +36,8 @@ commander.option(
 
 commander.option(
   '--js-args <mode>',
-  'either simple or faithful (default: simple)',
-  parseArg(x => x, x => /^(simple|faithful)$/.test(x),
+  'either simple, faithful, or full (default: simple)',
+  parseArg(x => x, x => /^(simple|faithful|full)$/.test(x),
     'invalid --js-args, see --help'),
   'simple');
 

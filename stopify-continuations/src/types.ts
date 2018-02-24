@@ -9,7 +9,7 @@ export interface CompilerOpts {
   newMethod: HandleNew,
   es: 'sane' | 'es5',
   hofs: 'builtin' | 'fill',
-  jsArgs: 'simple' | 'faithful',
+  jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
   noWebpack: boolean,
   sourceMap?: any

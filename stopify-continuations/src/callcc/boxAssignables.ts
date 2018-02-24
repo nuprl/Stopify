@@ -20,7 +20,8 @@ type State = {
   parentPath: NodePath<Parent>,
   vars: Set<string>,
   parentPathStack: NodePath<Parent>[],
-  varsStack: Set<string>[]
+  varsStack: Set<string>[],
+  opts: { boxes: string[] },
 }
 
 export function box(e: t.Expression): t.ObjectExpression {
@@ -122,6 +123,12 @@ function exitFunction(self: State, path: NodePath<t.FunctionExpression>) {
 }
 
 const visitor = {
+  Scope: {
+    exit(this: State, path: NodePath<t.Scopable>): void {
+      (<any>path.node).boxed = this.vars;
+    },
+  },
+
   Program(this: State, path: NodePath<t.Program>, state: any) {
     this.parentPathStack = [];
     this.varsStack = [];
@@ -154,7 +161,8 @@ const visitor = {
         path.parent.type === "LabeledStatement") {
       return;
     }
-    if (this.vars.includes(path.node.name)) {
+    if (this.vars.includes(path.node.name) ||
+      (this.opts.boxes && this.opts.boxes.includes(path.node.name))) {
       path.replaceWith(unbox(path.node));
     }
   },
@@ -185,7 +193,8 @@ const visitor = {
     if (path.parent.type !== "AssignmentExpression") {
       return;
     }
-    if (this.vars.includes(path.node.name)) {
+    if (this.vars.includes(path.node.name) ||
+      (this.opts.boxes && this.opts.boxes.includes(path.node.name))) {
       path.replaceWith(unbox(path.node))
     }
   },
@@ -218,8 +227,9 @@ const visitor = {
         (<any>fun).mark = (<any>path.node).mark;
         (<any>fun).boxedArgs = (<any>path.node).boxedArgs;
 
-        // Little hack necessary to preserve annotation left by freeIds.ts
+        // Little hack necessary to preserve annotation left by freeIds and singleVarDecls
         (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
+        (<any>fun).renames = (<any>path.node).renames;
         const stmt = t.variableDeclaration("var",
           [t.variableDeclarator(path.node.id, box(fun))]);
         liftStatement(parentPath, path, stmt);

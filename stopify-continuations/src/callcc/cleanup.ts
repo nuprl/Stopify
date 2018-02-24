@@ -7,6 +7,7 @@
  */
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
+import * as fastFreshId from '../fastFreshId';
 
 const visitor = {
 
@@ -21,11 +22,15 @@ const visitor = {
          (!path.node.computed &&
           property.type === 'Identifier' &&
           property.name === 'callee'))) {
-      const fName = (<t.Function>path.getFunctionParent().node).id;
-      if (!fName) {
-        throw new Error(`Expected function name`);
+      const functionParent = path.getFunctionParent();
+      let id;
+      if (!(<t.Function>functionParent.node).id) {
+        id = fastFreshId.fresh('funExpr');
+        (<t.Function>functionParent.node).id = id;
+      } else {
+        id = (<t.Function>functionParent.node).id;
       }
-      path.replaceWith(fName);
+      path.replaceWith(id);
     }
   }
 };

@@ -13,6 +13,7 @@ import * as desugarLogical from '../common/desugarLogical';
 import * as singleVarDecls from '../common/singleVarDecls';
 import * as makeBlocks from '../common/makeBlockStmt';
 import * as boxAssignables from './boxAssignables';
+import * as supportEval from './eval';
 import * as desugarNew from '../common/desugarNew';
 import * as anf from '../common/anf';
 import * as label from './label';
@@ -34,21 +35,25 @@ import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
 
 const $__R = t.identifier('$__R')
+const $__C = t.identifier('$__C')
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
+
+    timeSlow('cleanup arguments.callee', () =>
+      h.transformFromAst(path, [cleanup]));
+
+    if (opts.getters) {
+      h.transformFromAst(path, [exposeGS.plugin])
+    }
 
     if (opts.newMethod === 'wrapper') {
       h.transformFromAst(path, [desugarNew]);
     }
 
     if (opts.es === 'es5') {
-      h.transformFromAst(path, [exposeImplicitApps.plugin]);
-    }
-
-    if (opts.getters) {
-      h.transformFromAst(path, [exposeGS.plugin])
+      h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
     }
 
     if (opts.hofs === 'fill') {
@@ -56,29 +61,39 @@ const visitor: Visitor = {
     }
 
     timeSlow('singleVarDecl', () =>
-      h.transformFromAst(path, [singleVarDecls]));
+      h.transformFromAst(path, [[singleVarDecls, opts]]));
     timeSlow('free ID initialization', () =>
-      freeIds.annotate(path));
+      freeIds.annotate(path, opts.eval));
     timeSlow('box assignables', () =>
       h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
+    if (opts.eval) {
+      timeSlow('instrument eval calls', () =>
+        h.transformFromAst(path, [[supportEval.plugin, opts]]));
+    }
 
 
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
         [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, jumperizeTry,
-         nameExprs, cleanup]));
+         nameExprs]));
     timeSlow('desugar logical', () =>
       h.transformFromAst(path, [desugarLogical]));
     timeSlow('ANF', () =>
       h.transformFromAst(path, [anf]));
     timeSlow('declVars', () =>
       h.transformFromAst(path, [declVars]));
-    timeSlow('delimit', () =>
-      h.transformFromAst(path, [[delimitTopLevel, opts]]));
+    // If stopifying eval'd string at runtime, don't delimit statements so that
+    // we can suspend through the eval.
+    if (!(<any>opts).renames) {
+      timeSlow('delimit', () =>
+        h.transformFromAst(path, [[delimitTopLevel, opts]]));
+    }
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
     timeSlow('jumper', () =>
       h.transformFromAst(path, [[jumper.plugin, opts]]));
+
+    path.stop();
 
     let toShift;
     if (opts.compileFunction) {
@@ -142,7 +157,19 @@ const visitor: Visitor = {
           'const'));
     }
 
-    path.stop();
+    if (opts.eval && !opts.compileFunction) {
+
+      const req = opts.requireRuntime ?
+        t.callExpression(t.identifier('require'),
+          [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]) :
+        // provided by dist/stopify-compiler.bundle.js
+        t.memberExpression(t.identifier('stopifyCompiler'), t.identifier('module'))
+
+      path.node.body.unshift(
+        h.letExpression(
+          $__C, req, 'const'));
+    }
+
   }
 };
 

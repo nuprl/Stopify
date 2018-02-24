@@ -5,3 +5,8 @@ set -e
 ./node_modules/.bin/webpack --config js/stopify-webpack.config.js
 ./node_modules/.bin/webpack --config js/test-loader-webpack.config.js
 ./node_modules/.bin/webpack --config js/pyret-loader-webpack.config.js
+
+# Build the stopify compiler bundle
+yarn link
+yarn link stopify
+../node_modules/.bin/browserify js/stopify-compiler.js -s stopifyCompiler -o dist/stopify-compiler.bundle.js

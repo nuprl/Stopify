@@ -6,15 +6,16 @@ import * as fastFreshId from '../fastFreshId';
 
 export * from '../types';
 export { default as plugin } from './callcc';
+export { flatness } from '../compiler/flatness';
 export { fastFreshId }
 export { unreachable } from '../generic';
 export { default as cleanupGlobals } from '../common/cleanupGlobals';
 export { default as hygiene } from '../common/hygiene';
 export { transformFromAst } from '../common/helpers';
-export { flatness } from '../compiler/flatness';
 
 export const reserved = [
   ...knowns,
+  "name",
   exposeImplicitApps.implicitsIdentifier.name,
   exposeHOFs.hofIdentifier.name,
   "$opts",
@@ -29,4 +30,6 @@ export const reserved = [
   "finally_rv",
   "finally_exn",
   "captureCC",
+  'materializedArguments',
+  'argsLen',
 ];

@@ -2,8 +2,11 @@ import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 
 class FudgedContinuationError {
+  type: 'fudge';
 
-  constructor(public v: any) { }
+  constructor(public v: any) {
+    this.type = 'fudge';
+  }
 
   toString() {
     return `FudgedContinuationError(${this.v})`;

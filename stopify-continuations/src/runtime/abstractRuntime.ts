@@ -41,7 +41,8 @@ export class Capture {
 }
 
 export abstract class Runtime {
-  // The runtime stack.
+  public type: string;
+
   stack: Stack;
 
   // Mode of the program. `true` represents 'normal' mode while `false`

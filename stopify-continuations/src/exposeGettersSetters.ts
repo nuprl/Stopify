@@ -5,31 +5,72 @@ import { runtimePath } from './common/helpers';
 
 const gettersRuntime = t.identifier('$gs');
 
-// Stops $gs.get_prop and $gs.set_prop from causing an infinite loop.
 const get_prop = t.memberExpression(gettersRuntime, t.identifier('get_prop'));
-(<any>get_prop).exposed = true
-
 const set_prop = t.memberExpression(gettersRuntime, t.identifier('set_prop'));
-(<any>set_prop).exposed = true
+const delete_prop = t.memberExpression(gettersRuntime, t.identifier('delete_prop'));
 
-function $get(...args: t.Expression[]): t.Expression {
-  return t.callExpression(get_prop, args);
-}
+// Stops $gs.get_prop and $gs.set_prop from causing an infinite loop.
+(<any>set_prop).exposed = true;
+(<any>get_prop).exposed = true;
+(<any>delete_prop).exposed = true;
 
-function $set(...args: t.Expression[]): t.Expression {
-  return t.callExpression(set_prop, args);
+function $func(func: t.Expression, ...args: t.Expression[]): t.Expression {
+  return t.callExpression(func, args);
 }
 
 const gettersRuntimePath = `${runtimePath}/gettersSetters.exclude.js`
 
+let enableGetters = false;
+
+const gettersUsedVisitor = {
+  ObjectMethod(path: NodePath<t.ObjectMethod>) {
+    if (path.node.kind !== 'method') {
+      enableGetters = true;
+      path.stop()
+    }
+  },
+  MemberExpression(path: NodePath<t.MemberExpression>) {
+    const { object, property } = path.node
+    if (t.isIdentifier(object) && object.name === 'Object' &&
+        t.isIdentifier(property) && property.name === 'defineProperty') {
+      enableGetters = true;
+      path.stop()
+    }
+  }
+}
+
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>) {
+    path.traverse(gettersUsedVisitor)
+
+    if (!enableGetters) {
+      console.log('No uses of getters found, disabling --getters')
+      path.stop()
+    }
+
     path.node.body.unshift(
       t.variableDeclaration('var',
         [t.variableDeclarator(gettersRuntime,
           t.callExpression(t.identifier('require'),
             [t.stringLiteral(gettersRuntimePath)]))]));
 
+  },
+  UnaryExpression: {
+    enter(path: NodePath<t.UnaryExpression>) {
+      const { operator, argument } = path.node;
+
+      // Support property deletion.
+      if (operator === 'delete' && t.isMemberExpression(argument)) {
+        const { object, property, computed } = argument;
+
+        const prop = computed ?
+          property :
+          t.stringLiteral((<any>property).name)
+
+        path.replaceWith($func(delete_prop, object, prop))
+
+      }
+    }
   },
   MemberExpression(path: NodePath<FlatnessMark<t.MemberExpression>>) {
     const p = path.parent
@@ -42,17 +83,11 @@ const visitor: Visitor = {
 
     // Setters
     if(t.isAssignmentExpression(p) && p.left === path.node && p.operator === '=') {
-      if(path.node.computed) {
-        path.parentPath.replaceWith(
-          $set(object, property, p.right))
-      }
-      else if(t.isIdentifier(property)) {
-        path.parentPath.replaceWith(
-          $set(object, t.stringLiteral(property.name), p.right))
-      }
-      else {
-        throw new Error("Unexpected property type in setter " + property.type)
-      }
+      const prop = path.node.computed ?
+        property :
+        t.stringLiteral((<any>property).name)
+
+      path.parentPath.replaceWith($func(set_prop, object, prop, p.right))
     }
 
     else if(t.isUpdateExpression(p) || t.isAssignmentExpression(p) ||
@@ -62,15 +97,11 @@ const visitor: Visitor = {
 
     // Getters
     else {
-      if (path.node.computed) {
-        path.replaceWith($get(object, property))
-      }
-      else if(t.isIdentifier(property)) {
-        path.replaceWith($get(object, t.stringLiteral(property.name)))
-      }
-      else {
-        throw new Error("Unexpected property type in getter " + property.type)
-      }
+      const prop = path.node.computed ?
+        property :
+        t.stringLiteral((<any>property).name)
+
+      path.replaceWith($func(get_prop, object, prop))
     }
   }
 

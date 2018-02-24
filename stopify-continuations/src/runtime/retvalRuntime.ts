@@ -2,8 +2,11 @@ import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 
 export class RetvalRuntime extends common.Runtime {
+  type: 'retval';
+
   constructor() {
     super();
+    this.type = 'retval';
   }
 
   captureCC(f: (k: any) => any): common.Capture {

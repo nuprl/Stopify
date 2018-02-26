@@ -37,7 +37,7 @@ export class RuntimeWithSuspend {
      *  the browser's event loop. If the function produces 'false', the
      *  computation terminates.
      */
-    public onYield = function(): boolean { return true; },
+    public onYield = function(continuation: () => any): boolean { return true; },
 
     /**
      * Called when execution reaches the end of any stopified module.
@@ -81,7 +81,7 @@ export class RuntimeWithSuspend {
       this.rts.isSuspended = true;
 
       return this.rts.captureCC((continuation) => {
-        if(this.onYield()) {
+        if(this.onYield(continuation)) {
           this.rts.isSuspended = false;
           return continuation();
         }
@@ -100,7 +100,7 @@ export class RuntimeWithSuspend {
       return this.rts.captureCC((continuation) => {
         this.continuation = continuation;
 
-        if (this.onYield()) {
+        if (this.onYield(continuation)) {
           return setImmediate(() => {
             this.rts.resumeFromSuspension(continuation);
           });

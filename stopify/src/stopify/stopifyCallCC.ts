@@ -60,10 +60,13 @@ export const visitor: Visitor = {
 
     callcc.fastFreshId.cleanup()
 
-    if (opts.requireRuntime) {
+    if (opts.compileFunction) {
+      // Do nothing
+    }
+    else if (opts.requireRuntime) {
       // var $S = require('stopify/dist/src/runtime/rts').init($__R);;
 
-      path.node.body.splice(2, 0,
+      path.node.body.splice(opts.eval ? 3 : 2, 0,
       t.variableDeclaration('var',
           [t.variableDeclarator(
             t.identifier('$S'),
@@ -73,13 +76,10 @@ export const visitor: Visitor = {
                   [t.stringLiteral('stopify/dist/src/runtime/node')]),
                 t.identifier('init')),
                 [t.identifier('$__R')]))]));
-    }
-    else if (opts.compileFunction) {
-      // Do nothing
-    }
-    else {
+    } else {
       // var $S = stopify.init($__R);
-      path.node.body.splice(2, 0,
+
+      path.node.body.splice(opts.eval ? 3 : 2, 0,
         t.variableDeclaration('var',
             [t.variableDeclarator(
               t.identifier('$S'),

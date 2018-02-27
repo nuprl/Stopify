@@ -12,18 +12,12 @@ export const stopTests = glob.sync('test/should-stop/*.js', {})
 export function callCCTest(srcPath: string, transform: string, opts: string = "") {
   const testName = `${srcPath} ${opts} (${transform})`;
 
-  // Skip tests we know we can't handle
-  if (path.basename(srcPath).indexOf("eval") === 0) {
-    it.skip(testName);
-    return;
-  }
-
   it(testName, () => {
     const basename = path.basename(srcPath, '.js')
     const { name: dstPath } =
       tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
     execSync(
-      `./bin/compile --require-runtime --js-args=full --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
+      `./bin/compile --require-runtime --eval --js-args=full --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
     try {
       execSync(`node ${dstPath} --estimator=countdown --yield 1`, { timeout: 10000 });
     }

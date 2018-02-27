@@ -19,6 +19,7 @@ interface FreeIds {
 }
 
 interface State {
+  opts: { eval: boolean },
   refIds: Set<string>,
   refIdStack: Set<string>[]
 }
@@ -27,23 +28,29 @@ const hasNff = [ "FunctionDeclaration", "FunctionExpression", "Program" ];
 const functionTypes = [ 'FunctionDeclaration', 'FunctionExpression' ];
 
 const visitor = {
-  Function(this: State, path: NodePath<t.Function & NestedFunctionFree>) {
-    path.node.nestedFunctionFree = new Set<string>();
-  },
   Scope: {
-    enter(this: State, path: NodePath<t.Scopable>) {
+    enter(this: State, path: NodePath<t.Scopable & NestedFunctionFree>) {
+      path.node.nestedFunctionFree = new Set<string>();
       this.refIdStack.push(this.refIds);
       this.refIds = new Set();
     },
-    exit(this: State, path: NodePath<t.Scopable & FreeIds>) {
+    exit(this: State, path: NodePath<t.Scopable & FreeIds & NestedFunctionFree>) {
       const boundIds = new Set<string>(Object.keys(path.scope.bindings));
-      const freeIds = SetExt.diff(this.refIds, boundIds);
+      let freeIds = SetExt.diff(this.refIds, boundIds);
+      if (this.opts.eval && freeIds.has('eval')) {
+        freeIds = SetExt.union(freeIds, boundIds);
+      }
       path.node.freeIds = freeIds;
       this.refIds = this.refIdStack.pop()!;
       for (const x of freeIds) {
         this.refIds.add(x);
       }
 
+      if (this.opts.eval && freeIds.has('eval')) {
+        for (const x of path.node.freeIds) {
+          path.node.nestedFunctionFree.add(x);
+        }
+      }
       if (functionTypes.includes(path.node.type)) {
         const parent = enclosingFunction(path);
         const nestedFunctionFree = parent.node.nestedFunctionFree;
@@ -77,9 +84,9 @@ const visitor = {
   }
 }
 
-export function annotate(path: NodePath<t.Node>) {
+export function annotate(path: NodePath<t.Node>, supportEval: boolean) {
   const opts = {
-    plugins: [ () => ({visitor}) ],
+    plugins: [ [() => ({visitor}), { eval: supportEval }] ],
     babelrc: false,
     code: false,
     ast: false

@@ -2,11 +2,14 @@ import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 
 export class EagerRuntime extends common.Runtime {
+  type: 'eager';
+
   eagerStack: common.Stack;
 
   constructor() {
     super();
     this.eagerStack = [];
+    this.type = 'eager';
   }
 
   captureCC(f: (k: any) => any) {

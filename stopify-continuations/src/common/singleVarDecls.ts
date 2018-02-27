@@ -1,5 +1,5 @@
 import * as babel from 'babel-core';
-import { NodePath, Visitor } from 'babel-traverse';
+import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as bh from "../babelHelpers";
 import { fresh } from '../fastFreshId';
@@ -16,6 +16,8 @@ function getFunctionArgs(path: NodePath<t.Node>): string[] {
 }
 
 type S = {
+  opts: { eval: boolean },
+  renameStack: { [key: string]: string }[],
   functionParent: NodePath<bh.FunWithBody | t.Program>,
   functionParentStack: NodePath<bh.FunWithBody | t.Program>[]
 }
@@ -30,8 +32,9 @@ const visitFunWithBody = {
   }
 };
 
-const visitor: Visitor = {
+const visitor = {
   Program(this: S, path: NodePath<t.Program>) {
+    this.renameStack = [];
     this.functionParent = path;
     this.functionParentStack = [];
   },
@@ -41,6 +44,25 @@ const visitor: Visitor = {
   ArrowFunctionExpression(path: NodePath<t.ArrowFunctionExpression>) {
     throw new Error("ArrowFunctionExpressions are unsupported");
   },
+
+  Scope: {
+    enter(this: S, path: NodePath<t.Scopable>): void {
+      (<any>path.node).renames = {};
+      this.renameStack.push((<any>path.node).renames);
+    },
+
+    exit(this: S, path: NodePath<t.Scopable>): void {
+      this.renameStack.pop();
+    },
+  },
+
+  'ReferencedIdentifier|BindingIdentifier': function (path: NodePath<t.Identifier>): void {
+    if (this.opts.renames && this.opts.renames[path.node.name]) {
+      const x = this.opts.renames[path.node.name];
+      path.node.name = x;
+    }
+  },
+
   VariableDeclaration: {
     enter(this: S, path: NodePath<t.VariableDeclaration>) {
       if (path.node.declarations.length !== 1) {
@@ -84,11 +106,13 @@ const visitor: Visitor = {
         // unnecessary) and declare them as 'var' statements.
         const decl = path.node.declarations[0];
         const x = fresh(id.name);
+        const oldId = id.name, newId = x.name;
         // NOTE(arjun): using rename is likely quadratic. If we have performance
         // issues with this phase, we can maintain a set of renamed variables
         // and avoid repeated traversals.
         path.scope.rename(id.name, x.name);
         path.replaceWith(t.variableDeclaration('var', [decl]));
+        this.renameStack[this.renameStack.length-1][oldId] = newId;
       }
     },
     exit(this: S, path: NodePath<t.VariableDeclaration>): void {

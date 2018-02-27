@@ -2,8 +2,11 @@ import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 
 export class LazyRuntime extends common.Runtime {
+  type: 'lazy';
+
   constructor() {
     super();
+    this.type = 'lazy';
   }
 
   captureCC(f: (k: any) => any): void {

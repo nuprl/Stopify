@@ -51,10 +51,6 @@ commander.option(
   'enable support for getters/setters (default: false)',
   false)
 
-commander.option('--disable-webpack',
-  'Do not apply Webpack, even if necessary',
-  false);
-
 commander.option('--require-runtime',
   `use require('stopify') to load the runtime system, which necessary to run
    on Node`,
@@ -83,8 +79,7 @@ export const compilerOpts: CompilerOpts = {
   es: args.es,
   hofs: args.hofs,
   jsArgs: args.jsArgs,
-  requireRuntime: args.requireRuntime,
-  noWebpack: args.disableWebpack
+  requireRuntime: args.requireRuntime
 };
 
 const srcPath: string = args.args[0];

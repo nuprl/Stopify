@@ -1,5 +1,3 @@
-const assert = require('assert');
-
 var obj = {
   set current(name) {
     while(false) {}
@@ -9,6 +7,10 @@ var obj = {
 }
 
 obj.current = 'EN';
-assert.equal(obj.changed, 1)
+if (obj.changed !== 1) {
+  throw 'error 1';
+}
 obj.current = 'FA';
-assert.equal(obj.changed, 2)
+if (obj.changed !== 2) {
+  throw 'error 2';
+}

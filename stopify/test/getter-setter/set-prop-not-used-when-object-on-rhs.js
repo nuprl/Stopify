@@ -1,5 +1,3 @@
-const assert = require('assert');
-
 const obj = {
   ix: -1,
   parent: false
@@ -14,5 +12,7 @@ for (var i = 0; i < 10; i++) {
   }
   curr = curr.child;
 }
+if (curr.ix !== 9) {
+  throw 'error';
+}
 
-assert.equal(curr.ix, 9)

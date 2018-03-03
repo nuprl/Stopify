@@ -1,37 +1,16 @@
 import * as babel from 'babel-core';
 import *  as types from './types';
 import * as smc from 'convert-source-map';
-import * as tmp from 'tmp';
 import * as fs from 'fs-extra';
 import { generateLineMapping } from './sourceMaps';
 import { RawSourceMap } from 'source-map';
 import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
-import { pack }from './stopify/webpack'
 
 export { compileFunction, compileEval } from './stopify/compileFunction'
 export { CompilerOpts, Opts } from './types';
 export { stopify as precompiledStopify } from './runtime/precompiled';
 export { plugin } from './stopify/stopifyCallCC';
 
-function mustWebPack(opts: types.CompilerOpts): boolean {
-  return !opts.noWebpack &&
-    (opts.es === 'es5' || opts.hofs === 'fill' || opts.getters)
-}
-
-function stopifyPack(srcPath: string, opts: types.CompilerOpts): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const dstPath = tmp.fileSync({ postfix: '.js' }).name;
-    pack(srcPath, dstPath, [stopifyCallCC, opts], err => {
-      if (err !== null) {
-        fs.removeSync(dstPath);
-        return reject(err);
-      }
-      const jsCode = fs.readFileSync(dstPath, 'utf-8');
-      fs.removeSync(dstPath);
-      return resolve(jsCode);
-    });
-  });
-}
 
 export function stopifySourceSync(src: string, opts: types.CompilerOpts): string {
   const babelOpts = {
@@ -56,13 +35,8 @@ export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<stri
 
   if (opts.captureMethod === 'original') {
     return fs.readFile(srcPath, 'utf-8').then((prog) => {
-      // If the program is running with loader.bundle.js, call the onDone
-      // callback.
-      return `${prog};\n${opts.noWebpack ? "" :  "window.originalOnDone();"}`
+      return `${prog};window.originalOnDone();`
     })
-  }
-  else if (mustWebPack(opts)) {
-    return stopifyPack(srcPath, opts);
   }
   else {
     return fs.readFile(srcPath, 'utf-8')

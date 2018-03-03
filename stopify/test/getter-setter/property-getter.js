@@ -1,5 +1,3 @@
-const assert = require('assert');
-
 const obj = {
   c: 1,
   get count() {
@@ -8,5 +6,10 @@ const obj = {
   }
 }
 
-assert.equal(obj.count, 1)
-assert.equal(obj.count, 2)
+if (obj.count !== 1) {
+  throw 'error 1';
+}
+
+if (obj.count !== 2) {
+  throw 'error 2';
+}

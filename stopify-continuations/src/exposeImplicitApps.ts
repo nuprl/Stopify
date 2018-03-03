@@ -23,12 +23,15 @@ const implicitsPath = `${runtimePath}/implicitApps`
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
+    if (!opts.requireRuntime) {
+      return;
+    }
+
     path.node.body.unshift(
       t.variableDeclaration('var',
       [t.variableDeclarator(implicitsIdentifier,
-        !opts.requireRuntime ? t.identifier('stopify')
-          : t.callExpression(t.identifier('require'),
-            [t.stringLiteral(implicitsPath)]))]));
+         t.callExpression(t.identifier('require'),
+           [t.stringLiteral(implicitsPath)]))]));
   },
   BinaryExpression(path: NodePath<t.BinaryExpression>) {
     const fun = binopTable.get(path.node.operator);

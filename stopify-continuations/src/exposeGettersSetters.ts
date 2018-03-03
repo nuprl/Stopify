@@ -2,6 +2,7 @@ import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { FlatnessMark } from "./common/helpers";
 import { runtimePath } from './common/helpers';
+import * as types from './types';
 
 const gettersRuntime = t.identifier('$gs');
 
@@ -18,7 +19,7 @@ function $func(func: t.Expression, ...args: t.Expression[]): t.Expression {
   return t.callExpression(func, args);
 }
 
-const gettersRuntimePath = `${runtimePath}/gettersSetters.exclude.js`
+const gettersRuntimePath = `${runtimePath}/gettersSetters.js`;
 
 let enableGetters = false;
 
@@ -40,12 +41,17 @@ const gettersUsedVisitor = {
 }
 
 const visitor: Visitor = {
-  Program(path: NodePath<t.Program>) {
+  Program(path: NodePath<t.Program>, state) {
     path.traverse(gettersUsedVisitor)
 
     if (!enableGetters) {
       console.log('No uses of getters found, disabling --getters')
       path.stop()
+    }
+
+    const opts: types.CompilerOpts  = state.opts;
+    if (!opts.requireRuntime) {
+      return;
     }
 
     path.node.body.unshift(

@@ -1,3 +1,5 @@
+// Do not directly use this file. We stopify and webpack this file for each
+// type of transformation.
 function array_map(obj: any, callback: any/*, thisArg*/) {
   var T, A, k;
   if (obj == null) {

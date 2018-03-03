@@ -12,7 +12,6 @@ export interface CompilerOpts {
   hofs: 'builtin' | 'fill',
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
-  noWebpack: boolean,
   sourceMap?: any
 }
 

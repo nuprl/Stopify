@@ -2,3 +2,13 @@
 set -x
 set -e
 ./node_modules/.bin/tsc
+
+mkdir -p dist/tmp
+
+for TRANSFORM in lazy eager retval fudge; do
+  ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/implicitApps.js dist/tmp/implicitApps.$TRANSFORM.js
+  ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/hofs.js dist/tmp/hofs.$TRANSFORM.js
+  ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/gettersSetters.js dist/tmp/gettersSetters.$TRANSFORM.js
+done
+
+./node_modules/.bin/webpack --config js/webpack.config.js

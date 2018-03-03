@@ -1,7 +1,5 @@
 "use strict";
 
-const assert = require('assert');
-
 var sjcl = {};
 
 sjcl.hmac = function(a, b) {
@@ -12,4 +10,6 @@ sjcl.hmac.prototype.mac = function(a, b) {
     return 1
 };
 
-assert.equal(typeof sjcl.hmac.prototype.mac, 'function')
+if (typeof sjcl.hmac.prototype.mac !== 'function') {
+  throw 'error';
+}

@@ -1,6 +1,7 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { runtimePath } from './common/helpers';
+import * as types from './types';
 
 export const hofIdentifier = t.identifier('$hof');
 
@@ -15,7 +16,12 @@ function hof(obj: t.Expression, name: string, args: t.Expression[]): t.Expressio
 const hofRuntime = `${runtimePath}/hofs`
 
 const visitor: Visitor = {
-  Program(path: NodePath<t.Program>): void {
+  Program(path: NodePath<t.Program>, state: any): void {
+    const opts: types.CompilerOpts  = state.opts;
+    if (!opts.requireRuntime) {
+      return;
+    }
+
     path.node.body.unshift(
       t.variableDeclaration('var',
       [t.variableDeclarator(hofIdentifier,

@@ -1,3 +1,6 @@
+// Do not directly use this file. We stopify and webpack this file for each
+// type of transformation.
+
 export function get_prop(obj: any, prop: any) {
   const v = obj[prop]
   if (typeof v === 'function') {

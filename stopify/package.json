@@ -33,7 +33,8 @@
     "glob": "^7.1.1",
     "jest": "^20.0.4",
     "jest-junit": "^3.1.0",
-    "typescript": "~2.3"
+    "typescript": "~2.3",
+    "webpack": "^3.10.0"
   },
   "bin": {
     "stopify": "bin/stopify.js",
@@ -83,7 +84,6 @@
     "stopify-continuations": "^0.0.2",
     "tmp": "0.0.31",
     "trie": "^0.2.1",
-    "webpack": "^3.10.0",
     "which": "^1.3.0"
   },
   "jest": {

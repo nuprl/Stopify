@@ -104,8 +104,7 @@ genericCompiler('pyjs', `${thirdPartyCompilers}/pyjs`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'faithful',
-  requireRuntime: false,
-  noWebpack: false
+  requireRuntime: false
 });
 
 genericCompiler('emscripten', `${thirdPartyCompilers}/emscripten`, {
@@ -116,8 +115,7 @@ genericCompiler('emscripten', `${thirdPartyCompilers}/emscripten`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false,
-  noWebpack: false
+  requireRuntime: false
 });
 
 genericCompiler('bucklescript', `${thirdPartyCompilers}/bucklescript`, {
@@ -128,8 +126,7 @@ genericCompiler('bucklescript', `${thirdPartyCompilers}/bucklescript`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false,
-  noWebpack: false
+  requireRuntime: false
 });
 
 genericCompiler('scalajs',  `${thirdPartyCompilers}/scalajs`, {
@@ -140,8 +137,7 @@ genericCompiler('scalajs',  `${thirdPartyCompilers}/scalajs`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false,
-  noWebpack: false
+  requireRuntime: false
 });
 
 genericCompiler('clojurescript', `${thirdPartyCompilers}/clojurescript`, {
@@ -152,8 +148,7 @@ genericCompiler('clojurescript', `${thirdPartyCompilers}/clojurescript`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false,
-  noWebpack: false
+  requireRuntime: false
 });
 
 genericCompiler('dart2js',  `${thirdPartyCompilers}/dart2js`, {
@@ -164,6 +159,5 @@ genericCompiler('dart2js',  `${thirdPartyCompilers}/dart2js`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false,
-  noWebpack: false
+  requireRuntime: false
 });

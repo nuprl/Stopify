@@ -47,6 +47,7 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, '../../dist')));
 app.use(express.static(path.dirname(opts.filename)));
+app.use(express.static(path.join(__dirname, '../../../stopify-continuations/dist')));
 
 let exitCode = 0;
 const server = app.listen(() => {

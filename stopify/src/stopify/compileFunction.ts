@@ -56,8 +56,7 @@ const defaultOpts: callcc.CompilerOpts = {
     es: 'sane',
     hofs: 'builtin',
     jsArgs: 'simple',
-    requireRuntime: false,
-    noWebpack: true
+    requireRuntime: false
 }
 
 export function compileFunction(
@@ -88,7 +87,6 @@ export function compileEval(code: string, type: string, renames: { [key: string]
     hofs: 'builtin',
     jsArgs: 'simple',
     requireRuntime: (typeof window === 'undefined'),
-    noWebpack: true,
     renames,
     boxes
   }

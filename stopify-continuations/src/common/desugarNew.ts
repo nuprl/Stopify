@@ -24,7 +24,8 @@ const newVisit: VisitNode<FlatnessMark<t.NewExpression>> =
       return;
     }
     path.replaceWith(t.callExpression(
-      t.identifier('$handleNew'), [callee, ...args]));
+      t.memberExpression(t.identifier('$__R'), t.identifier('handleNew')),
+      [callee, ...args]));
   };
 
 module.exports = function () {

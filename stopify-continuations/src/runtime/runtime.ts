@@ -31,3 +31,6 @@ export function newRTS(transform: string) : Runtime {
   }
   return savedRTS;
 }
+
+export const RV_SENTINAL = Symbol('rv_sentinal');
+export const EXN_SENTINAL = Symbol('exn_sentinal');

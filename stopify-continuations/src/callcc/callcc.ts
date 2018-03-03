@@ -110,33 +110,16 @@ const visitor: Visitor = {
 
     toShift.unshift(
       h.letExpression(
-        t.identifier("RV_SENTINAL"),
-        t.objectExpression([]),
-        "const"),
-      h.letExpression(
-        t.identifier("EXN_SENTINAL"),
-        t.objectExpression([]),
-        "const"));
-    toShift.unshift(
-      h.letExpression(
         t.identifier("suspendCC"),
         t.memberExpression(t.identifier("$__R"), t.identifier("suspendCC")),
-        "const"));
+        "var"));
     toShift.unshift(
       h.letExpression(
         t.identifier("captureCC"),
         t.callExpression(
           t.memberExpression(t.memberExpression(t.identifier("$__R"),
             t.identifier("captureCC")), t.identifier("bind")), [$__R]),
-        "const"));
-    toShift.unshift(
-      h.letExpression(
-        t.identifier("$handleNew"),
-        t.callExpression(
-          t.memberExpression(t.memberExpression(t.identifier("$__R"),
-            t.identifier("handleNew")), t.identifier('bind')),
-          [$__R]),
-        "const"));
+        "var"));
 
     if (!state.opts.compileFunction) {
       path.node.body.unshift(
@@ -146,7 +129,7 @@ const visitor: Visitor = {
              t.memberExpression(t.identifier('$__T'),
                t.identifier('newRTS')),
               [t.stringLiteral(opts.captureMethod)]),
-          'const'));
+          'var'));
       path.node.body.unshift(
         h.letExpression(
           t.identifier("$__T"),
@@ -154,7 +137,7 @@ const visitor: Visitor = {
             t.identifier('stopify')
             : t.callExpression(t.identifier('require'),
                 [t.stringLiteral(`${h.runtimePath}/runtime`)]),
-          'const'));
+          'var'));
     }
 
     if (opts.eval && !opts.compileFunction) {

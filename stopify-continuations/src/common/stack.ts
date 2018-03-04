@@ -19,7 +19,7 @@ export class PushPopStack<T> implements Stack<T> {
 
     return {
       next() {
-        if(curr < length) {
+        if(curr < this.length) {
           const ret = this.array[curr];
           curr++;
           return { value: ret, done: false };

@@ -40,7 +40,7 @@ const insertSuspend: Visitor = {
 
   Program: {
     exit(path: NodePath<t.Program>, { opts }) {
-      if(opts.compileFunction && !opts.eval) {
+      if(opts.compileFunction === true && !opts.eval) {
         if(path.node.body[0].type === 'FunctionDeclaration') {
           (<any>path.node.body[0]).topFunction = true
         }

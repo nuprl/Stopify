@@ -170,7 +170,7 @@ export abstract class ShallowRuntime extends Runtime {
 
   constructor() {
     super();
-    this.type = 'shallow'
+    this.stackType = 'shallow';
   }
 
   runtime(body: () => any): any {
@@ -216,7 +216,7 @@ export abstract class DeepRuntime extends Runtime {
 
   constructor() {
     super();
-    this.type = 'deep';
+    this.stackType = 'deep';
     this.throwing = false;
   }
 

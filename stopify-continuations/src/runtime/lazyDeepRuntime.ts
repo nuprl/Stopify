@@ -7,8 +7,10 @@ export class LazyDeepRuntime extends common.DeepRuntime {
    * This is true if the restored value needs to be thrown
    */
   throwing: boolean = false;
+  type: 'lazyDeep'
   constructor() {
     super();
+    this.type = 'lazyDeep';
   }
 
   captureCC(f: (k: any) => any): void {

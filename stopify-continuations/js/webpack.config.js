@@ -1,3 +1,9 @@
+/**
+ * This configuration is used to bundle the various pre-stopified runtimes.
+ *
+ * ./bin/build generates a stopified version of the these files. This
+ * configuration bundles them together.
+ */
 const targets = [ ];
 
 const stopifyContinuations = {
@@ -33,9 +39,9 @@ for (const transform of [ 'lazy', 'eager', 'retval', 'fudge' ]) {
     }
   });
   targets.push({
-    entry: `./dist/tmp/gettersSetters.${transform}.js`,
+    entry: `./dist/tmp/gettersSetters.js`,
     output: {
-      filename: `dist/stopifyGettersSetters.${transform}.bundle.js`,
+      filename: `dist/stopifyGettersSetters.bundle.js`,
       library: '$gs',
       libraryTarget: 'var'
     }

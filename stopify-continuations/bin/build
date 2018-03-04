@@ -5,10 +5,16 @@ set -e
 
 mkdir -p dist/tmp
 
-for TRANSFORM in lazy eager retval fudge; do
+# Generate pre-stopified versions of each runtime
+
+echo 'Generating pre-stopififed runtimes'
+
+for TRANSFORM in lazy eager retval fudge lazyDeep; do
   ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/implicitApps.js dist/tmp/implicitApps.$TRANSFORM.js
   ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/hofs.js dist/tmp/hofs.$TRANSFORM.js
-  ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/gettersSetters.js dist/tmp/gettersSetters.$TRANSFORM.js
 done
+
+# gettersSetters doesn't need to be stopified
+cp dist/src/runtime/gettersSetters.js dist/tmp/gettersSetters.js
 
 ./node_modules/.bin/webpack --config js/webpack.config.js

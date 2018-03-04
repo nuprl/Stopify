@@ -104,7 +104,8 @@ genericCompiler('pyjs', `${thirdPartyCompilers}/pyjs`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'faithful',
-  requireRuntime: false
+  requireRuntime: false,
+  eval: false
 });
 
 genericCompiler('emscripten', `${thirdPartyCompilers}/emscripten`, {
@@ -115,7 +116,8 @@ genericCompiler('emscripten', `${thirdPartyCompilers}/emscripten`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false
+  requireRuntime: false,
+  eval: false
 });
 
 genericCompiler('bucklescript', `${thirdPartyCompilers}/bucklescript`, {
@@ -126,7 +128,8 @@ genericCompiler('bucklescript', `${thirdPartyCompilers}/bucklescript`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false
+  requireRuntime: false,
+  eval: false
 });
 
 genericCompiler('scalajs',  `${thirdPartyCompilers}/scalajs`, {
@@ -137,7 +140,8 @@ genericCompiler('scalajs',  `${thirdPartyCompilers}/scalajs`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false
+  requireRuntime: false,
+  eval: false
 });
 
 genericCompiler('clojurescript', `${thirdPartyCompilers}/clojurescript`, {
@@ -148,7 +152,8 @@ genericCompiler('clojurescript', `${thirdPartyCompilers}/clojurescript`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false
+  requireRuntime: false,
+  eval: false
 });
 
 genericCompiler('dart2js',  `${thirdPartyCompilers}/dart2js`, {
@@ -159,5 +164,99 @@ genericCompiler('dart2js',  `${thirdPartyCompilers}/dart2js`, {
   es: 'sane',
   hofs: 'builtin',
   jsArgs: 'simple',
-  requireRuntime: false
+  requireRuntime: false,
+  eval: false
+});
+
+stopify.post('/pyjs-fast', bodyParser.text({ type: '*/*' }), async (req, resp) => {
+    try {
+      resp.set('Access-Control-Allow-Origin', '*');
+      resp.set('Access-Control-Allow-Methods', 'POST');
+
+      const { filename, exists } = await checkCache('pyjs-fast', req.body);
+      if (exists) {
+        return resp.send(filename);
+      }
+      console.info(`Compiling PyJS (fast) program (${req.body.length} bytes)`);
+      const url = `${thirdPartyCompilers}/pyjs-fast`;
+      const jsCode = await request.post(url, { headers, body: req.body });
+      console.info(`Stopifying program (${jsCode.length} bytes)`);
+      const dir = await tmpDir();
+      try {
+        const jsPath = `${dir}/original.js`;
+        await fs.writeFile(jsPath, jsCode + '\npygwtOnLoad();');
+        const stopifiedJsCode = await stopifyCompiler.stopify(jsPath, {
+          compileFunction: 'module',
+          getters: false,
+          debug: false,
+          captureMethod: 'lazy',
+          newMethod: 'wrapper',
+          es: 'sane',
+          hofs: 'builtin',
+          jsArgs: 'faithful',
+          requireRuntime: false,
+          eval: false
+        });
+        const prelude = await fs.readFile(__dirname + '/../pyjs_prelude.lazy.wrapper.faithful.js');
+        await bucket.file(filename).save(prelude + stopifiedJsCode + `
+          $__R.delimit(function () {
+            $S.onEnd();
+          });`
+          );
+        return resp.send(filename);
+      }
+      finally {
+        await fs.remove(dir);
+      }
+    }
+    catch (exn) {
+      resp.statusCode = 503;
+      const reason =
+        (exn.name === 'StatusCodeError' ? exn.response.body : exn).toString();
+      console.error(`Error: ${reason}`);
+      return resp.send(reason.toString());
+    }
+});
+
+stopify.post('/js', bodyParser.text({ type: '*/*' }), async (req, resp) => {
+  try {
+    resp.set('Access-Control-Allow-Origin', '*');
+    resp.set('Access-Control-Allow-Methods', 'POST');
+
+    const { filename, exists } = await checkCache('js', req.body);
+    if (exists) {
+      return resp.send(filename);
+    }
+    console.info(`Compiling JavaScript program (${req.body.length} bytes)`);
+    const jsCode = req.body;
+    const dir = await tmpDir();
+    try {
+      const jsPath = `${dir}/original.js`;
+      await fs.writeFile(jsPath, jsCode);
+      const stopifiedJsCode = await stopifyCompiler.stopify(jsPath, {
+        compileFunction: false,
+        getters: false,
+        debug: true,
+        captureMethod: 'lazy',
+        newMethod: 'wrapper',
+        es: 'sane',
+        hofs: 'builtin',
+        jsArgs: 'faithful',
+        requireRuntime: false,
+        eval: false
+      });
+      await bucket.file(filename).save(stopifiedJsCode);
+      return resp.send(filename);
+    }
+    finally {
+      await fs.remove(dir);
+    }
+  }
+  catch (exn) {
+    resp.statusCode = 503;
+    const reason =
+      (exn.name === 'StatusCodeError' ? exn.response.body : exn).toString();
+    console.error(`Error: ${reason}`);
+    return resp.send(reason.toString());
+  }
 });

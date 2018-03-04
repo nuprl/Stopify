@@ -96,7 +96,7 @@ const visitor: Visitor = {
     path.stop();
 
     let toShift;
-    if (opts.compileFunction) {
+    if (opts.compileFunction === true) {
       if (t.isFunctionDeclaration(path.node.body[0])) {
         toShift = (<t.FunctionDeclaration>path.node.body[0]).body.body
       }

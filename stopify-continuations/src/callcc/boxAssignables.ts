@@ -218,7 +218,7 @@ const visitor = {
       // topFunction. It shouldn't be boxed since we want to preserve its
       // signature.
       if (vars.includes(path.node.id.name) &&
-          !(state.opts.compileFunction && (<any>path.node).topFunction)) {
+          !(state.opts.compileFunction === true && (<any>path.node).topFunction)) {
         const fun = t.functionExpression(
           fastFreshId.fresh('fun'),
           path.node.params,

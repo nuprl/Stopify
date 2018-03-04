@@ -4,7 +4,7 @@ import AceEditor from 'react-ace';
 import { StopifyAce } from './StopifyAce';
 import * as browser from 'detect-browser'
 import * as ace from 'brace';
-import { langs } from './languages';
+import { langs, runtimeOpts } from './languages';
 
 import * as stopifyCompiler from 'stopify';
 
@@ -40,6 +40,7 @@ class MultilingualStopifyEditor extends React.Component<{}, {language: string}> 
             <ul className="dropdown-menu">
             <li><a href="#" onClick={() => this.setState({ language: 'Dart' })}>Dart</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'Python' })}>Python</a></li>
+              <li><a href="#" onClick={() => this.setState({ language: 'JavaScript' })}>JavaScript</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'Scala' })}>Scala</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'OCaml' })}>OCaml</a></li>
               <li><a href="#" onClick={() => this.setState({ language: 'C++' })}>C++</a></li>
@@ -141,16 +142,7 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
         }
       }))
     .then(path => {
-      const opts: stopifyCompiler.Opts = {
-        filename: path,
-        estimator: 'countdown',
-        yieldInterval: 1,
-        timePerElapsed: 1,
-        resampleInterval: 1,
-        variance: false,
-        env: browser.name as any,
-        stop: undefined
-      };
+      const opts = runtimeOpts(this.state.language);
       this.setState({
         rhs: { type: 'iframe', url: './container.html', opts: opts, path: path }
       });
@@ -249,8 +241,8 @@ class StopifyEditor extends React.Component<{ language: string }, StopifyEditorS
     else {
       // The "key" in the iframe is unique and forces a full reload.
      rhs = <iframe key={this.state.rhs.url} ref={(frame) => this.iframe = frame}
-                   src={this.state.rhs.url} width='100%' height='100%'
-                   style={{border: 'none', overflow: 'hidden'}}>
+                   src={this.state.rhs.url} width='100%'
+                   style={{border: 'none', overflow: 'hidden', height: '80vh' }}>
            </iframe>;
     }
     return <div className="row display-flex">

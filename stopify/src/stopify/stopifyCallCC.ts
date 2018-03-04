@@ -5,18 +5,6 @@ import suspendStop from './suspendStop';
 import suspendStep from './suspendStep';
 import { timeSlow } from '../generic';
 
-const allowed = [
-  "Object",
-  "exports",
-  "require",
-  "console",
-  "global",
-  "window",
-  "document",
-  "setTimeout",
-  "captureCC"
-];
-
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: callcc.CompilerOpts = state.opts;
@@ -40,10 +28,6 @@ export const visitor: Visitor = {
 
     callcc.fastFreshId.init(path);
     const plugs: any[] = [];
-    // Cleanup globals when not running in `func` compile mode
-    if (!state.opts.compileFunction) {
-      plugs.push([callcc.cleanupGlobals, { allowed }])
-    }
 
     timeSlow('hygiene, etc.', () =>
       callcc.transformFromAst(path, [
@@ -60,7 +44,7 @@ export const visitor: Visitor = {
 
     callcc.fastFreshId.cleanup()
 
-    if (opts.compileFunction) {
+    if (opts.compileFunction === true) {
       // Do nothing
     }
     else if (opts.requireRuntime) {
@@ -90,7 +74,7 @@ export const visitor: Visitor = {
                   [t.identifier('$__R')]))]));
     }
 
-    if (!opts.compileFunction) {
+    if (opts.compileFunction === false) {
       path.node.body.push(
         t.expressionStatement(
           t.callExpression(

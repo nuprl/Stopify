@@ -7,6 +7,7 @@ import * as bucklescript from './bucklescript';
 import * as clojurescript from './clojurescript';
 import * as scalajs from './scalajs';
 import * as dart2js from './dart2js';
+import * as pyjsFast from './pyjsFast';
 
 export const app = express();
 app.use(morgan('short'));
@@ -31,5 +32,6 @@ compiler('/bucklescript', bucklescript.compile);
 compiler('/clojurescript', clojurescript.compile);
 compiler('/scalajs', scalajs.compile);
 compiler('/dart2js', dart2js.compile);
+compiler('/pyjs-fast', pyjsFast.compile);
 
 app.listen(8080);

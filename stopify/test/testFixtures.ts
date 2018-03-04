@@ -1,13 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { execSync } from 'child_process';
 import * as tmp from 'tmp';
+import { execSync } from 'child_process';
 const glob = require('glob');
 
 export const unitTests = glob.sync('test/should-run/*.js', {})
 export const intTests = glob.sync('test/should-run/source-language/*.js', {})
 export const stopTests = glob.sync('test/should-stop/*.js', {})
+export const deepTests = glob.sync('test/deep-stacks/*.js', {})
 
 export function callCCTest(srcPath: string, transform: string, opts: string = "") {
   const testName = `${srcPath} ${opts} (${transform})`;

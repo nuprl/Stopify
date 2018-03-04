@@ -3,16 +3,24 @@ import { PushPopStack } from '../common/stack';
 
 export * from './abstractRuntime';
 
-export class LazyRuntime extends common.ShallowRuntime {
-  type: 'lazy';
-
-  constructor() {
+export class LazyDeepRuntime extends common.DeepRuntime {
+  /**
+   * This is true if the restored value needs to be thrown
+   */
+  throwing: boolean = false;
+  constructor(sizeHint?: number) {
     super();
-    this.type = 'lazy';
+    if (sizeHint) {
+      this.sizeHint = sizeHint;
+      this.stack = this.newStack();
+    }
+    else {
+      throw new Error('LazyDeepRuntime requires a size hint');
+    }
   }
 
-  newStack(initArray?: Array<common.KFrame>): common.RuntimeStack {
-    return new PushPopStack<common.KFrame>(this.sizeHint, initArray);
+  newStack(initArray?: Array<common.KFrame>) {
+    return new PushPopStack<common.KFrame>(this.sizeHint);
   }
 
   captureCC(f: (k: any) => any): void {
@@ -23,14 +31,15 @@ export class LazyRuntime extends common.ShallowRuntime {
   makeCont(stack: common.RuntimeStack) {
     const savedDelimitDepth = this.delimitDepth;
 
-    return (v: any, err: any=this.noErrorProvided) => {
-      const throwExn = err !== this.noErrorProvided;
+    return (v: any, err: any = this.noErrorProvided) => {
+      const thrownExn = err !== this.noErrorProvided;
       this.delimitDepth = savedDelimitDepth;
       let restarter = () => {
-        if(throwExn) { throw err; }
+        if (thrownExn) { throw err; }
         else { return v; }
       }
-      throw new common.Restore(this.newStack([this.topK(restarter), ...stack]));
+      stack.push(this.topK(restarter))
+      throw new common.Restore(stack);
     };
   }
 
@@ -38,8 +47,7 @@ export class LazyRuntime extends common.ShallowRuntime {
     try {
       const v = body();
       return { type: 'normal', value: v };
-    }
-    catch (exn) {
+    } catch(exn) {
       if (exn instanceof common.Capture) {
         this.capturing = false;
         return { type: 'capture', stack: exn.stack, f: exn.f };
@@ -58,13 +66,14 @@ export class LazyRuntime extends common.ShallowRuntime {
       return new constr(...args);
     }
 
-    let obj;
+    let obj, $value;
     if (this.mode) {
       obj = Object.create(constr.prototype);
     } else {
       const frame = this.stack.peek();
       if (frame.kind === "rest") {
         [obj] = frame.locals;
+        $value = frame.value;
       } else {
         throw "bad";
       }
@@ -77,7 +86,7 @@ export class LazyRuntime extends common.ShallowRuntime {
         result = constr.apply(obj, args);
       }
       else {
-        result = this.stack.peek().f.apply(obj, []);
+        result = $value
       }
     }
     catch (exn) {
@@ -86,7 +95,8 @@ export class LazyRuntime extends common.ShallowRuntime {
           kind: "rest",
           f: () => this.handleNew(constr, ...args) ,
           locals: [obj],
-          index: 0
+          index: 0,
+          value: undefined
         });
       }
       throw exn;

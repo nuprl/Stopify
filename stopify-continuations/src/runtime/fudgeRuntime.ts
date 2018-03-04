@@ -1,4 +1,5 @@
 import * as common from './abstractRuntime';
+import { PushPopStack } from "../common/stack";
 export * from './abstractRuntime';
 
 class FudgedContinuationError {
@@ -23,16 +24,20 @@ class FudgedContinuationError {
  * 'FudgedContinuationError(done)'. This is unfortunate. But, this
  * transformation still helps with debugging.
  */
-export class FudgeRuntime extends common.Runtime {
+export class FudgeRuntime extends common.ShallowRuntime {
   constructor() {
     super();
   }
 
-  captureCC(f: (k: any) => any): void {
-    throw new common.Capture(f, []);
+  newStack() {
+    return new PushPopStack<common.KFrame>(this.sizeHint);
   }
 
-  makeCont(stack: common.Stack) {
+  captureCC(f: (k: any) => any): void {
+    throw new common.Capture(f, this.newStack());
+  }
+
+  makeCont(stack: common.RuntimeStack) {
     return (v: any) => {
       throw new FudgedContinuationError(v);
     };

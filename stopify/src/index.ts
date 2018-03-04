@@ -6,8 +6,8 @@ import { generateLineMapping } from './sourceMaps';
 import { RawSourceMap } from 'source-map';
 import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
 
-export { compileFunction, compileEval } from './stopify/compileFunction'
-export { CompilerOpts, Opts } from './types';
+export { CompilerOpts, RuntimeOpts } from './types';
+export { compileFunction } from './stopify/compileFunction'
 export { stopify as precompiledStopify } from './runtime/precompiled';
 export { plugin } from './stopify/stopifyCallCC';
 

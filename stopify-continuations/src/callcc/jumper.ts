@@ -194,11 +194,11 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     h.letExpression($value, t.nullLiteral()),
     decreaseStackSize
   ]
+  const defineArgsLen = h.letExpression(argsLen,
+          t.memberExpression(t.identifier('arguments'), t.identifier('length')))
 
   path.node.body.body.unshift(...[
-    t.variableDeclaration('let',
-      [t.variableDeclarator(argsLen,
-        t.memberExpression(t.identifier('arguments'), t.identifier('length')))]),
+    ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
     ...(isLazyDeep ? lazyDeepPredule : []),
     ifRestoring,
     captureClosure,

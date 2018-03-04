@@ -1,8 +1,9 @@
 export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
 export type HandleNew = 'direct' | 'wrapper'
+export type CompileFunction = boolean | 'module';
 
 export interface CompilerOpts {
-  compileFunction?: boolean,
+  compileFunction?: CompileFunction,
   getters: boolean,
   debug: boolean,
   captureMethod: CaptureMethod,

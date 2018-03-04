@@ -52,7 +52,7 @@ const visitor = {
         // leave intact
       }
       else {
-        if (state.opts.compileFunction && (<any>body[i]).topFunction) {
+        if (state.opts.compileFunction !== false && (<any>body[i]).topFunction) {
         }
         else {
           body[i] = delimitStmt(body[i]);

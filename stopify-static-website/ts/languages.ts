@@ -1,3 +1,5 @@
+import * as stopifyCompiler from 'stopify';
+
 export interface Language {
   compileUrl: string,
   defaultCode: string
@@ -7,6 +9,31 @@ export interface Language {
 
 const compilerBase = 'https://us-central1-arjun-umass.cloudfunctions.net/stopify';
 
+export function runtimeOpts(name: string): stopifyCompiler.Opts {
+  if (name === 'pyjs' || name === 'js') {
+    return {
+      filename: '',
+      estimator: 'reservoir',
+      yieldInterval: 100,
+      timePerElapsed: 1,
+      resampleInterval: 1,
+      variance: false,
+      env: 'chrome',
+      stop: undefined
+    };
+  }
+
+  return {
+    filename: '',
+    estimator: 'countdown',
+    yieldInterval: 1,
+    timePerElapsed: 1,
+    resampleInterval: 1,
+    variance: false,
+    env: 'chrome',
+    stop: undefined
+  };
+}
 
 export const langs: { [name: string]: Language } = {
   'Dart': {
@@ -86,16 +113,28 @@ object Runner extends JSApp {
     stepSupported: false,
     aceMode: 'python',
     defaultCode:
-    `def run_forever():
-    i = 0
-    while(True):
-        if i > 10000:
-            i = 0
-        i += 1
-        print i
+    `def fib(n):
+  print "fib(" + str(n) + ")"
+  if n == 0 or n == 1:
+    return 1
+  return fib(n-1) + fib(n-2)
 
-run_forever()
-    `,
-    compileUrl: `${compilerBase}/pyjs`
+print (fib(15))`,
+    compileUrl: `${compilerBase}/pyjs-fast`
+  },
+  JavaScript: {
+    stepSupported: true,
+    aceMode: 'js',
+    defaultCode:
+    `function fib(n) {
+  console.log('fib(' + n + ')');
+  if (n === 0 || n === 1) {
+    return 1;
   }
+  return fib(n-1) + fib(n-2);
 }
+
+fib(15);`,
+    compileUrl: `${compilerBase}/js`
+  },
+};

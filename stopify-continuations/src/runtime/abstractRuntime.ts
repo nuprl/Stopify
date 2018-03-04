@@ -166,7 +166,7 @@ export abstract class Runtime {
  * to the most recent frame.
  */
 export abstract class ShallowRuntime extends Runtime {
-  type: 'shallow';
+  stackType: 'shallow';
 
   constructor() {
     super();
@@ -208,7 +208,7 @@ export abstract class ShallowRuntime extends Runtime {
  * value is threaded into the next frame.
  */
 export abstract class DeepRuntime extends Runtime {
-  public type: 'deep';
+  stackType: 'deep';
 
   // True if the runtime should restore the next frame by throwing the value
   // returned from the previous frame.
@@ -289,7 +289,7 @@ export abstract class DeepRuntime extends Runtime {
 }
 
 export function isDeepRuntime(rts: Runtime): rts is DeepRuntime {
-  return rts.type === 'deep';
+  return rts.stackType === 'deep';
 }
 
 const unavailableOnNode = [ 'TextDecoder' ];

@@ -1,0 +1,44 @@
+\usepackage[utf8]{inputenc}
+\usepackage{bookman}
+\usepackage{fullpage}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{listings}
+
+\lstset{
+  showstringspaces=false
+}
+
+\lstdefinelanguage{console}{
+  basicstyle=\ttfamily\footnotesize,
+  mathescape=false,
+  breaklines=true,
+  keywordstyle=\color{blue}
+}
+
+
+\lstdefinelanguage{js}{
+sensitive=false,
+morekeywords={let,function,return,undefined,null,typeof,true,false,ref,deref,
+              var,new,break,while,try,catch,finally,throw,err,if,else,for,do,
+              with,delete,new,instanceof,this},
+keywordstyle=\ttfamily\bfseries,
+identifierstyle=\ttfamily,
+comment=[l]{//},
+commentstyle=\ttfamily,
+string=[d]{"},
+stringstyle=\ttfamily,
+mathescape=true,
+escapechar=\#,
+extendedchars=true,
+basicstyle=\footnotesize\ttfamily,
+showstringspaces=false,
+numbers=none,
+firstnumber=0,
+numberstyle=\tiny,
+stepnumber=5,
+numbersep=5pt,
+upquote=true,
+columns=fixed,
+flexiblecolumns=true,
+}

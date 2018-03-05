@@ -1,0 +1,39 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+var program = `
+for (var i = 0; i < 10; i++) { };
+`;
+
+var runner = stopify.stopifyLocally(program, {
+    getters: false,
+    debug: true,
+    captureMethod: 'lazy',
+    newMethod: 'wrapper',
+    es: 'sane',
+    hofs: 'builtin',
+    jsArgs: 'simple',
+    requireRuntime: false
+  },
+  {
+    estimator: "reservoir",
+    yieldInterval: 100,
+    resampleInterval: 100,
+    timePerElapsed: 1
+  });
+
+runner.run(() => {
+  console.log('wtf');
+  window.document.title = 'okay';
+});
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

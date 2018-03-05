@@ -1,4 +1,3 @@
-import { knowns } from '../common/cannotCapture'
 import { unreachable } from '../generic';
 import * as assert from 'assert';
 
@@ -49,7 +48,6 @@ export interface RuntimeInterface {
   // that returns the supplied value.
   makeCont(stack: Stack): (v: any) => any;
   runtime(body: () => any): any;
-  handleNew(constr: any, ...args: any[]): any;
   abstractRun(body: () => any): RunResult;
 }
 
@@ -173,10 +171,6 @@ export abstract class Runtime {
    */
   abstract makeCont(stack: Stack): (v: any, err: any) => any;
 
-  // Used by instrumented programs to suspend correctly from inside a
-  // constructor call.
-  abstract handleNew(constr: any, ...args: any[]): any;
-
   /**
    * Run the `body`. It can return four types of values (in the form RunResult):
    *
@@ -187,7 +181,3 @@ export abstract class Runtime {
    */
   abstract abstractRun(body: () => any): RunResult;
 }
-
-const unavailableOnNode = [ 'TextDecoder' ];
-export const knownBuiltIns = knowns.filter(x => !unavailableOnNode.includes(x))
-  .map(o => eval(o));

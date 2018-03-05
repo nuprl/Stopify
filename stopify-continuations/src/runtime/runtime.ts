@@ -2,7 +2,6 @@
  * Entrypoint of the stopify-continuations bundle
  */
 
-export * from './abstractRuntime';
 import { Runtime } from './abstractRuntime';
 import { LazyRuntime } from './lazyRuntime';
 import { EagerRuntime } from './eagerRuntime';
@@ -10,6 +9,8 @@ import { RetvalRuntime } from './retvalRuntime';
 import { FudgeRuntime } from './fudgeRuntime';
 
 export * from './abstractRuntime';
+export * from './abstractRuntime';
+export { knownBuiltIns } from '../common/cannotCapture';
 
 let savedRTS: Runtime | undefined;
 export function newRTS(transform: string): Runtime {

@@ -75,6 +75,18 @@ function usesArguments(path: NodePath<t.Function>) {
   return r;
 }
 
+function paramToArg(node: t.LVal) {
+  if (node.type === 'Identifier') {
+    return node;
+  }
+  else if (node.type === 'RestElement' && node.argument.type === 'Identifier') {
+    return t.spreadElement(node.argument);
+  }
+  else {
+    throw new Error(`paramToArg: expected Identifier or RestElement, received ${node.type}`)
+  }
+}
+
 
 function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const jsArgs = state.opts.jsArgs;
@@ -139,7 +151,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     ? t.callExpression(t.memberExpression(path.node.id, t.identifier('apply')),
         [t.thisExpression(), matArgs])
     : t.callExpression(t.memberExpression(path.node.id, t.identifier('call')),
-      [t.thisExpression(), ...<any>path.node.params]);
+      [t.thisExpression(), ...<any>path.node.params.map(paramToArg)]);
   const reenterClosure = t.variableDeclaration('var', [
     t.variableDeclarator(restoreNextFrame, t.arrowFunctionExpression([],
       t.blockStatement(path.node.__usesArgs__ ?

@@ -8,8 +8,10 @@ import { EagerRuntime } from './eagerRuntime';
 import { RetvalRuntime } from './retvalRuntime';
 import { FudgeRuntime } from './fudgeRuntime';
 import { LazyDeepRuntime } from './lazyDeepRuntime';
+import { knowns } from '../common/cannotCapture';
 
 export * from './abstractRuntime';
+export { knownBuiltIns } from '../common/cannotCapture';
 
 let savedRTS: Runtime | undefined;
 export function newRTS(transform: string) : Runtime {
@@ -30,6 +32,11 @@ export function newRTS(transform: string) : Runtime {
     return savedRTS;
   }
 }
+
+const unavailableOnNode = [ 'TextDecoder' ];
+export const knownBuiltIns = knowns
+  .filter(x => !unavailableOnNode.includes(x))
+  .map(o => eval(o));
 
 export const RV_SENTINAL = Symbol('rv_sentinal');
 export const EXN_SENTINAL = Symbol('exn_sentinal');

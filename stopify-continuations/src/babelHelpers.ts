@@ -116,6 +116,9 @@ export function lvaltoName(lval: t.LVal): string {
   if (lval.type === 'Identifier') {
     return lval.name;
   }
+  else if (lval.type === 'RestElement' && lval.argument.type === 'Identifier') {
+    return lval.argument.name;
+  }
   else {
     throw new Error(`Expected Identifier, received ${lval.type}`);
   }

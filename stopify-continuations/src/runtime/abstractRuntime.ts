@@ -1,4 +1,3 @@
-import { knowns } from '../common/cannotCapture'
 import { unreachable } from '../generic';
 import * as assert from 'assert';
 
@@ -51,7 +50,6 @@ export interface RuntimeInterface {
   // that returns the supplied value.
   makeCont(stack: Stack): (v: any) => any;
   runtime(body: () => any): any;
-  handleNew(constr: any, ...args: any[]): any;
   abstractRun(body: () => any): RunResult;
 }
 
@@ -151,9 +149,6 @@ export abstract class Runtime {
   // continuation. The exception carries the provided stack with a final frame
   // that returns the supplied value.
   abstract makeCont(stack: Stack): (v: any) => any;
-
-  // TODO(rachit): Document.
-  abstract handleNew(constr: any, ...args: any[]): any;
 
   // TODO(rachit): Document.
   abstract abstractRun(body: () => any): RunResult;
@@ -291,8 +286,3 @@ export abstract class DeepRuntime extends Runtime {
 export function isDeepRuntime(rts: Runtime): rts is DeepRuntime {
   return rts.stackType === 'deep';
 }
-
-const unavailableOnNode = [ 'TextDecoder' ];
-export const knownBuiltIns = knowns
-  .filter(x => !unavailableOnNode.includes(x))
-  .map(o => eval(o));

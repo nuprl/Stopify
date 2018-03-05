@@ -49,7 +49,7 @@ const visitor: Visitor = {
     }
 
     if (opts.newMethod === 'wrapper') {
-      h.transformFromAst(path, [desugarNew]);
+      h.transformFromAst(path, [[desugarNew, opts]]);
     }
 
     if (opts.es === 'es5') {

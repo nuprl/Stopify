@@ -125,18 +125,14 @@ const visitor: Visitor = {
       path.node.body.unshift(
         h.letExpression(
           t.identifier('$__R'),
-           t.callExpression(
-             t.memberExpression(t.identifier('$__T'),
-               t.identifier('newRTS')),
-              [t.stringLiteral(opts.captureMethod)]),
-          'var'));
+           t.identifier('$__T')));
       path.node.body.unshift(
         h.letExpression(
           t.identifier("$__T"),
           !opts.requireRuntime ?
             t.identifier('stopify')
             : t.callExpression(t.identifier('require'),
-                [t.stringLiteral(`${h.runtimePath}/runtime`)]),
+                [t.stringLiteral(`stopify-continuations/dist/src/entrypoints/${opts.captureMethod}`)]),
           'var'));
     }
 

@@ -58,5 +58,3 @@ export class FudgeRuntime extends common.Runtime {
     return new constr(...args);
   }
 }
-
-export default new FudgeRuntime();

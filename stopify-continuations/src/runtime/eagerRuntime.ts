@@ -48,6 +48,3 @@ export class EagerRuntime extends common.Runtime {
     }
   }
 }
-
-// Default to shallow stack.
-export default new EagerRuntime(Infinity, Infinity);

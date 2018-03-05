@@ -56,5 +56,3 @@ export class RetvalRuntime extends common.Runtime {
     }
   }
 }
-
-export default new RetvalRuntime(Infinity, Infinity);

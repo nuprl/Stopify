@@ -82,5 +82,3 @@ export class RetvalRuntime extends common.Runtime {
     return typeof result === 'object' ? result : obj;
   }
 }
-
-export default new RetvalRuntime();

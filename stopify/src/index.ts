@@ -1,34 +1,17 @@
-import * as babel from 'babel-core';
 import *  as types from './types';
 import * as smc from 'convert-source-map';
 import * as fs from 'fs-extra';
 import { generateLineMapping } from './sourceMaps';
 import { RawSourceMap } from 'source-map';
-import { plugin as stopifyCallCC } from './stopify/stopifyCallCC';
-
+import { compile } from './compiler/compiler';
 export { compileFunction, compileEval } from './stopify/compileFunction'
 export { CompilerOpts, Opts } from './types';
 export { stopify as precompiledStopify } from './runtime/precompiled';
 export { plugin } from './stopify/stopifyCallCC';
 
-
-export function stopifySourceSync(src: string, opts: types.CompilerOpts): string {
-  const babelOpts = {
-    plugins: [[ stopifyCallCC, opts ]],
-    babelrc: false,
-    ast: false,
-    code: true,
-    minified: true,
-    comments: false,
-  };
-
-  const { code } = babel.transform(src, babelOpts);
-  return code!;
-}
-
 export function stopifySource(src: string, opts: types.CompilerOpts): Promise<string> {
   return new Promise((resolve, reject) =>
-    resolve(stopifySourceSync(src, opts)));
+    resolve(compile(src, opts)));
 }
 
 export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<string> {

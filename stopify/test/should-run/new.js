@@ -1,5 +1,6 @@
 const assert = require("assert");
 function foo() {
+  while(false) {};
   this.a = "prop";
 }
 

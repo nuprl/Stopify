@@ -9,6 +9,5 @@ describe('In-browser tests', function () {
 
   glob.sync('test/browser/*.js').forEach(file => {
     f.browserTest(file, 'lazy');
-    f.browserTest(file, 'lazyDeep');
   });
 });

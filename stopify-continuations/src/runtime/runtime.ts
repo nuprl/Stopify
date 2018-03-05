@@ -8,6 +8,7 @@ import { LazyRuntime } from './lazyRuntime';
 import { EagerRuntime } from './eagerRuntime';
 import { RetvalRuntime } from './retvalRuntime';
 import { FudgeRuntime } from './fudgeRuntime';
+export * from './sentinels';
 
 let savedRTS: Runtime | undefined;
 export function newRTS(transform: string) : Runtime {
@@ -32,5 +33,3 @@ export function newRTS(transform: string) : Runtime {
   return savedRTS;
 }
 
-export const RV_SENTINAL = Symbol('rv_sentinal');
-export const EXN_SENTINAL = Symbol('exn_sentinal');

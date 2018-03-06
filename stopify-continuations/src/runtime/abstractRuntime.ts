@@ -51,6 +51,11 @@ export interface RuntimeInterface {
   runtime(body: () => any): any;
   handleNew(constr: any, ...args: any[]): any;
   abstractRun(body: () => any): RunResult;
+  resumeFromSuspension(thunk: () => any): any;
+  getSuspended(): boolean;
+  setSuspended(b: boolean): void;
+  getDelimitDepth(): number;
+  getLinenum(): number | undefined;
 }
 
 export abstract class Runtime {
@@ -82,6 +87,22 @@ export abstract class Runtime {
     private pendingRuns: (() => void)[] = []) {
     this.stack = [];
     this.mode = true;
+  }
+
+  getSuspended(): boolean {
+    return this.isSuspended;
+  }
+
+  setSuspended(b: boolean): void {
+    this.isSuspended = b;
+  }
+
+  getDelimitDepth(): number {
+    return this.delimitDepth;
+  }
+
+  getLinenum(): number | undefined {
+    return this.linenum;
   }
 
   private runtime_(thunk: () => any) {

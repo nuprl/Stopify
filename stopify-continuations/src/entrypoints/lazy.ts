@@ -25,3 +25,7 @@ export function handleNew(constr: any, ...args: any[]): any {
 export function abstractRun(body: () => any): RunResult {
   return rts.abstractRun(body);
 }
+
+export function delimit(thunk: () => any): any {
+  return rts.delimit(thunk);
+}

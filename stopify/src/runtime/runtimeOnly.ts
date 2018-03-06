@@ -4,7 +4,7 @@
  * To run the compiler in the browser, see compiler.ts.
  */
 import { Opts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
+import { RuntimeInterface } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { AbstractRunner } from '../runtime/abstractRunner';
 // We need to provide these for stopify-continuations
 export * from 'stopify-continuations/dist/src/runtime/runtime';
@@ -15,10 +15,10 @@ export { parseRuntimeOpts } from '../cli-parse';
 
 let runner : Runner | undefined;
 
-class Runner extends AbstractRunner {
+export class Runner extends AbstractRunner {
 
-  constructor(private url: string, opts: Opts) {
-    super(opts);
+  constructor(private url: string, continuationsRTS: RuntimeInterface, opts: Opts) {
+    super(continuationsRTS, opts);
    }
 
   run(onDone: () => void,
@@ -32,22 +32,22 @@ class Runner extends AbstractRunner {
 }
 
 /**
- * Called by the stopified program to get suspend() and other functions.
- */
-export function init(rts: Runtime): AsyncRun {
-  if (runner === undefined) {
-    throw new Error('stopify not called');
-  }
-  return runner.init(rts);
-}
-
-/**
  * Control the execution of a pre-compiled program.
  *
  * @param url URL of a pre-compiled program
  * @param opts runtime settings
  */
-export function stopify(url: string, opts: Opts): AsyncRun {
-  runner = new Runner(url, opts);
-  return runner;
+export function makeStopify(continuationsRTS: RuntimeInterface) {
+  return function(url: string, opts: Opts): AsyncRun {
+    runner = new Runner(url, continuationsRTS, opts);
+    return runner;
+  };
+}
+
+export function suspend() {
+  return runner!.suspend();
+}
+
+export function onEnd() {
+  return runner!.onEnd();
 }

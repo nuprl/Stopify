@@ -1,10 +1,9 @@
 import { Opts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
+import { RuntimeInterface } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './elapsedTimeEstimator';
 
 export abstract class AbstractRunner implements AsyncRun {
-  private continuationsRTS: Runtime;
   private suspendRTS: RuntimeWithSuspend;
   private onDone: () => void = function() { };
   private onYield: () => void = function() {  };
@@ -12,10 +11,17 @@ export abstract class AbstractRunner implements AsyncRun {
   private breakpoints: number[] = [];
   private k: any;
 
-  constructor(private opts: Opts) { }
+  constructor(private continuationsRTS: RuntimeInterface, private opts: Opts) {
+    const estimator = makeEstimator(this.opts);
+    this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS,
+      this.opts.yieldInterval, estimator);
+    this.suspendRTS.mayYield = () => this.mayYieldRunning();
+    this.suspendRTS.onYield = () => this.onYieldRunning();
+
+  }
 
   mayYieldRunning(): boolean {
-    const n = this.suspendRTS.rts.linenum;
+    const n = this.suspendRTS.rts.getLinenum();
     if (typeof n !== 'number') {
       return false;
     }
@@ -24,26 +30,13 @@ export abstract class AbstractRunner implements AsyncRun {
 
   onYieldRunning() {
     if (this.mayYieldRunning()) {
-      this.onBreakpoint(this.suspendRTS.rts.linenum!);
+      this.onBreakpoint(this.suspendRTS.rts.getLinenum()!);
       return false;
     }
     else {
       this.onYield();
       return true;
     }
-  }
-
-  /**
-   * Indirectly called by the stopified program.
-   */
-  init(rts: Runtime) {
-    this.continuationsRTS = rts;
-    const estimator = makeEstimator(this.opts);
-    this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS,
-      this.opts.yieldInterval, estimator);
-    this.suspendRTS.mayYield = () => this.mayYieldRunning();
-    this.suspendRTS.onYield = () => this.onYieldRunning();
-    return this;
   }
 
   /**
@@ -57,7 +50,7 @@ export abstract class AbstractRunner implements AsyncRun {
    * Called by the stopfied program.
    */
   onEnd(): void {
-    if (this.continuationsRTS.delimitDepth === 1) {
+    if (this.continuationsRTS.getDelimitDepth() === 1) {
       this.onDone();
     }
   }
@@ -84,7 +77,7 @@ export abstract class AbstractRunner implements AsyncRun {
         this.onYield();
         return true;
       }
-      const maybeLine = this.suspendRTS.rts.linenum;
+      const maybeLine = this.suspendRTS.rts.getLinenum();
       if (typeof maybeLine === 'number') {
         onPaused(maybeLine);
       }
@@ -106,10 +99,10 @@ export abstract class AbstractRunner implements AsyncRun {
   }
 
   step(onStep: (line: number) => void) {
-    const currentLine = this.suspendRTS.rts.linenum;
+    const currentLine = this.suspendRTS.rts.getLinenum();
     // Yield control if the line number changes.
     const mayYield = () => {
-      const n = this.suspendRTS.rts.linenum;
+      const n = this.suspendRTS.rts.getLinenum();
       if (typeof n !== 'number') {
         return false;
       }

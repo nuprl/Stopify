@@ -64,30 +64,22 @@ export const visitor: Visitor = {
       // Do nothing
     }
     else if (opts.requireRuntime) {
-      // var $S = require('stopify/dist/src/runtime/rts').init($__R);;
+      // var $S = require('stopify/dist/src/runtime/rts');
 
       path.node.body.splice(opts.eval ? 3 : 2, 0,
       t.variableDeclaration('var',
           [t.variableDeclarator(
             t.identifier('$S'),
-            t.callExpression(
-              t.memberExpression(
-                t.callExpression(t.identifier('require'),
-                  [t.stringLiteral('stopify/dist/src/runtime/node')]),
-                t.identifier('init')),
-                [t.identifier('$__R')]))]));
+            t.callExpression(t.identifier('require'),
+              [t.stringLiteral(`stopify/dist/src/entrypoints/${opts.captureMethod}RTOnly`)]))]));
     } else {
-      // var $S = stopify.init($__R);
+      // var $S = stopify;
 
       path.node.body.splice(opts.eval ? 3 : 2, 0,
         t.variableDeclaration('var',
             [t.variableDeclarator(
               t.identifier('$S'),
-              t.callExpression(
-                t.memberExpression(
-                  t.identifier('stopify'),
-                  t.identifier('init')),
-                  [t.identifier('$__R')]))]));
+                  t.identifier('stopify'))]));
     }
 
     if (!opts.compileFunction) {

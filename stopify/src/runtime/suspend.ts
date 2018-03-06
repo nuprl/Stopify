@@ -1,7 +1,7 @@
 import { setImmediate } from './setImmediate';
 import { ElapsedTimeEstimator } from './elapsedTimeEstimator';
 import * as assert from 'assert';
-import {  Runtime } from 'stopify-continuations/dist/src/runtime';
+import {  RuntimeInterface } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { emptyThunk } from '../generic';
 
 export function badResume() {
@@ -18,7 +18,7 @@ export class RuntimeWithSuspend {
     /**
      * Abstract runtime used to implement stack saving and restoring logic
      */
-    public rts: Runtime,
+    public rts: RuntimeInterface,
     public yieldInterval: number,
     public estimator: ElapsedTimeEstimator,
     /** The runtime system yields control whenever this function produces
@@ -57,13 +57,12 @@ export class RuntimeWithSuspend {
    * @param force forces a suspension when `true`.
    */
   suspend(force?: boolean): void {
-    if (this.rts.isSuspended) { debugger; }
-    assert(!this.rts.isSuspended, 'already suspended');
+    assert(!this.rts.getSuspended(), 'already suspended');
 
     // Do not suspend inside a nested runtime. This is used to make sure that
     // modules that are `require`d do not try to suspend.
     // (Specifics of delimitDepth documented in abstractRun.ts)
-    if (this.rts.delimitDepth > 1) {
+    if (this.rts.getDelimitDepth() > 1) {
       return;
     }
 
@@ -71,7 +70,7 @@ export class RuntimeWithSuspend {
         (this.estimator.elapsedTime() >= this.yieldInterval)) {
 
       this.estimator.reset();
-      this.rts.isSuspended = true;
+      this.rts.setSuspended(true);
       return this.rts.captureCC((continuation) => {
         this.continuation = continuation;
 

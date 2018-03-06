@@ -6,7 +6,6 @@ import { RawSourceMap } from 'source-map';
 import { compile } from './compiler/compiler';
 export { compileFunction, compileEval } from './stopify/compileFunction'
 export { CompilerOpts, Opts } from './types';
-export { stopify as precompiledStopify } from './entrypoints/runtimeOnly';
 export { plugin } from './stopify/stopifyCallCC';
 
 export function stopifySource(src: string, opts: types.CompilerOpts): Promise<string> {

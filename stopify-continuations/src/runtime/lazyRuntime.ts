@@ -25,6 +25,7 @@ export class LazyRuntime extends common.ShallowRuntime {
         if(throwExn) { throw err; }
         else { return v; }
       }
+      // TODO(rachit): ...stack copies the whole stack. Modify instead of copy.
       throw new common.Restore([this.topK(restarter), ...stack]);
     };
   }

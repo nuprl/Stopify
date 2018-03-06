@@ -128,16 +128,7 @@ export abstract class Runtime {
     }
   }
 
-  topK(f: () => any): KFrameTop {
-    return {
-      kind: 'top',
-      f: () => {
-        this.stack = [];
-        this.mode = true;
-        return f();
-      }
-    };
-  }
+  abstract topK(f: () => any): KFrameTop;
 
   // TODO(rachit): Document.
   abstract runtime(body: () => any): any;
@@ -166,6 +157,17 @@ export abstract class ShallowRuntime extends Runtime {
   constructor() {
     super();
     this.stackType = 'shallow';
+  }
+
+  topK(f: () => any): KFrameTop {
+    return {
+      kind: 'top',
+      f: () => {
+        this.stack = [];
+        this.mode = true;
+        return f();
+      }
+    };
   }
 
   runtime(body: () => any): any {
@@ -213,6 +215,16 @@ export abstract class DeepRuntime extends Runtime {
     super();
     this.stackType = 'deep';
     this.throwing = false;
+  }
+
+  topK(f: () => any): KFrameTop {
+    return {
+      kind: 'top',
+      f: () => {
+        this.stack.pop();
+        return f();
+      }
+    };
   }
 
   runtime(body: () => any): any {

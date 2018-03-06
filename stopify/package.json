@@ -1,6 +1,6 @@
 {
   "name": "stopify",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "description": "Stopify makes JavaScript a better target language for high-level languages and web-based programming tools",
   "main": "dist/src/index.js",
   "typings": "dist/src/index",
@@ -82,7 +82,7 @@
     "selenium-webdriver": "^3.5.0",
     "source-map-support": "^0.4.18",
     "sprintf": "^0.1.5",
-    "stopify-continuations": "^0.0.2",
+    "stopify-continuations": "^0.1.0",
     "tmp": "0.0.31",
     "trie": "^0.2.1",
     "which": "^1.3.0"

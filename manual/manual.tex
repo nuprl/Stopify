@@ -1,13 +1,47 @@
-\documentclass{book}
+\documentclass[10pt]{book}
 \usepackage{pervasives}
 
-\title{Stopify: User's Manual}
-\author{Samuel Baxter, Arjun Guha, Rachit Nigam, and Joe~Gibbs Politz}
 
 \begin{document}
 
-\maketitle
+\title{Stopify User's Manual}
+
+\begin{titlepage}
+\centering
+
+%\vspace{4in}
+\includegraphics[width=0.5\textwidth]{logo.png}\par\vspace{1cm}
+
+{\Huge\bfseries Stopify}
+
+\vspace{0.25in}
+
+{\itshape version 0.1.0}
+
+\vspace{0.5in}
+
+{\Large\bfseries User's Manual}
+
+\vspace{1in}
+
+{\itshape by}
+
+\vspace{0.25in}
+
+Samuel Baxter, Arjun Guha, Shriram Krishnamurthi, Rachit Nigam, and Joe~Gibbs Politz
+\vfill
+\end{titlepage}
+
+
 \tableofcontents
+
+\chapter{Acknowledgements}
+
+Stopify draws inspiration from several existing systems, including debug.js,
+Doppio, Gambit.js, Pyret, scheme2js. Unwinder, and WeScheme. We thank Emery
+Berger, Benjamin Lerner, Robert Powers, and John Vilk for insightful
+discussions. We thank Caitlin Santone for designing the Stopify logo.
+
 
 \chapter{Introduction}
 
@@ -45,7 +79,11 @@ code, and support more features, if your compiler cooperates with Stopify in
 particular ways. This manual will guide you through using Stopify with your own
 compiler.
 
-\section{Quick Start}
+\paragraph{Warning} This manual is a work in progress. Many Stopify features
+remain undocumented. We will preserve the interfaces documented here in
+subsequent releases of Stopify.
+
+\section{Quick Start}\label{quickstart}
 
 \begin{figure}
 \lstset{language=js}
@@ -58,7 +96,7 @@ var j = 0;
 while(true) {
   if (i++ == 10000000) {
     j++;
-    elt.innerText = "Still runninng ... " + (new Date());
+    elt.innerText = "Still running ... " + (new Date());
     i = 0;
   }
 }
@@ -102,11 +140,17 @@ stopify-path stopify.bundle.js
 \end{lstlisting}
 
 
-\item Create
-that first loads the Stopify runtime system and then uses the Stopify runtime
-to load \texttt{output.js}. \Cref{trivial-driver} shows such a page, but
-make sure to adjust the path of \texttt{stopify.bundle.js} to the path
-produced in the previous step.
+\item Create a simple web page
+that first loads the Stopify runtime system (i.e., the path produced
+in the previous step) and then uses the runtime system to load the saved
+file:
+\lstset{language=console}
+\begin{lstlisting}
+var runner = stopify.stopify("output.js");
+runner.run(() => console.log("done"));
+\end{lstlisting}
+
+\Cref{trivial-driver} shows such a page.
 
 \end{enumerate}
 
@@ -117,13 +161,7 @@ produced in the previous step.
   <body>
     <script src="stopify.bundle.js"></script>
     <script>
-    var runner = stopify.stopify("output.js", {
-      estimator: "reservoir",
-      yieldInterval: 100,
-      resampleInterval: 100,
-      timePerElapsed: 1
-    });
-
+    var runner = stopify.stopify("output.js");
     runner.run(() => console.log("done"));
     </script>
   </body>
@@ -133,126 +171,397 @@ produced in the previous step.
 \end{figure}
   
 
-Finally, open the webpage in any browser. You'll find that the the program
+Finally, open the page in any browser. You'll find that the the program
 ``just works'' and periodically prints the current time. In contrast, if you
 load \texttt{input.js} directly, it will not print anything and will eventually
 crash the browser tab.
 
-\chapter{Compiler Configuration}
+\chapter{Overview}
 
-You can configure the Stopify compiler in several ways.
+The Stopify package includes several components:
 
-\section{Transformation}
+\begin{itemize}
+
+  \item A command-line compiler (the \texttt{stopify} executable).
+
+  \item A compiler that can be used as a library from Node.
+
+  \item A runtime system that is bundled for use in the browser. You
+  can get the local path of this bundle using the following command:
+  \lstset{language=console}
+  \begin{lstlisting}
+  stopify-path stopify.bundle.js
+  \end{lstlisting}
+
+  \item A compiler and runtime system that are bundled for the browser.
+  You can get the local path of this bundle using the following command:
+  \lstset{language=console}
+  \begin{lstlisting}
+  stopify-path stopify-full.bundle.js
+  \end{lstlisting}
+  This bundle has a lot more code than the runtime-only bundle. However, running Stopify in the
+  browser is useful if your users have spotty Internet connections.
+
+\end{itemize}
+
+Note that \Cref{quickstart} presented the command-line compiler with the
+runtime-only bundle. The rest of this manual presents other ways to use
+Stopify.
+
+\section{The Command-Line Compiler}
+\lstset{language=console}
+
+The Stopify CLI compiler requires the name of the input file and the name
+of the output file. In addition, the compiler has several
+optional flags:
+
+\begin{lstlisting}
+stopify [flags] input.js output.js
+\end{lstlisting}
+
+The optional flags are:
+\begin{itemize}
+
+  \item \lstinline|-t| or \lstinline|--transform| selects the continuation implementation
+  to use (\cref{transformation}).
+
+  \item \lstinline|-n| or \lstinline|--new| selects the encoding for constructors (\cref{new-method}).
+
+  \item \lstinline|--eval| or \lstinline|--no-eval| determine if JavaScript's \emph{eval} is supported
+  (see \cref{eval-flag}).
+
+  \item \lstinline|--es| determines if JavaScript's implicit operations supported (\cref{implicit-ops-flag}).
+
+  \item \lstinline|--hofs| determines if JavaScript's builtin higher-order functions supported (\cref{hofs-flag}).
+
+  \item \lstinline|--js-args| determines how faithfully should Stopify support the \emph{arguments} object (\cref{arguments-flag}).
+
+  \item \lstinline|--getters| or \lstinline|--no-getters| determine if should Stopify support getters and setters (\cref{getters-flag}).
+
+  \item \lstinline|--debug|: should Stopify support single-step debugging (\cref{debug-flag}).
+\end{itemize}
+
+If a flag is not set, Stopify picks a default value that is documented
+in the subsection for each flag. By default, Stopify is \emph{not} completely
+faithful to the semantics of JavaScript. (Certain JavaScript features are
+difficult to support and incur a high runtime cost.) Instead, Stopify's default
+values work with a number of compilers that we've tested. By default,
+Stopify does not support getters, setters, eval, builtin higher-order
+functions, implicit operations, \lstinline|arguments|-object aliasing,
+and single-stepping.
+If you think you may need these features, you will
+need to set their corresponding flags.
+
+\lstset{language=js}
+To load a compiled file in the browser, the Stopify runtime provides
+the following function:
+\begin{lstlisting}
+stopify.stopify(url: string, opts?: RuntimeOpts): AsyncRun
+\end{lstlisting}
+
+Above, \lstinline|url|should be the address of the compiled file (i.e., hosted on
+your web server) and \lstinline|url| is an optional runtime configuration
+(\cref{runtime-config}). The result of this function is an \lstinline|AsyncRun|
+object (\cref{asyncrun}).
+
+\section{Runtime Configuration\label{runtime-config}}
+
+The Stopify runtime system takes a dictionary of options with the
+following type:
+
+\lstset{language=js}
+\begin{lstlisting}
+interface RuntimeOpts {
+  estimator?: "reservoir" | "exact" | "countdown",
+  yieldInterval?: number /* must be greater than zero */
+}
+\end{lstlisting}
+
+These options control how frequently Stopify yields control to the browser
+(\lstinline|yieldInterval|) and the mechanism that it uses to determine
+elapsed time (\lstinline|estimator|).
+By default, Stopify uses the \texttt{reservoir} estimator that samples the current
+time (using \lstinline|Date.now()|) and tries to yield every 100 milliseconds.
+This mechanism is inexact, but performs well. You can adjust the yield
+interval, but we do not recommend using a value lower than 100.
+
+The \texttt{countdown} estimator yields after exactly $n$
+yield points have passed. With this estimator, the \texttt{yieldInterval}
+is interpreted as the value of $n$ and not a duration. We do not recommend
+using this estimator in practice, since a good value of $n$ will depend on
+platform performance and program characteristics that are very hard to
+predict. However, it is useful for reproducing bugs in Stopify, since
+the \texttt{reservoir} estimator is nondeterministic.
+
+Finally, the \texttt{exact} estimator checks the current time at every
+yield point, instead of sampling the time. This has a higher runtime
+overhead than \texttt{reservoir} and we do not recommend it.
+
+\section{The \texttt{AsyncRun} Interface\label{asyncrun}}
+\lstset{language=js}
+
+\begin{figure}
+\lstset{language=js}
+\begin{lstlisting}
+interface AsyncRun {
+  run(onDone: () => void, onYield?: () => void, onBreakpoint?: (line: number) => void): void;
+  pause(onPaused: (line?: number) => void): void;
+  resume(): void;
+  setBreakpoints(line: number[]): void;
+  step(onStep: (line: number) => void): void;
+  pauseImmediate(callback: () => void): void;
+  continueImmediate(result: any): void;
+}
+\end{lstlisting}
+\caption{The \texttt{AsyncRun} interface.}
+\label{asyncrun-interface}
+\end{figure}
+
+The \lstinline|AsyncRun| interface (\cref{asyncrun-interface}) provides methods
+to run, stop, and control the execution of a stopified program. The
+interface provides several methods, none of which should be used
+directly by the stopified program. The following methods are meant to be
+used by the driver program that controls execution (e.g., a web-based IDE):
+
+\begin{itemize}
+
+  \item The \lstinline|run| method starts execution and requires a callback that
+  gets invokes when execution completes. You may provide optional callbacks
+  that are invoked when the program yields control and when a breakpoint is reached.
+
+  \item The \lstinline|setBreakpoint| method sets the active breakpoints.
+
+  \item The \lstinline|pause| method pauses the program at the next yield point
+  and requires an optional callback that is invoked when the program has paused.
+
+  \item The \lstinline|resume| method resumes execution after a pause.
+
+  \item The \lstinline|step| method resumes execution and pauses again at the
+  next yield point.
+
+\end{itemize}
+
+The following methods are are meant to be used by non-blocking
+JavaScript functions to provide simulated blocking interface to the stopified
+program:
+\begin{itemize}
+
+  \item The \lstinline|pauseImmediate| method suspends the stopified program
+  and invokes the provided callback. A function should not execute anything
+  after invoking \lstinline|pauseImmediate|. Typically, a function that
+  uses \lstinline|pauseImmediate| will use it in a \lstinline|return| statement.
+
+  \item The \lstinline|continueImmediate| function resumes execution with
+  the provided value.
+
+\end{itemize}
+
+\Cref{illustrative-examples} has several examples that use these methods
+to implement simulated blocking operations.
+
+\section{The Online Compiler}
+\lstset{language=console}
+
+The file \lstinline|stopify-full.bundle.js| packages the compiler and runtime
+system for use the browser. You can get the local path of this bundle using the
+following command:
+\lstset{language=console}
+\begin{lstlisting}
+stopify-path stopify-full.bundle.js
+\end{lstlisting}
+
+This bundle exposes the following function:
+
+\lstset{language=js}
+\begin{lstlisting}
+stopify.stopifyLocally(url: string, copts?: CompileOpts, ropts?: RuntimeOpts): AsyncRun
+\end{lstlisting}
+
+The optional \lstinline|CompilerOpts| is dictionary with the following type:
+
+\begin{lstlisting}
+interface CompilerOpts {
+  getters?: boolean,
+  debug?: boolean,
+  captureMethod?: "lazy" | "retval" | "eager",
+  newMethod?: "wrapper" | "direct",
+  eval?: boolean,
+  es?: "sane" | "es5",
+  hofs: "builtin" | "fill",
+  jsArgs?: "simple" | "faithful" | "full",
+  externals?: string[]
+}
+\end{lstlisting}
+
+
+
+\section{Compiler Configuration}
+
+\lstset{language=js}
+
+You can configure the Stopify compiler in several ways. Some of these
+options only affect performance, whereas other options affect the
+sub-language of JavaScript that the compiler targets.
+
+\subsection{Transformation (\texttt{.captureMethod})\label{transformation}}
 
 Stopify uses first-class continuations as a primitive to implement its
 execution control features. Stopify can represent continuations in several
 ways; the fastest approach depends on the application and the browser. The
-valid options are `lazy`, `retval`, and `eager`. For most cases, we recommend
-using `lazy`.
+valid options are \lstinline|"lazy"|, \lstinline|"retval"|, and
+\lstinline|"eager"|. For most cases, we recommend using \lstinline|"lazy"|
 
-   There are two additional options that are only useful for benchmarking and debugging: `original` leaves the input program unchanged and `fudge` applies all transformations with the exception of continuation instrumentation.
+\subsection{Constructor Encoding (\texttt{.newMethod})\label{new-method}}
 
-   Command-line: `--transform`
+Stopify implements two mechanisms to support suspending execution within the
+dynamic extent of a constructor call.
 
-   JavaScript API: `captureMethod`
+\begin{itemize}
 
-- **Constructor encoding**. Stopify implements two mechanisms to support
-   suspending execution within the dynamic extent of a constructor call.
+\item \lstinline|"wrapper"| desugars all \lstinline|new| expressions to ordinary
+function calls, using \lstinline|Object.create|.
 
-   - The `wrapper` mechanism desugars all `new` expressions to ordinary function
-      calls (using `Object.create`).
+\item \lstinline|"direct"| preserves \lstinline|new| expressions,
+ but instruments all functions to check if they are invoked as constructors,
+ using \lstinline|new.target|.
 
-   - The `direct` mechanism keeps `new` expressions intact but instruments
-     all functions to check if they are invoked as constructors 
-     (using `new.target`).
+\end{itemize}
 
-  The fastest approach depends on the browser. We recommend using `wrapper`.
+The fastest approach depends on the browser.
+We recommend using \lstinline|wrapper|.
 
-  Command-line: `--new`
+\subsection{Eval Support (\texttt{.eval})\label{eval-flag}}
 
-  JavaScript API: `newMethod`
+How should Stopify handle JavaScript's \lstinline|eval| function? By default,
+this flag is \lstinline|false| and Stopify leaves \lstinline|eval| unchanged.
+Since Stopify typically does not rename variables, using a stopfied program can
+use \lstinline|eval|, but the evaluated code may lock-up the browser if it has
+an infinite loop.
 
-- **Implicit operations**. Stopify can suspend execution
-  within user-written `valueOf()` and `toString()` methods
-  that JavaScript invokes implicitly.
+If set to \lstinline|true|, Stopify rewrites calls to JavaScript's
+\lstinline|eval| function to invoke the Stopify compiler. (Note: Stopify does
+\emph{not} rewrite \lstinline|new Function| and dynamically generated
+\texttt{<script>} tags.) This allows Stopify to control execution in
+dynamically generated code. Naturally, this requires the online compiler.
+However, the feature incurs considerable overhead.
 
-  For example, the following program is an infinite loop
-  in JavaScript:
 
-  ```javascript
-  var x = { toString: function() { while(true) { } } };
-  x + 1;
-  ```
+\subsection{Implicit Operations (\texttt{.es})\label{implicit-ops-flag}}
 
-  With the implicit operations flag is set to `es5`,
-  Stopify will  be able to gracefully suspend the program
-  above. With the flag set to `sane`, Stopify will not be able to detect the
-  the infinite loop. We have found that most source language compilers do not
-  rely on implicit operations, thus it is usually safe to use `sane`.
+Stopify can suspend execution within user-written \lstinline|valueOf()| and
+\lstinline|toString()| methods that JavaScript invokes implicitly.
 
-  Command-line: `--es` (default: `sane`)
+For example, the following program is an infinite loop in JavaScript:
 
-  JavaScript API: `es`
+\begin{lstlisting}
+var x = { toString: function() { while(true) { } } };
+x + 1;
+\end{lstlisting}
 
-- **Arguments object aliasing.** The `arguments` object makes it difficult
-  from Stopify to suspend execution. Stopify supports `arguments` in full, but
-  it also supports two simple special cases that improve performance.
+With the implicit operations flag is set to \lstinline|"es5"|, Stopify will be
+able to gracefully suspend the program above. With the flag set to \lstinline|"sane"|,
+Stopify will not be able to detect the the infinite loop. We have found that
+most source language compilers do not rely on implicit operations, thus it is
+usually safe to use \lstinline|"sane"|.
 
-  - `simple`: use this option if the program (1) does not use `arguments` to
+\subsection{Fidelity of \texttt{arguments} (\texttt{.jsArgs})\label{arguments-flag}}
+
+The \lstinline|arguments| object makes it difficult for Stopify to resume
+execution after suspension. Stopify supports \lstinline|arguments| in full, but
+it also supports two simple special cases that improve performance.
+
+\begin{itemize}
+
+  \item Use \lstinline|"simple"| if the program (1) does not use \lstinline|arguments| to
     access declared formal arguments and (2) only reads additional
-    arguments using the `arguments` object.
+    arguments using the \lstinline|arguments| object.
 
-  - `faithful`: use this option if the program (1) does not use `arguments`
+  \item Use \lstinline|"faithful"| if the program (1) does not use \lstinline|arguments|
     to access declared formal arguments and (2) may read or write additional
-    arguments using the `arguments` object.
+    arguments using the \lstinline|arguments| object.
 
-  - `full`: use this option for full support of JavaScript's `arguments` object.
+  \item Use \lstinline|"full"| for full support of JavaScript's \lstinline|arguments| object.
 
-  Command-line: `--js-args` (default: `simple`)
+\end{itemize}
 
-  JavaScript API: `jsArgs`
+\subsection{Higher Order Functions (\texttt{.hofs}) \label{hofs-flag}}
 
-- **Higher-order functions.** Programs cannot use higher-order functions
-  (e.g., `.map`, `.filter`, etc.) with Stopify, since Stopify cannot
-  instrument native code.
+Programs cannot use bulitin higher-order functions (e.g., \lstinline|.map|,
+\lstinline|.filter|, etc.) with Stopify, since Stopify cannot instrument native
+code. The \lstinline|.hofs| flag has two possible values:
 
-  - `builtin`: with this option, Stopify assumes that the program does not
-    use any native higher-order functions.
+\begin{itemize}
 
-  - `fill`: with this option, Stopify rewrites programs that use native
+  \item Use \lstinline|"builtin"| if the program does not use any native
+  higher-order functions.
+
+  \item Use \lstinline|"fill"| to have Stopify rewrite programs that use native
     higher-order functions to use polyfills written in JavaScript.
 
-  Command-line: `--hofs` (default: `builtin`)
+\end{itemize}
 
-  JavaScript API: `hofs`
+\subsection{Getters and Setters (\texttt{.getters})\label{getters-flag}}
 
-- **Getters and setters**. Programs that suspend execution within
-  getters/setters incur a lot  of overhead with Stopify.
+Programs that suspend execution within getters/setters incur a lot of overhead
+with Stopify. The \lstinline|.getters| flag has two possible values:
 
-  - `true`: with this option, Stopify instruments the program to support
-    suspension within getters/setters.
+\begin{itemize}
 
-  - `false`: with this option, Stopify assumes that the program does not
-    suspend execution within getters/setters.
+  \item Use \lstinline|true| to have Stopify instrument the program to
+  support suspension within getters and setters.
 
-  Command-line: `--getters` to enable and `--no-getters` to disable
-  (default: `--no-getters`)
+  \item Use \lstinline|false| if the program does not use getters and setters.
 
-  JavaScript API: `getters`
+\end{itemize}
 
-- **Single-stepping and breakpointing.** Stopify can support single-stepping
-  and breakpointing, but this requires more instrumentation.
+\subsection{Single-stepping and Breakpointing (\texttt{.debug})\label{debug-flag}}
 
-  Command-line: `--debug` to enable and `--no-debug` to disable
-  (default `--no-debug`)
+ Set \lstinline|.debug| to \lstinline|true| to enable
+support for single-stepping and breakpointing. However, note that this requires
+more instrumentation and slows the program down further.
 
-  JavaScript API: boolean flag `.debug`
+\chapter{Illustrative Examples\label{illustrative-examples}}
 
-- **Node.js support.** Stopify is designed to produce programs that work in
-  the browser, but it can also be helpful to run programs in Node for debugging
-  and testing. For the browser, the compiler produces programs with a free
-  variable `stopify` that must be bound to the runtime system. For Node.js,
-  the compiler produces a program that uses `require` to load the runtime
-  system.
+\lstset{language=js}
+This chapter presents several examples that showcase Stopify's features.
+
+\section{A Blocking \texttt{sleep} function}
+
+The browser does not have a blocking \lstinline|sleep| function.
+However, we can use \lstinline|window.setTimeout| and Stopify to simulate
+a blocking \lstinline|sleep| operation:
+\begin{lstlisting}
+function sleep(duration) {
+  asyncRun.pauseImmediate(() => {
+    window.setTimeout(() => asyncRun.continueImmediate(undefined), duration);
+  });
+}
+\end{lstlisting}
+
+In the code above, \lstinline|asyncRun| is an instance of \lstinline|AsyncRun|
+(\cref{asyncrun}). Note that this function should be stopified itself and
+needs to be declared as an external. \Cref{sleep-complete} shows a complete example
+of a page that uses \lstinline|sleep|.
+
+\begin{figure}
+\lstinputlisting{examples/sleep.html}
+\caption{This program runs forever and prints a period each second.}
+\label{sleep-complete}
+\end{figure}
+
+\section{A Blocking \texttt{prompt} function}
+
+\begin{figure}
+\lstinputlisting{examples/prompt.html}
+\caption{This program prompts the user for two inputs without modal dialog boxes.}
+\label{prompt-complete}
+\end{figure}
+
+The \lstinline|prompt| and \lstinline|alert| functions that are built-in to
+browsers are not the ideal way to receive input from the user. First, modal
+dialog boxes are unattractive; second, a user can dismiss them; and finally, if
+a page displays too many modal dialog boxes, the browser can give the user to
+suppress all of them (\cref{prompt-complete}).
+
 
 \end{document}

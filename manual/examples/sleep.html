@@ -1,0 +1,25 @@
+<html>
+  <body>
+    <script src="../../stopify/dist/stopify-full.bundle.js"></script>
+    <script>
+    function sleep(duration) {
+      asyncRun.pauseImmediate(() => {
+        window.setTimeout(() => asyncRun.continueImmediate(undefined), duration);
+      });
+    }
+
+    const program = `
+      while(true) {
+        sleep(1000);
+        document.body.appendChild(document.createTextNode("."));
+      }
+    `;
+
+    const asyncRun = stopify.stopifyLocally(
+      `(function(){ ${program} })()`,
+      { externals: [ "sleep", "document" ] });
+
+    asyncRun.run(() => { });
+    </script>
+  </body>
+</html>

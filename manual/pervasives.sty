@@ -1,9 +1,12 @@
 \usepackage[utf8]{inputenc}
+\usepackage{textcomp}
 \usepackage{bookman}
+\usepackage{color}
 \usepackage{fullpage}
 \usepackage{hyperref}
 \usepackage{cleveref}
 \usepackage{listings}
+\usepackage{graphicx}
 
 \lstset{
   showstringspaces=false
@@ -21,14 +24,13 @@
 sensitive=false,
 morekeywords={let,function,return,undefined,null,typeof,true,false,ref,deref,
               var,new,break,while,try,catch,finally,throw,err,if,else,for,do,
-              with,delete,new,instanceof,this},
+              with,delete,new,instanceof,this,interface},
 keywordstyle=\ttfamily\bfseries,
 identifierstyle=\ttfamily,
 comment=[l]{//},
-commentstyle=\ttfamily,
+commentstyle=\ttfamily\color{red},
 string=[d]{"},
 stringstyle=\ttfamily,
-mathescape=true,
 escapechar=\#,
 extendedchars=true,
 basicstyle=\footnotesize\ttfamily,

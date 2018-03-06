@@ -1,18 +1,15 @@
 import * as commander from 'commander';
 import { Opts } from './types';
-import { parseArg } from './generic';
+import { checkAndFillRuntimeOpts } from './runtime/checkOpts';
 
 commander.option(
   '-y, --yield <interval>',
-  'time (in milliseconds) between yields to the event loop (default: 100)',
-  parseArg(parseInt, x => x > 0, '--yield requires a number'),
-  100);
+  'time (in milliseconds) between yields to the event loop (default: 100)');
+
 
 commander.option(
   '-e, --env <env>',
-  'the runtime environment for testing (default: node)',
-  x => x,
-  'node');
+  'the runtime environment for testing (default: node)');
 
 commander.option(
   '--variance',
@@ -21,29 +18,20 @@ commander.option(
 commander.option(
   '--time-per-elapsed <interval>',
   `an estimate of the time that elapses between calls to the internal suspend \
-function (default: 1)`,
-   parseArg(parseInt, (x) => x > 0,
-    '--time-per-elapsed expects a positive integer'),
-   1);
+function (default: 1)`);
 
 commander.option(
   '-r, --resample-interval <interval>',
   `interval between resamples. Only valid with --estimator=velocity. Default: \
-same as -y if -y is specified, otherwise 100.`,
-  parseArg(parseInt, (x) => x > 0, 'invalid --resample-interval'));
+same as -y if -y is specified, otherwise 100.`);
 
 commander.option(
   '--stop <duration>',
-  'the time after which the program should be terminated (default: never stop)',
-  parseArg(parseInt, (x) => x > 0,
-    '--stop expects a positive integer'));
+  'the time after which the program should be terminated (default: never stop)');
 
 commander.option(
   '--estimator <estimator>',
-  `one of exact, reservoir, velocity, or countdown (default: velocity)`,
-  parseArg(x => x, x => /^(exact|reservoir|countdown|velocity)$/.test(x),
-    'invalid --estimator value'),
-  'velocity');
+  `one of exact, reservoir, velocity, or countdown (default: velocity)`);
 
 commander.option('--remote <url>',
   'URL of a remote WebDriver server (usually http://<hostname>:4444/wd/hub)');
@@ -54,11 +42,9 @@ commander.option('--local-host <hostname>',
   'localhost');
 
 commander.option('--local-port <port>',
-  'the port to use on this host (default: OS chooses)',
-  parseArg(parseInt, (x) => x > 0 && x < 65536, 'bad --local-port'));
+  'the port to use on this host (default: OS chooses)');
 
 commander.arguments('<filename>');
-
 
 export function parseRuntimeOpts(rawArgs: string[]): Opts {
 
@@ -69,7 +55,7 @@ export function parseRuntimeOpts(rawArgs: string[]): Opts {
     resampleInterval = 100;
   }
 
-  return {
+  return checkAndFillRuntimeOpts({
     filename: args.args[0],
     yieldInterval: args.yield,
     resampleInterval: args.resampleInterval,
@@ -78,5 +64,5 @@ export function parseRuntimeOpts(rawArgs: string[]): Opts {
     stop: args.stop,
     env: args.env,
     variance: args.variance
-  };
+  });
 }

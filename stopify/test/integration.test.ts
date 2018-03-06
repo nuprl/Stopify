@@ -34,7 +34,6 @@ for (const testPath of glob.sync('test-data/integration/*.html')) {
     await driver.get(url);
     await driver.wait(selenium.until.titleMatches(/okay|error/), 10000);
     const title = await driver.getTitle();
-    await driver.close();
     expect(title).toEqual('okay');
   });
 }

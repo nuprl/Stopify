@@ -6,6 +6,8 @@ import { CompilerOpts, Opts, AsyncRun } from '../types';
 import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { AbstractRunner } from '../runtime/abstractRunner';
 import { compile } from '../compiler/compiler';
+import { checkAndFillCompilerOpts } from 'stopify-continuations/dist/src/compiler/checkOpts';
+import { checkAndFillRuntimeOpts } from '../runtime/checkOpts';
 // We need to provide these for stopify-continuations
 export * from 'stopify-continuations/dist/src/runtime/runtime';
 export * from 'stopify-continuations/dist/src/runtime/implicitApps';
@@ -42,8 +44,11 @@ export function init(rts: Runtime): AsyncRun {
  * @param url URL of a pre-compiled program
  * @param opts runtime settings
  */
-export function stopifyLocally(src: string, compileOpts: CompilerOpts,
-  runtimeOpts: Opts): AsyncRun {
+export function stopifyLocally(src: string,
+  optionalCompileOpts?: Partial<CompilerOpts>,
+  optionalRuntimeOpts?: Partial<Opts>): AsyncRun {
+  const compileOpts = checkAndFillCompilerOpts(optionalCompileOpts || {});
+  const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
   runner = new Runner(compile(src, compileOpts), runtimeOpts);
   return runner;
 }

@@ -8,22 +8,7 @@ var program = `
 for (var i = 0; i < 10; i++) { };
 `;
 
-var runner = stopify.stopifyLocally(program, {
-    getters: false,
-    debug: true,
-    captureMethod: 'lazy',
-    newMethod: 'wrapper',
-    es: 'sane',
-    hofs: 'builtin',
-    jsArgs: 'simple',
-    requireRuntime: false
-  },
-  {
-    estimator: "reservoir",
-    yieldInterval: 100,
-    resampleInterval: 100,
-    timePerElapsed: 1
-  });
+var runner = stopify.stopifyLocally(program);
 
 runner.run(() => {
   console.log('wtf');

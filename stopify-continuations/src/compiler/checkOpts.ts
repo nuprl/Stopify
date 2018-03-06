@@ -14,7 +14,8 @@ const validFlags = [
   'es',
   'hofs',
   'jsArgs',
-  'requireRuntime'
+  'requireRuntime',
+  'externals'
 ];
 
 /**
@@ -79,7 +80,18 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
     hofs: 'builtin',
     jsArgs: 'simple',
     requireRuntime: false,
-    sourceMap: undefined
+    sourceMap: undefined,
+    externals: [
+      "Object",
+      "exports",
+      "require",
+      "console",
+      "global",
+      "window",
+      "document",
+      "setTimeout",
+      "captureCC"
+    ]
   };
 
   copyProp(opts, value, 'compileFunction',
@@ -116,6 +128,8 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
   copyProp(opts, value, 'sourceMap',
     (x) => true,
     '');
-
-    return opts;
+  copyProp(opts, value, 'externals',
+    (x) => x instanceof Array && x.every(y => typeof y === 'string'),
+    `.externals must be an array of strings`);
+  return opts;
 }

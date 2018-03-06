@@ -12,6 +12,7 @@ export interface CompilerOpts {
   hofs: 'builtin' | 'fill',
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
-  sourceMap?: any
+  sourceMap?: any,
+  externals: string[]
 }
 

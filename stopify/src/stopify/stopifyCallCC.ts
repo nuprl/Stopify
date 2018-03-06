@@ -5,18 +5,6 @@ import suspendStop from './suspendStop';
 import suspendStep from './suspendStep';
 import { timeSlow } from '../generic';
 
-const allowed = [
-  "Object",
-  "exports",
-  "require",
-  "console",
-  "global",
-  "window",
-  "document",
-  "setTimeout",
-  "captureCC"
-];
-
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: callcc.CompilerOpts = state.opts;
@@ -42,7 +30,7 @@ export const visitor: Visitor = {
     const plugs: any[] = [];
     // Cleanup globals when not running in `func` compile mode
     if (!state.opts.compileFunction) {
-      plugs.push([callcc.cleanupGlobals, { allowed }])
+      plugs.push([callcc.cleanupGlobals, { allowed: opts.externals }])
     }
 
     timeSlow('hygiene, etc.', () =>

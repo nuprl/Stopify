@@ -46,6 +46,20 @@ const visitor: Visitor = {
   }
 }
 
+// TODO(arjun): hand-coded in default externals. These should be picked up
+// from the runtime.
+const defaultExternals = [
+  "Object",
+  "exports",
+  "require",
+  "console",
+  "global",
+  "window",
+  "document",
+  "setTimeout",
+  "captureCC"
+];
+
 const defaultOpts: callcc.CompilerOpts = {
     getters: false,
     compileFunction: true,
@@ -56,7 +70,8 @@ const defaultOpts: callcc.CompilerOpts = {
     es: 'sane',
     hofs: 'builtin',
     jsArgs: 'simple',
-    requireRuntime: false
+    requireRuntime: false,
+    externals: defaultExternals
 }
 
 export function compileFunction(
@@ -87,6 +102,7 @@ export function compileEval(code: string, type: string, renames: { [key: string]
     hofs: 'builtin',
     jsArgs: 'simple',
     requireRuntime: (typeof window === 'undefined'),
+    externals: defaultExternals,
     renames,
     boxes
   }

@@ -1,0 +1,39 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+
+window.externalFunction = function() {
+  return 42;
+}
+
+function hiddenExternalFunction() {
+}
+
+var program = `
+if (externalFunction() !== 42) {
+  throw 'could not call external function';
+}
+
+if (typeof hiddenExternalFunction === 'function') {
+  throw 'can see hiddenExternalFunction';
+}
+`;
+
+var runner = stopify.stopifyLocally(program, {
+  externals: ['externalFunction']
+});
+
+runner.run(() => {
+  window.document.title = 'okay';
+});
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

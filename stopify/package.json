@@ -38,7 +38,8 @@
   },
   "bin": {
     "stopify": "bin/stopify.js",
-    "stopify-url": "bin/stopify-url.js"
+    "stopify-url": "bin/stopify-url.js",
+    "stopify-path": "bin/stopify-path.js"
   },
   "scripts": {
     "build": "./bin/build",

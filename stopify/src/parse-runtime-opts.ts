@@ -34,8 +34,7 @@ commander.option(
 
 commander.option(
   '--stack-size <size>',
-  'Maximum number of stack frames allowed in the runtime stack. Ignored if the runtime does not support deep stacks (default: 1000)',
-  '--stack-size expects a positive integer');
+  'Maximum number of stack frames allowed in the runtime stack. Ignored if the runtime does not support deep stacks (default: 1000)');
 
 commander.option('--remote <url>',
   'URL of a remote WebDriver server (usually http://<hostname>:4444/wd/hub)');

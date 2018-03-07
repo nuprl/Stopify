@@ -9,7 +9,8 @@ const validFlags = [
   'timePerElapsed',
   'stop',
   'variance',
-  'env'
+  'env',
+  'stackSize'
 ];
 
 /**
@@ -53,6 +54,10 @@ export function checkAndFillRuntimeOpts(value: Partial<RuntimeOpts>): RuntimeOpt
   transformProp(opts, value, 'timePerElapsed',
     (x) => Number(x), (x) => typeof x === 'number' && x > 0,
     `.timePerElapsed must be a number greater than zero`);
+  transformProp(opts, value, 'stackSize',
+    (x) => Number(x), (x) => typeof x === 'number' && x > 0,
+    `.stackSize must be a number greater than zero`);
+
   // TODO(arjun): The following flags only exist for benchmarking and testing
   // They don't really belong in the system.
   copyProp(opts, value, 'stop', (x) => true, '');

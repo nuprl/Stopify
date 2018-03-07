@@ -104,8 +104,8 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
     (x) => typeof x === 'boolean',
     `.debug must be a boolean`);
   copyProp(opts, value, 'captureMethod',
-    (x) => ['lazy', 'eager', 'retval', 'fudge'].includes(x),
-    `.captureMethod must be 'lazy', 'eager', 'retval', or 'fudge'`);
+    (x) => ['lazy', 'eager', 'retval', 'fudge', 'lazyDeep'].includes(x),
+    `.captureMethod must be 'lazy', 'eager', 'retval', 'lazyDeep', or 'fudge'`);
   copyProp(opts, value, 'newMethod',
     (x) => ['direct', 'wrapper'].includes(x),
     `.newMethod must be 'direct' or 'wrapper'`);

@@ -70,5 +70,5 @@ export function parseRuntimeOpts(rawArgs: string[]): RuntimeOpts {
     env: args.env,
     variance: args.variance,
     stackSize: args.stackSize || 1000
-  };
+  });
 }

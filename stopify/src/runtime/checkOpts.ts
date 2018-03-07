@@ -1,6 +1,5 @@
-import { Opts } from '../types';
-import { copyProp, transformProp } from
-  'stopify-continuations/dist/src/compiler/checkOpts';
+import { RuntimeOpts } from '../types';
+import { copyProp, transformProp } from 'stopify-continuations/dist/src/compiler/checkOpts';
 
 const validFlags = [
   'filename',
@@ -19,7 +18,7 @@ const validFlags = [
  *
  * @param value a 'CompilerOpts' with elided fields
  */
-export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
+export function checkAndFillRuntimeOpts(value: Partial<RuntimeOpts>): RuntimeOpts {
   if (value === null || typeof value !== 'object') {
     throw new Error(`expected an object for Opts`);
   }
@@ -30,7 +29,7 @@ export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
     }
   });
 
-  const opts: Opts = {
+  const opts: RuntimeOpts = {
     filename: '',
     estimator: 'reservoir',
     yieldInterval: 100,
@@ -38,7 +37,8 @@ export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
     timePerElapsed: 1,
     stop: undefined,
     variance: false,
-    env: 'chrome'
+    env: 'chrome',
+    stackSize: 1000
   }
 
   copyProp(opts, value, 'estimator',

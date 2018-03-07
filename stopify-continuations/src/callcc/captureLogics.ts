@@ -5,7 +5,7 @@ import * as fastFreshId from '../fastFreshId';
 import { getLabels } from './label';
 
 export {
-  $value,
+  $$value,
   isNormalMode,
   captureExn,
   captureLocals,
@@ -27,7 +27,7 @@ export {
 }
 
 const types = t.identifier('$__T');
-const $value = t.identifier('$value');
+const $$value = t.identifier('$value');
 const restoreNextFrame = t.identifier('restoreNextFrame');
 const target = t.identifier('target');
 const captureLocals = t.identifier('captureLocals');
@@ -76,7 +76,7 @@ function lazyDeepCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 
   const restoreNode =
     t.assignmentExpression(path.node.operator,
-      path.node.left, $value)
+      path.node.left, $$value)
 
   const setRestoreMode = t.expressionStatement(
     t.assignmentExpression('=',
@@ -96,7 +96,7 @@ function lazyDeepCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
           t.blockStatement([
             t.expressionStatement(
               t.assignmentExpression('=', isThrowing, t.booleanLiteral(false))),
-              t.throwStatement($value)]))])))
+              t.throwStatement($$value)]))])))
 
   const exnStack = t.memberExpression(exn, t.identifier('stack'));
 

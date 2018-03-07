@@ -10,7 +10,7 @@ import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
 import * as capture from './captureLogics';
 import {
-  $value,
+  $$value,
   isNormalMode,
   captureExn,
   captureLocals,
@@ -94,6 +94,21 @@ function paramToArg(node: t.LVal) {
   }
 }
 
+// Re-use these objects instead of generating it with every call of `func`.
+const $index = t.identifier('index');
+const $locals = t.identifier('locals');
+const $formals = t.identifier('formals');
+const $length = t.identifier('length');
+const $call = t.identifier('call');
+const $apply = t.identifier('apply');
+const $frame = t.identifier('frame');
+const $Object = t.identifier('Object');
+const $keys = t.identifier('keys');
+const $arguments = t.identifier('arguments');
+const $new = t.identifier('new');
+const $value = t.identifier('value');
+const $target = t.identifier('target');
+const $capturing = t.identifier('capturing');
 
 function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const jsArgs = state.opts.jsArgs;
@@ -102,15 +117,13 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   }
   const restoreLocals = path.node.localVars;
 
-  const frame = t.identifier('$frame');
 
   const restoreBlock = t.blockStatement([
-    t.variableDeclaration('const', [t.variableDeclarator(frame, popRuntimeStack)]),
+    t.variableDeclaration('const', [t.variableDeclarator($frame, popRuntimeStack)]),
     t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), t.memberExpression(frame,
-        t.identifier('locals')))),
-    t.expressionStatement(t.assignmentExpression('=', target,
-      t.memberExpression(frame, t.identifier('index')))),
+      t.arrayPattern(restoreLocals), t.memberExpression($frame, $locals))),
+    t.expressionStatement(
+      t.assignmentExpression('=', target, t.memberExpression($frame, $index))),
   ]);
 
   if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
@@ -122,17 +135,17 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     restoreBlock.body.push(
       t.expressionStatement(t.assignmentExpression('=',
         t.arrayPattern((<any>path.node.params)),
-        t.memberExpression(frame, t.identifier('formals')))));
+        t.memberExpression($frame, $formals))));
 
     restoreBlock.body.push(
       t.expressionStatement(t.assignmentExpression('=',
-        argsLen, t.memberExpression(frame, argsLen))));
+        argsLen, t.memberExpression($frame, argsLen))));
   }
 
   if(state.opts.captureMethod === 'lazyDeep') {
     restoreBlock.body.push(
       t.expressionStatement(t.assignmentExpression(
-        '=', $value, t.memberExpression(frame, t.identifier('value')))));
+        '=', $$value, t.memberExpression($frame, $value))));
   }
 
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
@@ -142,14 +155,14 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   // Save all local variables as an array in frame.locals.
   captureBody.push(
     t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(captureFrameId, t.identifier('locals')),
+      t.memberExpression(captureFrameId, $locals),
       t.arrayExpression(restoreLocals))));
 
   // To support 'full' arguments ...
   if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
     // ... save a copy of the parameters in the stack frame and
     captureBody.push(t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(captureFrameId, t.identifier('formals')),
+      t.memberExpression(captureFrameId, $formals),
       t.arrayExpression((<any>path.node.params)))));
     // ... save the length of the arguments array in the stack frame
     captureBody.push(t.expressionStatement(t.assignmentExpression('=',
@@ -161,25 +174,24 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
 
   // A local function to restore the next stack frame
   const reenterExpr = path.node.__usesArgs__
-    ? t.callExpression(t.memberExpression(path.node.id, t.identifier('apply')),
+    ? t.callExpression(t.memberExpression(path.node.id, $apply),
         [t.thisExpression(), matArgs])
-    : t.callExpression(t.memberExpression(path.node.id, t.identifier('call')),
+    : t.callExpression(t.memberExpression(path.node.id, $call),
       [t.thisExpression(), ...<any>path.node.params.map(paramToArg)]);
   const reenterClosure = t.variableDeclaration('var', [
     t.variableDeclarator(restoreNextFrame, t.arrowFunctionExpression([],
       t.blockStatement(path.node.__usesArgs__ ?
         [t.expressionStatement(t.assignmentExpression('=',
-          t.memberExpression(matArgs, t.identifier('length')),
-          t.memberExpression(t.callExpression(t.memberExpression(t.identifier('Object'),
-            t.identifier('keys')), [matArgs]), t.identifier('length')))),
+          t.memberExpression(matArgs, $length),
+          t.memberExpression(t.callExpression(t.memberExpression($Object,
+            $keys), [matArgs]), $length))),
           t.returnStatement(reenterExpr)] :
         [t.returnStatement(reenterExpr)])))]);
 
   const mayMatArgs: t.Statement[] = [];
   if (path.node.__usesArgs__) {
     const argExpr = jsArgs === 'faithful' || jsArgs === 'full'
-      ? bh.arrayPrototypeSliceCall(t.identifier('arguments'))
-      : t.identifier('arguments');
+      ? bh.arrayPrototypeSliceCall($arguments) : $arguments;
 
     mayMatArgs.push(
       t.variableDeclaration('const',
@@ -203,11 +215,11 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
 
   const isLazyDeep = state.opts.captureMethod === 'lazyDeep';
   const lazyDeepPredule = [
-    h.letExpression($value, t.nullLiteral()),
+    h.letExpression($$value, t.nullLiteral()),
     decreaseStackSize
   ]
   const defineArgsLen = h.letExpression(argsLen,
-          t.memberExpression(t.identifier('arguments'), t.identifier('length')))
+          t.memberExpression($arguments, $length))
 
   path.node.body.body.unshift(...[
     ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
@@ -316,7 +328,7 @@ const jumper = {
       if (state.opts.newMethod === 'direct') {
         path.node.localVars.push(newTarget);
         const declNewTarget = bh.varDecl(newTarget,
-          t.memberExpression(t.identifier('new'), t.identifier('target')));
+          t.memberExpression($new, $target));
         (<any>declNewTarget).lifted = true;
 
         path.node.body.body.unshift(declNewTarget);
@@ -418,7 +430,7 @@ const jumper = {
       if (path.node.finalizer) {
         path.node.finalizer = t.blockStatement([
           bh.sIf(t.unaryExpression('!',
-            t.memberExpression(runtime, t.identifier('capturing'))),
+            t.memberExpression(runtime, $capturing)),
             path.node.finalizer)]);
       }
     }

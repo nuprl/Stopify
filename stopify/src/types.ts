@@ -15,6 +15,9 @@ export interface RuntimeOpts {
   timePerElapsed: number,
   stop: number | undefined,
   variance: boolean,
+  stackSize: number,
+  restoreFrames: number,
+
   /** These are strings that Selenium recognizes, which is why it says
    * 'MicrosoftEdge' instead of 'edge'.
    */

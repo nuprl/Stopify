@@ -272,7 +272,7 @@ following type:
 \lstset{language=js}
 \begin{lstlisting}
 interface RuntimeOpts {
-  estimator?: "reservoir" | "exact" | "countdown",
+  estimator?: "velocity" | "reservoir" | "exact" | "countdown",
   yieldInterval?: number /* must be greater than zero */
 }
 \end{lstlisting}
@@ -280,10 +280,19 @@ interface RuntimeOpts {
 These options control how frequently Stopify yields control to the browser
 (\lstinline|yieldInterval|) and the mechanism that it uses to determine
 elapsed time (\lstinline|estimator|).
-By default, Stopify uses the \texttt{reservoir} estimator that samples the current
+By default, Stopify uses the \texttt{velocity} estimator that samples the current
 time (using \lstinline|Date.now()|) and tries to yield every 100 milliseconds.
-This mechanism is inexact, but performs well. You can adjust the yield
-interval, but we do not recommend using a value lower than 100.
+The \texttt{velocity} estimator dynamically measures the achieved yield interval
+and adapts how frequently it yields accordingly. This mechanism is inexact, but
+performs well. You can adjust the yield interval, but we do not recommend using
+a value lower than 100.
+
+The \texttt{reservoir} estimator uses the "reservoir sampling" method to
+approximate yielding every \texttt{yieldInterval} milliseconds. This technique
+is less robust than \texttt{velocity} to fluctuations in program behavior, but
+still outperforms other methods. This usually has a lower runtime overhead than
+\texttt{velocity}, but sacrifices accuracy. We recommend \texttt{velocity} for a
+more general, nondeterministic estimator.
 
 The \texttt{countdown} estimator yields after exactly $n$
 yield points have passed. With this estimator, the \texttt{yieldInterval}
@@ -291,11 +300,11 @@ is interpreted as the value of $n$ and not a duration. We do not recommend
 using this estimator in practice, since a good value of $n$ will depend on
 platform performance and program characteristics that are very hard to
 predict. However, it is useful for reproducing bugs in Stopify, since
-the \texttt{reservoir} estimator is nondeterministic.
+the \texttt{velocity} estimator is nondeterministic.
 
 Finally, the \texttt{exact} estimator checks the current time at every
 yield point, instead of sampling the time. This has a higher runtime
-overhead than \texttt{reservoir} and we do not recommend it.
+overhead than \texttt{velocity} and we do not recommend it.
 
 \section{The \texttt{AsyncRun} Interface\label{asyncrun}}
 \lstset{language=js}

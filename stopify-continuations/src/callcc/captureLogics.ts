@@ -5,7 +5,6 @@ import * as fastFreshId from '../fastFreshId';
 import { getLabels } from './label';
 
 export {
-  $$value,
   isNormalMode,
   captureExn,
   captureLocals,
@@ -22,12 +21,10 @@ export {
   lazyCaptureLogic,
   eagerCaptureLogic,
   retvalCaptureLogic,
-  fudgeCaptureLogic,
-  lazyDeepCaptureLogic
+  fudgeCaptureLogic
 }
 
 const types = t.identifier('$__T');
-const $$value = t.identifier('$value');
 const restoreNextFrame = t.identifier('restoreNextFrame');
 const target = t.identifier('target');
 const captureLocals = t.identifier('captureLocals');
@@ -43,89 +40,6 @@ const stackFrameCall = t.callExpression(t.memberExpression(topOfRuntimeStack,
 const eagerStack = t.memberExpression(runtime, t.identifier('eagerStack'));
 const shiftEagerStack = t.memberExpression(eagerStack, t.identifier('shift'));
 const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
-const isThrowing = t.memberExpression(runtime, t.identifier('throwing'));
-
-/**
- * Wrap callsites in try/catch block, lazily building the stack on catching a
- * Capture exception, then rethrowing.
- *
- *    try {
- *      if (mode === 'normal') {
- *        x = f_n(...args);
- *      }
- *      else if (target === n) { // mode === 'restoring'
- *        $__R.mode = 'normal'
- *        x = $value
- *        if ($__R.throwing) {
- *          $__R.throwing = false;
- *          throw $value
- *        }
- *      }
- *    } catch (exn) {
- *      if (exn instanceof Capture) {
- *        exn.stack.push(stackFrame);
- *      }
- *      throw exn;
- *    }
- */
-function lazyDeepCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
-  const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const exn = fastFreshId.fresh('exn');
-
-  const nodeStmt = t.expressionStatement(path.node);
-
-  const restoreNode =
-    t.assignmentExpression(path.node.operator,
-      path.node.left, $$value)
-
-  const setRestoreMode = t.expressionStatement(
-    t.assignmentExpression('=',
-      isNormalMode,
-      t.booleanLiteral(true)))
-
-  const ifStmt = t.ifStatement(
-    isNormalMode,
-    t.blockStatement([nodeStmt]),
-    t.ifStatement(
-      t.binaryExpression('===', target, applyLbl),
-      t.blockStatement([
-        setRestoreMode,
-        t.expressionStatement(restoreNode),
-        t.ifStatement(
-          isThrowing,
-          t.blockStatement([
-            t.expressionStatement(
-              t.assignmentExpression('=', isThrowing, t.booleanLiteral(false))),
-              t.throwStatement($$value)]))])))
-
-  const exnStack = t.memberExpression(exn, t.identifier('stack'));
-
-  const tryStmt = t.tryStatement(t.blockStatement([ifStmt]),
-    t.catchClause(exn, t.blockStatement([
-      t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
-        t.blockStatement([
-          t.expressionStatement(
-            t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
-            t.objectExpression([
-              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-              t.objectProperty(t.identifier('f'), restoreNextFrame),
-              t.objectProperty(t.identifier('index'), applyLbl),
-            ]),
-          ])),
-          t.expressionStatement(t.callExpression(captureLocals, [
-            t.memberExpression(exnStack, t.binaryExpression('-',
-              t.memberExpression(exnStack, t.identifier('length')),
-              t.numericLiteral(1)), true)
-          ])),
-        ])),
-      t.throwStatement(exn)
-    ])));
-
-  const stmtParent = path.getStatementParent();
-  stmtParent.replaceWith(tryStmt);
-  stmtParent.skip();
-}
-
 
 /**
  * Wrap callsites in try/catch block, lazily building the stack on catching a

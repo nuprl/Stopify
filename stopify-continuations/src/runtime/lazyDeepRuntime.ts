@@ -18,20 +18,26 @@ export class LazyDeepRuntime extends common.DeepRuntime {
     throw new common.Capture(f, []);
   }
 
-  makeCont(stack: common.Stack) {
+  makeCont(stack: common.Stack, savedStack?: common.Stack) {
     const savedDelimitDepth = this.delimitDepth;
 
     return (v: any, err: any=this.noErrorProvided) => {
-      const thrownExn = err !== this.noErrorProvided;
+      // Restore the saved stack.
+      if (savedStack) {
+        this.savedStack = savedStack;
+      }
+
       this.delimitDepth = savedDelimitDepth;
+
+      const throwExn = err !== this.noErrorProvided;
+
       let restarter = () => {
-        if (thrownExn) { throw err; }
+        if (throwExn) { throw err; }
         else { return v; }
       };
-      // Since the stack is unwound with the most recent call first, the
-      // restarter needs to be on the top of the stack.
-      stack.push(this.topK(restarter));
-      throw new common.Restore(stack);
+
+      // TODO(rachit): ...stack copies the whole stack. Modify instead of copy.
+      throw new common.Restore([this.topK(restarter), ...stack]);
     };
   }
 

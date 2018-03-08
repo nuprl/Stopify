@@ -10,7 +10,6 @@ import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
 import * as capture from './captureLogics';
 import {
-  $$value,
   isNormalMode,
   captureExn,
   captureLocals,
@@ -58,7 +57,8 @@ const captureLogics: { [key: string]: CaptureFun } = {
   eager: capture.eagerCaptureLogic,
   retval: capture.retvalCaptureLogic,
   fudge: capture.fudgeCaptureLogic,
-  lazyDeep: capture.lazyDeepCaptureLogic
+  // TODO(rachit): Do something about this.
+  lazyDeep: capture.lazyCaptureLogic
 };
 
 function isFlat(path: NodePath<t.Node>): boolean {
@@ -90,7 +90,8 @@ function paramToArg(node: t.LVal) {
     return t.spreadElement(node.argument);
   }
   else {
-    throw new Error(`paramToArg: expected Identifier or RestElement, received ${node.type}`)
+    throw new Error(
+      `paramToArg: expected Identifier or RestElement, received ${node.type}`)
   }
 }
 
@@ -106,7 +107,6 @@ const $Object = t.identifier('Object');
 const $keys = t.identifier('keys');
 const $arguments = t.identifier('arguments');
 const $new = t.identifier('new');
-const $value = t.identifier('value');
 const $target = t.identifier('target');
 const $capturing = t.identifier('capturing');
 
@@ -116,7 +116,6 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     return;
   }
   const restoreLocals = path.node.localVars;
-
 
   const restoreBlock = t.blockStatement([
     t.variableDeclaration('const', [t.variableDeclarator($frame, popRuntimeStack)]),
@@ -140,12 +139,6 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     restoreBlock.body.push(
       t.expressionStatement(t.assignmentExpression('=',
         argsLen, t.memberExpression($frame, argsLen))));
-  }
-
-  if(state.opts.captureMethod === 'lazyDeep') {
-    restoreBlock.body.push(
-      t.expressionStatement(t.assignmentExpression(
-        '=', $$value, t.memberExpression($frame, $value))));
   }
 
   const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
@@ -178,6 +171,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
         [t.thisExpression(), matArgs])
     : t.callExpression(t.memberExpression(path.node.id, $call),
       [t.thisExpression(), ...<any>path.node.params.map(paramToArg)]);
+
   const reenterClosure = t.variableDeclaration('var', [
     t.variableDeclarator(restoreNextFrame, t.arrowFunctionExpression([],
       t.blockStatement(path.node.__usesArgs__ ?
@@ -189,6 +183,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
         [t.returnStatement(reenterExpr)])))]);
 
   const mayMatArgs: t.Statement[] = [];
+
   if (path.node.__usesArgs__) {
     const argExpr = jsArgs === 'faithful' || jsArgs === 'full'
       ? bh.arrayPrototypeSliceCall($arguments) : $arguments;
@@ -213,17 +208,12 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     }
   }
 
-  const isLazyDeep = state.opts.captureMethod === 'lazyDeep';
-  const lazyDeepPredule = [
-    h.letExpression($$value, t.nullLiteral()),
-    decreaseStackSize
-  ]
   const defineArgsLen = h.letExpression(argsLen,
-          t.memberExpression($arguments, $length))
+    t.memberExpression($arguments, $length))
 
   path.node.body.body.unshift(...[
     ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
-    ...(isLazyDeep ? lazyDeepPredule : []),
+    ...(state.opts.captureMethod === 'lazyDeep' ? [decreaseStackSize] : []),
     ifRestoring,
     captureClosure,
     reenterClosure,

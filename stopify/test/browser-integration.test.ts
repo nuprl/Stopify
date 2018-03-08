@@ -4,7 +4,7 @@ import * as glob from 'glob';
 describe('In-browser tests', function () {
   f.intTests.forEach(function(filename: string) {
     f.browserTest(filename, "lazy");
-    f.browserTest(filename, "lazyDeep");
+    // TODO(rachit): Add deep stacks test
   });
 
   glob.sync('test/browser/*.js').forEach(file => {

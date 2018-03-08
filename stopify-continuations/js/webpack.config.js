@@ -21,7 +21,7 @@ const stopifyContinuations = {
 };
 targets.push(stopifyContinuations);
 
-for (const transform of [ 'lazy', 'eager', 'retval', 'fudge', 'lazyDeep' ]) {
+for (const transform of [ 'lazy', 'eager', 'retval', 'fudge' ]) {
   targets.push({
     entry: `./dist/tmp/implicitApps.${transform}.js`,
     output: {

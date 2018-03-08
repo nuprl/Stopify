@@ -7,8 +7,6 @@ import { LazyRuntime } from './lazyRuntime';
 import { EagerRuntime } from './eagerRuntime';
 import { RetvalRuntime } from './retvalRuntime';
 import { FudgeRuntime } from './fudgeRuntime';
-import { LazyDeepRuntime } from './lazyDeepRuntime';
-import { knowns } from '../common/cannotCapture';
 
 export * from './abstractRuntime';
 export { knownBuiltIns } from '../common/cannotCapture';
@@ -21,10 +19,10 @@ export function newRTS(transform: string) : Runtime {
   }
   else {
     switch (transform) {
-      case 'lazy': savedRTS = new LazyRuntime(); break;
-      case 'eager': savedRTS = new EagerRuntime(); break;
-      case 'retval': savedRTS = new RetvalRuntime(); break;
-      case 'lazyDeep': savedRTS = new LazyDeepRuntime(); break;
+      // Runtimes default to shallow.
+      case 'lazy': savedRTS = new LazyRuntime(Infinity); break;
+      case 'eager': savedRTS = new EagerRuntime(Infinity); break;
+      case 'retval': savedRTS = new RetvalRuntime(Infinity); break;
       case 'fudge': savedRTS = new FudgeRuntime(); break;
       default: throw new Error(`bad runtime: ${transform}`);
     }
@@ -32,11 +30,6 @@ export function newRTS(transform: string) : Runtime {
     return savedRTS;
   }
 }
-
-const unavailableOnNode = [ 'TextDecoder' ];
-export const knownBuiltIns = knowns
-  .filter(x => !unavailableOnNode.includes(x))
-  .map(o => eval(o));
 
 export const RV_SENTINAL = Symbol('rv_sentinal');
 export const EXN_SENTINAL = Symbol('exn_sentinal');

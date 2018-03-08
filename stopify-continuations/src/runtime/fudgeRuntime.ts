@@ -23,9 +23,9 @@ class FudgedContinuationError {
  * 'FudgedContinuationError(done)'. This is unfortunate. But, this
  * transformation still helps with debugging.
  */
-export class FudgeRuntime extends common.ShallowRuntime {
+export class FudgeRuntime extends common.Runtime {
   constructor() {
-    super();
+    super(0);
   }
 
   captureCC(f: (k: any) => any): void {

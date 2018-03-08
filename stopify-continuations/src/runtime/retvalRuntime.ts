@@ -2,11 +2,10 @@ import * as common from './abstractRuntime';
 
 export * from './abstractRuntime';
 
-export class RetvalRuntime extends common.ShallowRuntime {
-  type: 'retval';
+export class RetvalRuntime extends common.Runtime {
 
-  constructor() {
-    super();
+  constructor(restoreFrames: number) {
+    super(restoreFrames);
     this.type = 'retval';
   }
 
@@ -46,4 +45,5 @@ export class RetvalRuntime extends common.ShallowRuntime {
   }
 }
 
-export default new RetvalRuntime();
+// TODO(rachit): This is probably wrong.
+//export default new RetvalRuntime();

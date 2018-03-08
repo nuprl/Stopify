@@ -2,11 +2,10 @@ import * as common from './abstractRuntime';
 
 export * from './abstractRuntime';
 
-export class LazyRuntime extends common.ShallowRuntime {
-  type: 'lazy';
+export class LazyRuntime extends common.Runtime {
 
-  constructor() {
-    super();
+  constructor(restoreFrames: number) {
+    super(restoreFrames);
     this.type = 'lazy';
   }
 
@@ -15,16 +14,24 @@ export class LazyRuntime extends common.ShallowRuntime {
     throw new common.Capture(f, []);
   }
 
-  makeCont(stack: common.Stack) {
+  makeCont(stack: common.Stack, savedStack?: common.Stack) {
     const savedDelimitDepth = this.delimitDepth;
 
     return (v: any, err: any=this.noErrorProvided) => {
-      const throwExn = err !== this.noErrorProvided;
-      this.delimitDepth = savedDelimitDepth;
-      let restarter = () => {
-        if(throwExn) { throw err; }
-        else { return v; }
+      // Restore the saved stack.
+      if (savedStack) {
+        this.savedStack = savedStack;
       }
+
+      this.delimitDepth = savedDelimitDepth;
+
+      const throwExn = err !== this.noErrorProvided;
+
+      let restarter = () => {
+        if (throwExn) { throw err; }
+        else { return v; }
+      };
+
       // TODO(rachit): ...stack copies the whole stack. Modify instead of copy.
       throw new common.Restore([this.topK(restarter), ...stack]);
     };
@@ -34,8 +41,7 @@ export class LazyRuntime extends common.ShallowRuntime {
     try {
       const v = body();
       return { type: 'normal', value: v };
-    }
-    catch (exn) {
+    } catch(exn) {
       if (exn instanceof common.Capture) {
         this.capturing = false;
         return { type: 'capture', stack: exn.stack, f: exn.f };

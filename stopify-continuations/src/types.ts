@@ -1,4 +1,4 @@
-export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge' | 'lazyDeep';
+export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
 export type HandleNew = 'direct' | 'wrapper'
 
 export interface CompilerOpts {
@@ -13,6 +13,7 @@ export interface CompilerOpts {
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
   externals: string[]
+
   sourceMap?: any
   compileFunction?: boolean,
 }

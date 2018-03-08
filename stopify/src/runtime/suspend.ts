@@ -1,6 +1,6 @@
 import { setImmediate } from './setImmediate';
 import { ElapsedTimeEstimator } from './elapsedTimeEstimator';
-import { Runtime, isDeepRuntime } from 'stopify-continuations/dist/src/runtime';
+import { Runtime } from 'stopify-continuations/dist/src/runtime';
 import { emptyThunk } from '../generic';
 
 import * as assert from 'assert';
@@ -17,7 +17,10 @@ export class RuntimeWithSuspend {
 
   // Runtime value representing the amount of stack frames available to the
   // program.
-  public remainingStack: number;
+  remainingStack: number;
+
+  // Enable deep stacks.
+  enableDeepStack: boolean;
 
   constructor(
     /**
@@ -50,6 +53,7 @@ export class RuntimeWithSuspend {
      */
     public onEnd = emptyThunk,
     public continuation = badResume) {
+    this.enableDeepStack = isFinite(this.stackSize);
     this.remainingStack = this.stackSize;
   }
 
@@ -84,7 +88,7 @@ export class RuntimeWithSuspend {
 
     // If there are no more stack frame left to be consumed, save the stack
     // and continue running the program.
-    if (isDeepRuntime(this.rts) &&  this.remainingStack <= 0) {
+    if (this.enableDeepStack && this.remainingStack <= 0) {
       this.remainingStack = this.stackSize;
       this.rts.isSuspended = true;
 
@@ -99,7 +103,7 @@ export class RuntimeWithSuspend {
     if (force || this.mayYield() ||
         (this.estimator.elapsedTime() >= this.yieldInterval)) {
 
-      if (isDeepRuntime(this.rts)) {
+      if (this.enableDeepStack) {
         this.remainingStack = this.stackSize;
       }
 

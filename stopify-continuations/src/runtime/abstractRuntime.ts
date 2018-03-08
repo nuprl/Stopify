@@ -54,9 +54,6 @@ export interface RuntimeInterface {
 export abstract class Runtime {
   public type: string;
 
-  // Can the runtime support deep stacks.
-  stackType: 'shallow' | 'deep';
-
   // The runtime stack.
   stack: Stack;
 
@@ -64,11 +61,16 @@ export abstract class Runtime {
   // represents 'restore' mode.
   mode: Mode;
 
+  savedStack: Stack;
+
   noErrorProvided: any = {};
 
   linenum: undefined | number;
 
   constructor(
+    // Number of stack frames to be restored on the JS stack.
+    public restoreFrames: number,
+
     // True when the instrumented program is capturing the stack.
     public capturing: boolean = false,
 
@@ -84,7 +86,9 @@ export abstract class Runtime {
     // a queue of computations that need to be run.
     private pendingRuns: (() => void)[] = []) {
     this.stack = [];
+    this.savedStack = [];
     this.mode = true;
+    this.restoreFrames = 1;
   }
 
   private runtime_(thunk: () => any) {
@@ -137,83 +141,6 @@ export abstract class Runtime {
     };
   }
 
-  // TODO(rachit): Document.
-  abstract runtime(body: () => any): any;
-
-  // TODO(rachit): Document.
-  abstract captureCC(f: (k: any) => any): void;
-
-  /**
-   * Wraps a stack in a function that throws an exception to discard the
-   * current continuation. The exception carries the provided stack with a
-   * final frame that returns the supplied value.
-   *
-   * @param stack The stack to be restored in JS.
-   * @param savedStack The remaining stack. Used by heap bounded stacks.
-   */
-  abstract makeCont(stack: Stack, savedStack?: Stack): (v: any) => any;
-
-  // TODO(rachit): Document.
-  abstract abstractRun(body: () => any): RunResult;
-}
-
-/**
- * Represents a runtime that does not support heap bounded stacks.
- *
- * Abstractly, the stack is restored bottom-up, i.e. from the oldest frame
- * to the most recent frame.
- */
-export abstract class ShallowRuntime extends Runtime {
-  stackType: 'shallow';
-
-  constructor() {
-    super();
-    this.stackType = 'shallow';
-  }
-
-  runtime(body: () => any): any {
-    while (true) {
-      const result = this.abstractRun(body);
-      if (result.type === 'normal') {
-        assert(this.mode, 'executing completed in restore mode');
-        return;
-      }
-      else if (result.type === 'capture') {
-        body = () => result.f.call(global, this.makeCont(result.stack));
-      }
-      else if (result.type === 'restore') {
-        body = () => {
-          this.mode = false;
-          this.stack = result.stack;
-          return this.stack[this.stack.length - 1].f();
-        };
-      }
-      else if (result.type === 'exception') {
-        throw result.value; // userland exception
-      }
-      else {
-        return unreachable();
-      }
-    }
-  }
-}
-
-export abstract class DeepRuntime extends Runtime {
-
-  stackType: 'deep';
-
-  savedStack: Stack;
-
-  // Number of stack frames to be restored on the JS stack.
-  restoreFrames: number;
-
-  constructor() {
-    super();
-    this.stackType = 'deep';
-    this.savedStack = [];
-    this.restoreFrames = 1;
-  }
-
   runtime(body: () => any): any {
 
     while(true) {
@@ -222,6 +149,8 @@ export abstract class DeepRuntime extends Runtime {
       if (result.type === 'normal' || result.type === 'exception') {
         if (this.savedStack.length > 0) {
           const exception = result.type === 'exception';
+          const ss = this.savedStack;
+
           const restarter: KFrameTop = this.topK(() => {
             if (exception) throw result.value;
             else return result.value;
@@ -229,12 +158,9 @@ export abstract class DeepRuntime extends Runtime {
 
           this.stack = [restarter];
 
-          const ss = this.savedStack;
-
           for (let i = 0; i < this.restoreFrames && ss.length - 1 - i >= 0; i++) {
             this.stack.push(ss.pop()!);
           }
-
           body = () => {
             this.mode = false;
             return this.stack[this.stack.length - 1].f()
@@ -279,8 +205,20 @@ export abstract class DeepRuntime extends Runtime {
       }
     }
   }
-}
 
-export function isDeepRuntime(rts: Runtime): rts is DeepRuntime {
-  return rts.stackType === 'deep';
+  // TODO(rachit): Document.
+  abstract captureCC(f: (k: any) => any): void;
+
+  /**
+   * Wraps a stack in a function that throws an exception to discard the
+   * current continuation. The exception carries the provided stack with a
+   * final frame that returns the supplied value.
+   *
+   * @param stack The stack to be restored in JS.
+   * @param savedStack The remaining stack. Used by heap bounded stacks.
+   */
+  abstract makeCont(stack: Stack, savedStack?: Stack): (v: any) => any;
+
+  // TODO(rachit): Document.
+  abstract abstractRun(body: () => any): RunResult;
 }

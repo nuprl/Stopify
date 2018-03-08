@@ -47,6 +47,9 @@ commander.option('--local-host <hostname>',
 commander.option('--local-port <port>',
   'the port to use on this host (default: OS chooses)');
 
+commander.option('--restore-frames <number>',
+  'number of frames to be restored. Constant value gives heap bounded stacks. (default: Infinity)')
+
 commander.arguments('<filename>');
 
 
@@ -68,6 +71,7 @@ export function parseRuntimeOpts(rawArgs: string[]): RuntimeOpts {
     stop: args.stop,
     env: args.env,
     variance: args.variance,
-    stackSize: args.stackSize || 1000
+    stackSize: args.stackSize,
+    restoreFrames: args.restoreFrames
   });
 }

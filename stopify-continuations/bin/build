@@ -9,7 +9,7 @@ mkdir -p dist/tmp
 
 echo 'Generating pre-stopififed runtimes'
 
-for TRANSFORM in lazy eager retval fudge lazyDeep; do
+for TRANSFORM in lazy eager retval fudge; do
   ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/implicitApps.js dist/tmp/implicitApps.$TRANSFORM.js
   ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/hofs.js dist/tmp/hofs.$TRANSFORM.js
 done

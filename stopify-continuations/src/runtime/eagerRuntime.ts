@@ -1,13 +1,12 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 
-export class EagerRuntime extends common.ShallowRuntime {
-  type: 'eager';
+export class EagerRuntime extends common.Runtime {
 
   eagerStack: common.Stack;
 
-  constructor() {
-    super();
+  constructor(remainingStack: number) {
+    super(remainingStack);
     this.eagerStack = [];
     this.type = 'eager';
   }
@@ -49,4 +48,5 @@ export class EagerRuntime extends common.ShallowRuntime {
   }
 }
 
-export default new EagerRuntime();
+// TODO(rachit): This is probably wrong.
+//export default new EagerRuntime();

@@ -57,8 +57,6 @@ const captureLogics: { [key: string]: CaptureFun } = {
   eager: capture.eagerCaptureLogic,
   retval: capture.retvalCaptureLogic,
   fudge: capture.fudgeCaptureLogic,
-  // TODO(rachit): Do something about this.
-  lazyDeep: capture.lazyCaptureLogic
 };
 
 function isFlat(path: NodePath<t.Node>): boolean {
@@ -213,7 +211,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
 
   path.node.body.body.unshift(...[
     ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
-    ...(state.opts.captureMethod === 'lazyDeep' ? [decreaseStackSize] : []),
+    decreaseStackSize,
     ifRestoring,
     captureClosure,
     reenterClosure,
@@ -330,9 +328,7 @@ const jumper = {
         path.node.body.body.push(ifConstructor);
       }
 
-      if (state.opts.captureMethod === 'lazyDeep') {
-        path.node.body.body.push(increaseStackSize);
-      }
+      path.node.body.body.push(increaseStackSize);
     }
   },
 
@@ -372,7 +368,7 @@ const jumper = {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
 
       // Increment the stackSize before returning from a non-flat function.
-      if(!isFlat(path) && s.opts.captureMethod === 'lazyDeep') {
+      if(!isFlat(path)) {
         path.insertBefore(increaseStackSize);
       }
 

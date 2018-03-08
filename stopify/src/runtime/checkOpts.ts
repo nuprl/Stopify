@@ -32,7 +32,7 @@ export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
 
   const opts: Opts = {
     filename: '',
-    estimator: 'reservoir',
+    estimator: 'velocity',
     yieldInterval: 100,
     resampleInterval: 100,
     timePerElapsed: 1,
@@ -42,8 +42,8 @@ export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
   }
 
   copyProp(opts, value, 'estimator',
-    (x) => ['exact', 'reservoir', 'countdown'].includes(x),
-    `.estimator must be either 'reservoir', 'countdown', or 'exact'`);
+    (x) => ['exact', 'reservoir', 'velocity', 'countdown'].includes(x),
+    `.estimator must be either 'reservoir', 'velocity', 'countdown', or 'exact'`);
   transformProp(opts, value, 'yieldInterval',
     (x) => Number(x), (x) => typeof x === 'number' && x > 0,
     `.yieldInterval must be a number greater than zero`);

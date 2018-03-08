@@ -5,7 +5,7 @@ export type Stoppable = (isStop: () => boolean,
                          onDone: () => void,
                          opts: Opts) => void
 
-export type ElapsedTimeEstimatorName = 'exact' | 'reservoir' | 'countdown';
+export type ElapsedTimeEstimatorName = 'exact' | 'reservoir' | 'velocity' | 'countdown';
 
 export interface Opts {
   filename: string,

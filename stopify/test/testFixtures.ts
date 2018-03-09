@@ -12,8 +12,8 @@ export const deepTests = glob.sync('test/deep-stacks/*.js', {})
 
 export function callCCTest(
   srcPath: string,
-  copts: string = "",
-  ropts: string = "") {
+  copts: string,
+  ropts: string) {
   const testName = `${srcPath} ${ropts} (${copts})`;
 
   it(testName, () => {
@@ -32,8 +32,8 @@ export function callCCTest(
   });
 }
 
-export function browserTest(srcPath: string, transform: string) {
-  const testName = `${srcPath} (${transform}) (in-browser)`;
+export function browserTest(srcPath: string, copts: string, ropts: string) {
+  const testName = `${srcPath} ${ropts} (${copts}) (in-browser)`;
   const basename = path.basename(srcPath, '.js')
 
   // Skip tests we know we can't handle
@@ -45,25 +45,27 @@ export function browserTest(srcPath: string, transform: string) {
 
   if (srcPath.endsWith('forever.js')) {
     test(`${testName} (may run forever)`, () => {
-      const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
+      const { name: dstPath } =
+        tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
       execSync(
-        `./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
+        `./bin/compile ${copts} ${srcPath} ${dstPath}`);
       execSync(
-        `./bin/browser chrome ${dstPath} --estimator=countdown -y 1 --stop 5`);
+        `./bin/browser chrome ${dstPath} ${ropts} --estimator=countdown -y 1 --stop 5`);
       execSync(
-        `./bin/browser firefox ${dstPath} --estimator=countdown -y 1 --stop 5`);
+        `./bin/browser firefox ${dstPath} ${ropts} --estimator=countdown -y 1 --stop 5`);
       fs.unlinkSync(dstPath);
     });
   }
   else {
     it(testName, () => {
-      const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
+      const { name: dstPath } =
+        tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
       execSync(
-        `./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
+        `./bin/compile ${copts} ${srcPath} ${dstPath}`);
       execSync(
-        `./bin/browser chrome ${dstPath} --estimator=countdown --yield 1000 `);
+        `./bin/browser chrome ${dstPath} ${ropts} --estimator=countdown --yield 1000`);
       execSync(
-        `./bin/browser firefox ${dstPath} --estimator=countdown --yield 1000`);
+        `./bin/browser firefox ${dstPath} ${ropts} --estimator=countdown --yield 1000`);
       fs.unlinkSync(dstPath);
     });
   }

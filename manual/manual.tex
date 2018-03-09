@@ -287,8 +287,9 @@ and adapts how frequently it yields accordingly. This mechanism is inexact, but
 performs well. You can adjust the yield interval, but we do not recommend using
 a value lower than 100.
 
-The \texttt{reservoir} estimator uses the "reservoir sampling" method to
-approximate yielding every \texttt{yieldInterval} milliseconds. This technique
+The \texttt{reservoir} estimator samples the current time using
+\emph{reservoir sampling} (i.e., the probability of resampling the current time
+decreases as the program runs longer). This technique
 is less robust than \texttt{velocity} to fluctuations in program behavior, but
 still outperforms other methods. This usually has a lower runtime overhead than
 \texttt{velocity}, but sacrifices accuracy. We recommend \texttt{velocity} for a
@@ -572,5 +573,22 @@ dialog boxes are unattractive; second, a user can dismiss them; and finally, if
 a page displays too many modal dialog boxes, the browser can give the user to
 suppress all of them (\cref{prompt-complete}).
 
+\appendix
+
+\chapter{Release Notes}
+
+\section{Stopify (working version)}
+
+\begin{enumerate}
+
+  \item Exposed the \texttt{velocity} estimator and set it as the default
+  instead of \texttt{reservoir}. In our experiments, \texttt{velocity} performs
+  better and has negligible overhead.
+
+\end{enumerate}
+
+\section{Stopify 0.1.0}
+
+Initial release
 
 \end{document}

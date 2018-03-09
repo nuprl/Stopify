@@ -5,7 +5,7 @@ describe('In-browser tests', function () {
   f.intTests.forEach(function(filename: string) {
     f.browserTest(filename, "lazy");
   });
-  
+
   glob.sync('test/browser/*.js').forEach(file => {
     f.browserTest(file, 'lazy');
   });

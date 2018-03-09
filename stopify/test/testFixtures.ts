@@ -12,10 +12,9 @@ export const deepTests = glob.sync('test/deep-stacks/*.js', {})
 
 export function callCCTest(
   srcPath: string,
-  transform: string,
   copts: string = "",
   ropts: string = "") {
-  const testName = `${srcPath} ${copts} ${ropts} (${transform})`;
+  const testName = `${srcPath} ${ropts} (${copts})`;
 
   it(testName, () => {
     const basename = path.basename(srcPath, '.js')

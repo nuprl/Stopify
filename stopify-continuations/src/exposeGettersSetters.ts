@@ -1,3 +1,15 @@
+/**
+ * This transformation allows for getters and setters support in stopify.
+ * Getters and setters are implicity called on object accesses. This
+ * transform makes it such accesses explicit:
+ *
+ * Getters: a.b        => $gs.get_prop(a, "b")
+ * Setters: a.b = v    => $gs.get_prop(a, "b", v)
+ * Delete:  delete a.b => $gs.delete_prop(a, "b")
+ *
+ * The functions simply access the property. The benefit of making this a
+ * function call is that it allows a getter to capture itself.
+ */
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { FlatnessMark } from "./common/helpers";

@@ -85,14 +85,25 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
 
   const frame = t.identifier('$frame');
 
-  const restoreBlock = t.blockStatement([
+
+  // We instrument every non-flat function to begin with a *restore block*
+  // that is able to re-construct a saved stack frame. When the function is
+  // invoked in restore mode, its formal arguments are already restored.
+  // The restore block must restore the local variables and deal with
+  // the *arguments* object. The arguments object is a real pain and hurts
+  // performance. So, we avoid restoring it faithfully unless we are explicitly
+  // configured to do so.
+  const restoreBlock = [
     t.variableDeclaration('const', [t.variableDeclarator(frame, popRuntimeStack)]),
-    t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), t.memberExpression(frame,
-        t.identifier('locals')))),
     t.expressionStatement(t.assignmentExpression('=', target,
       t.memberExpression(frame, t.identifier('index')))),
-  ]);
+  ];
+
+  if (restoreLocals.length > 0) {
+    restoreBlock.push(t.expressionStatement(t.assignmentExpression('=',
+      t.arrayPattern(restoreLocals), t.memberExpression(frame,
+        t.identifier('locals')))))
+  }
 
   if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
     // To fully support the arguments object, we need to ensure that the
@@ -100,25 +111,29 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     // aliases using:
     //
     //   [param0, param1, ...] = topStack.formals
-    restoreBlock.body.push(
+    restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         t.arrayPattern((<any>path.node.params)),
         t.memberExpression(frame, t.identifier('formals')))));
 
-    restoreBlock.body.push(
+    restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         argsLen, t.memberExpression(frame, argsLen))));
   }
 
-  const ifRestoring = t.ifStatement(isRestoringMode, restoreBlock);
+  const ifRestoring = t.ifStatement(isRestoringMode,
+    t.blockStatement(restoreBlock));
 
   // The body of a local function that saves the the current stack frame.
   const captureBody: t.Statement[] = [ ];
+
   // Save all local variables as an array in frame.locals.
-  captureBody.push(
-    t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(captureFrameId, t.identifier('locals')),
-      t.arrayExpression(restoreLocals))));
+  if (restoreLocals.length > 0) {
+    captureBody.push(
+      t.expressionStatement(t.assignmentExpression('=',
+        t.memberExpression(captureFrameId, t.identifier('locals')),
+        t.arrayExpression(restoreLocals))));
+  }
 
   // To support 'full' arguments ...
   if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {

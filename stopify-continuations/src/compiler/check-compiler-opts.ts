@@ -74,7 +74,7 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
     getters: false,
     debug: false,
     captureMethod: 'lazy',
-    newMethod: 'direct',
+    newMethod: 'wrapper',
     eval: false,
     es: 'sane',
     hofs: 'builtin',

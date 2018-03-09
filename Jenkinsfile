@@ -4,12 +4,10 @@ pipeline {
   stages {
     stage('Test') {
       steps {
-        sh 'yarn install'
-        sh 'yarn run build'
+        sh 'yarn install && yarn run build'
         sh 'cd stopify-continuations && yarn run test'
         sh 'cd stopify && yarn run test:integration'
-        sh 'cd stopify-module-test && yarn test'
-        sh 'yarn unlink stopify'
+        sh 'cd stopify-module-test && yarn build && yarn test'
       }
       post {
         always {

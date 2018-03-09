@@ -1,4 +1,4 @@
-import { Opts, AsyncRun } from '../types';
+import { RuntimeOpts, AsyncRun } from '../types';
 import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './elapsedTimeEstimator';
@@ -12,7 +12,7 @@ export abstract class AbstractRunner implements AsyncRun {
   private breakpoints: number[] = [];
   private k: any;
 
-  constructor(private opts: Opts) { }
+  constructor(private opts: RuntimeOpts) { }
 
   mayYieldRunning(): boolean {
     const n = this.suspendRTS.rts.linenum;

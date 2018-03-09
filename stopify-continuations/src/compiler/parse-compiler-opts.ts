@@ -3,7 +3,7 @@
  */
 import * as commander from 'commander';
 import { CompilerOpts } from '../types';
-import { checkAndFillCompilerOpts } from './checkOpts';
+import { checkAndFillCompilerOpts } from './check-compiler-opts';
 
 commander.option(
   '-t, --transform <transformation>',

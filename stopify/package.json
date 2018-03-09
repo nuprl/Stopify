@@ -60,6 +60,7 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
+    "@types/glob": "^5.0.35",
     "assert": "^1.4.1",
     "babel-core": "^6.22.1",
     "babel-generator": "^6.24.0",

@@ -32,13 +32,6 @@ export function browserTest(srcPath: string, transform: string) {
   const testName = `${srcPath} (${transform}) (in-browser)`;
   const basename = path.basename(srcPath, '.js')
 
-  // Skip tests we know we can't handle
-  if ( srcPath.indexOf("dart") >= 0 ||
-      srcPath.indexOf("ocaml") >= 0) {
-    it.skip(testName);
-    return;
-  }
-
   if (srcPath.endsWith('forever.js')) {
     test(`${testName} (may run forever)`, () => {
       const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });

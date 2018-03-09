@@ -100,6 +100,8 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   ];
 
   if (restoreLocals.length > 0) {
+    // Restore all local variables. Creates the expression:
+    //   [local0, local1, ... ] = topStack.locals;
     restoreBlock.push(t.expressionStatement(t.assignmentExpression('=',
       t.arrayPattern(restoreLocals), t.memberExpression(frame,
         t.identifier('locals')))))

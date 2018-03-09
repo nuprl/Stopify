@@ -25,7 +25,7 @@ class FudgedContinuationError {
  */
 export class FudgeRuntime extends common.Runtime {
   constructor() {
-    super();
+    super(0);
   }
 
   captureCC(f: (k: any) => any): void {

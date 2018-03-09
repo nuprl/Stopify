@@ -74,7 +74,7 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
     getters: false,
     debug: false,
     captureMethod: 'lazy',
-    newMethod: 'direct',
+    newMethod: 'wrapper',
     eval: false,
     es: 'sane',
     hofs: 'builtin',
@@ -131,5 +131,6 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
   copyProp(opts, value, 'externals',
     (x) => x instanceof Array && x.every(y => typeof y === 'string'),
     `.externals must be an array of strings`);
+
   return opts;
 }

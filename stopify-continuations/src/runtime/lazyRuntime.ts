@@ -1,11 +1,11 @@
 import * as common from './abstractRuntime';
+
 export * from './abstractRuntime';
 
 export class LazyRuntime extends common.Runtime {
-  type: 'lazy';
 
-  constructor() {
-    super();
+  constructor(restoreFrames: number) {
+    super(restoreFrames);
     this.type = 'lazy';
   }
 
@@ -14,16 +14,25 @@ export class LazyRuntime extends common.Runtime {
     throw new common.Capture(f, []);
   }
 
-  makeCont(stack: common.Stack) {
+  makeCont(stack: common.Stack, savedStack?: common.Stack) {
     const savedDelimitDepth = this.delimitDepth;
 
     return (v: any, err: any=this.noErrorProvided) => {
-      const throwExn = err !== this.noErrorProvided;
-      this.delimitDepth = savedDelimitDepth;
-      let restarter = () => {
-        if(throwExn) { throw err; }
-        else { return v; }
+      // Restore the saved stack.
+      if (savedStack) {
+        this.savedStack = savedStack;
       }
+
+      this.delimitDepth = savedDelimitDepth;
+
+      const throwExn = err !== this.noErrorProvided;
+
+      let restarter = () => {
+        if (throwExn) { throw err; }
+        else { return v; }
+      };
+
+      // TODO(rachit): ...stack copies the whole stack. Modify instead of copy.
       throw new common.Restore([this.topK(restarter), ...stack]);
     };
   }
@@ -32,8 +41,7 @@ export class LazyRuntime extends common.Runtime {
     try {
       const v = body();
       return { type: 'normal', value: v };
-    }
-    catch (exn) {
+    } catch(exn) {
       if (exn instanceof common.Capture) {
         this.capturing = false;
         return { type: 'capture', stack: exn.stack, f: exn.f };
@@ -44,53 +52,6 @@ export class LazyRuntime extends common.Runtime {
       else {
         return { type: 'exception', value: exn };
       }
-    }
-  }
-
-  handleNew(constr: any, ...args: any[]) {
-    if (common.knownBuiltIns.includes(constr)) {
-      return new constr(...args);
-    }
-
-    let obj;
-    if (this.mode) {
-      obj = Object.create(constr.prototype);
-    } else {
-      const frame = this.stack[this.stack.length - 1];
-      if (frame.kind === "rest") {
-        [obj] = frame.locals;
-      } else {
-        throw "bad";
-      }
-      this.stack.pop();
-    }
-
-    let result: any;
-    try {
-      if (this.mode) {
-        result = constr.apply(obj, args);
-      }
-      else {
-        result = this.stack[this.stack.length - 1].f.apply(obj, []);
-      }
-    }
-    catch (exn) {
-      if (exn instanceof common.Capture) {
-        exn.stack.push({
-          kind: "rest",
-          f: () => this.handleNew(constr, ...args) ,
-          locals: [obj],
-          index: 0
-        });
-      }
-      throw exn;
-    }
-
-    if (typeof result === 'object') {
-      return result;
-    }
-    else {
-      return obj;
     }
   }
 }

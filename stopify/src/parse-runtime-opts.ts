@@ -1,11 +1,10 @@
 import * as commander from 'commander';
-import { Opts } from './types';
+import { RuntimeOpts } from './types';
 import { checkAndFillRuntimeOpts } from './runtime/checkOpts';
 
 commander.option(
   '-y, --yield <interval>',
   'time (in milliseconds) between yields to the event loop (default: 100)');
-
 
 commander.option(
   '-e, --env <env>',
@@ -33,6 +32,10 @@ commander.option(
   '--estimator <estimator>',
   `one of exact, reservoir, velocity, or countdown (default: velocity)`);
 
+commander.option(
+  '--stack-size <size>',
+  'Maximum number of stack frames allowed in the runtime stack. Ignored if the runtime does not support deep stacks (default: 1000)');
+
 commander.option('--remote <url>',
   'URL of a remote WebDriver server (usually http://<hostname>:4444/wd/hub)');
 
@@ -44,9 +47,13 @@ commander.option('--local-host <hostname>',
 commander.option('--local-port <port>',
   'the port to use on this host (default: OS chooses)');
 
+commander.option('--restore-frames <number>',
+  'number of frames to be restored. Constant value gives heap bounded stacks. (default: Infinity)')
+
 commander.arguments('<filename>');
 
-export function parseRuntimeOpts(rawArgs: string[]): Opts {
+
+export function parseRuntimeOpts(rawArgs: string[]): RuntimeOpts {
 
   const args = commander.parse(["", "", ...rawArgs]);
 
@@ -63,6 +70,8 @@ export function parseRuntimeOpts(rawArgs: string[]): Opts {
     timePerElapsed: args.timePerElapsed,
     stop: args.stop,
     env: args.env,
-    variance: args.variance
+    variance: args.variance,
+    stackSize: args.stackSize,
+    restoreFrames: args.restoreFrames
   });
 }

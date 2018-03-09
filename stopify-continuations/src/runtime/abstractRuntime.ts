@@ -1,4 +1,3 @@
-import { knowns } from '../common/cannotCapture'
 import { unreachable } from '../generic';
 import * as assert from 'assert';
 
@@ -49,23 +48,29 @@ export interface RuntimeInterface {
   // that returns the supplied value.
   makeCont(stack: Stack): (v: any) => any;
   runtime(body: () => any): any;
-  handleNew(constr: any, ...args: any[]): any;
   abstractRun(body: () => any): RunResult;
 }
 
 export abstract class Runtime {
   public type: string;
+
+  // The runtime stack.
   stack: Stack;
 
   // Mode of the program. `true` represents 'normal' mode while `false`
   // represents 'restore' mode.
   mode: Mode;
 
+  savedStack: Stack;
+
   noErrorProvided: any = {};
 
   linenum: undefined | number;
 
   constructor(
+    // Number of stack frames to be restored on the JS stack.
+    public restoreFrames: number,
+
     // True when the instrumented program is capturing the stack.
     public capturing: boolean = false,
 
@@ -81,7 +86,9 @@ export abstract class Runtime {
     // a queue of computations that need to be run.
     private pendingRuns: (() => void)[] = []) {
     this.stack = [];
+    this.savedStack = [];
     this.mode = true;
+    this.restoreFrames = 1;
   }
 
   private runtime_(thunk: () => any) {
@@ -134,26 +141,64 @@ export abstract class Runtime {
     };
   }
 
-  // TODO(rachit): Document this.
   runtime(body: () => any): any {
-    while (true) {
-      const result = this.abstractRun(body)
-      if (result.type === 'normal') {
-        assert(this.mode, 'executing completed in restore mode');
-        return;
+
+    while(true) {
+      const result = this.abstractRun(body);
+
+      if (result.type === 'normal' || result.type === 'exception') {
+        if (this.savedStack.length > 0) {
+          const exception = result.type === 'exception';
+          const ss = this.savedStack;
+
+          const restarter: KFrameTop = this.topK(() => {
+            if (exception) throw result.value;
+            else return result.value;
+          });
+
+          this.stack = [restarter];
+
+          for (let i = 0; i < this.restoreFrames && ss.length - 1 - i >= 0; i++) {
+            this.stack.push(ss.pop()!);
+          }
+          body = () => {
+            this.mode = false;
+            return this.stack[this.stack.length - 1].f()
+          }
+        }
+        else if(result.type === 'normal') {
+          assert(this.mode, 'execution completed in restore mode')
+          return result.value;
+        }
+        else if(result.type === 'exception') {
+          assert(this.mode, 'execution completed in restore mode')
+          throw result.value;
+        }
+        else {
+          unreachable()
+        }
       }
       else if (result.type === 'capture') {
-        body = () => result.f.call(global, this.makeCont(result.stack));
+        const s = result.stack;
+        body = () => {
+          for(let i = s.length - 1; i >= this.restoreFrames; i -= 1) {
+            this.savedStack.push(s.pop()!);
+          }
+
+          let except = result.f.call(global, this.makeCont(s, this.savedStack));
+          this.savedStack = [];
+          return except;
+        }
       }
       else if (result.type === 'restore') {
         body = () => {
+          if (result.stack.length === 0) {
+            throw new Error(`Can't restore from empty stack`);
+          }
           this.mode = false;
           this.stack = result.stack;
           return this.stack[this.stack.length - 1].f();
         };
-      }
-      else if (result.type === 'exception') {
-        throw result.value; // userland exception
       }
       else {
         return unreachable();
@@ -161,33 +206,19 @@ export abstract class Runtime {
     }
   }
 
-  // Called when the stack needs to be captured.
+  // TODO(rachit): Document.
   abstract captureCC(f: (k: any) => any): void;
 
   /**
    * Wraps a stack in a function that throws an exception to discard the
    * current continuation. The exception carries the provided stack with a
-   * final frame that returns the supplied value. If err is provided, instead
-   * of returning the supplied value, it throws an exception with the provided
-   * error.
-   */
-  abstract makeCont(stack: Stack): (v: any, err: any) => any;
-
-  // Used by instrumented programs to suspend correctly from inside a
-  // constructor call.
-  abstract handleNew(constr: any, ...args: any[]): any;
-
-  /**
-   * Run the `body`. It can return four types of values (in the form RunResult):
+   * final frame that returns the supplied value.
    *
-   * 'normal': The execution of the body terminated normally.
-   * 'capture': The execution of the body resulted in a stack capturing operation.
-   * 'restore': The execution of the body resulted in a stack restoration operation.
-   * 'exception': The excution of the body resulted in a userland exception.
+   * @param stack The stack to be restored in JS.
+   * @param savedStack The remaining stack. Used by heap bounded stacks.
    */
+  abstract makeCont(stack: Stack, savedStack?: Stack): (v: any) => any;
+
+  // TODO(rachit): Document.
   abstract abstractRun(body: () => any): RunResult;
 }
-
-const unavailableOnNode = [ 'TextDecoder' ];
-export const knownBuiltIns = knowns.filter(x => !unavailableOnNode.includes(x))
-  .map(o => eval(o));

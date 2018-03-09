@@ -1,6 +1,5 @@
-import { Opts } from '../types';
-import { copyProp, transformProp } from
-  'stopify-continuations/dist/src/compiler/checkOpts';
+import { RuntimeOpts } from '../types';
+import { copyProp, transformProp } from 'stopify-continuations/dist/src/compiler/checkOpts';
 
 const validFlags = [
   'filename',
@@ -10,7 +9,9 @@ const validFlags = [
   'timePerElapsed',
   'stop',
   'variance',
-  'env'
+  'env',
+  'stackSize',
+  'restoreFrames'
 ];
 
 /**
@@ -19,7 +20,7 @@ const validFlags = [
  *
  * @param value a 'CompilerOpts' with elided fields
  */
-export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
+export function checkAndFillRuntimeOpts(value: Partial<RuntimeOpts>): RuntimeOpts {
   if (value === null || typeof value !== 'object') {
     throw new Error(`expected an object for Opts`);
   }
@@ -30,7 +31,7 @@ export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
     }
   });
 
-  const opts: Opts = {
+  const opts: RuntimeOpts = {
     filename: '',
     estimator: 'velocity',
     yieldInterval: 100,
@@ -38,7 +39,9 @@ export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
     timePerElapsed: 1,
     stop: undefined,
     variance: false,
-    env: 'chrome'
+    env: 'chrome',
+    stackSize: Infinity,
+    restoreFrames: Infinity
   }
 
   copyProp(opts, value, 'estimator',
@@ -53,6 +56,13 @@ export function checkAndFillRuntimeOpts(value: Partial<Opts>): Opts {
   transformProp(opts, value, 'timePerElapsed',
     (x) => Number(x), (x) => typeof x === 'number' && x > 0,
     `.timePerElapsed must be a number greater than zero`);
+  transformProp(opts, value, 'stackSize',
+    (x) => Number(x), (x) => typeof x === 'number' && x > 0,
+    `.stackSize must be a number greater than zero`);
+  transformProp(opts, value, 'restoreFrames',
+    (x) => Number(x), (x) => typeof x === 'number' && x > 0,
+    `.restoreFrames must be a number greater than zero`);
+
   // TODO(arjun): The following flags only exist for benchmarking and testing
   // They don't really belong in the system.
   copyProp(opts, value, 'stop', (x) => true, '');

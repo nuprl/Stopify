@@ -2,7 +2,7 @@
  * This is the entrypoint for stopify-full.bundle.js. A page that includes
  * this entrypoint can compile programs in the browser.
  */
-import { CompilerOpts, Opts, AsyncRun } from '../types';
+import { CompilerOpts, RuntimeOpts, AsyncRun } from '../types';
 import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
 import { AbstractRunner } from '../runtime/abstractRunner';
 import { compile } from '../compiler/compiler';
@@ -16,7 +16,7 @@ let runner : Runner | undefined;
 
 class Runner extends AbstractRunner {
 
-  constructor(private code: string, opts: Opts) {
+  constructor(private code: string, opts: RuntimeOpts) {
     super(opts);
    }
 
@@ -46,7 +46,7 @@ export function init(rts: Runtime): AsyncRun {
  */
 export function stopifyLocally(src: string,
   optionalCompileOpts?: Partial<CompilerOpts>,
-  optionalRuntimeOpts?: Partial<Opts>): AsyncRun {
+  optionalRuntimeOpts?: Partial<RuntimeOpts>): AsyncRun {
   const compileOpts = checkAndFillCompilerOpts(optionalCompileOpts || {});
   const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
   runner = new Runner(compile(src, compileOpts), runtimeOpts);

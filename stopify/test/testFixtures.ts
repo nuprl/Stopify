@@ -1,25 +1,29 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { execSync } from 'child_process';
 import * as tmp from 'tmp';
+import { execSync } from 'child_process';
 const glob = require('glob');
 
 export const unitTests = glob.sync('test/should-run/*.js', {})
 export const intTests = glob.sync('test/should-run/source-language/*.js', {})
 export const stopTests = glob.sync('test/should-stop/*.js', {})
+export const deepTests = glob.sync('test/deep-stacks/*.js', {})
 
-export function callCCTest(srcPath: string, transform: string, opts: string = "") {
-  const testName = `${srcPath} ${opts} (${transform})`;
+export function callCCTest(
+  srcPath: string,
+  copts: string,
+  ropts: string) {
+  const testName = `${srcPath} ${ropts} (${copts})`;
 
   it(testName, () => {
     const basename = path.basename(srcPath, '.js')
     const { name: dstPath } =
       tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
     execSync(
-      `./bin/compile --require-runtime --eval --js-args=full --transform ${transform} ${opts} ${srcPath} ${dstPath}`);
+      `./bin/compile --require-runtime ${copts} ${srcPath} ${dstPath}`);
     try {
-      execSync(`node ${dstPath} --estimator=countdown --yield 1`, { timeout: 10000 });
+      execSync(`node ${dstPath} ${ropts}`, { timeout: 10000 });
     }
     finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.
@@ -28,8 +32,8 @@ export function callCCTest(srcPath: string, transform: string, opts: string = ""
   });
 }
 
-export function browserTest(srcPath: string, transform: string) {
-  const testName = `${srcPath} (${transform}) (in-browser)`;
+export function browserTest(srcPath: string, copts: string, ropts: string) {
+  const testName = `${srcPath} ${ropts} (${copts}) (in-browser)`;
   const basename = path.basename(srcPath, '.js')
 
   // Skip tests we know we can't handle
@@ -41,19 +45,27 @@ export function browserTest(srcPath: string, transform: string) {
 
   if (srcPath.endsWith('forever.js')) {
     test(`${testName} (may run forever)`, () => {
-      const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
-      execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
-      execSync(`./bin/browser chrome ${dstPath} --estimator=countdown -y 1 --stop 5`);
-      execSync(`./bin/browser firefox ${dstPath} --estimator=countdown -y 1 --stop 5`);
+      const { name: dstPath } =
+        tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
+      execSync(
+        `./bin/compile ${copts} ${srcPath} ${dstPath}`);
+      execSync(
+        `./bin/browser chrome ${dstPath} ${ropts} --estimator=countdown -y 1 --stop 5`);
+      execSync(
+        `./bin/browser firefox ${dstPath} ${ropts} --estimator=countdown -y 1 --stop 5`);
       fs.unlinkSync(dstPath);
     });
   }
   else {
     it(testName, () => {
-      const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
-      execSync(`./bin/compile --transform ${transform} ${srcPath} ${dstPath}`);
-      execSync(`./bin/browser chrome ${dstPath} --estimator=countdown --yield 1000 `);
-      execSync(`./bin/browser firefox ${dstPath} --estimator=countdown --yield 1000`);
+      const { name: dstPath } =
+        tmp.fileSync({ dir: ".", postfix: `${basename}.js` });
+      execSync(
+        `./bin/compile ${copts} ${srcPath} ${dstPath}`);
+      execSync(
+        `./bin/browser chrome ${dstPath} ${ropts} --estimator=countdown --yield 1000`);
+      execSync(
+        `./bin/browser firefox ${dstPath} ${ropts} --estimator=countdown --yield 1000`);
       fs.unlinkSync(dstPath);
     });
   }
@@ -77,7 +89,8 @@ export function stopCallCCTest(srcPath: string, transform: string) {
     const { name: dstPath } = tmp.fileSync({ dir: ".", postfix: ".js" });
     execSync(`./bin/compile --require-runtime --transform ${transform} ${srcPath} ${dstPath}`);
     try {
-      execSync(`node ${dstPath} --estimator=countdown --yield 10 --stop 1`, { timeout: 5000 });
+      execSync(`node ${dstPath} --estimator=countdown --yield 10 --stop 1`,
+        { timeout: 5000 });
     }
     finally {
       // NOTE(arjun): I wouldn't mind if these were always left around.

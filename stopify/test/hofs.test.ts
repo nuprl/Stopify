@@ -10,7 +10,9 @@ describe('separate compilation using --hofs=fill', () => {
     test(src, () => {
       const { name: dst } = tmp.fileSync({ dir: ".", postfix: '.js' });
       execSync(`./bin/compile -t lazy --hofs=fill ${src} ${dst}`);
-      execSync(`./bin/browser chrome -t lazy --estimator countdown -y 1 ${dst}`, { stdio: 'inherit' });
+      execSync(
+        `./bin/browser chrome -t lazy --estimator countdown -y 1 ${dst}`,
+        { stdio: 'inherit' });
       fs.unlinkSync(dst);
     });
   }

@@ -41,17 +41,32 @@ export class Capture {
 
 export abstract class Runtime {
   public type: string;
+
+  // Remaining number of stacks that this runtime can consume.
+  remainingStack: number;
+
+  // Part of the captured stack that get restored onto the JS Stack.
   stack: Stack;
+
+  // Part of the stack that is saved and not restored onto the JS Stack.
+  savedStack: Stack;
 
   // Mode of the program. `true` represents 'normal' mode while `false`
   // represents 'restore' mode.
   mode: Mode;
 
-  noErrorProvided: any = {};
-
+  // Current line number in the source program. Used in `--debug` mode.
   linenum: undefined | number;
 
+  noErrorProvided: any = {};
+
   constructor(
+    // Maximum number of frames that can be consumed by this runtime.
+    public stackSize: number,
+
+    // Number of frames to be restored from the captured stack onto the JS stack.
+    public restoreFrames: number,
+
     // True when the instrumented program is capturing the stack.
     public capturing: boolean = false,
 
@@ -66,7 +81,16 @@ export abstract class Runtime {
 
     // a queue of computations that need to be run.
     private pendingRuns: (() => void)[] = []) {
+
+    if (isFinite(stackSize)) {
+      assert(restoreFrames <= stackSize,
+        'Cannot restore more frames than stack size');
+    }
     this.stack = [];
+    this.savedStack = [];
+    this.restoreFrames = restoreFrames;
+    this.stackSize = stackSize;
+    this.remainingStack = stackSize;
     this.mode = true;
   }
 
@@ -120,26 +144,65 @@ export abstract class Runtime {
     };
   }
 
-  // TODO(rachit): Document this.
+  // Top level function that runs a given program. Handles capture and restore
+  // events that may be emitted by the program.
   runtime(body: () => any): any {
-    while (true) {
-      const result = this.abstractRun(body)
-      if (result.type === 'normal') {
-        assert(this.mode, 'executing completed in restore mode');
-        return;
+
+    while(true) {
+      const result = this.abstractRun(body);
+
+      if (result.type === 'normal' || result.type === 'exception') {
+        if (this.savedStack.length > 0) {
+          const exception = result.type === 'exception';
+          const ss = this.savedStack;
+
+          const restarter: KFrameTop = this.topK(() => {
+            if (exception) throw result.value;
+            else return result.value;
+          });
+
+          this.stack = [restarter];
+
+          for (let i = 0; i < this.restoreFrames && ss.length - 1 - i >= 0; i++) {
+            this.stack.push(ss.pop()!);
+          }
+          body = () => {
+            this.mode = false;
+            return this.stack[this.stack.length - 1].f()
+          }
+        }
+        else if(result.type === 'normal') {
+          assert(this.mode, 'execution completed in restore mode')
+          return result.value;
+        }
+        else if(result.type === 'exception') {
+          assert(this.mode, `execution completed in restore mode, error was: ${result.value}`)
+          throw result.value;
+        }
+        else {
+          unreachable()
+        }
       }
       else if (result.type === 'capture') {
-        body = () => result.f.call(global, this.makeCont(result.stack));
+        const s = result.stack;
+        body = () => {
+          for(let i = s.length - 1; i >= this.restoreFrames; i -= 1) {
+            this.savedStack.push(s.pop()!);
+          }
+          let except = result.f.call(global, this.makeCont(s, this.savedStack));
+          this.savedStack = [];
+          return except;
+        }
       }
       else if (result.type === 'restore') {
         body = () => {
+          if (result.stack.length === 0) {
+            throw new Error(`Can't restore from empty stack`);
+          }
           this.mode = false;
           this.stack = result.stack;
           return this.stack[this.stack.length - 1].f();
         };
-      }
-      else if (result.type === 'exception') {
-        throw result.value; // userland exception
       }
       else {
         return unreachable();
@@ -157,7 +220,7 @@ export abstract class Runtime {
    * of returning the supplied value, it throws an exception with the provided
    * error.
    */
-  abstract makeCont(stack: Stack): (v: any, err: any) => any;
+  abstract makeCont(JSStack: Stack, savedStack: Stack): (v: any, err: any) => any;
 
   /**
    * Run the `body`. It can return four types of values (in the form RunResult):

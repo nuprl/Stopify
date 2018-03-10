@@ -16,9 +16,10 @@ let savedRTS: Runtime | undefined;
 export function newRTS(transform: string): Runtime {
   if (!savedRTS) {
     switch (transform) {
-      case 'lazy': savedRTS = new LazyRuntime(); break;
-      case 'eager': savedRTS = new EagerRuntime(); break;
-      case 'retval': savedRTS = new RetvalRuntime(); break;
+      // Default to shallow runtime.
+      case 'lazy': savedRTS = new LazyRuntime(Infinity, Infinity); break;
+      case 'eager': savedRTS = new EagerRuntime(Infinity, Infinity); break;
+      case 'retval': savedRTS = new RetvalRuntime(Infinity, Infinity); break;
       case 'fudge': savedRTS = new FudgeRuntime(); break;
       default: throw new Error(`bad runtime: ${transform}`);
     }

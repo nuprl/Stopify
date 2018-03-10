@@ -6,8 +6,8 @@ export class EagerRuntime extends common.Runtime {
 
   eagerStack: common.Stack;
 
-  constructor() {
-    super();
+  constructor(stackSize: number, restoreFrames: number) {
+    super(stackSize, restoreFrames);
     this.eagerStack = [];
     this.type = 'eager';
   }
@@ -17,7 +17,8 @@ export class EagerRuntime extends common.Runtime {
     throw new common.Capture(f, [...this.eagerStack]);
   }
 
-  makeCont(stack: common.Stack) {
+  // TODO(rachit): savedStack should be used here.
+  makeCont(stack: common.Stack, savedStack: common.Stack) {
     return (v: any, err: any=this.noErrorProvided) => {
       var throwExn = err !== this.noErrorProvided;
       let restarter = () => {
@@ -49,4 +50,5 @@ export class EagerRuntime extends common.Runtime {
   }
 }
 
-export default new EagerRuntime();
+// Default to shallow stack.
+export default new EagerRuntime(Infinity, Infinity);

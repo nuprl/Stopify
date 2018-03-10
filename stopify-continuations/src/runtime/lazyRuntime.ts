@@ -4,8 +4,8 @@ export * from './abstractRuntime';
 export class LazyRuntime extends common.Runtime {
   type: 'lazy';
 
-  constructor() {
-    super();
+  constructor(stackSize: number, restoreFrames: number) {
+    super(stackSize, restoreFrames);
     this.type = 'lazy';
   }
 
@@ -14,17 +14,24 @@ export class LazyRuntime extends common.Runtime {
     throw new common.Capture(f, []);
   }
 
-  makeCont(stack: common.Stack) {
+  makeCont(JSStack: common.Stack, savedStack: common.Stack) {
     const savedDelimitDepth = this.delimitDepth;
 
     return (v: any, err: any=this.noErrorProvided) => {
+
+      if (savedStack) {
+        this.savedStack = savedStack;
+      }
+
       const throwExn = err !== this.noErrorProvided;
+
       this.delimitDepth = savedDelimitDepth;
+
       let restarter = () => {
         if(throwExn) { throw err; }
         else { return v; }
       }
-      throw new common.Restore([this.topK(restarter), ...stack]);
+      throw new common.Restore([this.topK(restarter), ...JSStack]);
     };
   }
 

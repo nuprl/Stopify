@@ -4,8 +4,8 @@ export * from './abstractRuntime';
 export class RetvalRuntime extends common.Runtime {
   type: 'retval';
 
-  constructor() {
-    super();
+  constructor(stackSize: number, restoreFrames: number) {
+    super(stackSize, restoreFrames);
     this.type = 'retval';
   }
 
@@ -14,15 +14,25 @@ export class RetvalRuntime extends common.Runtime {
     return new common.Capture(f, []);
   }
 
-  makeCont(stack: common.Stack) {
-    return (v: any, err: any = this.noErrorProvided) => {
+  makeCont(JSStack: common.Stack, savedStack: common.Stack) {
+    const savedDelimitDepth = this.delimitDepth;
+
+    return (v: any, err: any=this.noErrorProvided) => {
+
+      if (savedStack) {
+        this.savedStack = savedStack;
+      }
+
       const throwExn = err !== this.noErrorProvided;
+
+      this.delimitDepth = savedDelimitDepth;
+
       let restarter = () => {
-        if (throwExn) { throw err; }
+        if(throwExn) { throw err; }
         else { return v; }
       }
-      return new common.Restore([this.topK(restarter), ...stack]);
-    }
+      return new common.Restore([this.topK(restarter), ...JSStack]);
+    };
   }
 
   abstractRun(body: () => any): common.RunResult {
@@ -45,4 +55,4 @@ export class RetvalRuntime extends common.Runtime {
   }
 }
 
-export default new RetvalRuntime();
+export default new RetvalRuntime(Infinity, Infinity);

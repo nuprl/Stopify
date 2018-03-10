@@ -39,18 +39,6 @@ export class Capture {
   constructor(public f: (k: any) => any, public stack: Stack) {}
 }
 
-export interface RuntimeInterface {
-  type: string;
-
-  captureCC(f: (k: any) => any): void;
-  // Wraps a stack in a function that throws an exception to discard the current
-  // continuation. The exception carries the provided stack with a final frame
-  // that returns the supplied value.
-  makeCont(stack: Stack): (v: any) => any;
-  runtime(body: () => any): any;
-  abstractRun(body: () => any): RunResult;
-}
-
 export abstract class Runtime {
   public type: string;
   stack: Stack;
@@ -176,7 +164,8 @@ export abstract class Runtime {
    *
    * 'normal': The execution of the body terminated normally.
    * 'capture': The execution of the body resulted in a stack capturing operation.
-   * 'restore': The execution of the body resulted in a stack restoration operation.
+   * 'restore': The execution of the body resulted in a stack restoration
+   *            operation.
    * 'exception': The excution of the body resulted in a userland exception.
    */
   abstract abstractRun(body: () => any): RunResult;

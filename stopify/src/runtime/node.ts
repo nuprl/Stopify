@@ -14,6 +14,13 @@ export function init(
   opts: RuntimeOpts = parseRuntimeOpts(process.argv.slice(2))) {
 
   continuationsRTS = rts;
+
+  // This is not ideal. These opts should be passed to the runtime when
+  // it is constructed.
+  continuationsRTS.stackSize = opts.stackSize;
+  continuationsRTS.remainingStack = opts.stackSize;
+  continuationsRTS.restoreFrames = opts.restoreFrames;
+
   const suspendRTS = new RuntimeWithSuspend(continuationsRTS,
     opts.yieldInterval,
     makeEstimator(opts));

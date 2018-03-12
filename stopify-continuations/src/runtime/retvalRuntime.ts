@@ -19,9 +19,7 @@ export class RetvalRuntime extends common.Runtime {
 
     return (v: any, err: any=this.noErrorProvided) => {
 
-      if (savedStack) {
-        this.savedStack = savedStack;
-      }
+      this.savedStack = savedStack;
 
       const throwExn = err !== this.noErrorProvided;
 

@@ -14,13 +14,16 @@ export class LazyRuntime extends common.Runtime {
     throw new common.Capture(f, []);
   }
 
-  makeCont(JSStack: common.Stack, savedStack: common.Stack) {
+  makeCont(stack: common.Stack) {
     const savedDelimitDepth = this.delimitDepth;
+    const savedStack = this.savedStack;
+    this.savedStack = [];
+
+    for(let i = stack.length - 1; i >= this.restoreFrames; i -= 1) {
+      savedStack.push(stack.pop()!);
+    }
 
     return (v: any, err: any=this.noErrorProvided) => {
-
-      this.savedStack = savedStack;
-
       const throwExn = err !== this.noErrorProvided;
 
       this.delimitDepth = savedDelimitDepth;
@@ -29,7 +32,7 @@ export class LazyRuntime extends common.Runtime {
         if(throwExn) { throw err; }
         else { return v; }
       }
-      throw new common.Restore([this.topK(restarter), ...JSStack]);
+      throw new common.Restore([this.topK(restarter), ...stack], savedStack);
     };
   }
 
@@ -44,7 +47,7 @@ export class LazyRuntime extends common.Runtime {
         return { type: 'capture', stack: exn.stack, f: exn.f };
       }
       else if (exn instanceof common.Restore) {
-        return { type: 'restore', stack: exn.stack };
+        return { type: 'restore', stack: exn.stack, savedStack: exn.savedStack };
       }
       else {
         return { type: 'exception', value: exn };

@@ -14,22 +14,26 @@ export class RetvalRuntime extends common.Runtime {
     return new common.Capture(f, []);
   }
 
-  makeCont(JSStack: common.Stack, savedStack: common.Stack) {
+  makeCont(stack: common.Stack) {
     const savedDelimitDepth = this.delimitDepth;
+    const savedStack = this.savedStack;
+    this.savedStack = [];
+    for(let i = stack.length - 1; i >= this.restoreFrames; i -= 1) {
+      savedStack.push(stack.pop()!);
+    }
 
     return (v: any, err: any=this.noErrorProvided) => {
-
-      this.savedStack = savedStack;
 
       const throwExn = err !== this.noErrorProvided;
 
       this.delimitDepth = savedDelimitDepth;
 
       let restarter = () => {
-        if(throwExn) { throw err; }
+        if (throwExn) { throw err; }
         else { return v; }
       }
-      return new common.Restore([this.topK(restarter), ...JSStack]);
+
+      return new common.Restore([this.topK(restarter), ...stack], savedStack);
     };
   }
 
@@ -41,7 +45,7 @@ export class RetvalRuntime extends common.Runtime {
         return { type: 'capture', stack: v.stack, f: v.f };
       }
       else if (v instanceof common.Restore) {
-        return { type: 'restore', stack: v.stack };
+        return { type: 'restore', stack: v.stack, savedStack: v.savedStack };
       }
       else {
         return { type: 'normal', value: v };

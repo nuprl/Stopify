@@ -5,7 +5,7 @@ export type RunResult =
   { type: 'normal', value: any } |
   { type: 'exception', value: any } |
   { type: 'capture', stack: Stack, f: (value: any) => any } |
-  { type: 'restore', stack: Stack }
+  { type: 'restore', stack: Stack, savedStack: Stack }
 
 // The type of continuation frames
 export type KFrame = KFrameTop | KFrameRest;
@@ -31,7 +31,7 @@ export type Mode = boolean;
 // We throw this exception when a continuation value is applied. i.e.,
 // captureCC applies its argument to a function that throws this exception.
 export class Restore {
-  constructor(public stack: Stack) {}
+  constructor(public stack: Stack, public savedStack: Stack) {}
 }
 
 // This class is used by all the runtimes to start the stack capturing process.
@@ -176,7 +176,8 @@ export abstract class Runtime {
           return result.value;
         }
         else if(result.type === 'exception') {
-          assert(this.mode, `execution completed in restore mode, error was: ${result.value}`)
+          assert(this.mode,
+            `execution completed in restore mode, error was: ${result.value}`)
           throw result.value;
         }
         else {
@@ -184,18 +185,7 @@ export abstract class Runtime {
         }
       }
       else if (result.type === 'capture') {
-        const s = result.stack;
-        body = () => {
-          for(let i = s.length - 1; i >= this.restoreFrames; i -= 1) {
-            this.savedStack.push(s.pop()!);
-          }
-
-          const savedStack = this.savedStack;
-          this.savedStack = [];
-
-          let except = result.f.call(global, this.makeCont(s, savedStack));
-          return except;
-        }
+        body = () => result.f.call(global, this.makeCont(result.stack));
       }
       else if (result.type === 'restore') {
         body = () => {
@@ -204,6 +194,7 @@ export abstract class Runtime {
           }
           this.mode = false;
           this.stack = result.stack;
+          this.savedStack = result.savedStack;
           return this.stack[this.stack.length - 1].f();
         };
       }
@@ -223,7 +214,7 @@ export abstract class Runtime {
    * of returning the supplied value, it throws an exception with the provided
    * error.
    */
-  abstract makeCont(JSStack: Stack, savedStack: Stack): (v: any, err: any) => any;
+  abstract makeCont(stack: Stack): (v: any, err: any) => any;
 
   /**
    * Run the `body`. It can return four types of values (in the form RunResult):

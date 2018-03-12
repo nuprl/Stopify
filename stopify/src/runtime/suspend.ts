@@ -67,8 +67,26 @@ export class RuntimeWithSuspend {
       return;
     }
 
+    // If there are no more stack frame left to be consumed, save the stack
+    // and continue running the program.
+    if (isFinite(this.rts.stackSize) && this.rts.remainingStack <= 0) {
+      this.rts.remainingStack = this.rts.stackSize;
+      this.rts.isSuspended = true;
+
+      return this.rts.captureCC((continuation) => {
+        if(this.onYield()) {
+          this.rts.isSuspended = false;
+          return continuation();
+        }
+      })
+    }
+
     if (force || this.mayYield() ||
         (this.estimator.elapsedTime() >= this.yieldInterval)) {
+
+      if (isFinite(this.rts.stackSize)) {
+        this.rts.remainingStack = this.rts.stackSize;
+      }
 
       this.estimator.reset();
       this.rts.isSuspended = true;

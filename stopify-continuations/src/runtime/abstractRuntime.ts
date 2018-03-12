@@ -189,8 +189,11 @@ export abstract class Runtime {
           for(let i = s.length - 1; i >= this.restoreFrames; i -= 1) {
             this.savedStack.push(s.pop()!);
           }
-          let except = result.f.call(global, this.makeCont(s, this.savedStack));
+
+          const savedStack = this.savedStack;
           this.savedStack = [];
+
+          let except = result.f.call(global, this.makeCont(s, savedStack));
           return except;
         }
       }

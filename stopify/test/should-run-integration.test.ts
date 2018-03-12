@@ -6,6 +6,10 @@ const ropts = "--estimator countdown -y 1"
 describe('Call/CC integration tests', function () {
   f.intTests.forEach(function(filename: string) {
     f.callCCTest(filename, `-t lazy --new wrapper ${copts}`, ropts);
+    f.callCCTest(filename, `-t lazy --new wrapper ${copts}`,
+      `--restore-frames 1 --stack-size 1000 ${ropts}`);
+    f.callCCTest(filename, `-t retval --new wrapper ${copts}`,
+      `--restore-frames 1 --stack-size 1000 ${ropts}`);
     f.callCCTest(filename, `-t eager ${copts}`, ropts);
     f.callCCTest(filename, `-t retval ${copts}`, ropts);
   });

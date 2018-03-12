@@ -9,6 +9,7 @@ export {
   unitTests,
   intTests,
   stopTests,
+  deepTests,
   callCCTest,
   browserTest,
   stopCallCCTest
@@ -16,7 +17,8 @@ export {
 
 const unitTests = glob.sync('test/should-run/*.js', {})
 const intTests = glob.sync('test/should-run/source-language/*.js', {})
-const stopTests = glob.sync('test/should-stop/*.js', {})
+const stopTests = glob.sync('test/should-stop/*.js', {});
+const deepTests = glob.sync('test/deep-stacks/*.js', {});
 
 function callCCTest(srcPath: string, copts: string, ropts: string) {
 

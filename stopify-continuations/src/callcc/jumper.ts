@@ -101,7 +101,6 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
 
   const frame = t.identifier('$frame');
 
-
   // We instrument every non-flat function to begin with a *restore block*
   // that is able to re-construct a saved stack frame. When the function is
   // invoked in restore mode, its formal arguments are already restored.
@@ -178,7 +177,8 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
       t.blockStatement(path.node.__usesArgs__ ?
         [t.expressionStatement(t.assignmentExpression('=',
           t.memberExpression(matArgs, t.identifier('length')),
-          t.memberExpression(t.callExpression(t.memberExpression(t.identifier('Object'),
+          t.memberExpression(
+            t.callExpression(t.memberExpression(t.identifier('Object'),
             t.identifier('keys')), [matArgs]), t.identifier('length')))),
           t.returnStatement(reenterExpr)] :
         [t.returnStatement(reenterExpr)])))]);

@@ -17,8 +17,7 @@ export class EagerRuntime extends common.Runtime {
     throw new common.Capture(f, [...this.eagerStack]);
   }
 
-  // TODO(rachit): savedStack should be used here.
-  makeCont(stack: common.Stack, savedStack: common.Stack) {
+  makeCont(stack: common.Stack) {
     return (v: any, err: any=this.noErrorProvided) => {
       var throwExn = err !== this.noErrorProvided;
       let restarter = () => {
@@ -26,7 +25,7 @@ export class EagerRuntime extends common.Runtime {
         else { return v; }
       }
       this.eagerStack = [...stack];
-      throw new common.Restore([this.topK(restarter), ...stack]);
+      throw new common.Restore([this.topK(restarter), ...stack], []);
     }
   }
 
@@ -41,7 +40,7 @@ export class EagerRuntime extends common.Runtime {
         return { type: 'capture', stack: exn.stack, f: exn.f };
       }
       else if (exn instanceof common.Restore) {
-        return { type: 'restore', stack: exn.stack };
+        return { type: 'restore', stack: exn.stack, savedStack: exn.savedStack };
       }
       else {
         return { type: 'exception', value: exn };

@@ -57,7 +57,6 @@ export class RuntimeWithSuspend {
    * @param force forces a suspension when `true`.
    */
   suspend(force?: boolean): void {
-    if (this.rts.isSuspended) { debugger; }
     assert(!this.rts.isSuspended, 'already suspended');
 
     // Do not suspend inside a nested runtime. This is used to make sure that

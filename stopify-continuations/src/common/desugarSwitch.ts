@@ -86,7 +86,7 @@ const switchVisitor: Visitor = {
 
   SwitchStatement: {
     enter(path: NodePath<Break<t.SwitchStatement>>): void {
-      if (t.isLabeledStatement(path.parent)) return;
+      if (t.isLabeledStatement(path.parent)) { return; }
 
       const breakLabel = path.scope.generateUidIdentifier('switch');
       path.node = breakLbl(path.node, breakLabel);

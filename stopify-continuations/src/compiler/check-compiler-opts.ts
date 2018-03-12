@@ -122,7 +122,7 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
     (x) => ['builtin', 'fill'].includes(x),
     `.hofs must be either 'builtin' or 'fill'`);
   copyProp(opts, value, 'requireRuntime',
-    (x) => typeof x == 'boolean',
+    (x) => typeof x === 'boolean',
     `.requireRuntime must be a boolean`);
   // TODO(arjun): enforce pre-condition
   copyProp(opts, value, 'sourceMap',

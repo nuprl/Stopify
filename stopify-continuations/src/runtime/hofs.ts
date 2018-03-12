@@ -2,7 +2,7 @@
 // type of transformation.
 function array_map(obj: any, callback: any/*, thisArg*/) {
   var T, A, k;
-  if (obj == null) {
+  if (obj === null) {
     throw new TypeError('this is null or not defined');
   }
   // 1. Let O be the result of calling ToObject passing the |this|
@@ -147,7 +147,7 @@ function array_reduce(obj: any, callback: any /*, initialValue*/) {
 
 function array_forEach(obj: any, callback: any/*, thisArg*/) {
   var T, k;
-  if (obj == null) {
+  if (obj === null) {
     throw new TypeError('this is null or not defined');
   }
   // 1. Let O be the result of calling toObject() passing the
@@ -211,8 +211,9 @@ function array_sort(o: any, comparator?: any): any {
       var aCharCode = aString.charCodeAt(i);
       var bCharCode = bString.charCodeAt(i);
 
-      if (aCharCode == bCharCode)
+      if (aCharCode === bCharCode) {
         continue;
+      }
 
       return aCharCode - bCharCode;
     }
@@ -227,16 +228,18 @@ function array_sort(o: any, comparator?: any): any {
     var undefinedCount = 0;
 
     // Clean up after the in-progress non-sparse compaction that failed.
-    for (let i = dst; i < src; ++i)
+    for (let i = dst; i < src; ++i) {
       delete array[i];
+    }
 
     for (var obj = array; obj; obj = Object.getPrototypeOf(obj)) {
       var propertyNames = Object.getOwnPropertyNames(obj);
       for (var i = 0; i < propertyNames.length; ++i) {
         var index = propertyNames[i];
         if (index < length) { // Exclude non-numeric properties and properties past length.
-          if (seen[index]) // Exclude duplicates.
+          if (seen[index]) { // Exclude duplicates.
             continue;
+          }
           seen[index] = 1;
 
           var value = array[index];
@@ -252,8 +255,9 @@ function array_sort(o: any, comparator?: any): any {
       }
     }
 
-    for (var i = valueCount; i < valueCount + undefinedCount; ++i)
+    for (var i = valueCount; i < valueCount + undefinedCount; ++i) {
       array[i] = undefined;
+    }
 
     return valueCount;
   }
@@ -264,14 +268,16 @@ function array_sort(o: any, comparator?: any): any {
     for (var dst = 0, src = 0; src < length; ++src) {
       if (!(src in array)) {
         ++holeCount;
-        if (holeCount < 256)
+        if (holeCount < 256) {
           continue;
+        }
         return compactSparse(array, dst, src, length);
       }
 
       var value = array[src];
-      if (value === undefined)
+      if (value === undefined) {
         continue;
+      }
 
       array[dst++] = value;
     }
@@ -279,11 +285,13 @@ function array_sort(o: any, comparator?: any): any {
     var valueCount = dst;
     var undefinedCount = length - valueCount - holeCount;
 
-    for (var i = valueCount; i < valueCount + undefinedCount; ++i)
+    for (var i = valueCount; i < valueCount + undefinedCount; ++i) {
       array[i] = undefined;
+    }
 
-    for (var i = valueCount + undefinedCount; i < length; ++i)
+    for (var i = valueCount + undefinedCount; i < length; ++i) {
       delete array[i];
+    }
 
     return valueCount;
   }
@@ -291,8 +299,9 @@ function array_sort(o: any, comparator?: any): any {
   // Move undefineds and holes to the end of an array. Result is [values..., undefineds..., holes...].
   function compact(array: any, length: any) {
     for (var i = 0; i < array.length; ++i) {
-      if (array[i] === undefined)
+      if (array[i] === undefined) {
         return compactSlow(array, length);
+      }
     }
 
     return length;
@@ -330,25 +339,28 @@ function array_sort(o: any, comparator?: any): any {
     var dst = buffer;
     var src = array;
     for (var width = 1; width < valueCount; width *= 2) {
-      for (var srcIndex = 0; srcIndex < valueCount; srcIndex += 2 * width)
+      for (var srcIndex = 0; srcIndex < valueCount; srcIndex += 2 * width) {
         merge(dst, src, srcIndex, valueCount, width, comparator);
+      }
 
       var tmp = src;
       src = dst;
       dst = tmp;
     }
 
-    if (src != array) {
-      for(var i = 0; i < valueCount; i++)
+    if (src !== array) {
+      for(var i = 0; i < valueCount; i++) {
         array[i] = src[i];
+      }
     }
   }
 
   function bucketSort(array: any, dst: any, bucket: any, depth: any) {
     if (bucket.length < 32 || depth > 32) {
       mergeSort(bucket, bucket.length, stringComparator);
-      for (var i = 0; i < bucket.length; ++i)
+      for (var i = 0; i < bucket.length; ++i) {
         array[dst++] = bucket[i].value;
+      }
       return dst;
     }
 
@@ -356,20 +368,22 @@ function array_sort(o: any, comparator?: any): any {
     for (var i = 0; i < bucket.length; ++i) {
       var entry = bucket[i];
       var string = entry.string;
-      if (string.length == depth) {
+      if (string.length === depth) {
         array[dst++] = entry.value;
         continue;
       }
 
       var c = string.charCodeAt(depth);
-      if (!buckets[c])
+      if (!buckets[c]) {
         buckets[c] = [ ];
+      }
       buckets[c][buckets[c].length] = entry;
     }
 
     for (var i = 0; i < buckets.length; ++i) {
-      if (!buckets[i])
+      if (!buckets[i]) {
         continue;
+      }
       dst = bucketSort(array, dst, buckets[i], depth + 1);
     }
 
@@ -385,8 +399,9 @@ function array_sort(o: any, comparator?: any): any {
     var valueCount = compact(array, length);
 
     var strings = new Array(valueCount);
-    for (var i = 0; i < valueCount; ++i)
+    for (var i = 0; i < valueCount; ++i) {
       strings[i] = { string: array[i], value: array[i] };
+    }
 
     bucketSort(array, 0, strings, 0);
   }
@@ -397,15 +412,19 @@ function array_sort(o: any, comparator?: any): any {
 
   // For compatibility with Firefox and Chrome, do nothing observable
   // to the target array if it has 0 or 1 sortable properties.
-  if (length < 2)
+  if (length < 2) {
     return array;
+  }
 
-  if (typeof comparator == "function")
+  if (typeof comparator === "function") {
     comparatorSort(array, length, comparator);
-  else if (comparator === null || comparator === undefined)
+  }
+  else if (comparator === null || comparator === undefined) {
     stringSort(array, length);
-  else
+       }
+  else {
     throw new TypeError("Array.prototype.sort requires the comparsion function be a function or undefined");
+       }
 
   return array;
 }

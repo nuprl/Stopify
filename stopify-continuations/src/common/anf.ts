@@ -63,7 +63,7 @@ const anfVisitor : Visitor = {
     },
 
     exit(path: NodePath<t.CallExpression>): void {
-      if ((<any>path.node.callee).mark == 'Flat') {
+      if ((<any>path.node.callee).mark === 'Flat') {
         return;
       }
       const p = path.parent;
@@ -88,7 +88,7 @@ const anfVisitor : Visitor = {
   },
 
   NewExpression: function (path: NodePath<t.NewExpression>): void {
-    if ((<any>path.node.callee).mark == 'Flat') {
+    if ((<any>path.node.callee).mark === 'Flat') {
       return;
     }
     const p = path.parent;

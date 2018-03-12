@@ -94,7 +94,7 @@ const visitor: Visitor = {
       // calls in the catch and finally block are tail calls.
       const t = joinAppTypes(getAppType(block), getAppType(finalizer),
         getAppType(handler && handler.body));
-      path.node.appType = (t == AppType.None) ? AppType.None : AppType.Mixed;
+      path.node.appType = (t === AppType.None) ? AppType.None : AppType.Mixed;
     }
   },
 

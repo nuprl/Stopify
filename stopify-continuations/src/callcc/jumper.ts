@@ -277,7 +277,7 @@ const jumper = {
   },
   ExpressionStatement: {
     exit(path: NodePath<Labeled<t.ExpressionStatement>>, s: State) {
-      if (isFlat(path)) return;
+      if (isFlat(path)) { return; }
       if (path.node.appType !== undefined &&
         path.node.appType >= AppType.Tail) {
 
@@ -307,7 +307,7 @@ const jumper = {
       }
     },
     exit(path: NodePath<Labeled<FunctionT>>, state: State): void {
-      if((<any>path.node).mark == 'Flat') {
+      if((<any>path.node).mark === 'Flat') {
         return;
       }
 

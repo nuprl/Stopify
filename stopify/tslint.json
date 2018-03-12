@@ -1,0 +1,14 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+  ],
+  "rules": {
+    "indent": [true, "spaces", 2],
+    "linebreak-style": [true, "LF"],
+    "no-trailing-whitespace": true,
+    "semicolon": [true, "always", "ignore-interfaces",
+      "ignore-bound-class-methods"]
+    
+  },
+  "rulesDirectory": []
+}

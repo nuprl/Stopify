@@ -7,7 +7,13 @@
     "build": "yarn run build:stopify-continuations && yarn run build:stopify",
     "link:stopify": "cd stopify && ln -s `pwd`/. `npm -g root`/stopify",
     "link:stopify-continuations": "cd stopify-continuations && ln -s `pwd`/. `npm -g root`/stopify-continuations",
-    "link:all": "npm run link:stopify && npm run link:stopify-continuations"
+    "link:all": "npm run link:stopify && npm run link:stopify-continuations",
+    "tslint:stopify": "cd stopify && yarn run tslint && cd -",
+    "tslint:stopify-continuations": "cd stopify-continuations && yarn run tslint && cd -",
+    "tslint-fix:stopify": "cd stopify && yarn run tslint-fix && cd -",
+    "tslint-fix:stopify-continuations": "cd stopify-continuations && yarn run tslint-fix && cd -",
+    "tslint": "yarn run tslint:stopify && yarn run tslint:stopify-continuations",
+    "tslint-fix": "yarn run tslint-fix:stopify && yarn run tslint-fix:stopify-continuations"
   },
   "workspaces": [
       "stopify",

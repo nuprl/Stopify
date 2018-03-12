@@ -46,8 +46,8 @@
     "test": "./node_modules/.bin/jest",
     "test:integration": "./bin/test -int",
     "bench": "./bin/benchmark --wd=perf",
-    "tslint": "./node_modules/.bin/tslint -c tslint.json 'src/**/*.ts'",
-    "tslint-fix": "./node_modules/.bin/tslint --fix -c tslint.json 'src/**/*.ts'"
+    "tslint": "./node_modules/.bin/tslint -c ../tslint.json 'src/**/*.ts'",
+    "tslint-fix": "./node_modules/.bin/tslint --fix -c ../tslint.json 'src/**/*.ts'"
   },
   "contributors": [
     {

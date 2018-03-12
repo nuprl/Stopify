@@ -157,8 +157,8 @@ export abstract class Runtime {
           const ss = this.savedStack;
 
           const restarter: KFrameTop = this.topK(() => {
-            if (exception) throw result.value;
-            else return result.value;
+            if (exception) { throw result.value; }
+            else { return result.value; }
           });
 
           this.stack = [restarter];

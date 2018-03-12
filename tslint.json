@@ -7,8 +7,9 @@
     "linebreak-style": [true, "LF"],
     "no-trailing-whitespace": true,
     "semicolon": [true, "always", "ignore-interfaces",
-      "ignore-bound-class-methods"]
-    
+      "ignore-bound-class-methods"],
+    "curly": true,
+    "triple-equals": true
   },
   "rulesDirectory": []
 }

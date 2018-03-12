@@ -61,7 +61,7 @@ const containsCallVisitor = {
   },
 
   CallExpression(path: NodePath<FlatnessMark<t.CallExpression>>) {
-    if (path.node.mark == 'Flat') return;
+    if (path.node.mark === 'Flat') { return; }
     this.containsCall = true;
     path.stop();
   },
@@ -98,13 +98,13 @@ function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   body.forEach((elem) => {
     if (t.isBlockStatement(elem)) {
       elem.body.forEach((e) => {
-        if (t.isStatement(e)) newBody.push(e);
+        if (t.isStatement(e)) { newBody.push(e); }
         else if (t.isEmptyStatement(e)) { } else {
           throw new Error(
             'Could not flatten body, element was not a statement');
         }
       });
-    } else newBody.push(elem);
+    } else { newBody.push(elem); }
   });
 
   return t.blockStatement(newBody);

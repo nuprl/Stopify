@@ -46,10 +46,10 @@ class Env {
       let scope = this.scopes[iter];
       let res = scope.bindings.get(id);
       // This is member expression of the form a.b
-      if(id.split(".").length == 2) {
+      if(id.split(".").length === 2) {
         res = scope.bindings.get(id.split(".")[0] + "." + "*");
       }
-      if(res) return res;
+      if(res) { return res; }
     }
     // NOTE(rachit): If can't find the tag, be conservative and return notflat.
     return 'NotFlat';

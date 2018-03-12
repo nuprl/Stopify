@@ -25,7 +25,7 @@ const names: Visitor = {
      * frame. Therefore, we rename the local variable F.
      */
     else if (path.scope.hasOwnBinding(path.node.id.name) &&
-      <any>path.scope.bindings[path.node.id.name].kind != 'local') {
+      <any>path.scope.bindings[path.node.id.name].kind !== 'local') {
       const new_id = fastFreshId.fresh('x');
       path.scope.rename(path.node.id.name, new_id.name);
     }
@@ -34,7 +34,7 @@ const names: Visitor = {
   // point.
   FunctionDeclaration: function (path: NodePath<t.FunctionDeclaration>): void {
     if (path.scope.hasOwnBinding(path.node.id.name) &&
-      <any>path.scope.bindings[path.node.id.name].kind != 'local') {
+      <any>path.scope.bindings[path.node.id.name].kind !== 'local') {
       const new_id = fastFreshId.fresh('funExpr');
       path.scope.rename(path.node.id.name, new_id.name);
     }

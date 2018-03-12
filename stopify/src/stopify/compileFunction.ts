@@ -18,33 +18,33 @@ import { NodePath, Visitor } from 'babel-traverse';
 const visitor: Visitor = {
   Program: {
     enter(path: NodePath<t.Program>, { opts }) {
-      path.stop()
-      assert.equal(path.node.body.length, 1)
-      const func = path.node.body[0]
+      path.stop();
+      assert.equal(path.node.body.length, 1);
+      const func = path.node.body[0];
       if (func.type !== 'FunctionDeclaration') {
-        throw new Error('Must compile a top-level function')
+        throw new Error('Must compile a top-level function');
       }
 
       else {
         // If compile a string to be eval'd, convert last statement to a return
         // statement
         if (opts.eval) {
-          const lastStatement = (<t.FunctionDeclaration>func).body.body.pop()!
+          const lastStatement = (<t.FunctionDeclaration>func).body.body.pop()!;
 
           if (lastStatement.type === 'ExpressionStatement') {
-            func.body.body.push(t.returnStatement(lastStatement.expression))
+            func.body.body.push(t.returnStatement(lastStatement.expression));
           }
           else {
-            func.body.body.push(lastStatement)
+            func.body.body.push(lastStatement);
           }
         }
 
       }
 
-      callcc.transformFromAst(path, [[stopifyCallCC.plugin, opts]])
+      callcc.transformFromAst(path, [[stopifyCallCC.plugin, opts]]);
     }
   }
-}
+};
 
 // TODO(arjun): hand-coded in default externals. These should be picked up
 // from the runtime.
@@ -72,7 +72,7 @@ const defaultOpts: callcc.CompilerOpts = {
     jsArgs: 'simple',
     requireRuntime: false,
     externals: defaultExternals
-}
+};
 
 export function compileFunction(
   code: string,
@@ -81,11 +81,11 @@ export function compileFunction(
     plugins: [[() => ({ visitor }), opts]],
     babelrc: false
   };
-  const { code:transformed } = babel.transform(code, babelOpts)
+  const { code:transformed } = babel.transform(code, babelOpts);
   if (!transformed) {
-    throw new Error("Failed to transform function")
+    throw new Error("Failed to transform function");
   }
-  return transformed
+  return transformed;
 }
 
 export function compileEval(code: string, type: string, renames: { [key: string]: string }, boxes: string[]): string {
@@ -105,9 +105,9 @@ export function compileEval(code: string, type: string, renames: { [key: string]
     externals: defaultExternals,
     renames,
     boxes
-  }
+  };
 
-  const toCompile = `function __eval__function() { ${code} }`
+  const toCompile = `function __eval__function() { ${code} }`;
   const transformed = compileFunction(toCompile, opts);
   return `(${transformed!})()`;
 }

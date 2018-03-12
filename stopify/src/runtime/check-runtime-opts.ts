@@ -44,7 +44,7 @@ export function checkAndFillRuntimeOpts(value: Partial<RuntimeOpts>): RuntimeOpt
     stop: undefined,
     variance: false,
     env: 'chrome'
-  }
+  };
 
   copyProp(opts, value, 'estimator',
     (x) => ['exact', 'reservoir', 'velocity', 'countdown'].includes(x),

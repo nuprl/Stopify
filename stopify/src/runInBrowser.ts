@@ -51,7 +51,7 @@ app.use(express.static(path.join(__dirname, '../../../stopify-continuations/dist
 
 let exitCode = 0;
 const server = app.listen(() => {
-  const port = server.address().port
+  const port = server.address().port;
   const url = `http://127.0.0.1:${port}/benchmark.html#${src}`;
   console.log(`GET ${url}`);
   driver.get(url)

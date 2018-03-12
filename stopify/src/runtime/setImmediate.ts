@@ -4,7 +4,7 @@
  * fastest on each browser. We use postMessage for any browser that we haven't
  * tested.
  */
-import * as browser from 'detect-browser'
+import * as browser from 'detect-browser';
 
 function makeSetImmediateMC(): (thunk: () => void) => void {
   const chan = new MessageChannel();
@@ -13,19 +13,19 @@ function makeSetImmediateMC(): (thunk: () => void) => void {
   const chanThunks: (() => void)[] = [];
 
   chan.port2.onmessage = function(evt) {
-    const func = chanThunks.pop()
+    const func = chanThunks.pop();
     if (typeof func === 'function') {
       return func();
     }
     else {
-      throw new Error(`makeSetImmediateMC expected a function, received: ${func}`)
+      throw new Error(`makeSetImmediateMC expected a function, received: ${func}`);
     }
-  }
+  };
 
   return (thunk) => {
     chanThunks.push(thunk);
     return chan.port1.postMessage(true);
-  }
+  };
 }
 
 export function setImmediateT0(thunk: () => void): void {
@@ -38,10 +38,10 @@ function makeSetImmediatePM(): (thunk: () => void) => void {
     if (evt.data === true) {
       const func = thunks.pop();
       if (typeof func === 'function') {
-        return func()
+        return func();
       }
       else {
-        throw new Error(`makeSetImmediatePM expected a function, received: ${func}`)
+        throw new Error(`makeSetImmediatePM expected a function, received: ${func}`);
       }
     }
   });

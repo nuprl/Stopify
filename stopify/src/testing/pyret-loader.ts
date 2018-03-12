@@ -5,5 +5,5 @@ const opts = parseRuntimeOpts(
 
 const url = opts.filename;
 const script = document.createElement('script');
-script.setAttribute('src', url)
-document.body.appendChild(script)
+script.setAttribute('src', url);
+document.body.appendChild(script);

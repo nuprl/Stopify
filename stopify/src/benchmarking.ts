@@ -114,7 +114,7 @@ function run() {
   if (match === null) {
     throw new Error(`Could not parse filename ${src}`);
   }
-  const transform = match[1]
+  const transform = match[1];
   const newMethod = match[2];
   const language = match[3];
   const benchmark = match[4];
@@ -182,30 +182,30 @@ function compile() {
   const transform = opts.transform;
   const newMethod = opts.new;
 
-  const dstBase = `${wd}/${transform}-${newMethod}-${language}-${base}`
-  const dstJs = `${dstBase}.js`
-  const compileTime = `${dstBase}.compile`
-  const codesize = `${dstBase}.codesize`
+  const dstBase = `${wd}/${transform}-${newMethod}-${language}-${base}`;
+  const dstJs = `${dstBase}.js`;
+  const compileTime = `${dstBase}.compile`;
+  const codesize = `${dstBase}.codesize`;
 
   // NOTE(rachit): Assumes that the benchmark is minified already.
-  const olen = fs.readFileSync(src).toString().length
-  const stime = Date.now()
+  const olen = fs.readFileSync(src).toString().length;
+  const stime = Date.now();
   creates(dstJs, () =>
     exec(`./bin/compile --transform ${transform} --new ${newMethod} ${src} ${dstJs}`));
-  const ftime = Date.now()
-  const ctime = ftime - stime
-  const flen = fs.readFileSync(dstJs).toString().length
-  const blowup = (flen * 1.0)/(olen * 1.0)
+  const ftime = Date.now();
+  const ctime = ftime - stime;
+  const flen = fs.readFileSync(dstJs).toString().length;
+  const blowup = (flen * 1.0)/(olen * 1.0);
 
-  const spec = `${base},${language},${transform},${newMethod}`
+  const spec = `${base},${language},${transform},${newMethod}`;
 
-  fs.writeFileSync(compileTime, `${spec},${ctime}`)
-  fs.writeFileSync(codesize, `${spec},${blowup}`)
+  fs.writeFileSync(compileTime, `${spec},${ctime}`);
+  fs.writeFileSync(codesize, `${spec},${blowup}`);
 }
 
 function csv() {
   const wd = opts.wd;
-  const outFiles = fs.readdirSync(wd)
+  const outFiles = fs.readdirSync(wd);
   const timingFd = fs.openSync(`${wd}/timing.csv`, 'w');
   const varianceFd = fs.openSync(`${wd}/variance.csv`, 'w');
   const compileFd = fs.openSync(`${wd}/compile-times.csv`, 'w');
@@ -215,8 +215,8 @@ function csv() {
     'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,RunningTime,NumYields,AvgLatency,VarLatency\n');
   fs.appendFileSync(<any>varianceFd,
     'Path,Hostname,Platform,Benchmark,Language,Transform,Estimator,YieldInterval,TimePerElapsed,Index,Variance\n');
-  fs.appendFileSync(<any>compileFd, 'Benchmark,Language,Transform,NewMethod,Time\n')
-  fs.appendFileSync(<any>codesizeFd, 'Benchmark,Language,Transform,NewMethod,TimesBlowup\n')
+  fs.appendFileSync(<any>compileFd, 'Benchmark,Language,Transform,NewMethod,Time\n');
+  fs.appendFileSync(<any>codesizeFd, 'Benchmark,Language,Transform,NewMethod,TimesBlowup\n');
 
   // Generate timing.csv
   for (const outFile of outFiles) {
@@ -243,18 +243,18 @@ function csv() {
     }
     else if (outFile.endsWith('.compile')) {
       const data = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').toString();
-      fs.appendFileSync(<any>compileFd, data + "\n")
+      fs.appendFileSync(<any>compileFd, data + "\n");
     }
     else if (outFile.endsWith('.codesize')) {
       const data = fs.readFileSync(`${wd}/${outFile}`, 'utf-8').toString();
-      fs.appendFileSync(<any>codesizeFd, data + "\n")
+      fs.appendFileSync(<any>codesizeFd, data + "\n");
     }
   }
 
   fs.closeSync(timingFd);
   fs.closeSync(varianceFd);
   fs.closeSync(compileFd);
-  fs.closeSync(codesizeFd)
+  fs.closeSync(codesizeFd);
   console.log(`Created ${wd}/timing.csv, ${wd}/variance.csv, ${wd}/compile-time.csv, ${wd}/code-size.csv.`);
 }
 

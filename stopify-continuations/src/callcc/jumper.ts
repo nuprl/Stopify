@@ -31,6 +31,10 @@ const isRestoringMode = t.unaryExpression('!', isNormalMode);
 const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
 const argsLen = t.identifier('argsLen');
+const increaseStackSize = t.expressionStatement(t.updateExpression(
+  '++', t.memberExpression(runtime, t.identifier('remainingStack'))))
+const decreaseStackSize = t.expressionStatement(t.updateExpression(
+  '--', t.memberExpression(runtime, t.identifier('remainingStack'))))
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
   localVars: t.Identifier[]
@@ -210,6 +214,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
 
   path.node.body.body.unshift(...[
     ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
+    decreaseStackSize,
     ifRestoring,
     captureClosure,
     reenterClosure,
@@ -325,6 +330,10 @@ const jumper = {
 
         path.node.body.body.push(ifConstructor);
       }
+
+      // Increment the remainingStack at the last line of the function.
+      // This does not break tail calls.
+      path.node.body.body.push(increaseStackSize);
     }
   },
 
@@ -364,6 +373,11 @@ const jumper = {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
       if (path.node.appType !== AppType.Mixed) {
         return;
+      }
+
+      // Increment the remainingStack before returning from a non-flat function.
+      if(!isFlat(path)) {
+        path.insertBefore(increaseStackSize);
       }
 
       // Labels may occur if this return statement occurs in a try block.

@@ -30,7 +30,7 @@ export const visitor: Visitor = {
     const plugs: any[] = [];
     // Cleanup globals when not running in `func` compile mode
     if (!state.opts.compileFunction) {
-      plugs.push([callcc.cleanupGlobals, { allowed: opts.externals }])
+      plugs.push([callcc.cleanupGlobals, { allowed: opts.externals }]);
     }
 
     timeSlow('hygiene, etc.', () =>
@@ -46,7 +46,7 @@ export const visitor: Visitor = {
     timeSlow('(control ...) elimination', () =>
       callcc.transformFromAst(path, [[callcc.plugin, opts]]));
 
-    callcc.fastFreshId.cleanup()
+    callcc.fastFreshId.cleanup();
 
     if (opts.compileFunction) {
       // Do nothing
@@ -91,7 +91,7 @@ export const visitor: Visitor = {
                     []))]))])));
     }
   }
-}
+};
 
 export function plugin() {
   return {

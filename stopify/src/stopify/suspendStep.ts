@@ -72,16 +72,16 @@ const insertSuspend: Visitor = {
     exit(path: NodePath<t.Program>, { opts }): void {
       if(opts.compileFunction && !opts.eval) {
         if(path.node.body[0].type === 'FunctionDeclaration') {
-          (<any>path.node.body[0]).topFunction = true
+          (<any>path.node.body[0]).topFunction = true;
         }
         else {
           throw new Error(
-            `Compile function expected top-level functionDeclaration`)
+            `Compile function expected top-level functionDeclaration`);
         }
       }
     }
   },
-}
+};
 
 export default function () {
   return { visitor: insertSuspend};

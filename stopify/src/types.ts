@@ -3,7 +3,7 @@ export { HandleNew, CaptureMethod, CompilerOpts } from 'stopify-continuations';
 export type Stoppable = (isStop: () => boolean,
                          onStop: () => void,
                          onDone: () => void,
-                         opts: RuntimeOpts) => void
+                         opts: RuntimeOpts) => void;
 
 export type ElapsedTimeEstimatorName = 'exact' | 'reservoir' | 'velocity' | 'countdown';
 

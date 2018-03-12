@@ -83,7 +83,7 @@ export abstract class AbstractRunner implements AsyncRun {
       this.suspendRTS.onYield = () => {
         this.onYield();
         return true;
-      }
+      };
       const maybeLine = this.suspendRTS.rts.linenum;
       if (typeof maybeLine === 'number') {
         onPaused(maybeLine);
@@ -92,7 +92,7 @@ export abstract class AbstractRunner implements AsyncRun {
         onPaused();
       }
       return false;
-    }
+    };
   }
 
   setBreakpoints(lines: number[]): void {

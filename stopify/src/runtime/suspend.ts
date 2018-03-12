@@ -24,7 +24,7 @@ export class RuntimeWithSuspend {
     /** The runtime system yields control whenever this function produces
      * 'true' or when the estimated elapsed time exceeds 'yieldInterval'.
      */
-    public mayYield = function(): boolean { return false },
+    public mayYield = function(): boolean { return false; },
     /** This function is applied immediately before stopify yields control to
      *  the browser's event loop. If the function produces 'false', the
      *  computation terminates.
@@ -77,7 +77,7 @@ export class RuntimeWithSuspend {
           this.rts.isSuspended = false;
           return continuation();
         }
-      })
+      });
     }
 
     if (force || this.mayYield() ||

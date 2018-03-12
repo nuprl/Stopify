@@ -13,7 +13,7 @@ console.log = function (str: any) {
   data.value = data.value + str + '\n';
   const evt = new Event('change');
   data.dispatchEvent(evt);
-}
+};
 
 window.onerror = (message, url, line, col, error) => {
   console.log('An error occurred');
@@ -21,8 +21,8 @@ window.onerror = (message, url, line, col, error) => {
   if (error && error.stack) {
     console.log(error.stack);
   }
-  window.document.title = "done"
-}
+  window.document.title = "done";
+};
 
 const opts = stopify.parseRuntimeOpts(
   JSON.parse(decodeURIComponent(window.location.hash.slice(1))));
@@ -36,7 +36,7 @@ function onDone() {
   let latencyVar;
   console.log("BEGIN STOPIFY BENCHMARK RESULTS");
   if (opts.variance) {
-    console.log("BEGIN VARIANCE")
+    console.log("BEGIN VARIANCE");
     for (let i = 0; i < yieldIntervals.length; i++) {
       console.log(`${i},${yieldIntervals[i]}`);
     }

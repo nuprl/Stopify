@@ -4,7 +4,7 @@ import * as fs from 'fs-extra';
 import { generateLineMapping } from './sourceMaps';
 import { RawSourceMap } from 'source-map';
 import { compile } from './compiler/compiler';
-export { compileFunction, compileEval } from './stopify/compileFunction'
+export { compileFunction, compileEval } from './stopify/compileFunction';
 export { CompilerOpts, RuntimeOpts } from './types';
 export { stopify as precompiledStopify } from './entrypoints/runtimeOnly';
 export { plugin } from './stopify/stopifyCallCC';
@@ -18,8 +18,8 @@ export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<stri
 
   if (opts.captureMethod === 'original') {
     return fs.readFile(srcPath, 'utf-8').then((prog) => {
-      return `${prog};window.originalOnDone();`
-    })
+      return `${prog};window.originalOnDone();`;
+    });
   }
   else {
     return fs.readFile(srcPath, 'utf-8')

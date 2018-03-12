@@ -8,7 +8,7 @@ import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
 import { getLabels, AppType } from './label';
 import { NodePath } from 'babel-traverse';
-import { letExpression } from '../common/helpers'
+import { letExpression } from '../common/helpers';
 import {
   isNormalMode,
   captureExn,
@@ -33,9 +33,9 @@ const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
 const argsLen = t.identifier('argsLen');
 const increaseStackSize = t.expressionStatement(t.updateExpression(
-  '++', t.memberExpression(runtime, t.identifier('remainingStack'))))
+  '++', t.memberExpression(runtime, t.identifier('remainingStack'))));
 const decreaseStackSize = t.expressionStatement(t.updateExpression(
-  '--', t.memberExpression(runtime, t.identifier('remainingStack'))))
+  '--', t.memberExpression(runtime, t.identifier('remainingStack'))));
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
   localVars: t.Identifier[]
@@ -45,7 +45,7 @@ type Labeled<T> = T & {
   labels?: number[];
   appType?: AppType;
   __usesArgs__?: boolean
-}
+};
 type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
 
 interface State {
@@ -60,7 +60,7 @@ const captureLogics: { [key: string]: CaptureFun } = {
 };
 
 function isFlat(path: NodePath<t.Node>): boolean {
-  return (<any>path.getFunctionParent().node).mark === 'Flat'
+  return (<any>path.getFunctionParent().node).mark === 'Flat';
 }
 
 function usesArguments(path: NodePath<t.Function>) {
@@ -88,7 +88,7 @@ function paramToArg(node: t.LVal) {
     return t.spreadElement(node.argument);
   }
   else {
-    throw new Error(`paramToArg: expected Identifier or RestElement, received ${node.type}`)
+    throw new Error(`paramToArg: expected Identifier or RestElement, received ${node.type}`);
   }
 }
 
@@ -120,7 +120,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     //   [local0, local1, ... ] = topStack.locals;
     restoreBlock.push(t.expressionStatement(t.assignmentExpression('=',
       t.arrayPattern(restoreLocals), t.memberExpression(frame,
-        t.identifier('locals')))))
+        t.identifier('locals')))));
   }
 
   if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
@@ -211,7 +211,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   }
 
   const defineArgsLen = letExpression(argsLen,
-    t.memberExpression(t.identifier('arguments'), t.identifier('length')))
+    t.memberExpression(t.identifier('arguments'), t.identifier('length')));
 
   path.node.body.body.unshift(...[
     ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
@@ -222,7 +222,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     ...mayMatArgs
   ]);
   path.skip();
-};
+}
 
 function labelsIncludeTarget(labels: number[]): t.Expression {
   return labels.reduce((acc: t.Expression, lbl) =>
@@ -264,7 +264,7 @@ const jumper = {
         else {
           block.forEach((stmt) => {
             assert((<t.IfStatement>stmt).test === isNormalMode);
-          })
+          });
           result.push(
             bh.sIf(isNormalMode,
               t.blockStatement(block.map((stmt) =>(<t.IfStatement>stmt)
@@ -277,7 +277,7 @@ const jumper = {
   },
   ExpressionStatement: {
     exit(path: NodePath<Labeled<t.ExpressionStatement>>, s: State) {
-      if (isFlat(path)) return
+      if (isFlat(path)) return;
       if (path.node.appType !== undefined &&
         path.node.appType >= AppType.Tail) {
 
@@ -308,7 +308,7 @@ const jumper = {
     },
     exit(path: NodePath<Labeled<FunctionT>>, state: State): void {
       if((<any>path.node).mark == 'Flat') {
-        return
+        return;
       }
 
       func(path, state);

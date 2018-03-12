@@ -31,7 +31,7 @@ export class RetvalRuntime extends common.Runtime {
       let restarter = () => {
         if (throwExn) { throw err; }
         else { return v; }
-      }
+      };
 
       return new common.Restore([this.topK(restarter), ...stack], savedStack);
     };

@@ -43,7 +43,7 @@ export function init(path: NodePath<t.Node>): void {
 
 export function cleanup(): void {
   prefixes = new trie.Trie();
-  isInitialized = false
+  isInitialized = false;
 }
 
 export function fresh(base: string): t.Identifier {

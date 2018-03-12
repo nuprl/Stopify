@@ -2,7 +2,7 @@ import * as babel from 'babel-core';
 import * as t from 'babel-types';
 import { NodePath } from 'babel-traverse';
 
-export const runtimePath = 'stopify-continuations/dist/src/runtime'
+export const runtimePath = 'stopify-continuations/dist/src/runtime';
 
 export type FunctionNode =
   t.FunctionDeclaration | t.FunctionExpression | t.ObjectMethod;
@@ -11,43 +11,43 @@ export type FunctionNode =
 export function tag<T, V>(tag: string, t: T, v: V) {
   type S<T> = T & {
     [tag: string]: V
-  }
+  };
   const tagged = <S<T>>t;
   tagged[tag] = v;
   return tagged;
 }
 
-export type StopifyAnnotation = '@stopify flat'
+export type StopifyAnnotation = '@stopify flat';
 
 export function isStopifyAnnotation(v: string): v is StopifyAnnotation {
-  return /^@stopify flat$/.test(v)
+  return /^@stopify flat$/.test(v);
 }
 
-export type FlatTag = 'NotFlat' | 'Flat'
+export type FlatTag = 'NotFlat' | 'Flat';
 
 export type FlatnessMark<T> = T & {
   mark: FlatTag
-}
+};
 
 // Used for marking known transformed functions
-export type Tag = 'Transformed' | 'Untransformed' | 'Unknown'
+export type Tag = 'Transformed' | 'Untransformed' | 'Unknown';
 
 export type Break<T> = T & {
   break_label?: t.Identifier;
-}
+};
 export type While<T> = T & {
   continue_label?: t.Identifier;
-}
+};
 // Mark a node as transformed. Used by the transformMarked transform.
 export type Transformed<T> = T & {
   isTransformed?: boolean
-}
+};
 export type KArg<T> = T & {
   kArg: t.Identifier;
-}
+};
 export type NewTag<T> = T & {
   new: boolean
-}
+};
 
 const breakLbl = <T>(t: T, v: t.Identifier) => tag('break_label', t, v);
 const continueLbl = <T>(t: T, v: t.Identifier) => tag('continue_label', t, v);
@@ -61,7 +61,7 @@ const containsCallVisitor = {
   },
 
   CallExpression(path: NodePath<FlatnessMark<t.CallExpression>>) {
-    if (path.node.mark == 'Flat') return
+    if (path.node.mark == 'Flat') return;
     this.containsCall = true;
     path.stop();
   },

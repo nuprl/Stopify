@@ -39,26 +39,26 @@ const gettersUsedVisitor = {
   ObjectMethod(path: NodePath<t.ObjectMethod>) {
     if (path.node.kind !== 'method') {
       enableGetters = true;
-      path.stop()
+      path.stop();
     }
   },
   MemberExpression(path: NodePath<t.MemberExpression>) {
-    const { object, property } = path.node
+    const { object, property } = path.node;
     if (t.isIdentifier(object) && object.name === 'Object' &&
         t.isIdentifier(property) && property.name === 'defineProperty') {
       enableGetters = true;
-      path.stop()
+      path.stop();
     }
   }
-}
+};
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
-    path.traverse(gettersUsedVisitor)
+    path.traverse(gettersUsedVisitor);
 
     if (!enableGetters) {
-      console.log('No uses of getters found, disabling --getters')
-      path.stop()
+      console.log('No uses of getters found, disabling --getters');
+      path.stop();
     }
 
     const opts: types.CompilerOpts  = state.opts;
@@ -83,43 +83,43 @@ const visitor: Visitor = {
 
         const prop = computed ?
           property :
-          t.stringLiteral((<any>property).name)
+          t.stringLiteral((<any>property).name);
 
-        path.replaceWith($func(delete_prop, object, prop))
+        path.replaceWith($func(delete_prop, object, prop));
 
       }
     }
   },
   MemberExpression(path: NodePath<FlatnessMark<t.MemberExpression>>) {
-    const p = path.parent
+    const p = path.parent;
     const { object, property } = path.node;
 
     // Only useful for console.log and various function on Math.
     if(path.node.mark === 'Flat') {
-      return
+      return;
     }
 
     // Setters
     if(t.isAssignmentExpression(p) && p.left === path.node && p.operator === '=') {
       const prop = path.node.computed ?
         property :
-        t.stringLiteral((<any>property).name)
+        t.stringLiteral((<any>property).name);
 
-      path.parentPath.replaceWith($func(set_prop, object, prop, p.right))
+      path.parentPath.replaceWith($func(set_prop, object, prop, p.right));
     }
 
     else if(t.isUpdateExpression(p) || t.isAssignmentExpression(p) ||
        (<any>path.node).exposed) {
-      return
+      return;
     }
 
     // Getters
     else {
       const prop = path.node.computed ?
         property :
-        t.stringLiteral((<any>property).name)
+        t.stringLiteral((<any>property).name);
 
-      path.replaceWith($func(get_prop, object, prop))
+      path.replaceWith($func(get_prop, object, prop));
     }
   }
 
@@ -127,4 +127,4 @@ const visitor: Visitor = {
 
 export function plugin() {
   return { visitor };
-};
+}

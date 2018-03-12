@@ -82,7 +82,7 @@ const visitor = {
     this.refIdStack = [];
     this.refIds = new Set<string>();
   }
-}
+};
 
 export function annotate(path: NodePath<t.Node>, supportEval: boolean) {
   const opts = {

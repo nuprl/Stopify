@@ -14,12 +14,12 @@ export type Labeled<T> = T & {
   labels?: number[],
   appType?: AppType,
   localVars?: t.Identifier[]
-}
+};
 
 type VisitorState = {
   inTryBlock: boolean,
   inTryBlockStack: boolean[]
-}
+};
 
 function joinAppType(x: AppType, y: AppType): AppType {
   return Math.max(x, y);
@@ -77,7 +77,7 @@ const visitFunction = {
     }
   }
 
-}
+};
 
 const visitor: Visitor = {
   TryStatement: {

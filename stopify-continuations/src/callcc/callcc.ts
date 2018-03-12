@@ -34,8 +34,8 @@ import * as exposeHOFs from '../exposeHOFs';
 import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
 
-const $__R = t.identifier('$__R')
-const $__C = t.identifier('$__C')
+const $__R = t.identifier('$__R');
+const $__C = t.identifier('$__C');
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -45,7 +45,7 @@ const visitor: Visitor = {
       h.transformFromAst(path, [cleanup]));
 
     if (opts.getters) {
-      h.transformFromAst(path, [exposeGS.plugin])
+      h.transformFromAst(path, [exposeGS.plugin]);
     }
 
     if (opts.newMethod === 'wrapper') {
@@ -98,14 +98,14 @@ const visitor: Visitor = {
     let toShift;
     if (opts.compileFunction) {
       if (t.isFunctionDeclaration(path.node.body[0])) {
-        toShift = (<t.FunctionDeclaration>path.node.body[0]).body.body
+        toShift = (<t.FunctionDeclaration>path.node.body[0]).body.body;
       }
       else {
-        throw new Error('Top-level function expected')
+        throw new Error('Top-level function expected');
       }
     }
     else {
-      toShift = path.node.body
+      toShift = path.node.body;
     }
 
     toShift.unshift(
@@ -146,7 +146,7 @@ const visitor: Visitor = {
         t.callExpression(t.identifier('require'),
           [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]) :
         // provided by dist/stopify-compiler.bundle.js
-        t.memberExpression(t.identifier('stopifyCompiler'), t.identifier('module'))
+        t.memberExpression(t.identifier('stopifyCompiler'), t.identifier('module'));
 
       path.node.body.unshift(
         h.letExpression(

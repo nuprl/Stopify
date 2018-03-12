@@ -17,7 +17,7 @@ function toPrimitive(x: any): Prim {
 }
 
 export function toKey(x: any) {
-  const r = toPrimitive(x)
+  const r = toPrimitive(x);
   if (typeof r === 'string' || typeof r === 'number') {
     return r;
   }

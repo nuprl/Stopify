@@ -35,25 +35,25 @@ const knownTest = t.callExpression(
 (<any>knownTest).mark = 'Flat';
 const flatNew = t.newExpression(constr, [t.spreadElement(args)]);
 (<any>flatNew).mark = 'Flat';
-const knownIf = t.ifStatement(knownTest, t.returnStatement(flatNew))
+const knownIf = t.ifStatement(knownTest, t.returnStatement(flatNew));
 
 const obj = t.identifier('obj');
 const createCall = t.callExpression(
   t.memberExpression(t.identifier('Object'), t.identifier('create')),
   [t.memberExpression(constr, t.identifier('prototype'))]);
 (<any>createCall).mark = 'Flat';
-const createObj = letExpression(obj, createCall, 'const')
+const createObj = letExpression(obj, createCall, 'const');
 
 const result = t.identifier('result');
 const applyConstr = letExpression(result, t.callExpression(
   t.memberExpression(constr, t.identifier('apply')), [obj, args]),
-  'const')
+  'const');
 
 const returnObj = t.returnStatement(
   t.conditionalExpression(
     t.binaryExpression('===',
       t.unaryExpression('typeof', result), t.stringLiteral('object')),
-    result, obj))
+    result, obj));
 
 const handleNewFunction = t.functionDeclaration(
   t.identifier('handleNew'), [constr, t.restElement(args)],
@@ -62,7 +62,7 @@ const handleNewFunction = t.functionDeclaration(
     createObj,
     applyConstr,
     returnObj
-  ]))
+  ]));
 
 module.exports = function () {
   return {
@@ -91,5 +91,5 @@ module.exports = function () {
           [callee, ...args]));
       }
     }
-  }
-}
+  };
+};

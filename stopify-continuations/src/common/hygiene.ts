@@ -24,11 +24,11 @@ const visitor: Visitor = {
     const shadows = Object.keys(scope.bindings)
       .filter(x => reserved.includes(x));
     for (const x of shadows) {
-      const new_name = fastFreshId.fresh(x)
+      const new_name = fastFreshId.fresh(x);
       scope.rename(x, new_name.name);
     }
   }
-}
+};
 
 export default function() {
   return { visitor: visitor };

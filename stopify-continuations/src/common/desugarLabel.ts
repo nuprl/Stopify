@@ -37,7 +37,7 @@ const labelVisitor : Visitor = {
       path.node.label = <t.Identifier>labeledParent.node.break_label;
     }
   },
-}
+};
 
 module.exports = function() {
   return { visitor: labelVisitor };

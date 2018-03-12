@@ -1,5 +1,5 @@
 export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
-export type HandleNew = 'direct' | 'wrapper'
+export type HandleNew = 'direct' | 'wrapper';
 
 export interface CompilerOpts {
   compileFunction?: boolean,

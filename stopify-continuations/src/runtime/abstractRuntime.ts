@@ -5,7 +5,7 @@ export type RunResult =
   { type: 'normal', value: any } |
   { type: 'exception', value: any } |
   { type: 'capture', stack: Stack, f: (value: any) => any } |
-  { type: 'restore', stack: Stack, savedStack: Stack }
+  { type: 'restore', stack: Stack, savedStack: Stack };
 
 // The type of continuation frames
 export type KFrame = KFrameTop | KFrameRest;
@@ -168,20 +168,20 @@ export abstract class Runtime {
           }
           body = () => {
             this.mode = false;
-            return this.stack[this.stack.length - 1].f()
-          }
+            return this.stack[this.stack.length - 1].f();
+          };
         }
         else if(result.type === 'normal') {
-          assert(this.mode, 'execution completed in restore mode')
+          assert(this.mode, 'execution completed in restore mode');
           return result.value;
         }
         else if(result.type === 'exception') {
           assert(this.mode,
-            `execution completed in restore mode, error was: ${result.value}`)
+            `execution completed in restore mode, error was: ${result.value}`);
           throw result.value;
         }
         else {
-          unreachable()
+          unreachable();
         }
       }
       else if (result.type === 'capture') {

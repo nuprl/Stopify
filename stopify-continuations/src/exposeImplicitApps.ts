@@ -2,7 +2,7 @@ import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as imm from 'immutable';
 import * as types from './types';
-import { runtimePath } from './common/helpers'
+import { runtimePath } from './common/helpers';
 
 export const implicitsIdentifier = t.identifier('$i');
 
@@ -18,7 +18,7 @@ function implicit(name: string, ...args: t.Expression[]): t.Expression {
     args);
 }
 
-const implicitsPath = `${runtimePath}/implicitApps`
+const implicitsPath = `${runtimePath}/implicitApps`;
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -52,4 +52,4 @@ const visitor: Visitor = {
 
 export function plugin() {
   return { visitor };
-};
+}

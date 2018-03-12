@@ -15,14 +15,14 @@ export {
   topOfRuntimeStack,
   runtimeStack,
   types,
-}
+};
 
 export {
   lazyCaptureLogic,
   eagerCaptureLogic,
   retvalCaptureLogic,
   fudgeCaptureLogic
-}
+};
 
 const types = t.identifier('$__T');
 const restoreNextFrame = t.identifier('restoreNextFrame');
@@ -67,7 +67,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 
   const restoreNode =
     t.assignmentExpression(path.node.operator,
-      path.node.left, stackFrameCall)
+      path.node.left, stackFrameCall);
   const ifStmt = t.ifStatement(
     isNormalMode,
     t.blockStatement([nodeStmt]),
@@ -131,7 +131,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
 
   const restoreNode =
     t.assignmentExpression(path.node.operator,
-      path.node.left, stackFrameCall)
+      path.node.left, stackFrameCall);
   const ifStmt = t.ifStatement(
     isNormalMode,
     t.blockStatement([

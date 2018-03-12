@@ -37,7 +37,7 @@ const visitIdentifiers = {
       found.add(name);
     }
   }
-}
+};
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -50,7 +50,7 @@ const visitor: Visitor = {
 
     }
   }
-}
+};
 
 export default function() {
   return { visitor: visitor };

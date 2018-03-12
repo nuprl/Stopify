@@ -64,7 +64,7 @@ const anfVisitor : Visitor = {
 
     exit(path: NodePath<t.CallExpression>): void {
       if ((<any>path.node.callee).mark == 'Flat') {
-        return
+        return;
       }
       const p = path.parent;
       if ((!t.isVariableDeclarator(p) &&
@@ -89,7 +89,7 @@ const anfVisitor : Visitor = {
 
   NewExpression: function (path: NodePath<t.NewExpression>): void {
     if ((<any>path.node.callee).mark == 'Flat') {
-      return
+      return;
     }
     const p = path.parent;
     if (!t.isVariableDeclarator(p)) {
@@ -100,7 +100,7 @@ const anfVisitor : Visitor = {
       path.replaceWith(name);
     }
   },
-}
+};
 
 module.exports = function() {
   return { visitor: anfVisitor };

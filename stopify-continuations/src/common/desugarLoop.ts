@@ -24,7 +24,7 @@ import * as bh from '../babelHelpers';
 
 interface State {
   [orig: string]: t.Identifier[];
-};
+}
 
 // Object containing the visitor functions
 const loopVisitor : Visitor = {
@@ -152,7 +152,7 @@ const loopVisitor : Visitor = {
       if (t.isLoop(body) && !(<any>body).continue_label) {
         const lbl = fastFreshId.fresh('loop_continue');
         if (!(label.name in s)) {
-          s[label.name] = [lbl]
+          s[label.name] = [lbl];
         } else {
           s[label.name].push(lbl);
         }
@@ -184,7 +184,7 @@ const loopVisitor : Visitor = {
       path.node.label = lbls[lbls.length - 1];
     }
   }
-}
+};
 
 module.exports = function() {
   return { visitor: loopVisitor };

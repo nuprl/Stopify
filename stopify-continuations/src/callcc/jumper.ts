@@ -20,6 +20,7 @@ import {
   runtimeStack,
   types,
 } from './captureLogics';
+import { fresh } from '../fastFreshId';
 
 export { restoreNextFrame };
 
@@ -316,6 +317,10 @@ const jumper = {
       (<any>declTarget).lifted = true;
       path.node.body.body.unshift(declTarget);
 
+      // Increment the remainingStack at the last line of the function.
+      // This does not break tail calls.
+      path.node.body.body.push(increaseStackSize);
+
       if (state.opts.newMethod === 'direct') {
         path.node.localVars.push(newTarget);
         const declNewTarget = bh.varDecl(newTarget,
@@ -330,10 +335,6 @@ const jumper = {
 
         path.node.body.body.push(ifConstructor);
       }
-
-      // Increment the remainingStack at the last line of the function.
-      // This does not break tail calls.
-      path.node.body.body.push(increaseStackSize);
     }
   },
 
@@ -371,24 +372,52 @@ const jumper = {
 
   ReturnStatement: {
     exit(path: NodePath<Labeled<t.ReturnStatement>>, s: State): void {
-      if (path.node.appType !== AppType.Mixed) {
-        return;
-      }
+      switch (path.node.appType) {
+        case AppType.None: {
+          if(isFlat(path)) {
+            return;
+          }
 
-      // Increment the remainingStack before returning from a non-flat function.
-      if(!isFlat(path)) {
-        path.insertBefore(increaseStackSize);
-      }
+          if (s.opts.newMethod === 'direct') {
+            const retval = fresh('retval');
+            const declRetval = letExpression(retval, path.node.argument);
+            const isObject = t.binaryExpression('instanceof',
+              retval, t.identifier('Object'));
+            const conditional = t.conditionalExpression(bh.and(newTarget,
+              t.unaryExpression('!', isObject)), t.thisExpression(),
+              retval);
 
-      // Labels may occur if this return statement occurs in a try block.
-      const labels = getLabels(path.node);
-      const ifReturn = t.ifStatement(
-        isNormalMode,
-        path.node,
-        bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
-          t.returnStatement(stackFrameCall)));
-      path.replaceWith(ifReturn);
-      path.skip();
+            path.replaceWith(t.blockStatement([
+              declRetval,
+              increaseStackSize,
+              t.returnStatement(conditional),
+            ]));
+            path.skip();
+          } else {
+            path.insertBefore(increaseStackSize);
+          }
+
+          break;
+        }
+        case AppType.Mixed:
+          return;
+        case AppType.Tail:
+          // Increment the remainingStack before returning from a non-flat function.
+          if(!isFlat(path)) {
+            path.insertBefore(increaseStackSize);
+          }
+
+          // Labels may occur if this return statement occurs in a try block.
+          const labels = getLabels(path.node);
+          const ifReturn = t.ifStatement(
+            isNormalMode,
+            path.node,
+            bh.sIf(bh.and(isRestoringMode, labelsIncludeTarget(labels)),
+              t.returnStatement(stackFrameCall)));
+          path.replaceWith(ifReturn);
+          path.skip();
+          return;
+      }
     }
   },
 

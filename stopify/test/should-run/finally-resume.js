@@ -14,4 +14,4 @@ function MYFUNCTION() {
     MYOTHER();
   }
 }
-assert(MYFUNCTION() === 10);
+assert.equal(MYFUNCTION(),10);

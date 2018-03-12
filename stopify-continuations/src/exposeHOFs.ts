@@ -13,7 +13,7 @@ function hof(obj: t.Expression, name: string, args: t.Expression[]): t.Expressio
     [obj, ...args]);
 }
 
-const hofRuntime = `${runtimePath}/hofs`
+const hofRuntime = `${runtimePath}/hofs`;
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state: any): void {
@@ -36,12 +36,12 @@ const visitor: Visitor = {
         hofIdentifier.name === callee.object.name) {
         return;
       }
-      path.replaceWith(hof(callee.object, callee.property.name, <any>args))
+      path.replaceWith(hof(callee.object, callee.property.name, <any>args));
     }
   },
 };
 
 export function plugin() {
   return { visitor };
-};
+}
 

@@ -11,13 +11,13 @@ import { tag } from '../common/helpers';
 
 type Hoisted<T> = T & {
   hoisted?: boolean
-}
+};
 const hoisted = <T>(t: T) => tag('hoisted', t, true);
 
 function declToAssign(decl: t.VariableDeclarator): t.AssignmentExpression {
   return decl.init === null ?
     t.assignmentExpression('=', decl.id, t.unaryExpression('void', t.numericLiteral(0))) :
-    t.assignmentExpression('=', decl.id, decl.init)
+    t.assignmentExpression('=', decl.id, decl.init);
 }
 
 const lift: Visitor = {

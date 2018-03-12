@@ -20,7 +20,7 @@ type S = {
   renameStack: { [key: string]: string }[],
   functionParent: NodePath<bh.FunWithBody | t.Program>,
   functionParentStack: NodePath<bh.FunWithBody | t.Program>[]
-}
+};
 
 const visitFunWithBody = {
   enter(this: S, path: NodePath<bh.FunWithBody>) {

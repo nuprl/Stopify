@@ -66,7 +66,7 @@ function array_map(obj: any, callback: any/*, thisArg*/) {
   }
   // 9. return A
   return A;
-};
+}
 
 function array_filter(obj: any, fun: any/*, thisArg*/) {
   'use strict';
@@ -94,7 +94,7 @@ function array_filter(obj: any, fun: any/*, thisArg*/) {
     }
   }
   return res;
-};
+}
 
 function array_reduce(obj: any, callback: any /*, initialValue*/) {
   if (obj === null) {
@@ -190,7 +190,7 @@ function array_forEach(obj: any, callback: any/*, thisArg*/) {
     k++;
   }
   // 8. return undefined.
-};
+}
 
 function array_sort(o: any, comparator?: any): any {
   "use strict";
@@ -408,7 +408,7 @@ function array_sort(o: any, comparator?: any): any {
     throw new TypeError("Array.prototype.sort requires the comparsion function be a function or undefined");
 
   return array;
-};
+}
 
 export function map(o: any, args: any): any {
   if (o instanceof Array) {
@@ -416,7 +416,7 @@ export function map(o: any, args: any): any {
   } else {
     return o.map.call(o, args);
   }
-};
+}
 
 export function filter(o: any, args: any): any {
   if (o instanceof Array) {
@@ -424,7 +424,7 @@ export function filter(o: any, args: any): any {
   } else {
     return o.filter.call(o, args);
   }
-};
+}
 
 export function reduce(o: any, args: any): any {
   if (o instanceof Array) {
@@ -432,7 +432,7 @@ export function reduce(o: any, args: any): any {
   } else {
     return o.reduce.call(o, args);
   }
-};
+}
 
 export function forEach(o: any, args: any): any {
   if (o instanceof Array) {
@@ -440,7 +440,7 @@ export function forEach(o: any, args: any): any {
   } else {
     return o.forEach.call(o, args);
   }
-};
+}
 
 export function sort(o: any, comparator?: any): any {
   if (o instanceof Array && comparator !== undefined) {
@@ -448,4 +448,4 @@ export function sort(o: any, comparator?: any): any {
   } else {
     return o.sort.call(o, comparator);
   }
-};
+}

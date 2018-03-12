@@ -20,13 +20,13 @@ const ifStatement : VisitNode<t.IfStatement> = function (path: NodePath<t.IfStat
 
 const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {
   if(t.isBlockStatement(path.node.body)) return;
-  path.node.body = t.blockStatement([path.node.body])
-}
+  path.node.body = t.blockStatement([path.node.body]);
+};
 
 const visitor : Visitor = {
   IfStatement: ifStatement,
   "Loop": loop,
-}
+};
 
 module.exports = function() {
   return { visitor: visitor };

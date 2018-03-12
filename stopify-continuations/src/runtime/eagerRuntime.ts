@@ -23,10 +23,10 @@ export class EagerRuntime extends common.Runtime {
       let restarter = () => {
         if(throwExn) { throw err; }
         else { return v; }
-      }
+      };
       this.eagerStack = [...stack];
       throw new common.Restore([this.topK(restarter), ...stack], []);
-    }
+    };
   }
 
   abstractRun(body: () => any): common.RunResult {

@@ -46,7 +46,7 @@ const sentinalExn = t.memberExpression(t.identifier('$__T'), t.identifier('EXN_S
 type VisitorState = {
   inTryWithFinally: boolean,
   inTryBlockStack: boolean[]
-}
+};
 
 const visitor: Visitor = {
   TryStatement: {
@@ -93,7 +93,7 @@ const visitor: Visitor = {
     exit(this: VisitorState, path: NodePath<t.ReturnStatement>) {
       if (this.inTryWithFinally) {
         const arg = path.node.argument ||
-          t.unaryExpression('void', t.numericLiteral(0))
+          t.unaryExpression('void', t.numericLiteral(0));
         path.insertBefore(t.expressionStatement(t.assignmentExpression('=',
           returnSentinal, arg)));
         path.replaceWith(t.returnStatement(returnSentinal));
@@ -106,7 +106,7 @@ const visitor: Visitor = {
     exit(this: VisitorState, path: NodePath<t.ThrowStatement>) {
       if (this.inTryWithFinally) {
         const arg = path.node.argument ||
-          t.unaryExpression('void', t.numericLiteral(0))
+          t.unaryExpression('void', t.numericLiteral(0));
         path.insertBefore(t.expressionStatement(t.assignmentExpression('=',
           throwSentinal, arg)));
         path.replaceWith(t.throwStatement(throwSentinal));
@@ -135,4 +135,4 @@ const visitor: Visitor = {
 
 export default function () {
   return { visitor };
-};
+}

@@ -97,7 +97,7 @@ export const visitor: Visitor = {
       ));
     path.replaceWith(r);
   }
-}
+};
 
 function main() {
   const filename = process.argv[2];

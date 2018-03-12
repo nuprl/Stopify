@@ -22,7 +22,7 @@ type State = {
   parentPathStack: NodePath<Parent>[],
   varsStack: Set<string>[],
   opts: { boxes: string[] },
-}
+};
 
 export function box(e: t.Expression): t.ObjectExpression {
   return t.objectExpression([t.objectProperty(t.identifier('box'),
@@ -32,8 +32,8 @@ export function box(e: t.Expression): t.ObjectExpression {
 
 function unbox(e: t.Expression): t.Expression {
   const res = t.memberExpression(e, t.identifier('box'));
-  (<any>res).mark = (<any>e).mark
-  return res
+  (<any>res).mark = (<any>e).mark;
+  return res;
 }
 
 /**
@@ -195,7 +195,7 @@ const visitor = {
     }
     if (this.vars.includes(path.node.name) ||
       (this.opts.boxes && this.opts.boxes.includes(path.node.name))) {
-      path.replaceWith(unbox(path.node))
+      path.replaceWith(unbox(path.node));
     }
   },
   FunctionExpression: {
@@ -237,7 +237,7 @@ const visitor = {
       }
     }
   }
-}
+};
 
 export function plugin() {
   return { visitor };

@@ -67,7 +67,7 @@ const visitor: Visitor = {
       path.skip();
     }
   }
-}
+};
 
 export function plugin() {
   return { visitor };

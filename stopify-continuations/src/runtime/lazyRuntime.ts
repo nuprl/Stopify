@@ -31,7 +31,7 @@ export class LazyRuntime extends common.Runtime {
       let restarter = () => {
         if(throwExn) { throw err; }
         else { return v; }
-      }
+      };
       throw new common.Restore([this.topK(restarter), ...stack], savedStack);
     };
   }

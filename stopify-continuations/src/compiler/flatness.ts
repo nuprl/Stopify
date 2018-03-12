@@ -11,7 +11,7 @@ const visitor: Visitor = {
       transformFromAst(path, [ [markFlatFunctions] ]);
       transformFromAst(path, [ markFlatApplications ]);
   }
-}
+};
 
 export function flatness() {
   return {

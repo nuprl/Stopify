@@ -3,7 +3,7 @@ import * as t from 'babel-types';
 import { isStopifyAnnotation, FlatnessMark } from '../common/helpers';
 
 function markerVisitor(path: NodePath<FlatnessMark<t.CallExpression|t.NewExpression|t.FunctionDeclaration|t.FunctionExpression>>) {
-    const { leadingComments } = path.node
+    const { leadingComments } = path.node;
     if (leadingComments && leadingComments.length > 0 &&
         isStopifyAnnotation(
           leadingComments[leadingComments.length - 1].value.trim())) {
@@ -16,7 +16,7 @@ const visitor: Visitor = {
   NewExpression: markerVisitor,
   FunctionDeclaration: markerVisitor,
   FunctionExpression: markerVisitor
-}
+};
 
 export function markAnnotated() {
     return { visitor };

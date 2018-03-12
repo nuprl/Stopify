@@ -11,7 +11,7 @@ import {tag} from '../common/helpers';
 
 type Lifted<T> = T & {
   lifted?: boolean
-}
+};
 const lifted = <T>(t: T) => tag('lifted', t, true);
 
 const lift: Visitor = {
@@ -42,7 +42,7 @@ const lift: Visitor = {
     }
     path.replaceWithMultiple(stmts);
   }
-}
+};
 
 module.exports = function() {
   return { visitor: lift };

@@ -4,6 +4,11 @@ import * as t from 'babel-types';
 export type FunWithBody = t.FunctionDeclaration | t.FunctionExpression |
   t.ObjectMethod;
 
+export function isFunWithBody(node: t.Node): node is FunWithBody {
+  return t.isFunctionDeclaration(node) || t.isFunctionExpression(node) ||
+    t.isObjectMethod(node);
+}
+
 export const eTrue = t.booleanLiteral(true);
 
 export const eFalse = t.booleanLiteral(false);

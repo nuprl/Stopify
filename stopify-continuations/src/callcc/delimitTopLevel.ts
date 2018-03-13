@@ -4,7 +4,6 @@
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as assert from 'assert';
-import * as bh from '../babelHelpers';
 import * as fastFreshId from '../fastFreshId';
 import * as imm from 'immutable';
 
@@ -23,30 +22,15 @@ function delimitStmt(stmt: t.Statement): t.Statement {
     t.memberExpression(runtime, t.identifier('delimit')), [fun]));
 }
 
-/**
- * Transforms 'e' to '$__R.delimit(function delimitN() { return e; });'
- */
-function delimitExpr(e: t.Expression): t.Expression {
-  const fun = t.functionExpression(fastFreshId.fresh('delimit'), [],
-    t.blockStatement([t.returnStatement(e)]));
-  (<any>fun).localVars = [];
-  (<any>fun).boxedArgs = imm.Set.of();
-
-  return t.callExpression(
-    t.memberExpression(runtime, t.identifier('delimit')), [fun]);
-}
-
 const visitor = {
   Program(path: NodePath<t.Program>, state: any): void {
     const body = path.node.body;
     for (let i = 0; i < body.length; i++) {
       const stmt = body[i];
       if (stmt.type === 'VariableDeclaration') {
-        assert(stmt.declarations.length === 1);
-        const decl = stmt.declarations[0];
-        if (decl.init && !bh.isValue(decl.init)) {
-          decl.init = delimitExpr(decl.init);
-        }
+        // Assumes that the declVars transform ran before this one.
+        stmt.declarations.map(decl =>
+          assert(decl.init === null, 'Variable declarations should not have init'))
       }
       else if (stmt.type === 'FunctionDeclaration') {
         // leave intact

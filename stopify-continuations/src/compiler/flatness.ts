@@ -4,12 +4,13 @@ import { markFlatFunctions } from './markFlatFunctions';
 import { markAnnotated } from './markAnnotated';
 import { markFlatApplications } from './markFlatApplications';
 import { transformFromAst } from '../common/helpers';
+import { CompilerOpts } from '../types';
 
 const visitor: Visitor = {
-  Program(path: NodePath<t.Program>) {
+  Program(path: NodePath<t.Program>, state: { opts: CompilerOpts }) {
       transformFromAst(path, [ markAnnotated ]);
       transformFromAst(path, [ [markFlatFunctions] ]);
-      transformFromAst(path, [ markFlatApplications ]);
+      transformFromAst(path, [ [markFlatApplications, state.opts] ]);
   }
 };
 

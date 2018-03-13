@@ -6,6 +6,8 @@
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { FlatTag, FlatnessMark } from '../common/helpers';
+import { CompilerOpts } from '../types';
+
 
 /**
  * 0 -> No debugging
@@ -28,14 +30,14 @@ class Scope {
 
 class Env {
   scopes: Array<Scope>;
-  constructor() {
+  constructor(knownFlats: Array<string>) {
     this.scopes = new Array(new Scope([]));
 
     // TODO(rachit): Add more known globals here.
     // This is not correct in presence of renaming.
     [ 'WeakMap', 'Map', 'Set', 'WeakSet', 'String', 'Number', 'Function',
       'Object', 'Array', 'Date', 'RegExp', 'Error',
-      'console.*', 'Object.*', 'Math.*'
+      'console.*', 'Object.*', 'Math.*', ...knownFlats
     ].map(e => this.addBinding(e, 'Flat'));
   }
   toString(): string {
@@ -45,8 +47,9 @@ class Env {
     for(let iter in this.scopes) {
       let scope = this.scopes[iter];
       let res = scope.bindings.get(id);
-      // This is member expression of the form a.b
-      if(id.split(".").length === 2) {
+      // This is member expression of the form a.b and a.b was not found, try
+      // searching for a.*.
+      if(!res && id.split(".").length === 2) {
         res = scope.bindings.get(id.split(".")[0] + "." + "*");
       }
       if(res) { return res; }
@@ -73,7 +76,7 @@ class Env {
   }
 }
 
-let globalEnv = new Env();
+let globalEnv: Env;
 
 function nodeToString(node: t.Expression | t.LVal): string | null {
   switch(node.type) {
@@ -175,8 +178,8 @@ const assign = {
 };
 
 const program: VisitNode<t.Program> = {
-  enter(path: NodePath<t.Program>) {
-    globalEnv = new Env();
+  enter(this: { opts: CompilerOpts }, path: NodePath<t.Program>) {
+    globalEnv = new Env(this.opts.knownFlats || []);
   },
   exit(path: NodePath<t.Program>) {
     if (debug > 1) {

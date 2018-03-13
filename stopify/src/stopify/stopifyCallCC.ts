@@ -38,7 +38,7 @@ export const visitor: Visitor = {
         [callcc.hygiene, { reserved: callcc.reserved }],
       ]));
     if (!state.opts.debug) {
-      callcc.transformFromAst(path, [ callcc.flatness ]);
+      callcc.transformFromAst(path, [[callcc.flatness, opts]]);
     }
     timeSlow('insertSuspend', () =>
       callcc.transformFromAst(path, [[insertSuspend, opts]]));

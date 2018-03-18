@@ -274,17 +274,15 @@ following type:
 interface RuntimeOpts {
   estimator?: "velocity" | "reservoir" | "exact" | "countdown",
   yieldInterval?: number /* must be greater than zero */,
-
   stackSize?: number /* must be greater than zero */
-  restoreFrames?: number /* must be greater than zero */,
+  restoreFrames?: number /* must be greater than zero */
 }
 \end{lstlisting}
 
 The first two options control how frequently Stopify yields control to the browser
 (\lstinline|yieldInterval|) and the mechanism that it uses to determine
-elapsed time (\lstinline|estimator|). The last two options tell Stopify how deep
-the browser stack is and how many frames should be restored onto the JS stack
-after a stack capture.
+elapsed time (\lstinline|estimator|). The last two options can be used
+to simulate a larger stack than what JavaScript natively provides.
 
 \subsection{Time estimator \texttt{(.estimator)} }\label{estimator}
 By default, Stopify uses the \texttt{velocity} estimator that samples the current
@@ -314,24 +312,25 @@ Finally, the \texttt{exact} estimator checks the current time at every
 yield point, instead of sampling the time. This has a higher runtime
 overhead than \texttt{velocity} and we do not recommend it.
 
-\subsection{Stack behavior \texttt{(.stackSize and .restoreFrames)} }
-Stopify supports heap bounded stacks for programming languages that want to
-support deeply recursive code and not inherit the stack size limit imposed
-by JavaScript VMs. Stopify accomplishes by restoring only
-a suffix of a captured stack and saving the rest of it for the next restore
-event. Once a program finishes running, Stopify checks to see if
-there is a prefix of the stack that was previously saved and restores such a
-prefix.
-\\ \\
-\texttt{.stackSize}: Controls the maximum number of stack frames that a stopified
-program can consume before it must suspend. A constant value implies support for heap
-bounded stacks. Defaults to \lstinline|Infinity|.
-\\ \\
-\texttt{.restoreFrames}: Controls the maximum number of stack frames that are
-restored onto the JS stack after a capture event. The rest of the stack is saved
-in the runtime. A constant value implies support for deep stacks. Cannot be
-greater than \texttt{.stacksize}. Defaults to \lstinline|Infinity|.
+\subsection{Unbounded stacks \texttt{(.stackSize and .restoreFrames)}}
 
+On certain browsers, the JavaScript stack is very shallow. This is a problem
+for programming languages that rely heavily on recursion (e.g., idiomatic
+functional code). If this is not a concern, you can ignore these options.
+
+To support heavily recursion code, Stopify can spill stack frames on to the 
+heap. Therefore, a program will \emph{never} throw a stack overflow error.
+(However, it may run out of memory.) To do so, it tracks the depth of the
+JavaScript stack and spills stack frames when the stack depth exceeds 
+\lstinline|stackSize|. Similarly, when resuming computation, the 
+\lstinline|restoreFrames| parameter determines how many saved stack frames
+are turned into JavaScript stack frames.
+
+To maximize performance, \lstinline|stackSize| should be as high as possible
+and \lstinline|restoreFrames| should be equal to
+\lstinline|stackSize|. The largest possible value of \lstinline|stackSize|
+depends on the source language and browser. In our experience, a value of 
+$500$ works well.
 
 \section{The \texttt{AsyncRun} Interface\label{asyncrun}}
 \lstset{language=js}

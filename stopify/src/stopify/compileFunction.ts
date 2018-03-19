@@ -56,8 +56,9 @@ const defaultExternals = [
   "global",
   "window",
   "document",
+  "process",
   "setTimeout",
-  "captureCC"
+  "captureCC",
 ];
 
 const defaultOpts: callcc.CompilerOpts = {
@@ -89,18 +90,17 @@ export function compileFunction(
 }
 
 export function compileEval(code: string, type: string, renames: { [key: string]: string }, boxes: string[]): string {
-
   // `any` needed because of the extra renames and boxes fields.
   const opts: any = {
     compileFunction: true,
-    getters: false,
+    getters: true,
     debug: false,
     captureMethod: type,
     newMethod: 'wrapper',
     eval: true,
-    es: 'sane',
-    hofs: 'builtin',
-    jsArgs: 'simple',
+    es: 'es5',
+    hofs: 'fill',
+    jsArgs: 'full',
     requireRuntime: (typeof window === 'undefined'),
     externals: defaultExternals,
     renames,

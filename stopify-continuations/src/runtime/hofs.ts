@@ -1,6 +1,6 @@
 // Do not directly use this file. We stopify and webpack this file for each
 // type of transformation.
-function array_map(obj: any, callback: any/*, thisArg*/) {
+function array_map(obj: any, callback: any, thisArg?: any) {
   var T, A, k;
   if (obj === null) {
     throw new TypeError('this is null or not defined');
@@ -18,8 +18,8 @@ function array_map(obj: any, callback: any/*, thisArg*/) {
     throw new TypeError(callback + ' is not a function');
   }
   // 5. If thisArg was supplied, let T be thisArg; else let T be undefined.
-  if (arguments.length > 1) {
-    T = arguments[1];
+  if (arguments.length > 2) {
+    T = arguments[2];
   }
   // 6. Let A be a new array created as if by the expression new Array(len)
   //    where Array is the standard built-in constructor with that name and
@@ -429,11 +429,11 @@ function array_sort(o: any, comparator?: any): any {
   return array;
 }
 
-export function map(o: any, args: any): any {
+export function map(o: any, ...args: any[]): any {
   if (o instanceof Array) {
-    return array_map(o, args);
+    return array_map(o, args[0], args[1]);
   } else {
-    return o.map.call(o, args);
+    return o.map.call(o, ...args);
   }
 }
 

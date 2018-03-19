@@ -146,7 +146,7 @@ const visitor: Visitor = {
         t.callExpression(t.identifier('require'),
           [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]) :
         // provided by dist/stopify-compiler.bundle.js
-        t.memberExpression(t.identifier('stopifyCompiler'), t.identifier('module'));
+        t.identifier('stopifyCompiler');
 
       path.node.body.unshift(
         h.letExpression(

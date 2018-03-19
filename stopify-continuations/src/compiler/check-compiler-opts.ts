@@ -89,6 +89,7 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
       "global",
       "window",
       "document",
+      "process",
       "setTimeout",
       "captureCC"
     ]

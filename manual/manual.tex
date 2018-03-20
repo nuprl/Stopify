@@ -418,7 +418,7 @@ The optional \lstinline|CompilerOpts| is dictionary with the following type:
 interface CompilerOpts {
   getters?: boolean,
   debug?: boolean,
-  captureMethod?: "lazy" | "retval" | "eager",
+  captureMethod?: "lazy" | "retval" | "eager" | "original",
   newMethod?: "wrapper" | "direct",
   eval?: boolean,
   es?: "sane" | "es5",
@@ -443,8 +443,9 @@ sub-language of JavaScript that the compiler targets.
 Stopify uses first-class continuations as a primitive to implement its
 execution control features. Stopify can represent continuations in several
 ways; the fastest approach depends on the application and the browser. The
-valid options are \lstinline|"lazy"|, \lstinline|"retval"|, and
-\lstinline|"eager"|. For most cases, we recommend using \lstinline|"lazy"|
+valid options are \lstinline|"lazy"|, \lstinline|"retval"|, \lstinline|"eager"|,
+and \lstinline|"original"|. For most cases, we recommend using
+\lstinline|"lazy"|.
 
 \subsection{Constructor Encoding (\texttt{.newMethod})\label{new-method}}
 

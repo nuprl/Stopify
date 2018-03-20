@@ -8,6 +8,44 @@ import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import * as fastFreshId from '../fastFreshId';
 import { NodePath, Visitor } from 'babel-traverse';
+import { CompilerOpts } from '../types';
+
+function reify(opts: CompilerOpts): t.ObjectExpression {
+  const props = [];
+  for (const p in opts) {
+    switch (p) {
+      case 'compileFunction':
+        props.push(t.objectProperty(t.stringLiteral(p),
+          t.booleanLiteral(true)));
+        break;
+      case 'getters':
+      case 'debug':
+      case 'eval':
+      case 'requireRuntime':
+        props.push(t.objectProperty(t.stringLiteral(p),
+          t.booleanLiteral((opts as any)[p])));
+        break;
+      case 'captureMethod':
+      case 'newMethod':
+      case 'es':
+      case 'hofs':
+      case 'jsArgs':
+        props.push(t.objectProperty(t.stringLiteral(p),
+          t.stringLiteral((opts as any)[p])));
+        break;
+      case 'externals':
+        props.push(t.objectProperty(t.stringLiteral(p),
+          t.arrayExpression((opts as any)[p].map((s: string) =>
+            t.stringLiteral(s)))));
+        break;
+      case 'sourceMap':
+        break;
+      default:
+        throw new Error(`Unexpected compiler option '${p}'`);
+    }
+  }
+  return t.objectExpression(props);
+}
 
 const visitor: Visitor = {
   Program() {
@@ -26,7 +64,7 @@ const visitor: Visitor = {
     },
   },
 
-  CallExpression: function(path: NodePath<t.CallExpression>): void {
+  CallExpression: function (path: NodePath<t.CallExpression>, state: { opts: CompilerOpts }): void {
     if (t.isIdentifier(path.node.callee) &&
       path.node.callee.name === 'eval') {
 
@@ -46,7 +84,7 @@ const visitor: Visitor = {
       // Construct boxed array.
       const vars = new Set();
       this.boxed.filter((x: any) => !!x).forEach((set: Set<string>) =>
-          set.forEach(x => vars.add(x)));
+        set.forEach(x => vars.add(x)));
 
       const evalBlock =
         t.blockStatement([t.returnStatement(t.callExpression(t.identifier('eval'),
@@ -54,7 +92,7 @@ const visitor: Visitor = {
             t.memberExpression(t.identifier("$__C"), t.identifier("compileEval")),
             [
               ...path.node.arguments,
-              t.memberExpression(t.identifier('$__R'), t.identifier('type')),
+              reify(state.opts),
               t.objectExpression(props),
               t.arrayExpression(Array.from(vars).map(x => t.stringLiteral(x)))
             ]

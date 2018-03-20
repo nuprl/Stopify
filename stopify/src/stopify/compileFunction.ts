@@ -89,28 +89,16 @@ export function compileFunction(
   return transformed;
 }
 
-export function compileEval(code: string, type: string, renames: { [key: string]: string }, boxes: string[]): string {
-  // `any` needed because of the extra renames and boxes fields.
-  const opts: any = {
-    compileFunction: true,
-    getters: true,
-    debug: false,
-    captureMethod: type,
-    newMethod: 'wrapper',
-    eval: true,
-    es: 'es5',
-    hofs: 'fill',
-    jsArgs: 'full',
-    requireRuntime: (typeof window === 'undefined'),
-    externals: defaultExternals,
-    renames,
-    boxes
-  };
-
-  const toCompile = `function __eval__function() { ${code} }`;
-  const transformed = compileFunction(toCompile, opts);
-  return `(${transformed!})()`;
-}
+export function compileEval(code: string, compilerOpts: callcc.CompilerOpts,
+  renames: { [key: string]: string }, boxes: string[]): string {
+    const toCompile = `function __eval__function() { ${code} }`;
+    const transformed = compileFunction(toCompile, {
+      ...compilerOpts,
+      renames,
+      boxes,
+    });
+    return `(${transformed!})()`;
+  }
 
 export default function () {
   return { visitor };

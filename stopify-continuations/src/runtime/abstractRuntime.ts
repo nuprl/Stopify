@@ -40,8 +40,6 @@ export class Capture {
 }
 
 export abstract class Runtime {
-  public type: string;
-
   // Remaining number of stacks that this runtime can consume.
   remainingStack: number;
 

@@ -2,11 +2,8 @@ import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 
 export class RetvalRuntime extends common.Runtime {
-  type: 'retval';
-
   constructor(stackSize: number, restoreFrames: number) {
     super(stackSize, restoreFrames);
-    this.type = 'retval';
   }
 
   captureCC(f: (k: any) => any): common.Capture {

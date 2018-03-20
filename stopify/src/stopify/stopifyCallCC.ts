@@ -8,7 +8,6 @@ import { timeSlow } from '../generic';
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: callcc.CompilerOpts = state.opts;
-    (<any>opts).useReturn = true;
     const insertSuspend = state.opts.debug ? suspendStep : suspendStop;
 
     path.stop();

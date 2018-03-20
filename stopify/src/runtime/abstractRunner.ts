@@ -1,5 +1,5 @@
 import { RuntimeOpts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
+import { Runtime } from 'stopify-continuations/dist/src/types';
 import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './elapsedTimeEstimator';
 

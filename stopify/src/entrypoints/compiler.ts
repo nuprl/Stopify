@@ -3,7 +3,7 @@
  * this entrypoint can compile programs in the browser.
  */
 import { CompilerOpts, RuntimeOpts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
+import { Runtime } from 'stopify-continuations/dist/src/types';
 import { AbstractRunner } from '../runtime/abstractRunner';
 import { compile } from '../compiler/compiler';
 import { checkAndFillCompilerOpts } from 'stopify-continuations/dist/src/compiler/check-compiler-opts';

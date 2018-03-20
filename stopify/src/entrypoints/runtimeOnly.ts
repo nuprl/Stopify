@@ -4,7 +4,7 @@
  * To run the compiler in the browser, see compiler.ts.
  */
 import { RuntimeOpts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/runtime/abstractRuntime';
+import { Runtime } from 'stopify-continuations/dist/src/types';
 import { AbstractRunner } from '../runtime/abstractRunner';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
 // We need to provide these for stopify-continuations

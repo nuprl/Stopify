@@ -345,6 +345,19 @@ const jumper = {
       bh.and(isNormalMode, path.node.test));
   },
 
+  LabeledStatement: {
+    exit(path: NodePath<Labeled<t.LabeledStatement>>): void {
+      if (isFlat(path)) {
+        return;
+      }
+
+      path.replaceWith(bh.sIf(bh.or(isNormalMode,
+        bh.and(isRestoringMode, labelsIncludeTarget(getLabels(path.node)))),
+        path.node));
+      path.skip();
+    }
+  },
+
   IfStatement: {
     exit(path: NodePath<Labeled<t.IfStatement>>): void {
       if ((<any>path.node).isTransformed || isFlat(path)) {

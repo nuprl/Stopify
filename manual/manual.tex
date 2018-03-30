@@ -611,6 +611,13 @@ suppress all of them (\cref{prompt-complete}).
   instead of \texttt{reservoir}. In our experiments, \texttt{velocity} performs
   better and has negligible overhead.
 
+  \item Added the \lstinline|.stackSize| and \lstinline|.restoreFrames|
+  runtime options, which allow Stopify to simulate an arbitrarily deep stack.
+
+  \item Fixed a bug where programs that used \lstinline|return| or
+  \lstinline|throw| in the \lstinline|default:| case of a \lstinline|switch|
+  statement would not resume correctly.
+
 \end{enumerate}
 
 \section{Stopify 0.1.0}

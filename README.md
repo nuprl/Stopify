@@ -31,7 +31,7 @@ Scala. Some of these are available on the Stopify demo page
 ([www.stopify.org](http://www.stopify.org)) and the rest are coming soon.
 
 To learn how to use Stopify in your own project, see the 
-[Stopify Manual](http://www.stopify.org/manual.html).
+[Stopify Manual](https://stopify.readthedocs.io/en/latest).
 
 For a technical overview of Stopify, see our PLDI 2018 paper
 [Putting in All the Stops: Execution Control for JavaScript](https://arxiv.org/abs/1802.02974).

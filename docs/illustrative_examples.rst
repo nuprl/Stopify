@@ -10,7 +10,7 @@ A Blocking ``sleep`` Function
 The browser does not have a blocking ``sleep`` function.  However, we can use
 ``window.setTimeout`` and Stopify to simulate a blocking ``sleep`` operation:
 
-::
+.. code-block:: javascript
 
   function sleep(duration) {
     asyncRun.pauseImmediate(() => {
@@ -19,27 +19,26 @@ The browser does not have a blocking ``sleep`` function.  However, we can use
   }
 
 In the code above, ``asyncRun`` is an instance of ``AsyncRun``
-(REF). Note that this function should be stopified itself and needs
-to be declared as an external. REF shows a complete example
-of a page that uses ``sleep``.
+(:ref:`asyncrun`). Note that this function should be stopified itself and needs
+to be declared as an external. A complete example of a page that uses ``sleep``
+is shown below.
 
-\begin{figure}
-\lstinputlisting{examples/sleep.html}
-\caption{This program runs forever and prints a period each second.}
-\label{sleep-complete}
-\end{figure}
+.. literalinclude:: examples/sleep.html
+  :language: html
+
+This program runs forever and prints a period each second.
 
 A Blocking ``prompt`` Function
 ==============================
 
-\begin{figure}
-\lstinputlisting{examples/prompt.html}
-\caption{This program prompts the user for two inputs without modal dialog boxes.}
-\label{prompt-complete}
-\end{figure}
+The ``prompt`` and ``alert`` functions that are built-in to browsers are not
+the ideal way to receive input from the user. First, modal dialog boxes are
+unattractive; second, a user can dismiss them; and finally, if a page displays
+too many modal dialog boxes, the browser can give the user to suppress all of
+them.
 
-The ``prompt`` and ``alert`` functions that are built-in to
-browsers are not the ideal way to receive input from the user. First, modal
-dialog boxes are unattractive; second, a user can dismiss them; and finally, if
-a page displays too many modal dialog boxes, the browser can give the user to
-suppress all of them (REF).
+.. literalinclude:: examples/prompt.html
+  :language: html
+
+This program prompts the user for two inputs without modal dialog boxes.
+

@@ -14,7 +14,7 @@ Instructions
 
 1. Install the Stopify executable using NPM (or Yarn):
 
-::
+.. code-block:: bash
 
   npm install -g stopify
 
@@ -22,7 +22,7 @@ Instructions
 
 .. _trivial-periodic:
 
-::
+.. code-block:: javascript
 
   const elt = document.createElement("div");
   document.body.appendChild(elt);
@@ -41,14 +41,14 @@ This program will make any web browser crash.
 
 3. Use the Stopify compiler to stopify the program:
 
-::
+.. code-block:: bash
 
   stopify input.js output.js
 
 4. The Stopify installation includes a copy of the Stopify runtime system
    (``stopify.bundle.js``). Look up the path using the following command:
 
-::
+.. code-block:: bash
 
   stopify-path stopify.bundle.js
 
@@ -56,7 +56,7 @@ This program will make any web browser crash.
    the path produced in the previous step) and then uses the runtime system to
    load the saved file. An example is given below.
 
-::
+.. code-block:: html
 
   <html>
     <body>

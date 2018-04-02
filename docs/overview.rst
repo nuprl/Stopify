@@ -11,7 +11,7 @@ The stopify package includes several components:
 - A runtime system that is bundled for use in the browser. You can get the
   local path of this bundle using the following command:
 
-::
+.. code-block:: bash
 
   stopify-path stopify.bundle.js
 
@@ -20,7 +20,7 @@ The stopify package includes several components:
   the browser is useful if your users have spotty Internet connections. You can
   get the local path of this bundle using the following command:
 
-::
+.. code-block:: bash
 
   stopify-path stopify-full.bundle.js
 
@@ -34,7 +34,7 @@ The Command-Line Compiler
 The Stopify CLI compiler requires the name of the input file and the name of
 the output file. In addition, the compiler has several optional flags:
 
-::
+.. code-block:: bash
 
   stopify [flags] input.js output.js
 
@@ -73,7 +73,7 @@ you may need these features, you will need to set their corresponding flags.
 To load a compiled file in the browser, the Stopify runtime provides the
 following function:
 
-::
+.. code-block:: typescript
 
   stopify.stopify(url: string, opts?: RuntimeOpts): AsyncRun
 
@@ -89,7 +89,7 @@ Runtime Configuration
 The Stopify runtime system takes a dictionary of options with the following
 type:
 
-::
+.. code-block:: typescript
 
   interface RuntimeOpts {
     estimator?: "velocity" | "reservoir" | "exact" | "countdown",
@@ -158,7 +158,7 @@ a value of 500 works well.
 The ``AsyncRun`` Interface
 ==========================
 
-::
+.. code-block:: typescript
 
   interface AsyncRun {
     run(onDone: () => void,
@@ -212,19 +212,19 @@ The file ``stopify-full.bundle.js`` packages the compiler and runtime system
 for use the browser. You can get the local path of this bundle using the
 following command:
 
-::
+.. code-block:: bash
 
   stopify-path stopify-full.bundle.js
 
 This bundle exposes the following function:
 
-::
+.. code-block:: typescript
 
   stopify.stopifyLocally(url: string, copts?: CompileOpts, ropts?: RuntimeOpts): AsyncRun
 
 The optional ``CompilerOpts`` is dictionary with the following type:
 
-::
+.. code-block:: typescript
 
   interface CompilerOpts {
     getters?: boolean,
@@ -298,7 +298,7 @@ Stopify can suspend execution within user-written ``valueOf()`` and
 
 For example, the following program is an infinite loop in JavaScript:
 
-::
+.. code-block:: javascript
 
   var x = { toString: function() { while(true) { } } };
   x + 1;

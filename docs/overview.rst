@@ -40,26 +40,26 @@ the output file. In addition, the compiler has several optional flags:
 
 The optional flags are:
 
-- ``-t`` or ``--transform`` selects the continuation implem,entation to use
-  (REF).
+- ``-t`` or ``--transform`` selects the continuation implementation to use
+  (:ref:`transformation`).
 
-- ``-n`` or ``--new`` selects the encoding for constructors (REF).
+- ``-n`` or ``--new`` selects the encoding for constructors (:ref:`new-method`).
 
 - ``--eval`` or ``--no-eval`` determine if JavaScript's ``eval`` is supported
-  (REF).
+  (:ref:`eval-flag`).
 
-- ``--es`` determines if JavaScript's implicit operations are supported (REF).
+- ``--es`` determines if JavaScript's implicit operations are supported (:ref:`implicit-ops-flag`).
 
 - ``--hofs`` determines if JavaScript's builtin higher-order functions are
-  supported (REF).
+  supported (:ref:`hofs-flag`).
 
 - ``--js-args`` determines how faithfully Stopify should support the
-  ``arguments`` object (REF).
+  ``arguments`` object (:ref:`arguments-flag`).
 
 - ``--getters`` or ``--no-getters`` determine if Stopify should support getters
-  and setters (REF).
+  and setters (:ref:`getters-flag`).
 
-- ``--debug``: should Stopify support single-step debugging (REF).
+- ``--debug``: should Stopify support single-step debugging (:ref:`debug-flag`).
 
 If a flag is not set, Stopify picks a default value that is documented in the
 subsection for each flag. By default, Stopify is *not* completely faithful to
@@ -78,8 +78,10 @@ following function:
   stopify.stopify(url: string, opts?: RuntimeOpts): AsyncRun
 
 Above, ``url`` should be the address of the compiled file (i.e., hosted on your
-web server) and ``url`` is an optional runtime configuration (REF). The result
-of this function is an ``AsyncRun`` object (REF).
+web server) and ``url`` is an optional runtime configuration (:ref:`runtime-config`). The result
+of this function is an ``AsyncRun`` object (:ref:`asyncrun`).
+
+.. _runtime-config:
 
 Runtime Configuration
 =====================
@@ -101,8 +103,11 @@ browser (``yieldInterval``) and the mechanism that it uses to determine elapsed
 time (``estimator``). The last two options can be used to simulate a larger
 stack than what JavaScript natively provides.
 
+.. _estimator:
+
 Time estimator (``.estimator``)
 -------------------------------
+
 By default, Stopify uses the ``velocity`` estimator that samples the current
 time (using ``Date.now()``) and tries to yield every 100 milliseconds.  The
 ``velocity`` estimator dynamically measures the achieved yield interval and
@@ -148,6 +153,7 @@ To maximize performance, ``stackSize`` should be as high as possible and
 of ``stackSize`` depends on the source language and browser. In our experience,
 a value of 500 works well.
 
+.. _asyncrun:
 
 The ``AsyncRun`` Interface
 ==========================
@@ -166,7 +172,7 @@ The ``AsyncRun`` Interface
     continueImmediate(result: any): void;
   }
 
-The ``AsyncRun`` interface (REF) provides methods to run, stop, and control the
+The ``AsyncRun`` interface provides methods to run, stop, and control the
 execution of a stopified program. The interface provides several methods, none
 of which should be used directly by the stopified program. The following
 methods are meant to be used by the driver program that controls execution
@@ -196,7 +202,7 @@ functions to provide simulated blocking interface to the stopified program:
 
 - The ``continueImmediate`` function resumes execution with the provided value.
 
-REF has several examples that use these methods to implement simulated blocking
+:doc:`illustrative_examples` has several examples that use these methods to implement simulated blocking
 operations.
 
 The Online Compiler
@@ -239,6 +245,8 @@ You can configure the Stopify compiler in several ways. Some of these options
 only affect performance, whereas other options affect the sub-language of
 JavaScript that the compiler targets.
 
+.. _transformation:
+
 Transformation (``.captureMethod``)
 -----------------------------------
 
@@ -247,6 +255,8 @@ execution control features. Stopify can represent continuations in several
 ways; the fastest approach depends on the application and the browser. The
 valid options are ``"lazy"``, ``"retval"``, ``"eager"``, and ``"original"``.
 For most cases, we recommend using ``"lazy"``.
+
+.. _new-method:
 
 Constructor Encoding (``.newMethod``)
 -------------------------------------
@@ -262,6 +272,8 @@ dynamic extent of a constructor call.
 
 The fastest approach depends on the browser. We recommend using ``wrapper``.
 
+.. _eval-flag:
+
 Eval Support (``.eval``)
 ------------------------
 
@@ -276,6 +288,7 @@ and dynamically generated ``<script>`` tags.) This allows Stopify to control
 execution in dynamically generated code. Naturally, this requires the online
 compiler.  However, the feature incurs considerable overhead.
 
+.. _implicit-ops-flag:
 
 Implicit Operations (``.es``)
 -----------------------------
@@ -296,6 +309,8 @@ will not be able to detect the the infinite loop. We have found that most
 source language compilers do not rely on implicit operations, thus it is
 usually safe to use ``"sane"``.
 
+.. _arguments-flag:
+
 Fidelity of ``arguments`` (``.jsArgs``)
 ---------------------------------------
 
@@ -313,6 +328,8 @@ two simple special cases that improve performance.
 
 - Use ``"full"`` for full support of JavaScript's ``arguments`` object.
 
+.. _hofs-flag:
+
 Higher Order Functions (``.hofs``)
 ----------------------------------
 
@@ -326,6 +343,8 @@ The ``.hofs`` flag has two possible values:
 - Use ``"fill"`` to have Stopify rewrite programs that use native higher-order
   functions to use polyfills written in JavaScript.
 
+.. _getters-flag:
+
 Getters and Setters (``.getters``)
 ----------------------------------
 
@@ -336,6 +355,8 @@ with Stopify. The ``.getters`` flag has two possible values:
   within getters and setters.
 
 - Use ``false`` if the program does not use getters and setters.
+
+.. _debug-flag:
 
 Single-stepping and Breakpointing (``.debug``)
 ----------------------------------------------

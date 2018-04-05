@@ -1,0 +1,36 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+var program = `
+onTimeout(function() {
+  for (var i = 0; i < 10; i++) { }
+  onTimeout(function() {
+    for (var j = 0; j < 10; j++) { }
+    window.document.title = 'okay';
+  });
+});
+`;
+
+function onTimeout(callback) {
+  window.setTimeout(() => runner.processEvent(callback, () => {}), 0);
+}
+
+var runner = stopify.stopifyLocally(program, {
+  externals: [ 'onTimeout', 'window' ]
+}, {
+  estimator: 'countdown',
+  yieldInterval: 1
+});
+
+runner.run(() => { });
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

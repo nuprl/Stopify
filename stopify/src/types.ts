@@ -1,3 +1,5 @@
+import { Result } from 'stopify-continuations/dist/src/types';
+export { Result };
 export { HandleNew, CaptureMethod, CompilerOpts } from 'stopify-continuations';
 
 export type Stoppable = (isStop: () => boolean,
@@ -34,4 +36,5 @@ export interface AsyncRun {
   step(onStep: (line: number) => void): void;
   pauseImmediate(callback: () => void): void;
   continueImmediate(result: any): void;
+  processEvent(body: () => any, receiver: (x: Result) => void): void;
 }

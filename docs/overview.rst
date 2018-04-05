@@ -160,6 +160,18 @@ The ``AsyncRun`` Interface
 
 .. code-block:: typescript
 
+  interface NormalResult {
+    type: 'normal';
+    value: any;
+  }
+
+  interface ExceptionResult {
+    type: 'exception';
+    value: any;
+  };
+
+  type Result = NormalResult | ExceptionResult;
+
   interface AsyncRun {
     run(onDone: () => void,
         onYield?: () => void,
@@ -170,6 +182,7 @@ The ``AsyncRun`` Interface
     step(onStep: (line: number) => void): void;
     pauseImmediate(callback: () => void): void;
     continueImmediate(result: any): void;
+    processEvent(body: () => any, receiver: (x: Result) => void): void;
   }
 
 The ``AsyncRun`` interface provides methods to run, stop, and control the
@@ -204,6 +217,11 @@ functions to provide simulated blocking interface to the stopified program:
 
 :doc:`illustrative_examples` has several examples that use these methods to implement simulated blocking
 operations.
+
+Finally, the ``processEvent(f, onDone)`` method allows external event-handlers
+to call a stopified function ``f``. Since ``f`` may pause execution and thus
+not return immediately, Stopify passes its result to the ``onDone`` callback,
+which must not be a stopified function.
 
 The Online Compiler
 ===================

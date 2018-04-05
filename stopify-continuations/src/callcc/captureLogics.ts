@@ -31,6 +31,7 @@ const captureLocals = t.identifier('captureLocals');
 const runtime = t.identifier('$__R');
 const runtimeStack = t.memberExpression(runtime, t.identifier('stack'));
 const captureExn = t.memberExpression(types, t.identifier('Capture'));
+export const endTurnExn = t.memberExpression(types, t.identifier('EndTurn'));
 const isNormalMode = t.memberExpression(runtime, t.identifier('mode'));
 const topOfRuntimeStack = t.memberExpression(runtimeStack,
   t.binaryExpression("-", t.memberExpression(runtimeStack, t.identifier("length")), t.numericLiteral(1)), true);

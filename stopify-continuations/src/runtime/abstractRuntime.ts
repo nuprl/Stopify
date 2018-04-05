@@ -1,11 +1,13 @@
 import { unreachable } from '../generic';
 import * as assert from 'assert';
+import { Result } from '../types';
 
 export type RunResult =
   { type: 'normal', value: any } |
   { type: 'exception', value: any } |
   { type: 'capture', stack: Stack, f: (value: any) => any } |
-  { type: 'restore', stack: Stack, savedStack: Stack };
+  { type: 'restore', stack: Stack, savedStack: Stack } |
+  { type: 'end-turn', callback: (onDone: (x: Result) => any) => any };
 
 // The type of continuation frames
 export type KFrame = KFrameTop | KFrameRest;
@@ -32,6 +34,12 @@ export type Mode = boolean;
 // captureCC applies its argument to a function that throws this exception.
 export class Restore {
   constructor(public stack: Stack, public savedStack: Stack) {}
+}
+
+// We throw this exception to end the current turn and continue execution on the
+// next turn.
+export class EndTurn {
+  constructor(public callback: (onDone: (x: Result) => any) => void) { }
 }
 
 // This class is used by all the runtimes to start the stack capturing process.
@@ -92,15 +100,16 @@ export abstract class Runtime {
     this.mode = true;
   }
 
-  private runtime_(thunk: () => any) {
+  private runtime_(thunk: () => any, onDone: (x: Result) => any) {
     this.delimitDepth++;
-    this.runtime(thunk);
+    this.runtime(thunk, onDone);
     this.delimitDepth--;
   }
 
-  resumeFromSuspension(thunk: () => any): any {
+  resumeFromSuspension(thunk: () => any, onDone: (x: Result) => any): any {
     this.isSuspended = false;
-    this.runtime_(thunk);
+
+    this.runtime_(thunk, onDone);
     return this.resume();
   }
 
@@ -108,7 +117,7 @@ export abstract class Runtime {
   // If there are no other processes running, it is invoked immediately.
   delimit(thunk: () => any): any {
     if (this.isSuspended === false) {
-      this.runtime_(thunk);
+      this.runtime_(thunk, (x) => { });
       if (this.delimitDepth === 0) {
         return this.resume();
       }
@@ -142,9 +151,7 @@ export abstract class Runtime {
     };
   }
 
-  // Top level function that runs a given program. Handles capture and restore
-  // events that may be emitted by the program.
-  runtime(body: () => any): any {
+  runtime<T>(body: () => any, onDone: (x: Result) => T): T {
 
     while(true) {
       const result = this.abstractRun(body);
@@ -171,15 +178,15 @@ export abstract class Runtime {
         }
         else if(result.type === 'normal') {
           assert(this.mode, 'execution completed in restore mode');
-          return result.value;
+          return onDone(result);
         }
         else if(result.type === 'exception') {
           assert(this.mode,
             `execution completed in restore mode, error was: ${result.value}`);
-          throw result.value;
+          return onDone(result);
         }
         else {
-          unreachable();
+          return unreachable();
         }
       }
       else if (result.type === 'capture') {
@@ -195,6 +202,9 @@ export abstract class Runtime {
           this.savedStack = result.savedStack;
           return this.stack[this.stack.length - 1].f();
         };
+      }
+      else if (result.type === 'end-turn') {
+        return result.callback(onDone);
       }
       else {
         return unreachable();
@@ -224,4 +234,6 @@ export abstract class Runtime {
    * 'exception': The excution of the body resulted in a userland exception.
    */
   abstract abstractRun(body: () => any): RunResult;
+
+  abstract endTurn(callback: (onDone: (x: Result) => any) => any): never;
 }

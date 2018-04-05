@@ -1,0 +1,81 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+var paused = false;
+var i = 0;
+var program = `
+function F() {
+  onInterval(function() {
+    while (false) { }
+    if (paused) {
+      throw 'should have been paused';
+    }
+    i = i + 1;
+  });
+}
+
+F();
+`;
+
+
+function onInterval(callback) {
+  console.log(`onInterval(...)`);
+  function handler() {
+    runner.processEvent(callback,
+      (result) => {
+      if (result.type === 'exception') {
+        window.clearInterval(intervalID);
+        throw result.value;
+      }
+    });
+  }
+  var intervalID = window.setInterval(handler, 200);
+}
+
+var runner = stopify.stopifyLocally(program, {
+  externals: [ 'onInterval', 'paused', 'i', 'console' ]
+}, {
+  estimator: 'countdown',
+  yieldInterval: 1
+});
+
+runner.run((x) => {
+  console.log('end of main turn');
+});
+
+window.setTimeout(() => {
+  console.log('Starting pause 1 ...');
+  runner.pause(() => {
+    paused = true;
+    console.log('Pause 1 completed. i = ', i);
+    window.setTimeout(() => {
+      console.log('Starting resume 1. i = ', i);
+      paused = false;
+      runner.resume();
+      var iPrev = i;
+      window.setTimeout(() => {
+        console.log('Starting pause 2 ... i = ', i);
+        if (i === iPrev) {
+          throw 'i did not advance';
+        }
+        runner.pause(() => {
+          console.log('Pause 2 completed. i = ', i);
+          // i may not have advanced, which is okay.
+          paused = true;
+          window.document.title = 'okay';
+        });
+      }, 1000);
+    }, 1000);
+  })
+}, 1000);
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

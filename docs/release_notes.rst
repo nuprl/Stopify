@@ -15,6 +15,8 @@ Stopify (working version)
 - Fixed a bug where programs that used ``return`` or ``throw`` in the
   ``default:`` case of a ``switch`` statement would not resume correctly.
 
+- Added the ``processEvent`` function to the Stopify API.
+
 Stopify 0.1.0
 =============
 

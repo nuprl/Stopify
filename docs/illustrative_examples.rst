@@ -42,3 +42,22 @@ them.
 
 This program prompts the user for two inputs without modal dialog boxes.
 
+
+External Events
+===============
+
+.. literalinclude:: examples/clicks.html
+  :language: html
+
+The ``onClick`` function in the code below is an example of an event handler
+that receives a stopified callback named ``callback``. However, ``onClick``
+cannot apply ``callback`` directly. To support suspending execution,
+``callback`` must execute in the context of Stopify's runtime system.
+
+Instead, ``onClick`` invokes Stopify's ``processEvent`` method, passing it a
+thunk that calls ``callback``. If the program is paused, ``processEvent`` queues
+the event until the program is resumed. Therefore, if the user pauses the
+program, clicks several times, and then resumes, several clicks will clicks
+will occur immediately after resumption. It is straightforward to discard
+clicks that occur while paused by testing the ``paused`` variable before
+invoking ``processEvent``.

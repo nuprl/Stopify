@@ -2,8 +2,8 @@
 Release Notes
 =============
 
-Stopify (working version)
-=========================
+Stopify 0.2.0
+=============
 
 - Exposed the ``velocity`` estimator and set it as the default instead of
   ``reservoir``. In our experiments, ``velocity`` performs better and has

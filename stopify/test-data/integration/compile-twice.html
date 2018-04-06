@@ -13,15 +13,19 @@ var runner = stopify.stopifyLocally(program);
 runner.run(() => {
   console.log('.run completed (1)');
   var runner = stopify.stopifyLocally(`while(false) { }`);
-  runner.run(() => {
-    console.log('.run completed (2)');
-    window.document.title = 'okay';
-  });
+  window.setTimeout(() => {
+    runner.run(() => {
+      console.log('.run completed (2)');
+      window.document.title = 'okay';
+    })
+  }, 0);
 });
 
 window.setTimeout(() => {
-  console.log('3 second timeout');
-  window.document.title = "error";
+  if (window.document.title !== 'okay') {
+    console.log('3 second timeout');
+    window.document.title = "error";
+  }
 }, 3000);
 
 window.onerror = function() {

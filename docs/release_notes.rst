@@ -2,6 +2,12 @@
 Release Notes
 =============
 
+Stopify 0.2.1
+=============
+
+- Fixed a bug introduced in release 0.2.0, where ``stopifyLocally`` would fail
+  if run more than once.
+
 Stopify 0.2.0
 =============
 

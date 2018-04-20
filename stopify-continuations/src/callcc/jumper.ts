@@ -12,6 +12,7 @@ import { letExpression } from '../common/helpers';
 import {
   isNormalMode,
   captureExn,
+  endTurnExn,
   captureLocals,
   target,
   restoreNextFrame,
@@ -443,7 +444,8 @@ const jumper = {
       body.body.unshift(t.ifStatement(
         bh.or(
           t.binaryExpression('instanceof', param, captureExn),
-          t.binaryExpression('instanceof', param, restoreExn)),
+          t.binaryExpression('instanceof', param, restoreExn),
+          t.binaryExpression('instanceof', param, endTurnExn)),
         t.throwStatement(param)));
       path.skip();
     }

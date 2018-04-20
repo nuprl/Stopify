@@ -1,5 +1,6 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
+import { Result } from '../types';
 
 export class RetvalRuntime extends common.Runtime {
   constructor(stackSize: number, restoreFrames: number) {
@@ -34,6 +35,10 @@ export class RetvalRuntime extends common.Runtime {
     };
   }
 
+  endTurn(callback: (onDone: (x: Result) => any) => any): never {
+    throw new common.EndTurn(callback);
+  }
+
   abstractRun(body: () => any): common.RunResult {
     try {
       const v = body();
@@ -49,6 +54,9 @@ export class RetvalRuntime extends common.Runtime {
       }
     }
     catch (exn) {
+      if (exn instanceof common.EndTurn) {
+        return { type: 'end-turn', callback: exn.callback };
+      }
       return { type: 'exception', value: exn };
     }
   }

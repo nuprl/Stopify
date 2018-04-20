@@ -47,7 +47,15 @@ export function and(e1: t.Expression, e2: t.Expression) {
 /** Constructs an 'e1 || e2', but simplifies when either sub-expression is
  *  a literal.
  */
-export function or(e1: t.Expression, e2: t.Expression) {
+export function or(...es: t.Expression[]): t.Expression {
+  let r = t.booleanLiteral(false) as t.Expression;
+  for (const e of es) {
+    r = orBin(r, e);
+  }
+  return r;
+}
+
+function orBin(e1: t.Expression, e2: t.Expression) {
   if ((e1.type === 'BooleanLiteral' && e1.value === false)) {
     return e2;
   }

@@ -17,6 +17,9 @@ export interface CompilerOpts {
   externals: string[]
 }
 
+export type Result =
+  { type: 'normal', value: any } |
+  { type: 'exception', value: any }
 
 export interface Runtime {
   // Remaining number of stacks that this runtime can consume.
@@ -30,8 +33,10 @@ export interface Runtime {
   stackSize: number;
   restoreFrames: number;
 
-  resumeFromSuspension(thunk: () => any): void;
+  resumeFromSuspension(thunk: () => any, onDone: (x: Result) => any): void;
   delimit(thunk: () => any): any;
+
+  endTurn(callback: (onDone: (x: Result) => any) => any): never;
 
   // Try to resume the program. If the program has been suspended externally,
   // this does nothing. Otherwise, it runs the next function in the queue.
@@ -39,7 +44,7 @@ export interface Runtime {
 
   // Top level function that runs a given program. Handles capture and restore
   // events that may be emitted by the program.
-  runtime(body: () => any): any;
+  runtime<T>(body: () => any, onDone: (x: Result) => T): T;
 
   // Called when the stack needs to be captured.
   captureCC(f: (k: any) => any): void;

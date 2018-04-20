@@ -1,0 +1,33 @@
+<html>
+<body>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+window.onerror = function() {
+  window.document.title = "error";
+}
+
+const program = `
+  1 + 1;
+`;
+
+const asyncRun = stopify.stopifyLocally(
+  `(function(){ ${program} })()`,
+  { externals: [ ] });
+
+asyncRun.run(() => {
+  // Top-level completed, but this pauses event handlers.
+  asyncRun.pause(() => {
+    console.log('Paused');
+    window.setTimeout(() => {
+      console.log('Resuming ...');
+      asyncRun.resume()
+      if (window.document.title === '') {
+        window.document.title = 'okay';
+      }
+    }, 100);
+  });
+});
+
+</script>
+</body>
+</html>

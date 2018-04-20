@@ -1,5 +1,6 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
+import { Result } from '../types';
 
 export class EagerRuntime extends common.Runtime {
   eagerStack: common.Stack;
@@ -26,6 +27,10 @@ export class EagerRuntime extends common.Runtime {
     };
   }
 
+  endTurn(callback: (onDone: (x: Result) => any) => any): never {
+    throw new common.EndTurn(callback);
+  }
+
   abstractRun(body: () => any): common.RunResult {
     try {
       const v = body();
@@ -38,6 +43,9 @@ export class EagerRuntime extends common.Runtime {
       }
       else if (exn instanceof common.Restore) {
         return { type: 'restore', stack: exn.stack, savedStack: exn.savedStack };
+      }
+      else if (exn instanceof common.EndTurn) {
+        return { type: 'end-turn', callback: exn.callback };
       }
       else {
         return { type: 'exception', value: exn };

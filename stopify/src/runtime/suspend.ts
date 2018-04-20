@@ -1,11 +1,17 @@
 import { setImmediate } from './setImmediate';
 import { ElapsedTimeEstimator } from './elapsedTimeEstimator';
 import * as assert from 'assert';
-import {  Runtime } from 'stopify-continuations/dist/src/types';
+import {  Runtime, Result } from 'stopify-continuations/dist/src/types';
 import { emptyThunk } from '../generic';
 
 export function badResume() {
   throw new Error('program is not paused. (Did you call .resume() twice?)');
+}
+
+export function defaultDone(x: Result) {
+  if (x.type === 'exception') {
+    console.error(x.value);
+  }
 }
 
 /**
@@ -34,16 +40,19 @@ export class RuntimeWithSuspend {
      * Called when execution reaches the end of any stopified module.
      */
     public onEnd = emptyThunk,
-    public continuation = badResume) {
+    public continuation = badResume,
+    public onDone = defaultDone) {
   }
 
   // Resume a suspended program.
   resumeFromCaptured(): any {
     const cont = this.continuation;
+    const onDone = this.onDone;
     // Clear the saved continuation, or invoking .resumeFromCaptured() twice
     // in a row will restart the computation.
     this.continuation = badResume;
-    return this.rts.resumeFromSuspension(cont);
+    this.onDone = defaultDone;
+    return this.rts.resumeFromSuspension(cont, onDone);
   }
 
   /**
@@ -71,7 +80,6 @@ export class RuntimeWithSuspend {
     if (isFinite(this.rts.stackSize) && this.rts.remainingStack <= 0) {
       this.rts.remainingStack = this.rts.stackSize;
       this.rts.isSuspended = true;
-
       return this.rts.captureCC((continuation) => {
         if(this.onYield()) {
           this.rts.isSuspended = false;
@@ -90,13 +98,15 @@ export class RuntimeWithSuspend {
       this.estimator.reset();
       this.rts.isSuspended = true;
       return this.rts.captureCC((continuation) => {
-        this.continuation = continuation;
-
-        if (this.onYield()) {
-          return setImmediate(() => {
-            this.rts.resumeFromSuspension(continuation);
-          });
-        }
+        return this.rts.endTurn((onDone) => {
+          this.continuation = continuation;
+          this.onDone = onDone;
+          if (this.onYield()) {
+            return setImmediate(() => {
+              this.rts.resumeFromSuspension(continuation, onDone);
+            });
+          }
+        });
       });
     }
   }

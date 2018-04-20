@@ -1,4 +1,25 @@
-# Stopify [![Build Status](http://23.20.114.147:5000/buildStatus/icon?job=stopify-build/master)](http://23.20.114.147:5000/blue/organizations/jenkins/stopify-build/activity?branch=master) [![Documentation Status](https://readthedocs.org/projects/stopify/badge/?version=latest)](http://stopify.readthedocs.io/en/latest/?badge=latest)
+=======
+Stopify
+=======
+
+.. figure:: img/logo.png
+
+  ..
+
+    by Samuel Baxter, Arjun Guha, Shriram Krishnamurthi, Rachit Nigam, and Joe Gibbs Politz
+
+Table of Contents
+-----------------
+
+.. toctree::
+  :maxdepth: 2
+  :caption: Stopify User's Manual
+
+  acknowledgements
+  quickstart
+  overview
+  illustrative_examples
+  release_notes
 
 Stopify is a JavaScript-to-JavaScript compiler that makes JavaScript a better
 target language for high-level languages and web-based programming tools.
@@ -25,13 +46,13 @@ unchanged. Stopify will provide the following features:
 
 5. Stopify can simulate blocking operations on the web.
 
-We have tested Stopify with ten languages: (1) C++, (2) Clojure, (3) Dart, (4)
-Java, (5) JavaScript, (6) OCaml, (7) Pyret, (8) Python, (9) Scheme, and (10)
-Scala. Some of these are available on the Stopify demo page
-([www.stopify.org](http://www.stopify.org)) and the rest are coming soon.
+In many cases, it is possible to "blindly" use Stopify by applying it to the
+output of your compiler. However, Stopify will compile faster, produce faster
+code, and support more features, if your compiler cooperates with Stopify in
+particular ways. This manual will guide you through using Stopify with your own
+compiler.
 
-To learn how to use Stopify in your own project, see the 
-[Stopify Manual](https://stopify.readthedocs.io/en/latest).
-
-For a technical overview of Stopify, see our PLDI 2018 paper
-[Putting in All the Stops: Execution Control for JavaScript](https://arxiv.org/abs/1802.02974).
+**Warning**
+-----------
+This manual is a work in progress. Many Stopify features remain undocumented. We
+will preserve the interfaces documented here in subsequent releases of Stopify.

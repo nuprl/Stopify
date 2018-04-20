@@ -1,5 +1,6 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
+import { Result } from '../types';
 
 class FudgedContinuationError {
   constructor(public v: any) {}
@@ -44,6 +45,9 @@ export class FudgeRuntime extends common.Runtime {
         this.capturing = false;
         return { type: 'capture', stack: exn.stack, f: exn.f };
       }
+      else if (exn instanceof common.EndTurn) {
+        return { type: 'end-turn', callback: exn.callback };
+      }
       else {
         return { type: 'exception', value: exn };
       }
@@ -53,4 +57,9 @@ export class FudgeRuntime extends common.Runtime {
   handleNew(constr: any, ...args: any[]) {
     return new constr(...args);
   }
+
+  endTurn(callback: (onDone: (x: Result) => any) => any): never {
+    throw new common.EndTurn(callback);
+  }
+
 }

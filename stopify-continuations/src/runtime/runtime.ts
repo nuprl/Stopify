@@ -10,7 +10,6 @@ import { FudgeRuntime } from './fudgeRuntime';
 export * from './sentinels';
 
 export * from './abstractRuntime';
-export * from './abstractRuntime';
 export { knownBuiltIns } from '../common/cannotCapture';
 
 let savedRTS: Runtime | undefined;

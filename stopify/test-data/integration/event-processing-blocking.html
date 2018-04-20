@@ -1,0 +1,55 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+var program = `
+onTimeout(function() {
+  var r = sleep(40) + sleep(2);
+  console.log('Calculated r', r);
+  return r;
+});
+`;
+
+function sleep(n) {
+  runner.pauseImmediate(() => {
+    window.setTimeout(() => {
+      console.log(`sleep continuing with ${n}`);
+      runner.continueImmediate(n);
+    }, 100);
+  });
+}
+
+function onTimeout(callback) {
+  window.setTimeout(() =>
+    runner.processEvent(
+      () => callback(),
+      (result) => {
+        if (result.type === 'normal' && result.value === 42) {
+          window.document.title = 'okay';
+        }
+        else {
+          console.log("ERROR HERE", result);
+          window.document.title = 'error';
+        }
+      }), 
+    0);
+}
+
+var runner = stopify.stopifyLocally(program, {
+  externals: [ 'onTimeout', 'window', 'console', 'sleep' ]
+}, {
+  estimator: 'countdown',
+  yieldInterval: 1
+});
+
+runner.run(() => { });
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

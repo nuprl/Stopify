@@ -15,10 +15,12 @@ Table of Contents
   :maxdepth: 2
   :caption: Stopify User's Manual
 
-  acknowledgements
   quickstart
   overview
+  compiler
+  runtime
   illustrative_examples
+  acknowledgements
   release_notes
 
 Stopify is a JavaScript-to-JavaScript compiler that makes JavaScript a better

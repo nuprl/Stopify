@@ -2,6 +2,11 @@
 Release Notes
 =============
 
+Stopify 0.3.0
+=============
+
+- Cleanup and documented Stopify's Node API.
+
 Stopify 0.2.1
 =============
 

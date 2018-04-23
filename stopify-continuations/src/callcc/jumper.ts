@@ -315,7 +315,6 @@ const jumper = {
       func(path, state);
 
       const declTarget = bh.varDecl(target, t.nullLiteral());
-      (<any>declTarget).lifted = true;
       path.node.body.body.unshift(declTarget);
 
       // Increment the remainingStack at the last line of the function.
@@ -326,7 +325,6 @@ const jumper = {
         path.node.localVars.push(newTarget);
         const declNewTarget = bh.varDecl(newTarget,
           t.memberExpression(t.identifier('new'), t.identifier('target')));
-        (<any>declNewTarget).lifted = true;
 
         path.node.body.body.unshift(declNewTarget);
 

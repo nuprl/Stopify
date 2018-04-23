@@ -15,7 +15,8 @@ const validFlags = [
   'hofs',
   'jsArgs',
   'requireRuntime',
-  'externals'
+  'externals',
+  'sourceMap'
 ];
 
 /**

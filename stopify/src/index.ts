@@ -1,39 +1,25 @@
 import *  as types from './types';
 import * as smc from 'convert-source-map';
-import * as fs from 'fs-extra';
 import { generateLineMapping } from './sourceMaps';
 import { RawSourceMap } from 'source-map';
 import { compile } from './compiler/compiler';
 export { compileFunction, compileEval } from './stopify/compileFunction';
 export { CompilerOpts, RuntimeOpts } from './types';
-export { stopify as precompiledStopify } from './entrypoints/runtimeOnly';
-export { plugin } from './stopify/stopifyCallCC';
+import { checkAndFillCompilerOpts } from 'stopify-continuations/dist/src/compiler/check-compiler-opts';
 
-export function stopifySource(src: string, opts: types.CompilerOpts): Promise<string> {
-  return new Promise((resolve, reject) =>
-    resolve(compile(src, opts)));
-}
+export function stopify(src: string,
+  opts: Partial<types.CompilerOpts>): string {
+  const filledOpts = checkAndFillCompilerOpts(opts);
 
-export function stopify(srcPath: string, opts: types.CompilerOpts): Promise<string> {
-
-  if (opts.captureMethod === 'original') {
-    return fs.readFile(srcPath, 'utf-8').then((prog) => {
-      return `${prog};window.originalOnDone();`;
-    });
+  if (filledOpts.captureMethod === 'original') {
+    return `${src};window.originalOnDone();`;
   }
   else {
-    return fs.readFile(srcPath, 'utf-8')
-      .then(src => {
-        if (!opts.debug) {
-          return { src: src, sourceMap: undefined };
-        }
-        const mapConverter = smc.fromSource(src)!;
-        const map = mapConverter ? mapConverter.toObject() : null;
-        return { src: src, sourceMap: generateLineMapping(<RawSourceMap>map) };
-      })
-      .then(({src, sourceMap}) => {
-        opts.sourceMap = sourceMap;
-        return stopifySource(src, opts);
-      });
+    if (filledOpts.debug) {
+      const mapConverter = smc.fromSource(src)!;
+      filledOpts.sourceMap = generateLineMapping(
+        (mapConverter ? mapConverter.toObject() : null) as RawSourceMap);
+    }
+    return compile(src, filledOpts);
   }
 }

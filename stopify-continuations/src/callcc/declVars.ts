@@ -11,17 +11,10 @@
 import * as t from 'babel-types';
 import * as bh from '../babelHelpers';
 import { NodePath, Visitor } from 'babel-traverse';
-import {tag} from '../common/helpers';
-
-type Lifted<T> = T & {
-  lifted?: boolean
-};
 
 type TopDecl<T> = T & {
   decls?: Array<t.Identifier>
-}
-
-const lifted = <T>(t: T) => tag('lifted', t, true);
+};
 
 const funWithBody = {
   enter (path: NodePath<TopDecl<bh.FunWithBody>>) {
@@ -34,7 +27,7 @@ const funWithBody = {
       path.node.body.body.unshift(decl);
     }
   }
-}
+};
 
 const lift: Visitor = {
   Program: {
@@ -52,10 +45,7 @@ const lift: Visitor = {
   FunctionDeclaration: funWithBody,
   FunctionExpression: funWithBody,
   ObjectMethod: funWithBody,
-  VariableDeclaration(path: NodePath<Lifted<t.VariableDeclaration>>) {
-    if (path.node.lifted) {
-      return;
-    }
+  VariableDeclaration(path: NodePath<t.VariableDeclaration>) {
     const { declarations } = path.node;
     let fParent = path.getFunctionParent().node;
 
@@ -75,7 +65,7 @@ const lift: Visitor = {
         throw new Error(`Destructuring assignment not supported`);
       }
 
-      (fParent as TopDecl<bh.FunWithBody | t.Program>).decls!.push(lifted(decl.id));
+      (fParent as TopDecl<bh.FunWithBody | t.Program>).decls!.push(decl.id);
 
       if (decl.init !== null) {
         // If we call path.insertAfter here, we will add assignments in reverse

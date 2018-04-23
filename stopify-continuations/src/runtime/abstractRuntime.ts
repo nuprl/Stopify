@@ -183,7 +183,7 @@ export abstract class Runtime {
         else if(result.type === 'exception') {
           assert(this.mode,
             `execution completed in restore mode, error was: ${result.value}`);
-          return onDone(result);
+          throw result.value;
         }
         else {
           return unreachable();

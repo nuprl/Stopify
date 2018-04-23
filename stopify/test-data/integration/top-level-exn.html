@@ -1,0 +1,41 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+var bad = false;
+var program = `
+throw 'A';
+bad = true;
+`;
+
+var runner = stopify.stopifyLocally(program, {
+  externals: ['bad']
+ });
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+
+runner.run(() => {
+  if (bad) {
+    window.document.title = 'error';
+    console.error('Code ran after throw');
+  }
+  else {
+    window.document.title = 'okay';
+  }
+});
+
+window.setTimeout(() => {
+  if (window.document.title !== 'okay') {
+    console.log('3 second timeout');
+    window.document.title = "error";
+  }
+}, 3000);
+
+</script>
+
+</body>
+</html>

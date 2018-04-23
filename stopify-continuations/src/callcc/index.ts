@@ -31,5 +31,6 @@ export const reserved = [
   "captureCC",
   'materializedArguments',
   'argsLen',
+  '$top'
 ];
 

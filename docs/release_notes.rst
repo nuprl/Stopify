@@ -7,6 +7,41 @@ Stopify 0.3.0
 
 - Cleanup and documented Stopify's Node API.
 
+- Stopify can now execute blocking operations at the top-level. For example,
+  the following program now works:
+
+  .. code-block:: javascript
+
+    function sleep(duration) {
+      asyncRun.pauseImmediate(() => {
+        window.setTimeout(() => asyncRun.continueImmediate(undefined), duration);
+      });
+    }
+
+    const asyncRun = stopify.stopifyLocally(`sleep(1000)`,
+      { externals: [ 'sleep' ] }));
+    asyncRun.run(() => { });
+
+  In previous versions of Stopify, this program would have raised an error.
+
+  You could effective run this program by wrapping the blocking operation
+  in a thunk, i.e., ``function() { sleep(1000); }()``. However, this
+  wrapping is now unnecessary.
+
+- **Potentially breaking change:** Top-level variables declared within Stopify
+  no longer leak into the global scope of the page. In previous versions
+  of Stopify, top-level variables would leak as follows:
+
+  .. code-block:: javascript
+
+    const asyncRun = stopify.stopifyLocally(`var x = 100;`);
+    asyncRun.run(() => { 
+      console.log(x); // prints 100
+    });
+
+  This is no longer the case. However, this may break programs that relied on
+  this behavior.
+
 Stopify 0.2.1
 =============
 

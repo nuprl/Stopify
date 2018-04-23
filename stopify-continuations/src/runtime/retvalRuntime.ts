@@ -13,7 +13,6 @@ export class RetvalRuntime extends common.Runtime {
   }
 
   makeCont(stack: common.Stack) {
-    const savedDelimitDepth = this.delimitDepth;
     const savedStack = this.savedStack;
     this.savedStack = [];
     for(let i = stack.length - 1; i >= this.restoreFrames; i -= 1) {
@@ -21,11 +20,7 @@ export class RetvalRuntime extends common.Runtime {
     }
 
     return (v: any, err: any=this.noErrorProvided) => {
-
       const throwExn = err !== this.noErrorProvided;
-
-      this.delimitDepth = savedDelimitDepth;
-
       let restarter = () => {
         if (throwExn) { throw err; }
         else { return v; }

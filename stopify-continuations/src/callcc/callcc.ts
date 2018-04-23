@@ -21,7 +21,6 @@ import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
 import jumperizeTry from './jumperizeTry';
-import delimitTopLevel from './delimitTopLevel';
 import * as freeIds from '../common/freeIds';
 import cleanup from './cleanup';
 import * as h from '../common/helpers';
@@ -36,10 +35,20 @@ import * as types from '../types';
 
 const $__R = t.identifier('$__R');
 const $__C = t.identifier('$__C');
+const $top = t.identifier('$top');
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
+
+    const doNotWrap = (<any>opts).renames || opts.compileFunction;
+
+    if (!doNotWrap) {
+      // Wrap the program in 'function $top() { body }'
+      path.node.body = [
+        t.functionDeclaration($top, [], t.blockStatement(path.node.body))
+      ];
+    }
 
     timeSlow('cleanup arguments.callee', () =>
       h.transformFromAst(path, [cleanup]));
@@ -84,10 +93,6 @@ const visitor: Visitor = {
       h.transformFromAst(path, [declVars]));
     // If stopifying eval'd string at runtime, don't delimit statements so that
     // we can suspend through the eval.
-    if (!(<any>opts).renames) {
-      timeSlow('delimit', () =>
-        h.transformFromAst(path, [[delimitTopLevel, opts]]));
-    }
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
     timeSlow('jumper', () =>
@@ -106,6 +111,14 @@ const visitor: Visitor = {
     }
     else {
       toShift = path.node.body;
+    }
+
+    if (!doNotWrap) {
+      // $__R.runtime($top, opts.onDone);
+      path.node.body.push(t.expressionStatement(
+        t.callExpression(
+          t.memberExpression($__R, t.identifier('runtime')),
+          [$top, opts.onDone])));
     }
 
     toShift.unshift(

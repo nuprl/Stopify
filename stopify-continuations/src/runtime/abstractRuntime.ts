@@ -74,19 +74,7 @@ export abstract class Runtime {
     public restoreFrames: number,
 
     // True when the instrumented program is capturing the stack.
-    public capturing: boolean = false,
-
-    /**
-     * Represents the level of nesting in the runtime. Crucially, if the
-     * delimitDepth > 1, then stopify does not allow the program to suspend.
-     */
-    public delimitDepth: number = 0,
-
-    // true if computation is suspended by 'suspend'.
-    public isSuspended: boolean = false,
-
-    // a queue of computations that need to be run.
-    private pendingRuns: (() => void)[] = []) {
+    public capturing: boolean = false) {
 
     if (isFinite(stackSize)) {
       assert(restoreFrames <= stackSize,
@@ -98,46 +86,6 @@ export abstract class Runtime {
     this.stackSize = stackSize;
     this.remainingStack = stackSize;
     this.mode = true;
-  }
-
-  private runtime_(thunk: () => any, onDone: (x: Result) => any) {
-    this.delimitDepth++;
-    this.runtime(thunk, onDone);
-    this.delimitDepth--;
-  }
-
-  resumeFromSuspension(thunk: () => any, onDone: (x: Result) => any): any {
-    this.isSuspended = false;
-
-    this.runtime_(thunk, onDone);
-    return this.resume();
-  }
-
-  // Queues the thunk to be processed by the runtime.
-  // If there are no other processes running, it is invoked immediately.
-  delimit(thunk: () => any): any {
-    if (this.isSuspended === false) {
-      this.runtime_(thunk, (x) => { });
-      if (this.delimitDepth === 0) {
-        return this.resume();
-      }
-    }
-    else {
-      return this.pendingRuns.push(thunk);
-    }
-  }
-
-  // Try to resume the program. If the program has been suspended externally,
-  // this does nothing. Otherwise, it runs the next function in the queue.
-  resume(): any {
-    if (this.isSuspended) {
-      return;
-    }
-    if (this.pendingRuns.length > 0) {
-
-      // TODO(rachit): Don't use shift here. It is slow.
-      return this.delimit(this.pendingRuns.shift()!);
-    }
   }
 
   topK(f: () => any): KFrameTop {

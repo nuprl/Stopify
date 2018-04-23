@@ -40,6 +40,8 @@ function reify(opts: CompilerOpts): t.ObjectExpression {
         break;
       case 'sourceMap':
         break;
+      case 'onDone':
+        break;
       default:
         throw new Error(`Unexpected compiler option '${p}'`);
     }

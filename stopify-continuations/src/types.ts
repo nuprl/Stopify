@@ -1,3 +1,4 @@
+import * as t from 'babel-types';
 export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
 export type HandleNew = 'direct' | 'wrapper';
 
@@ -13,12 +14,13 @@ export interface CompilerOpts {
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
   sourceMap?: any,
-  externals: string[]
+  externals: string[],
+  onDone: t.Expression
 }
 
 export type Result =
   { type: 'normal', value: any } |
-  { type: 'exception', value: any }
+  { type: 'exception', value: any };
 
 export interface Runtime {
   // Remaining number of stacks that this runtime can consume.
@@ -27,13 +29,8 @@ export interface Runtime {
   // Current line number in the source program. Used in `--debug` mode.
   linenum: undefined | number;
 
-  isSuspended: boolean;
-  delimitDepth: number;
   stackSize: number;
   restoreFrames: number;
-
-  resumeFromSuspension(thunk: () => any, onDone: (x: Result) => any): void;
-  delimit(thunk: () => any): any;
 
   endTurn(callback: (onDone: (x: Result) => any) => any): never;
 

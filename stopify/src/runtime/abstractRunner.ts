@@ -72,11 +72,9 @@ export abstract class AbstractRunner implements AsyncRun {
    * Called by the stopfied program.
    */
   onEnd(): void {
-    if (this.continuationsRTS.delimitDepth === 1) {
-      this.eventMode = EventProcessingMode.Waiting;
-      this.onDone();
-      this.processQueuedEvents();
-    }
+    this.eventMode = EventProcessingMode.Waiting;
+    this.onDone();
+    this.processQueuedEvents();
   }
 
   runInit(onDone: () => void,
@@ -103,7 +101,7 @@ export abstract class AbstractRunner implements AsyncRun {
     if (this.eventMode === EventProcessingMode.Waiting) {
       this.suspendRTS.onYield = function() {
         throw new Error('Stopify internal error: onYield invoked during pause+wait');
-      }
+      };
       onPaused(); // onYield will not be invoked
     }
     else {
@@ -184,7 +182,7 @@ export abstract class AbstractRunner implements AsyncRun {
     // the user to be able to hit "step" at this point.
     return this.continuationsRTS.captureCC((k) => {
       return this.continuationsRTS.endTurn(onDone => {
-        this.k = { k, onDone }
+        this.k = { k, onDone };
         callback();
       });
     });

@@ -3,6 +3,7 @@
  */
 
 import { CompilerOpts } from '../types';
+import * as t from 'babel-types';
 
 const validFlags = [
   'compileFunction',
@@ -16,7 +17,8 @@ const validFlags = [
   'jsArgs',
   'requireRuntime',
   'externals',
-  'sourceMap'
+  'sourceMap',
+  'onDone'
 ];
 
 /**
@@ -93,7 +95,8 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
       "process",
       "setTimeout",
       "captureCC"
-    ]
+    ],
+    onDone: t.functionExpression(undefined, [], t.blockStatement([]))
   };
 
   copyProp(opts, value, 'compileFunction',
@@ -133,5 +136,8 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
   copyProp(opts, value, 'externals',
     (x) => x instanceof Array && x.every(y => typeof y === 'string'),
     `.externals must be an array of strings`);
+  copyProp(opts, value, 'onDone',
+    (x) => t.isExpression(x),
+    `.onDone must be an expression (Babylon)`);
   return opts;
 }

@@ -40,7 +40,7 @@
     `;
 
     const runner = stopify.stopifyLocally(
-      `(function(){ ${program} })()`,
+      program,
       { externals: [ 'prompt', 'alert', 'pormpt' ] });
 
     runner.run(() => console.log('program complete'));

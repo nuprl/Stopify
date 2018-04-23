@@ -10,6 +10,16 @@ export const visitor: Visitor = {
     const opts: callcc.CompilerOpts = state.opts;
     const insertSuspend = state.opts.debug ? suspendStep : suspendStop;
 
+    const onDoneBody: t.Statement[] = [];
+    opts.onDone = t.arrowFunctionExpression([], t.blockStatement(onDoneBody));
+    if (!opts.compileFunction) {
+      onDoneBody.push(
+        t.expressionStatement(
+          t.callExpression(
+            t.memberExpression(t.identifier('$S'), t.identifier('onEnd')),
+            [])));
+    }
+
     path.stop();
 
     const filename: string = state.file.opts.filename;
@@ -42,6 +52,7 @@ export const visitor: Visitor = {
     }
     timeSlow('insertSuspend', () =>
       callcc.transformFromAst(path, [[insertSuspend, opts]]));
+
     timeSlow('(control ...) elimination', () =>
       callcc.transformFromAst(path, [[callcc.plugin, opts]]));
 
@@ -75,19 +86,6 @@ export const visitor: Visitor = {
                   t.identifier('stopify'),
                   t.identifier('init')),
                   [t.identifier('$__R')]))]));
-    }
-
-    if (!opts.compileFunction) {
-      path.node.body.push(
-        t.expressionStatement(
-          t.callExpression(
-            t.memberExpression(t.identifier('$__R'), t.identifier('delimit')),
-            [t.functionExpression(undefined, [],
-              t.blockStatement([
-                t.expressionStatement(
-                  t.callExpression(
-                    t.memberExpression(t.identifier('$S'), t.identifier('onEnd')),
-                    []))]))])));
     }
   }
 };

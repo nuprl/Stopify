@@ -1,0 +1,48 @@
+<html>
+<body>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+function sleep(duration) {
+  asyncRun.pauseImmediate(() => {
+    window.setTimeout(() => asyncRun.continueImmediate(undefined), duration);
+  });
+}
+
+const program = `
+  sleep(50);
+`;
+
+const asyncRun = stopify.stopifyLocally(
+  program,
+  { externals: [ 'sleep' ] });
+
+var i = 0;
+asyncRun.run(() => {
+  i = i + 1;
+  // Give the code time to call onDone again.
+  window.setTimeout(() => {
+    if (i !== 1) {
+      throw `onDone called ${i} times (expected 1 call)`;
+    }
+    window.document.title = 'okay';
+  }, 1000);
+});
+if (i > 0) {
+  throw 'onDone called immediately, not after sleep';
+}
+
+window.setTimeout(() => {
+  if (window.document.title !== 'okay') {
+    console.error('three second timeout');
+    window.document.title = 'error';
+  }
+}, 3000);
+
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+
+</script>
+</body>
+</html>

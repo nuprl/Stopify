@@ -72,7 +72,8 @@ const defaultOpts: callcc.CompilerOpts = {
     hofs: 'builtin',
     jsArgs: 'simple',
     requireRuntime: false,
-    externals: defaultExternals
+    externals: defaultExternals,
+    onDone: t.arrowFunctionExpression([], t.blockStatement([]))
 };
 
 export function compileFunction(

@@ -11,13 +11,14 @@ export const visitor: Visitor = {
     const insertSuspend = state.opts.debug ? suspendStep : suspendStop;
 
     const onDoneBody: t.Statement[] = [];
-    opts.onDone = t.arrowFunctionExpression([], t.blockStatement(onDoneBody));
+    opts.onDone = t.arrowFunctionExpression([t.identifier('result')],
+      t.blockStatement(onDoneBody));
     if (!opts.compileFunction) {
       onDoneBody.push(
         t.expressionStatement(
           t.callExpression(
             t.memberExpression(t.identifier('$S'), t.identifier('onEnd')),
-            [])));
+            [t.identifier('result')])));
     }
 
     path.stop();

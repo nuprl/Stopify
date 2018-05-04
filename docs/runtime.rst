@@ -98,7 +98,7 @@ The ``AsyncRun`` Interface
   type Result = NormalResult | ExceptionResult;
 
   interface AsyncRun {
-    run(onDone: () => void,
+    run(onDone: (err?: any) => void,
         onYield?: () => void,
         onBreakpoint?: (line: number) => void): void;
     pause(onPaused: (line?: number) => void): void;

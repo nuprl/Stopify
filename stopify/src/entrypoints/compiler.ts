@@ -20,7 +20,7 @@ class Runner extends AbstractRunner {
     super(opts);
    }
 
-  run(onDone: () => void,
+  run(onDone: (error?: any) => void,
     onYield?: () => void,
     onBreakpoint?: (line: number) => void) {
     this.runInit(onDone, onYield, onBreakpoint);

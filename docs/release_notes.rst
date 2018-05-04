@@ -2,6 +2,13 @@
 Release Notes
 =============
 
+Stopify 0.4.0
+=============
+
+- Added an optional error argument to the ``onDone`` callback of ``AsyncRun``.
+  When the argument is present, it indicates that the stopified program threw
+  an exception with the given error.
+
 Stopify 0.3.0
 =============
 

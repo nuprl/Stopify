@@ -1,17 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const compilerBase = 'https://us-central1-arjun-umass.cloudfunctions.net/stopify';
+function getCompilerBase() {
+    switch (window.location.hostname) {
+        case 'localhost':
+            return 'http://localhost:8080';
+        case 'www.stopify.org':
+            return 'https://us-central1-arjun-umass.cloudfunctions.net/stopify';
+        default:
+            throw new Error(`missing case for current host`);
+    }
+}
+const compilerBase = getCompilerBase();
 exports.langs = {
     'Dart': {
         stepSupported: false,
         compileUrl: `${compilerBase}/dart2js`,
         aceMode: 'dart',
-        defaultCode: `
-void main() {
+        defaultCode: `void main() {
   for (int i = 0; i < 10000000; i++) {
     print('hello \${i + 1}');
   }
-}`
+}
+`
     },
     'Clojure': {
         stepSupported: true,
@@ -42,7 +52,8 @@ int sum(int n) {
 
 int main() {
   printf("Sum: %d\\n", sum(1000000));
-}`
+}
+`
     },
     'OCaml': {
         stepSupported: false,
@@ -51,7 +62,8 @@ int main() {
 print_endline ("acc: " ^ (string_of_int acc));
 if n = 0 then acc else tail_sum (n - 1) (acc + n)
 
-let _ = tail_sum 1000000 1`,
+let _ = tail_sum 1000000 1
+`,
         compileUrl: `${compilerBase}/bucklescript`
     },
     'Scala': {
@@ -69,7 +81,8 @@ object Runner extends JSApp {
   def main(): Unit = {
     println(sum(1000000, 0))
   }
-}`,
+}
+`,
         compileUrl: `${compilerBase}/scalajs`
     },
     Python: {
@@ -84,8 +97,22 @@ object Runner extends JSApp {
         print i
 
 run_forever()
-    `,
+`,
         compileUrl: `${compilerBase}/pyjs`
+    },
+    JavaScript: {
+        stepSupported: true,
+        aceMode: 'js',
+        defaultCode: `function fib(n) {
+  console.log('fib(' + n + ')');
+  if (n === 0 || n === 1) {
+    return 1;
+  }
+  return fib(n-1) + fib(n-2);
+}
+fib(15);
+`,
+        compileUrl: `${compilerBase}/js`
     }
 };
 //# sourceMappingURL=languages.js.map

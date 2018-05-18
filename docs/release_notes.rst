@@ -2,6 +2,12 @@
 Release Notes
 =============
 
+Stopify 0.4.1
+=============
+
+- Setting the ``debug`` flag would crash the online compiler. This is now
+  fixed.
+
 Stopify 0.4.0
 =============
 

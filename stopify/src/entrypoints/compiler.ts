@@ -11,6 +11,9 @@ import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
 // We need to provide these for stopify-continuations
 export * from 'stopify-continuations/dist/src/runtime/runtime';
 export * from 'stopify-continuations/dist/src/runtime/implicitApps';
+import * as ConvertSourceMap from 'convert-source-map';
+import { generateLineMapping } from '../sourceMaps';
+import { RawSourceMap } from 'source-map';
 
 let runner : Runner | undefined;
 
@@ -49,6 +52,14 @@ export function stopifyLocally(src: string,
   optionalRuntimeOpts?: Partial<RuntimeOpts>): AsyncRun {
   const compileOpts = checkAndFillCompilerOpts(optionalCompileOpts || {});
   const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
+
+  // Copied from ../index.ts
+  if (compileOpts.debug) {
+    const mapConverter = ConvertSourceMap.fromSource(src)!;
+    compileOpts.sourceMap = generateLineMapping(
+      (mapConverter ? mapConverter.toObject() : null) as RawSourceMap);
+  }
+
   runner = new Runner(compile(src, compileOpts), runtimeOpts);
   return runner;
 }

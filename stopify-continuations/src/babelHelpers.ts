@@ -1,5 +1,6 @@
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
+import { CompilerOpts } from './types';
 
 export type FunWithBody = t.FunctionDeclaration | t.FunctionExpression |
   t.ObjectMethod;
@@ -171,4 +172,44 @@ export function varDecl(x: string | t.Identifier,
   init?: t.Expression): t.VariableDeclaration {
   const id = typeof x === 'string' ? t.identifier(x) : x;
   return t.variableDeclaration('var', [t.variableDeclarator(id, init)]);
+}
+
+function enclosingFunctionName(path: NodePath<t.Node>): string | undefined {
+  const f = path.getFunctionParent().node; // TODO(arjun): this traversal is slow
+  if (t.isFunctionExpression(f)) {
+    return (f as any).originalName || f.id.name;
+  }
+  else if (t.isFunctionDeclaration(f)) {
+    return f.id.name;
+  }
+  else {
+    return;
+  }
+}
+
+export function locationString(path: NodePath<t.Node>,
+  opts: CompilerOpts): string {
+
+  // TODO(arjun): we use stopify-continuations on parts of the runtime
+  if (opts.sourceMap === undefined) {
+    return "";
+  }
+
+  const loc = t.isAssignmentExpression(path.node) ? path.node.right.loc :
+    path.node.loc;
+  // TODO(arjun): handleNew triggers this case
+  let line: string = "";
+  if (loc === undefined) {
+    line = "";
+  }
+  else {
+    line = opts.sourceMap.getLine(loc.start.line, loc.start.column);
+  }
+  const fName = enclosingFunctionName(path);
+  if (fName !== undefined) {
+    return `${fName} (line ${line})`;
+  }
+  else {
+    return `line ${line}`;
+  }
 }

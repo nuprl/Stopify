@@ -223,6 +223,9 @@ const visitor = {
           fastFreshId.fresh('fun'),
           path.node.params,
           path.node.body);
+        if (path.node.id.name !== undefined) {
+          (<any>fun).originalName = path.node.id.name;
+        }
 
         (<any>fun).mark = (<any>path.node).mark;
         (<any>fun).boxedArgs = (<any>path.node).boxedArgs;

@@ -47,7 +47,7 @@ type Labeled<T> = T & {
   appType?: AppType;
   __usesArgs__?: boolean
 };
-type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
+type CaptureFun = (path: NodePath<t.AssignmentExpression>, opts: CompilerOpts) => void;
 
 interface State {
   opts: CompilerOpts
@@ -288,8 +288,8 @@ const jumper = {
           // Do Nothing
         }
         else {
-          captureLogics[s.opts.captureMethod](
-            <any>path.get('expression'));
+          const captureFun = captureLogics[s.opts.captureMethod];
+          captureFun(<any>path.get('expression'), s.opts);
           return;
         }
       }
@@ -439,6 +439,8 @@ const jumper = {
         return;
       }
       const { param, body } = path.node;
+      // TODO(arjun): If the user catches an exception, we need to clear the
+      // saved stack trace.
       body.body.unshift(t.ifStatement(
         bh.or(
           t.binaryExpression('instanceof', param, captureExn),
@@ -464,6 +466,16 @@ const jumper = {
             t.memberExpression(runtime, t.identifier('capturing'))),
             path.node.finalizer)]);
       }
+    }
+  },
+  ThrowStatement: {
+    exit(path: NodePath<t.ThrowStatement>, s: State) {
+      path.insertBefore(
+      t.expressionStatement(
+        t.callExpression(
+          t.memberExpression(runtime, t.identifier('pushTrace')),
+          [t.stringLiteral(bh.locationString(path, s.opts))])));
+
     }
   }
 };

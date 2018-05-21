@@ -54,11 +54,9 @@ export function stopifyLocally(src: string,
   const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
 
   // Copied from ../index.ts
-  if (compileOpts.debug) {
-    const mapConverter = ConvertSourceMap.fromSource(src)!;
-    compileOpts.sourceMap = generateLineMapping(
-      (mapConverter ? mapConverter.toObject() : null) as RawSourceMap);
-  }
+  const mapConverter = ConvertSourceMap.fromSource(src)!;
+  compileOpts.sourceMap = generateLineMapping(
+    (mapConverter ? mapConverter.toObject() : null) as RawSourceMap);
 
   runner = new Runner(compile(src, compileOpts), runtimeOpts);
   return runner;

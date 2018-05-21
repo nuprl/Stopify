@@ -1,0 +1,36 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+var program = `
+function F() {
+    throw new Error('omg');
+}
+
+function G() {
+  F();
+  }
+
+  G();
+`;
+
+var runner = stopify.stopifyLocally(program);
+runner.run((err) => {
+  console.log(err.stack.join("\n"));
+  if (err === 5) {
+    window.document.title = 'okay';
+  }
+  else {
+    window.document.title = "error";
+  }
+});
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

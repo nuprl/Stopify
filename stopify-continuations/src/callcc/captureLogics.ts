@@ -3,6 +3,7 @@ import * as t from 'babel-types';
 import * as bh from '../babelHelpers';
 import * as fastFreshId from '../fastFreshId';
 import { getLabels } from './label';
+import { CompilerOpts } from '.';
 
 export {
   isNormalMode,
@@ -60,7 +61,8 @@ const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
  *      throw exn;
  *    }
  */
-function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
+function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>,
+  opts: CompilerOpts): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const exn = fastFreshId.fresh('exn');
 
@@ -94,6 +96,12 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
               t.memberExpression(exnStack, t.identifier('length')),
               t.numericLiteral(1)), true)
           ])),
+        ]),
+        t.blockStatement([
+          t.expressionStatement(
+            t.callExpression(
+              t.memberExpression(runtime, t.identifier('pushTrace')),
+              [t.stringLiteral(bh.locationString(path, opts))]))
         ])),
       t.throwStatement(exn)
     ])));
@@ -120,7 +128,8 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  *      eagerStack.shift();
  *    }
  */
-function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
+function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>,
+  opts: CompilerOpts): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const nodeStmt = t.expressionStatement(path.node);
 
@@ -177,7 +186,8 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
  *      if (mode === 'normal') x = ret;
  *    }
  */
-function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>): void {
+function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>,
+  opts: CompilerOpts): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
   const left: any = path.node.left;
 

@@ -77,7 +77,7 @@ export abstract class AbstractRunner implements AsyncRun {
       this.onDone();
     }
     else {
-      this.onDone(result.value);
+      this.onDone({ value: result.value, stack: result.stack });
     }
     this.processQueuedEvents();
   }

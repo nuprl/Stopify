@@ -15,11 +15,9 @@ export function stopify(src: string,
     return `${src};window.originalOnDone();`;
   }
   else {
-    if (filledOpts.debug) {
-      const mapConverter = smc.fromSource(src)!;
-      filledOpts.sourceMap = generateLineMapping(
-        (mapConverter ? mapConverter.toObject() : null) as RawSourceMap);
-    }
+    const mapConverter = smc.fromSource(src)!;
+    filledOpts.sourceMap = generateLineMapping(
+      (mapConverter ? mapConverter.toObject() : null) as RawSourceMap);
     return compile(src, filledOpts);
   }
 }

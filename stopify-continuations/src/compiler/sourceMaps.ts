@@ -1,7 +1,17 @@
 import { SourceMapConsumer, RawSourceMap } from 'source-map';
+import { LineMapping } from '../types';
+import * as convertSourceMap from 'convert-source-map';
 
-export class LineMapping {
+class LineMappingImpl implements LineMapping {
   constructor(public getLine: (line: number, column: number) => number | null) {}
+}
+
+export function getSourceMap(jsCode: string): RawSourceMap | undefined {
+  const mapConverter = convertSourceMap.fromSource(jsCode);
+  if (mapConverter === null) {
+    return;
+  }
+  return mapConverter.toObject() as RawSourceMap;
 }
 
 /**
@@ -10,8 +20,9 @@ export class LineMapping {
 export function generateLineMapping(map: RawSourceMap | undefined): LineMapping {
   if (map) {
     const sourceMap = new SourceMapConsumer(map);
-    return new LineMapping((line: number, column: number) => {
+    return new LineMappingImpl((line: number, column: number) => {
       const mapping = sourceMap.originalPositionFor({ line, column });
+      // NOTE(arjun): Ignoring these directories is a bit of a hack
       if (mapping.source === null ||
         mapping.source.includes('node_modules/') ||
         mapping.source.includes('https://') ||
@@ -26,7 +37,6 @@ export function generateLineMapping(map: RawSourceMap | undefined): LineMapping 
       }
     });
   } else {
-    console.log('// No mapping found, using one-to-one map');
-    return new LineMapping((line: number, column: number) => line);
+    return new LineMappingImpl((line: number, column: number) => line);
   }
 }

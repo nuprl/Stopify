@@ -3,7 +3,9 @@
  */
 
 import { CompilerOpts } from '../types';
+import * as sourceMaps from './sourceMaps';
 import * as t from 'babel-types';
+import { RawSourceMap } from 'source-map';
 
 const validFlags = [
   'compileFunction',
@@ -61,7 +63,9 @@ export function transformProp(dst: any, src: any, key: string,
  *
  * @param value a 'CompilerOpts' with elided fields
  */
-export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): CompilerOpts {
+export function checkAndFillCompilerOpts(
+  value: Partial<CompilerOpts>,
+  sourceMap?: RawSourceMap): CompilerOpts {
   if (value === null || typeof value !== 'object') {
     throw new Error(`expected an object for CompilerOpts`);
   }
@@ -83,7 +87,7 @@ export function checkAndFillCompilerOpts(value: Partial<CompilerOpts>): Compiler
     hofs: 'builtin',
     jsArgs: 'simple',
     requireRuntime: false,
-    sourceMap: undefined,
+    sourceMap: sourceMaps.generateLineMapping(sourceMap),
     externals: [
       "Object",
       "exports",

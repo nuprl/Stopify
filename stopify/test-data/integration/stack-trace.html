@@ -1,0 +1,43 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+var program = `function F() {
+    throw 'omg';
+}
+
+function G() {
+  F();
+}
+
+G();
+`;
+
+var runner = stopify.stopifyLocally(program);
+runner.run((err) => {
+  console.log(err.stack.join("\n"));
+
+  // NOTE(arjun): This test case may appear over-specified. But, I believe that
+  // for a trivial example like this, we should be able to write the stack
+  // trace we want.
+  if (err.value.toString().indexOf('omg') >= 0 &&
+      err.stack.length === 3 &&
+      err.stack[0] === 'Line 2: in F' &&
+      err.stack[1] === 'Line 6: in G' &&
+      err.stack[2] === 'Line 9') {
+    window.document.title = 'okay';
+  }
+  else {
+    window.document.title = "error";
+  }
+});
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

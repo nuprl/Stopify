@@ -1,5 +1,6 @@
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
+import { CompilerOpts } from './types';
 
 export type FunWithBody = t.FunctionDeclaration | t.FunctionExpression |
   t.ObjectMethod;
@@ -171,4 +172,47 @@ export function varDecl(x: string | t.Identifier,
   init?: t.Expression): t.VariableDeclaration {
   const id = typeof x === 'string' ? t.identifier(x) : x;
   return t.variableDeclaration('var', [t.variableDeclarator(id, init)]);
+}
+
+export function enclosingFunctionName(path: NodePath<t.Node>): string | undefined {
+  // TODO(arjun): this traversal is slow
+  const f = path.getFunctionParent().node;
+  if (t.isFunctionExpression(f)) {
+    return (f as any).originalName || f.id.name;
+  }
+  else if (t.isFunctionDeclaration(f)) {
+    return f.id.name;
+  }
+  else {
+    return;
+  }
+}
+
+/**
+ * Produces a string that represents the source location of `path`.
+ *
+ * @param functionName the name of the enclosing function
+ * @param path the path of the node whose location to return
+ * @param opts compiler options, for the source map
+ */
+export function locationString(functionName: string | undefined,
+  path: NodePath<t.Node>,
+  opts: CompilerOpts): string {
+
+  let result: string[] = [];
+
+  const loc = t.isAssignmentExpression(path.node) ? path.node.right.loc :
+    path.node.loc;
+  // TODO(arjun): handleNew triggers this case
+  if (loc !== undefined) {
+    const line = opts.sourceMap.getLine(loc.start.line, loc.start.column);
+    if (typeof line === 'number') {
+      result.push(`Line ${line}`);
+    }
+  }
+
+  if (typeof functionName === 'string') {
+    result.push(`: in ${functionName}`);
+  }
+  return result.join('');
 }

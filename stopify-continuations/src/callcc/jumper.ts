@@ -47,7 +47,8 @@ type Labeled<T> = T & {
   appType?: AppType;
   __usesArgs__?: boolean
 };
-type CaptureFun = (path: NodePath<t.AssignmentExpression>) => void;
+type CaptureFun = (path: NodePath<t.AssignmentExpression>,
+  opts: CompilerOpts) => void;
 
 interface State {
   opts: CompilerOpts
@@ -93,6 +94,11 @@ function paramToArg(node: t.LVal) {
   }
 }
 
+function runtimeInvoke(method: string,
+  ...args: t.Expression[]): t.CallExpression {
+  return t.callExpression(
+    t.memberExpression(runtime, t.identifier(method)), args);
+}
 
 function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const jsArgs = state.opts.jsArgs;
@@ -288,8 +294,8 @@ const jumper = {
           // Do Nothing
         }
         else {
-          captureLogics[s.opts.captureMethod](
-            <any>path.get('expression'));
+          const captureFun = captureLogics[s.opts.captureMethod];
+          captureFun(<any>path.get('expression'), s.opts);
           return;
         }
       }
@@ -444,7 +450,8 @@ const jumper = {
           t.binaryExpression('instanceof', param, captureExn),
           t.binaryExpression('instanceof', param, restoreExn),
           t.binaryExpression('instanceof', param, endTurnExn)),
-        t.throwStatement(param)));
+        t.throwStatement(param)),
+        t.expressionStatement(runtimeInvoke('clearTrace')));
       path.skip();
     }
   },
@@ -465,7 +472,17 @@ const jumper = {
             path.node.finalizer)]);
       }
     }
-  }
+  },
+  ThrowStatement: {
+    // Transform `throw e;` to `runtime.pushTrace(l); throw e;`, where `l`
+    // is a string that represents the original source location of this
+    // statement. We assume that the `throw e` occurs in a block.
+    exit(path: NodePath<t.ThrowStatement>, s: State) {
+      const fName = bh.enclosingFunctionName(path);
+      const l = t.stringLiteral(bh.locationString(fName, path, s.opts));
+      path.insertBefore(t.expressionStatement(runtimeInvoke('pushTrace', l)));
+    }
+    }
 };
 
 export function plugin(): any {

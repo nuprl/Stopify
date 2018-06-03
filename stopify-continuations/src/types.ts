@@ -24,7 +24,7 @@ export interface CompilerOpts {
 
 export type Result =
   { type: 'normal', value: any } |
-  { type: 'exception', value: any };
+  { type: 'exception', value: any, stack: string[] };
 
 export interface Runtime {
   // Remaining number of stacks that this runtime can consume.

@@ -18,7 +18,7 @@ interface EventHandler {
 export abstract class AbstractRunner implements AsyncRun {
   private continuationsRTS: Runtime;
   private suspendRTS: RuntimeWithSuspend;
-  private onDone: (error?: any) => void = function() { };
+  private onDone: (result: Result) => void = (result) => { };
   private onYield: () => void = function() {  };
   private onBreakpoint: (line: number) => void = function() { };
   private breakpoints: number[] = [];
@@ -73,12 +73,7 @@ export abstract class AbstractRunner implements AsyncRun {
    */
   onEnd(result: Result): void {
     this.eventMode = EventProcessingMode.Waiting;
-    if (result.type === 'normal') {
-      this.onDone();
-    }
-    else {
-      this.onDone(result.value);
-    }
+    this.onDone(result);
     this.processQueuedEvents();
   }
 

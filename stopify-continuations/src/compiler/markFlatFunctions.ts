@@ -63,7 +63,8 @@ const visitor = {
   Program: prog,
   CallExpression: callExpr,
   NewExpression: callExpr,
-  "Loop": callExpr
+  Loop: callExpr,
+  ThrowStatement: callExpr
 };
 
 export function markFlatFunctions() {

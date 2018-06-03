@@ -1,0 +1,56 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+
+
+function onTimeout(callback) {
+  window.setTimeout(() =>
+    runner.processEvent(
+      () => callback(),
+      (result) => {
+        console.info(result);
+        if (result.type === 'exception' &&
+            result.value === 'omg' &&
+            result.stack.length === 3) {
+          window.document.title = 'okay';
+        }
+        else {
+          window.document.title = 'error';
+        }
+      }),
+    0);
+}
+
+var program = `function F() {
+    throw 'omg';
+}
+
+function G() {
+  x = F();
+  return x + 1;
+}
+
+onTimeout(function() {
+  G();
+})
+`;
+
+var runner = stopify.stopifyLocally(program, { externals: [ 'onTimeout' ] });
+runner.run((err) => {
+  console.info('top-level', err);
+  if (err.type !== 'normal') {
+    console.error('unexpected top-level error');
+    window.document.title = "error";
+  }
+});
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

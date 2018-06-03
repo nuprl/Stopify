@@ -224,6 +224,12 @@ const visitor = {
           path.node.params,
           path.node.body);
 
+        // This is necessary to get the right function name in
+        // a stack trace.
+        if (path.node.id.name !== undefined) {
+          (<any>fun).originalName = path.node.id.name;
+        }
+
         (<any>fun).mark = (<any>path.node).mark;
         (<any>fun).boxedArgs = (<any>path.node).boxedArgs;
 

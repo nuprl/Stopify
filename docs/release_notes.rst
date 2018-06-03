@@ -2,6 +2,13 @@
 Release Notes
 =============
 
+Stopify 0.5.0
+=============
+
+- **Breaking change:** The ``onDone`` callback passed to ``AsyncRun.run``
+  always receives a ``Result``. In previous releases, it would receive an
+  optional error argument.
+
 Stopify 0.4.1
 =============
 

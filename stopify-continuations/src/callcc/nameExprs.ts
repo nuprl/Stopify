@@ -15,6 +15,7 @@ const names: Visitor = {
   FunctionExpression: function (path: NodePath<t.FunctionExpression>): void {
     if (path.node.id === undefined || path.node.id === null) {
       path.node.id = fastFreshId.fresh('funExpr');
+      (path.node as any).originalName = '(anonymous function)';
     }
     /*
      * This deals with the following kind of code:

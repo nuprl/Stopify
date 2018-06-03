@@ -66,6 +66,12 @@ export abstract class Runtime {
 
   noErrorProvided: any = {};
 
+  /**
+   *  A saved stack trace. This field is only used when a user-mode exception
+   * is thrown.
+   */
+  public stackTrace: string[] = [];
+
   constructor(
     // Maximum number of frames that can be consumed by this runtime.
     public stackSize: number,
@@ -131,7 +137,9 @@ export abstract class Runtime {
         else if(result.type === 'exception') {
           assert(this.mode,
             `execution completed in restore mode, error was: ${result.value}`);
-          return onDone(result);
+          const stack = this.stackTrace;
+          this.stackTrace = [];
+          return onDone({ type: 'exception', value: result.value, stack });
         }
         else {
           return unreachable();
@@ -158,6 +166,16 @@ export abstract class Runtime {
         return unreachable();
       }
     }
+  }
+
+  /** jumper.ts and captureLogics.ts insert calls to pushTrace. */
+  public pushTrace(line: string) {
+    this.stackTrace.push(line);
+  }
+
+  /** jumper.ts inserts calls to clearTrace. */
+  public clearTrace() {
+    this.stackTrace = [];
   }
 
   // Called when the stack needs to be captured.

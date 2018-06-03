@@ -8,12 +8,10 @@ import { AbstractRunner } from '../runtime/abstractRunner';
 import { compile } from '../compiler/compiler';
 import { checkAndFillCompilerOpts } from 'stopify-continuations/dist/src/compiler/check-compiler-opts';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
+import { getSourceMap } from 'stopify-continuations';
 // We need to provide these for stopify-continuations
 export * from 'stopify-continuations/dist/src/runtime/runtime';
 export * from 'stopify-continuations/dist/src/runtime/implicitApps';
-import * as ConvertSourceMap from 'convert-source-map';
-import { generateLineMapping } from '../sourceMaps';
-import { RawSourceMap } from 'source-map';
 
 let runner : Runner | undefined;
 
@@ -50,15 +48,9 @@ export function init(rts: Runtime): AsyncRun {
 export function stopifyLocally(src: string,
   optionalCompileOpts?: Partial<CompilerOpts>,
   optionalRuntimeOpts?: Partial<RuntimeOpts>): AsyncRun {
-  const compileOpts = checkAndFillCompilerOpts(optionalCompileOpts || {});
+  const compileOpts = checkAndFillCompilerOpts(optionalCompileOpts || {},
+    getSourceMap(src));
   const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
-
-  // Copied from ../index.ts
-  if (compileOpts.debug) {
-    const mapConverter = ConvertSourceMap.fromSource(src)!;
-    compileOpts.sourceMap = generateLineMapping(
-      (mapConverter ? mapConverter.toObject() : null) as RawSourceMap);
-  }
 
   runner = new Runner(compile(src, compileOpts), runtimeOpts);
   return runner;

@@ -2,6 +2,10 @@ import * as t from 'babel-types';
 export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
 export type HandleNew = 'direct' | 'wrapper';
 
+export interface LineMapping {
+  getLine: (line: number, column: number) => number | null
+}
+
 export interface CompilerOpts {
   compileFunction?: boolean,
   getters: boolean,
@@ -13,7 +17,7 @@ export interface CompilerOpts {
   hofs: 'builtin' | 'fill',
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
-  sourceMap?: any,
+  sourceMap: LineMapping;
   externals: string[],
   onDone: t.Expression
 }

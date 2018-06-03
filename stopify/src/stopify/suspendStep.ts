@@ -1,14 +1,10 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {LineMapping} from '../sourceMaps';
-
-interface Options {
-  sourceMap: LineMapping;
-}
+import { CompilerOpts } from 'stopify-continuations';
 
 const insertSuspend: Visitor = {
   BlockStatement: {
-    exit(path: NodePath<t.BlockStatement>, s: { opts: Options }): void {
+    exit(path: NodePath<t.BlockStatement>, s: { opts: CompilerOpts }): void {
       const { body } = path.node;
       const newBody: t.Statement[] = [];
       (<any>newBody).suspends = false;

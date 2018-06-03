@@ -12,6 +12,7 @@ export { unreachable } from '../generic';
 export { default as cleanupGlobals } from '../common/cleanupGlobals';
 export { default as hygiene } from '../common/hygiene';
 export { transformFromAst } from '../common/helpers';
+export { getSourceMap } from '../compiler/sourceMaps';
 export const reserved = [
   ...knowns,
   "name",

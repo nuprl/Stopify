@@ -73,7 +73,8 @@ const defaultOpts: callcc.CompilerOpts = {
     jsArgs: 'simple',
     requireRuntime: false,
     externals: defaultExternals,
-    onDone: t.arrowFunctionExpression([], t.blockStatement([]))
+    onDone: t.arrowFunctionExpression([], t.blockStatement([])),
+    sourceMap: { getLine: (x, y) => null }
 };
 
 export function compileFunction(

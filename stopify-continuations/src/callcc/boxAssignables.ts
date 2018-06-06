@@ -219,10 +219,10 @@ const visitor = {
       // signature.
       if (vars.includes(path.node.id.name) &&
           !(state.opts.compileFunction && (<any>path.node).topFunction)) {
-        const fun = t.functionExpression(
-          fastFreshId.fresh('fun'),
-          path.node.params,
-          path.node.body);
+        // Force generator annotations to normal functions - we don't support
+        // them. Preserve `async` annotations.
+        const fun = t.functionExpression(fastFreshId.fresh('fun'),
+          path.node.params, path.node.body, false, path.node.async);
 
         // This is necessary to get the right function name in
         // a stack trace.

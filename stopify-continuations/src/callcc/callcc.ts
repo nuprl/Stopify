@@ -20,6 +20,7 @@ import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
+import jumperizeAsync from './jumperizeAsync';
 import jumperizeTry from './jumperizeTry';
 import * as freeIds from '../common/freeIds';
 import cleanup from './cleanup';
@@ -84,7 +85,7 @@ const visitor: Visitor = {
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
         [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, jumperizeTry,
-         nameExprs]));
+          nameExprs]));
     timeSlow('desugar logical', () =>
       h.transformFromAst(path, [desugarLogical]));
     timeSlow('ANF', () =>
@@ -97,6 +98,8 @@ const visitor: Visitor = {
       h.transformFromAst(path, [label.plugin]));
     timeSlow('jumper', () =>
       h.transformFromAst(path, [[jumper.plugin, opts]]));
+    timeSlow('jumperizeAsync', () =>
+      h.transformFromAst(path, [jumperizeAsync]));
 
     path.stop();
 

@@ -35,11 +35,15 @@ const knowns = ['Object',
   'TextDecoder'
 ];
 
-function cannotCapture(node: t.CallExpression | t.NewExpression): boolean  {
-  if (node.callee.type !== 'Identifier') {
+function cannotCapture(node: t.CallExpression | t.NewExpression | t.AwaitExpression): boolean  {
+  if (t.isAwaitExpression(node)) {
     return false;
+  } else {
+    if (node.callee.type !== 'Identifier') {
+      return false;
+    }
+    return knowns.includes(node.callee.name);
   }
-  return knowns.includes(node.callee.name);
 }
 
 const unavailableOnNode = [ 'TextDecoder' ];

@@ -4,9 +4,11 @@ import {letExpression} from '../common/helpers';
 
 const functionDecl: Visitor = {
   FunctionDeclaration: function (path: NodePath<t.FunctionDeclaration>) {
-    const { id, params, body } = path.node;
+    const { id, params, body, async } = path.node;
     path.replaceWith(letExpression(id,
-      t.functionExpression(undefined, params, body), 'var'));
+      // Force generator annotations to normal functions - we don't support them
+      // Preserve `async` annotations.
+      t.functionExpression(undefined, params, body, false, async), 'var'));
   }
 };
 

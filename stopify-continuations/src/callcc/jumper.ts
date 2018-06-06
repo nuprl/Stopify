@@ -61,6 +61,66 @@ const captureLogics: { [key: string]: CaptureFun } = {
   fudge: capture.fudgeCaptureLogic,
 };
 
+/**
+ *          if ($__R.mode) {
+ *            v00 = await app13;
+ *
+ *            if (v00 instanceof $__T.Capture) {
+ *              v00.stack.push({
+ *                kind: 'rest',
+ *                f: restoreNextFrame,
+ *                index: 666,
+ *              });
+ *              captureLocals(v00.stack[v00.stack.length - 1]);
+ *              throw v00;
+ *            }
+ *          } else if (target === 666) {
+ *            console.log('restored');
+ *            v00 = await $__R.stack[$__R.stack.length - 1].f();
+ *          }
+ */
+function captureAwait(path: NodePath<t.AssignmentExpression>): void {
+  const applyLabel = t.numericLiteral(getLabels(path.node)[0]);
+  const resultStack = t.memberExpression(<t.Identifier>path.node.left,
+    t.identifier('stack'));
+
+  const nodeStatement = t.expressionStatement(path.node);
+  const restoreNode = t.assignmentExpression(path.node.operator,
+    path.node.left, t.awaitExpression(stackFrameCall));
+
+  function awaitBlock(s: t.ExpressionStatement): t.BlockStatement {
+    return t.blockStatement([
+      s,
+      t.ifStatement(t.binaryExpression('instanceof',
+        <t.Identifier>path.node.left, captureExn),
+        t.blockStatement([
+          t.expressionStatement(t.callExpression(t.memberExpression(resultStack, t.identifier('push')), [
+            t.objectExpression([
+              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+              t.objectProperty(t.identifier('f'), restoreNextFrame),
+              t.objectProperty(t.identifier('index'), applyLabel),
+            ]),
+          ])),
+          t.expressionStatement(t.callExpression(captureLocals, [
+            t.memberExpression(resultStack, t.binaryExpression('-',
+              t.memberExpression(resultStack, t.identifier('length')),
+              t.numericLiteral(1)), true)
+          ])),
+          t.throwStatement(<t.Identifier>path.node.left),
+        ])),
+    ]);
+  };
+
+  const ifStatement = t.ifStatement(isNormalMode,
+    awaitBlock(nodeStatement),
+    t.ifStatement(t.binaryExpression('===', target, applyLabel),
+      awaitBlock(t.expressionStatement(restoreNode))));
+
+  const statementParent = path.getStatementParent();
+  statementParent.replaceWith(ifStatement);
+  statementParent.skip();
+}
+
 function isFlat(path: NodePath<t.Node>): boolean {
   return (<any>path.getFunctionParent().node).mark === 'Flat';
 }
@@ -292,6 +352,11 @@ const jumper = {
         if (path.node.expression.type === 'AssignmentExpression' &&
           (<any>path.node.expression.right).mark === 'Flat') {
           // Do Nothing
+        }
+        else if (t.isAssignmentExpression(path.node.expression) &&
+          t.isAwaitExpression(path.node.expression.right)) {
+          captureAwait(<any>path.get('expression'));
+          return;
         }
         else {
           const captureFun = captureLogics[s.opts.captureMethod];

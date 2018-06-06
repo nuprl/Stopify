@@ -54,7 +54,7 @@ function getAppType(node: t.Statement | null): AppType {
 
 // true if the expression is a function call that may capture a continuation
 function isUnsafeCall(e: t.Expression): boolean {
-  return ((t.isCallExpression(e) || t.isNewExpression(e)) && !cannotCapture(e));
+  return ((t.isCallExpression(e) || t.isNewExpression(e) || t.isAwaitExpression(e)) && !cannotCapture(e));
 }
 
 const visitFunction = {
@@ -124,6 +124,11 @@ const visitor: Visitor = {
         path.node.appType = AppType.Tail;
       }
     }
+  },
+
+  AwaitExpression: function (this: VisitorState,
+    path: NodePath<Labeled<t.AwaitExpression>>): void {
+    path.node.labels = [this.counter++];
   },
 
   CallExpression: function (this: VisitorState,

@@ -42,6 +42,36 @@ export class LazyRuntime extends common.Runtime {
     throw new common.EndTurn(callback);
   }
 
+  /**
+   * Support for suspensions in `async/await` programming model.
+   *
+   * Programs using `async/await` sequentially chain `Promise` resolutions,
+   * i.e. there is no coordination between resolving multiple promises "in
+   * parallel". Top-level calls to async functions return a Promise containing
+   * either the resolved value or a stack capture exception. Since this
+   * exception cannot escape the Promise, top-level async function calls must
+   * be wrapped by the `promise` function to asynchronously restore the
+   * continuation contained within the promise, and continue the promise chain.
+   */
+  promise(p: Promise<any>): any {
+    return p.then(v =>
+      this.runtime(() => {
+        if (v instanceof common.Capture ||
+          v instanceof common.Restore ||
+          v instanceof common.EndTurn) {
+          throw v;
+        } else {
+          return v;
+        }
+      }, v => {
+        if (v.type === 'normal' && v.value instanceof Promise) {
+          return this.promise(v.value);
+        } else {
+          return v;
+        }
+      }));
+  }
+
   abstractRun(body: () => any): common.RunResult {
     try {
       const v = body();

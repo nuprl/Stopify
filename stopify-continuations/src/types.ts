@@ -30,9 +30,6 @@ export interface Runtime {
   // Remaining number of stacks that this runtime can consume.
   remainingStack: number;
 
-  // Current line number in the source program. Used in `--debug` mode.
-  linenum: undefined | number;
-
   stackSize: number;
   restoreFrames: number;
 

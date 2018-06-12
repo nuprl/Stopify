@@ -61,9 +61,6 @@ export abstract class Runtime {
   // represents 'restore' mode.
   mode: Mode;
 
-  // Current line number in the source program. Used in `--debug` mode.
-  linenum: undefined | number;
-
   noErrorProvided: any = {};
 
   /**

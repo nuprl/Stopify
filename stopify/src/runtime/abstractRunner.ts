@@ -30,7 +30,7 @@ export abstract class AbstractRunner implements AsyncRun {
   constructor(private opts: RuntimeOpts) { }
 
   private mayYieldRunning(): boolean {
-    const n = this.suspendRTS.rts.linenum;
+    const n = this.suspendRTS.linenum;
     if (typeof n !== 'number') {
       return false;
     }
@@ -39,7 +39,7 @@ export abstract class AbstractRunner implements AsyncRun {
 
   private onYieldRunning() {
     if (this.mayYieldRunning()) {
-      this.onBreakpoint(this.suspendRTS.rts.linenum!);
+      this.onBreakpoint(this.suspendRTS.linenum!);
       return false;
     }
     else {
@@ -110,7 +110,7 @@ export abstract class AbstractRunner implements AsyncRun {
           this.onYield();
           return true;
         };
-        const maybeLine = this.suspendRTS.rts.linenum;
+        const maybeLine = this.suspendRTS.linenum;
         if (typeof maybeLine === 'number') {
           onPaused(maybeLine);
         }
@@ -156,10 +156,10 @@ export abstract class AbstractRunner implements AsyncRun {
     }
 
     // NOTE: The program remains Paused while stepping.
-    const currentLine = this.suspendRTS.rts.linenum;
+    const currentLine = this.suspendRTS.linenum;
     // Yield control if the line number changes.
     const mayYield = () => {
-      const n = this.suspendRTS.rts.linenum;
+      const n = this.suspendRTS.linenum;
       if (typeof n !== 'number') {
         return false;
       }

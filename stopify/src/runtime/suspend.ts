@@ -39,7 +39,11 @@ export class RuntimeWithSuspend {
      */
     public onEnd = function(): void { this.estimator.cancel(); },
     public continuation = badResume,
-    public onDone = defaultDone) {
+    public onDone = defaultDone,
+    /**
+     * Current line number in the source program. Used in `--debug` mode.
+     */
+    public linenum: undefined | number = undefined) {
   }
 
   // Resume a suspended program.

@@ -20,6 +20,7 @@ export {
 
 export {
   lazyCaptureLogic,
+  lazyGlobalCatch,
   eagerCaptureLogic,
   retvalCaptureLogic,
   fudgeCaptureLogic
@@ -117,6 +118,27 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>,
   stmtParent.replaceWith(tryStmt);
   stmtParent.skip();
 }
+
+function lazyGlobalCatch(path: NodePath<t.AssignmentExpression>,
+  opts: CompilerOpts): void {
+    const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
+
+    const nodeStmt = t.expressionStatement(path.node);
+
+    const restoreNode = t.assignmentExpression(path.node.operator,
+      path.node.left, stackFrameCall);
+    const ifStmt = t.ifStatement(isNormalMode,
+      t.blockStatement([
+        t.expressionStatement(t.assignmentExpression('=', target, applyLbl)),
+        nodeStmt
+      ]),
+      t.ifStatement(t.binaryExpression('===', target, applyLbl),
+        t.expressionStatement(restoreNode)));
+
+    const stmtParent = path.getStatementParent();
+    stmtParent.replaceWith(ifStmt);
+    stmtParent.skip();
+  }
 
 /**
  * Eagerly build the stack, pushing frames before applications and popping on

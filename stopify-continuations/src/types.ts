@@ -1,5 +1,5 @@
 import * as t from 'babel-types';
-export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'original' | 'fudge';
+export type CaptureMethod = 'eager' | 'retval' | 'lazy' | 'catch' | 'original' | 'fudge';
 export type HandleNew = 'direct' | 'wrapper';
 
 export interface LineMapping {

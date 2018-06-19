@@ -9,6 +9,7 @@ describe('call/cc', function() {
     f.callCCTest(filename, `-t lazy --new direct ${copts}`, ropts);
     f.callCCTest(filename, `-t retval ${copts}`, ropts);
     f.callCCTest(filename, `-t eager ${copts}`, ropts);
+    f.callCCTest(filename, `-t catch ${copts}`, ropts);
 
     // Deep stacks tests.
     f.callCCTest(filename, `-t lazy ${copts}`,

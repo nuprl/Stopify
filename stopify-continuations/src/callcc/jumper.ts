@@ -56,6 +56,7 @@ interface State {
 
 const captureLogics: { [key: string]: CaptureFun } = {
   lazy: capture.lazyCaptureLogic,
+  catch: capture.lazyGlobalCatch,
   eager: capture.eagerCaptureLogic,
   retval: capture.retvalCaptureLogic,
   fudge: capture.fudgeCaptureLogic,
@@ -220,14 +221,55 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const defineArgsLen = letExpression(argsLen,
     t.memberExpression(t.identifier('arguments'), t.identifier('length')));
 
-  path.node.body.body.unshift(...[
-    ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
-    decreaseStackSize,
-    ifRestoring,
-    captureClosure,
-    reenterClosure,
-    ...mayMatArgs
-  ]);
+
+  if (state.opts.captureMethod === 'catch') {
+    const exn = fresh('exn');
+    const exnStack = t.memberExpression(exn, t.identifier('stack'));
+
+    const captureObject: t.ObjectProperty[] = [
+      t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+      t.objectProperty(t.identifier('f'), restoreNextFrame),
+      t.objectProperty(t.identifier('index'), target),
+      t.objectProperty(t.identifier('locals'), t.arrayExpression(restoreLocals)),
+    ];
+
+    if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
+      // ... save a copy of the parameters in the stack frame and
+      captureObject.push(t.objectProperty(t.identifier('formals'),
+        t.arrayExpression((<any>path.node.params))));
+      // ... save the length of the arguments array in the stack frame
+      captureObject.push(t.objectProperty(argsLen, argsLen));
+    }
+
+    const wrapBody = t.tryStatement(path.node.body,
+      t.catchClause(exn, t.blockStatement([
+        t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
+          t.blockStatement([
+            t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
+              t.objectExpression(captureObject),
+            ])),
+          ])),
+        t.throwStatement(exn)
+      ])));
+
+    path.node.body = t.blockStatement([
+      ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
+      decreaseStackSize,
+      ifRestoring,
+      reenterClosure,
+      ...mayMatArgs,
+      wrapBody,
+    ]);
+  } else {
+    path.node.body.body.unshift(...[
+      ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
+      decreaseStackSize,
+      ifRestoring,
+      captureClosure,
+      reenterClosure,
+      ...mayMatArgs
+    ]);
+  }
   path.skip();
 }
 
@@ -345,9 +387,8 @@ const jumper = {
 
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {
     // No need for isFlat check here. Loops make functions not flat.
-    path.node.test = bh.or(
-      bh.and(isRestoringMode, labelsIncludeTarget(getLabels(path.node))),
-      bh.and(isNormalMode, path.node.test));
+    path.node.test = bh.or(bh.and(isNormalMode, path.node.test),
+      bh.and(isRestoringMode, labelsIncludeTarget(getLabels(path.node))));
   },
 
   LabeledStatement: {

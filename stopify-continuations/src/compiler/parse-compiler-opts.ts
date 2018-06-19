@@ -7,7 +7,7 @@ import { checkAndFillCompilerOpts } from './check-compiler-opts';
 
 commander.option(
   '-t, --transform <transformation>',
-  'either eager, lazy, retval, original, or fudge');
+  'either eager, lazy, catch, retval, original, or fudge');
 
 commander.option(
   '-n, --new <new>',

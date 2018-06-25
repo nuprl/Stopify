@@ -123,12 +123,6 @@ function exitFunction(self: State, path: NodePath<t.FunctionExpression>) {
 }
 
 const visitor = {
-  Scope: {
-    exit(this: State, path: NodePath<t.Scopable>): void {
-      (<any>path.node).boxed = this.vars;
-    },
-  },
-
   Program(this: State, path: NodePath<t.Program>, state: any) {
     this.parentPathStack = [];
     this.varsStack = [];
@@ -149,8 +143,12 @@ const visitor = {
     // Note that boxing top-level assignables is also wrong: a boxed top-level
     // variable X is also available as window.X, which we would not know to
     // unbox.
-    this.vars = Set<string>();
+    /**this.vars = Set<string>();**/
+    const vars = Object.keys(path.scope.bindings)
+      .filter(x => shouldBox(x, path));
+    this.vars = Set.of(...vars);
   },
+
   ReferencedIdentifier(this: State, path: NodePath<t.Identifier>) {
     path.skip();
     // NOTE(arjun): The parent type tests are because labels are
@@ -188,6 +186,7 @@ const visitor = {
       }
     }
   },
+
   BindingIdentifier(this: State, path: NodePath<t.Identifier>) {
     path.skip();
     if (path.parent.type !== "AssignmentExpression") {
@@ -198,6 +197,7 @@ const visitor = {
       path.replaceWith(unbox(path.node));
     }
   },
+
   FunctionExpression: {
     enter(this: State, path: NodePath<t.FunctionExpression>, state: any) {
       enterFunction(this, path);
@@ -206,6 +206,7 @@ const visitor = {
       exitFunction(this, path);
     }
   },
+
   FunctionDeclaration: {
     enter(this: State, path: NodePath<t.FunctionExpression>, state: any) {
       enterFunction(this, path);
@@ -236,10 +237,15 @@ const visitor = {
         // Little hack necessary to preserve annotation left by freeIds and singleVarDecls
         (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
         (<any>fun).renames = (<any>path.node).renames;
-        const stmt = t.variableDeclaration("var",
-          [t.variableDeclarator(path.node.id, box(fun))]);
-        liftStatement(parentPath, path, stmt);
-        path.remove();
+
+        const decl = t.variableDeclaration('var',
+          [t.variableDeclarator(path.node.id, box(bh.eUndefined))]);
+        const stmt = t.expressionStatement(t.assignmentExpression('=',
+          unbox(path.node.id) as t.LVal, fun));
+        //liftStatement(parentPath, path, stmt);
+        liftStatement(parentPath, path, decl);
+        path.replaceWith(stmt);
+        path.skip();
       }
     }
   }

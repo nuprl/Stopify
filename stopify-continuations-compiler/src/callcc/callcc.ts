@@ -113,11 +113,13 @@ const visitor: Visitor = {
     path.stop();
 
     if (!doNotWrap) {
+      const id = opts.onDone.id;
       // $__R.runtime($top, opts.onDone);
+      path.node.body.push(h.letExpression(id, opts.onDone as t.Expression, 'const'));
       path.node.body.push(t.expressionStatement(
         t.callExpression(
           t.memberExpression($__R, t.identifier('runtime')),
-          [$top, opts.onDone])));
+          [$top, id])));
     }
 
 

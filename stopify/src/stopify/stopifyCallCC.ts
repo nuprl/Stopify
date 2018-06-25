@@ -13,7 +13,7 @@ export const visitor: Visitor = {
     const insertSuspend = state.opts.debug ? suspendStep : suspendStop;
 
     const onDoneBody: t.Statement[] = [];
-    opts.onDone = t.arrowFunctionExpression([t.identifier('result')],
+    opts.onDone = t.functionExpression(t.identifier('onDone'), [t.identifier('result')],
       t.blockStatement(onDoneBody));
     if (!opts.compileFunction) {
       onDoneBody.push(

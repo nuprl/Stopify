@@ -5,7 +5,7 @@ import * as tmp from 'tmp';
 import { spawnSync } from 'child_process';
 
 describe("tesing programs that use call/cc", () => {
-  const files = glob.sync("test-data/*.js", {});
+  const files = glob.sync("test-data/test.js", {});
   for (const src of files) {
     for (const method of [ 'lazy', 'eager', 'retval' ]) {
       if (method === 'retval') {

@@ -19,6 +19,17 @@ function withinTryBlock(path: NodePath<t.Node>): boolean {
 }
 
 const anfVisitor : Visitor = {
+  FunctionExpression: function (path: NodePath<t.FunctionExpression>): void {
+    const p = path.parent;
+    if (!t.isVariableDeclarator(p)) {
+      // Name the function application if it is not already named.
+      const name = fastFreshId.fresh('fun');
+      const bind = h.letExpression(name, path.node);
+      path.getStatementParent().insertBefore(bind);
+      path.replaceWith(name);
+    }
+  },
+
   ArrayExpression: function (path: NodePath<t.ArrayExpression>): void {
     if (!h.containsCall(path)) {
       return;

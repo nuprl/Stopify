@@ -25,6 +25,7 @@ import { fresh } from '../fastFreshId';
 
 export { restoreNextFrame };
 
+const frame = t.identifier('$frame');
 const newTarget = t.identifier('newTarget');
 const captureFrameId = t.identifier('frame');
 const matArgs = t.identifier('materializedArguments');
@@ -61,8 +62,6 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   }
   const restoreLocals = path.node.localVars;
 
-  const frame = t.identifier('$frame');
-
   // We instrument every non-flat function to begin with a *restore block*
   // that is able to re-construct a saved stack frame. When the function is
   // invoked in restore mode, its formal arguments are already restored.
@@ -71,7 +70,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   // performance. So, we avoid restoring it faithfully unless we are explicitly
   // configured to do so.
   const restoreBlock = [
-    t.variableDeclaration('const', [t.variableDeclarator(frame, popRuntimeStack)]),
+    t.expressionStatement(t.assignmentExpression('=', frame, popRuntimeStack)),
     t.expressionStatement(t.assignmentExpression('=', target,
       t.memberExpression(frame, t.identifier('index')))),
   ];
@@ -135,15 +134,18 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     : t.callExpression(t.memberExpression(path.node.id, t.identifier('call')),
       [t.thisExpression(), ...<any>path.node.params.map(paramToArg)]);
   const reenterClosure = t.variableDeclaration('var', [
-    t.variableDeclarator(restoreNextFrame, t.arrowFunctionExpression([],
-      t.blockStatement(path.node.__usesArgs__ ?
-        [t.expressionStatement(t.assignmentExpression('=',
-          t.memberExpression(matArgs, t.identifier('length')),
-          t.memberExpression(
-            t.callExpression(t.memberExpression(t.identifier('Object'),
-            t.identifier('keys')), [matArgs]), t.identifier('length')))),
-          t.returnStatement(reenterExpr)] :
-        [t.returnStatement(reenterExpr)])))]);
+    t.variableDeclarator(restoreNextFrame,
+      t.functionExpression(restoreNextFrame, [],
+        t.blockStatement(path.node.__usesArgs__ ?
+          [t.expressionStatement(t.assignmentExpression('=',
+            t.memberExpression(matArgs, t.identifier('length')),
+            t.memberExpression(
+              t.callExpression(t.memberExpression(t.identifier('Object'),
+                t.identifier('keys')), [matArgs]), t.identifier('length')))),
+            t.returnStatement(reenterExpr)] :
+          [t.returnStatement(reenterExpr)])))]);
+  const bindReenter = t.expressionStatement(t.callExpression(t.memberExpression(
+    restoreNextFrame, t.identifier('bind')), [t.thisExpression()]));
 
   const mayMatArgs: t.Statement[] = [];
   if (path.node.__usesArgs__) {
@@ -454,7 +456,8 @@ const jumper = {
       instrumentFunction(path, state);
 
       const declTarget = bh.varDecl(target, t.nullLiteral());
-      path.node.body.body.unshift(declTarget);
+      const declFrame = bh.varDecl(frame, t.nullLiteral());
+      path.node.body.body.unshift(declTarget, declFrame);
 
       // Increment the remainingStack at the last line of the function.
       // This does not break tail calls.

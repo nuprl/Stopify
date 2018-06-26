@@ -88,7 +88,7 @@ const visitor: Visitor = {
     timeSlow('desugar logical', () =>
       h.transformFromAst(path, [desugarLogical]));
     timeSlow('ANF', () =>
-      h.transformFromAst(path, [anf]));
+      h.transformFromAst(path, [[anf, opts]]));
     timeSlow('declVars', () =>
       h.transformFromAst(path, [declVars]));
     // If stopifying eval'd string at runtime, don't delimit statements so that

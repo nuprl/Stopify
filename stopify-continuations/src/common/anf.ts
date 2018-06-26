@@ -11,6 +11,7 @@ import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as h from './helpers';
 import * as fastFreshId from '../fastFreshId';
+import { CompilerOpts } from '../types';
 
 function withinTryBlock(path: NodePath<t.Node>): boolean {
   const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
@@ -62,13 +63,14 @@ const anfVisitor : Visitor = {
       }
     },
 
-    exit(path: NodePath<t.CallExpression>): void {
+    exit(path: NodePath<t.CallExpression>, state: { opts: CompilerOpts }): void {
       if ((<any>path.node.callee).mark === 'Flat') {
         return;
       }
       const p = path.parent;
       if ((!t.isVariableDeclarator(p) &&
-        !t.isReturnStatement(p)) ||
+        (!t.isReturnStatement(p) ||
+          state.opts.captureMethod === 'catch')) ||
         (t.isReturnStatement(p) &&
           withinTryBlock(path))) {
         // Name the function application if it is not already named or

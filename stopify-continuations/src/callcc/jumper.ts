@@ -226,11 +226,16 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     const exn = fresh('exn');
     const exnStack = t.memberExpression(exn, t.identifier('stack'));
 
+    const params = path.node.__usesArgs__
+      ?  matArgs :  t.arrayExpression(path.node.params.map(paramToArg));
+
     const captureObject: t.ObjectProperty[] = [
       t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-      t.objectProperty(t.identifier('f'), restoreNextFrame),
+      t.objectProperty(t.identifier('f'), path.node.id),
       t.objectProperty(t.identifier('index'), target),
       t.objectProperty(t.identifier('locals'), t.arrayExpression(restoreLocals)),
+      t.objectProperty(t.identifier('params'), params),
+      t.objectProperty(t.identifier('this'), t.thisExpression()),
     ];
 
     if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
@@ -256,7 +261,6 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
       ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
       decreaseStackSize,
       ifRestoring,
-      reenterClosure,
       ...mayMatArgs,
       wrapBody,
     ]);

@@ -8,7 +8,7 @@
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import * as assert from 'assert';
-import { NodePath } from 'babel-traverse';
+import { Binding, NodePath } from 'babel-traverse';
 import * as freeIds from '../common/freeIds';
 import * as fastFreshId from '../fastFreshId';
 import * as bh from '../babelHelpers';
@@ -42,13 +42,16 @@ function unbox(e: t.Expression): t.Expression {
  * @param x an identifier
  * @param path the path to the enclosing Function or Program
  */
-function shouldBox(x: string, path: NodePath<t.Function | t.Program>): boolean {
+function shouldBox(binding: Binding, path: NodePath<t.Function | t.Program>): boolean {
+  if (binding.path.isFunctionDeclaration()) {
+    return true;
+  }
   if (path.node.type === 'FunctionExpression' &&
       path.node.id &&
-      path.node.id.name === x) {
+      path.node.id.name === binding.identifier.name) {
     return false;
   }
-  return (freeIds.isNestedFree(path, x));
+  return (freeIds.isNestedFree(path, binding.identifier.name));
 }
 
 function liftStatement(parentPath: NodePath<Parent>, path: NodePath<t.Node>,
@@ -95,7 +98,7 @@ function enterFunction(self: State, path: NodePath<t.FunctionExpression>) {
     // Mutable variables from this scope that are not shadowed
     const vars0 = self.vars.subtract(locals);
     // Mutable variables from the inner scope
-    const vars1 = locals.filter(x => shouldBox(x!, path)).toSet();
+    const vars1 = locals.filter(x => shouldBox(path.scope.bindings[x!], path)).toSet();
 
     const params = <t.Identifier[]>path.node.params;
     const boxedArgs = Set.of(...params.filter(x => vars1.includes(x.name))
@@ -145,7 +148,7 @@ const visitor = {
     // unbox.
     /**this.vars = Set<string>();**/
     const vars = Object.keys(path.scope.bindings)
-      .filter(x => shouldBox(x, path));
+      .filter(x => shouldBox(path.scope.bindings[x], path));
     this.vars = Set.of(...vars);
   },
 

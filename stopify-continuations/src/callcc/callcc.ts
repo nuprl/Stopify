@@ -100,19 +100,6 @@ const visitor: Visitor = {
 
     path.stop();
 
-    let toShift;
-    if (opts.compileFunction) {
-      if (t.isFunctionDeclaration(path.node.body[0])) {
-        toShift = (<t.FunctionDeclaration>path.node.body[0]).body.body;
-      }
-      else {
-        throw new Error('Top-level function expected');
-      }
-    }
-    else {
-      toShift = path.node.body;
-    }
-
     if (!doNotWrap) {
       // $__R.runtime($top, opts.onDone);
       path.node.body.push(t.expressionStatement(
@@ -120,19 +107,6 @@ const visitor: Visitor = {
           t.memberExpression($__R, t.identifier('runtime')),
           [$top, opts.onDone])));
     }
-
-    toShift.unshift(
-      h.letExpression(
-        t.identifier("suspendCC"),
-        t.memberExpression(t.identifier("$__R"), t.identifier("suspendCC")),
-        "var"));
-    toShift.unshift(
-      h.letExpression(
-        t.identifier("captureCC"),
-        t.callExpression(
-          t.memberExpression(t.memberExpression(t.identifier("$__R"),
-            t.identifier("captureCC")), t.identifier("bind")), [$__R]),
-        "var"));
 
     if (!state.opts.compileFunction) {
       path.node.body.unshift(

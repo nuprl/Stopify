@@ -47,8 +47,8 @@ export function checkAndFillRuntimeOpts(value: Partial<RuntimeOpts>): RuntimeOpt
   };
 
   copyProp(opts, value, 'estimator',
-    (x) => ['exact', 'reservoir', 'velocity', 'countdown'].includes(x),
-    `.estimator must be either 'reservoir', 'velocity', 'countdown', or 'exact'`);
+    (x) => ['exact', 'reservoir', 'velocity', 'interrupt', 'countdown'].includes(x),
+    `.estimator must be either 'reservoir', 'velocity', 'interrupt', 'countdown', or 'exact'`);
   transformProp(opts, value, 'yieldInterval',
     (x) => Number(x), (x) => typeof x === 'number' && x > 0,
     `.yieldInterval must be a number greater than zero`);

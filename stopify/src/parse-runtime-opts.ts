@@ -30,7 +30,7 @@ commander.option(
 
 commander.option(
   '--estimator <estimator>',
-  `one of exact, reservoir, velocity, or countdown (default: velocity)`);
+  `one of exact, reservoir, velocity, interrupt, or countdown (default: velocity)`);
 
 commander.option(
   '--stack-size <size>',

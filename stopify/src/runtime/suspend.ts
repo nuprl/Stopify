@@ -1,7 +1,6 @@
 import { setImmediate } from './setImmediate';
-import { ElapsedTimeEstimator } from './elapsedTimeEstimator';
+import { ElapsedTimeEstimator } from 'stopify-estimators';
 import {  Runtime, Result } from 'stopify-continuations/dist/src/types';
-import { emptyThunk } from '../generic';
 
 export function badResume() {
   throw new Error('program is not paused. (Did you call .resume() twice?)');
@@ -38,7 +37,7 @@ export class RuntimeWithSuspend {
     /**
      * Called when execution reaches the end of any stopified module.
      */
-    public onEnd = emptyThunk,
+    public onEnd = function(): void { this.estimator.cancel(); },
     public continuation = badResume,
     public onDone = defaultDone) {
   }

@@ -28,6 +28,6 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
-    "detect-browser": "^3.0.0"
+    "detect-browser": "^1.12.0"
   }
 }

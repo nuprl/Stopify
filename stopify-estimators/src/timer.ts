@@ -10,4 +10,3 @@ if (!browser || <any>browser.name === 'node') {
   const timer = eval(`require('../build/Release/timer')`);
   module.exports = timer;
 }
-

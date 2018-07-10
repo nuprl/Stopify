@@ -1,3 +1,25 @@
+export type KFrame = KFrameTop | KFrameRest;
+
+export interface KFrameTop {
+  kind: 'top';
+  f: () => any;
+}
+
+export interface KFrameRest {
+  kind: 'rest';
+  f: () => any;   // The function we are in
+  locals: any[];  // All locals
+  params: any[];  // All params
+  this: any;      // The object bound to `this`
+  index: number;  // At this application index
+}
+
+export type Stack = KFrame[];
+
+// The type of execution mode, whether normally computing or restoring state
+// from a captured `Stack`.
+export type Mode = boolean;
+
 export type Result =
   { type: 'normal', value: any } |
   { type: 'exception', value: any, stack: string[] };
@@ -21,6 +43,9 @@ export interface Runtime {
 
   stackSize: number;
   restoreFrames: number;
+
+  mode: Mode;
+  stack: Stack;
 
   endTurn(callback: (onDone: (x: Result) => any) => any): never;
 

@@ -126,8 +126,8 @@ function lazyGlobalCatch(path: NodePath<t.AssignmentExpression>,
     const nodeStmt = t.expressionStatement(path.node);
 
     const restoreNode = t.assignmentExpression(path.node.operator,
-      path.node.left, t.callExpression(t.memberExpression(t.memberExpression(
-        topOfRuntimeStack, t.identifier('f')),
+      path.node.left, t.callExpression(t.memberExpression(
+        t.memberExpression(topOfRuntimeStack, t.identifier('f')),
         t.identifier('apply')), [
           t.memberExpression(topOfRuntimeStack, t.identifier('this')),
           t.memberExpression(topOfRuntimeStack, t.identifier('params'))

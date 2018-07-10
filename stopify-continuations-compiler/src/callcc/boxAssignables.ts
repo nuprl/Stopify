@@ -21,6 +21,8 @@ type State = {
   vars: Set<string>,
   parentPathStack: NodePath<Parent>[],
   varsStack: Set<string>[],
+  liftDeclStack: t.Statement[][],
+  liftAssignStack: t.Statement[][],
   opts: { boxes: string[] },
 };
 
@@ -54,23 +56,13 @@ function shouldBox(binding: Binding, path: NodePath<t.Function | t.Program>): bo
   return (freeIds.isNestedFree(path, binding.identifier.name));
 }
 
-function liftStatement(parentPath: NodePath<Parent>, path: NodePath<t.Node>,
-  stmt: t.Statement) {
-  const type_ = parentPath.node.type;
-  if (type_ === 'Program') {
-    (<t.Program>parentPath.node).body.unshift(stmt);
-  }
-  else if (type_ === 'FunctionDeclaration' || type_ === 'FunctionExpression') {
-    (<t.FunctionDeclaration | t.FunctionExpression>parentPath.node).body
-      .body.unshift(stmt);
-  }
-  else {
-    throw new assert.AssertionError({
-      message: `liftStatement got ${type_} as parent`
-    });
-  }
+function liftDecl(self: State, decl: t.Statement): void {
+  self.liftDeclStack[self.liftDeclStack.length - 1].push(decl);
 }
 
+function liftAssign(self: State, assign: t.Statement): void {
+  self.liftAssignStack[self.liftAssignStack.length - 1].push(assign);
+}
 
   // NOTE(arjun): The following implements non-strict semantics, where
   // arguments[i] and the ith formal argument are aliased. Recall that:
@@ -109,9 +101,18 @@ function enterFunction(self: State, path: NodePath<t.FunctionExpression>) {
     self.varsStack.push(self.vars);
     self.parentPath = path;
     self.vars = vars0.union(vars1);
+
+  self.liftDeclStack.push([]);
+  self.liftAssignStack.push([]);
 }
 
 function exitFunction(self: State, path: NodePath<t.FunctionExpression>) {
+  // Lift boxed declarations and hoisted function decl assignments.
+  const decls = self.liftDeclStack.pop();
+  const assigns = self.liftAssignStack.pop();
+
+  path.node.body.body.unshift(...decls!, ...assigns!);
+
   // Box arguments if necessary. We do this after visiting the function
   // body or the initialization statements get messed up.
   (<any>path.node).boxedArgs.valueSeq().forEach((x: string) => {
@@ -126,30 +127,47 @@ function exitFunction(self: State, path: NodePath<t.FunctionExpression>) {
 }
 
 const visitor = {
-  Program(this: State, path: NodePath<t.Program>, state: any) {
-    this.parentPathStack = [];
-    this.varsStack = [];
-    this.parentPath = path;
-    // Stopify has used the top-level as a implicit continuation delimiter.
-    // i.e., Stopify's continuations are like Racket continuations, which
-    // don't capture the rest of a module:
-    //
-    // (define saved #f)
-    // (define f (call/cc (lambda (k) (set! saved k) 100)))
-    // (display 200)
-    // ; Applying saved will not run (display 200) again
-    //
-    // Since continuations don't capture top-level definitions, we do not
-    // need to box top-level assignable variables, which why we initialize
-    // this.vars to the empty set.
-    //
-    // Note that boxing top-level assignables is also wrong: a boxed top-level
-    // variable X is also available as window.X, which we would not know to
-    // unbox.
-    /**this.vars = Set<string>();**/
-    const vars = Object.keys(path.scope.bindings)
-      .filter(x => shouldBox(path.scope.bindings[x], path));
-    this.vars = Set.of(...vars);
+  Program: {
+    enter(this: State, path: NodePath<t.Program>): void {
+      this.parentPathStack = [];
+      this.varsStack = [];
+      this.parentPath = path;
+      // Stopify has used the top-level as a implicit continuation delimiter.
+      // i.e., Stopify's continuations are like Racket continuations, which
+      // don't capture the rest of a module:
+      //
+      // (define saved #f)
+      // (define f (call/cc (lambda (k) (set! saved k) 100)))
+      // (display 200)
+      // ; Applying saved will not run (display 200) again
+      //
+      // Since continuations don't capture top-level definitions, we do not
+      // need to box top-level assignable variables, which why we initialize
+      // this.vars to the empty set.
+      //
+      // Note that boxing top-level assignables is also wrong: a boxed top-level
+      // variable X is also available as window.X, which we would not know to
+      // unbox.
+      /**this.vars = Set<string>();**/
+      const vars = Object.keys(path.scope.bindings)
+        .filter(x => shouldBox(path.scope.bindings[x], path));
+      this.vars = Set.of(...vars);
+      this.liftDeclStack = [[]];
+      this.liftAssignStack = [[]];
+    },
+
+    exit(this: State, path: NodePath<t.Program>): void {
+      const decls = this.liftDeclStack.pop();
+      const assigns = this.liftAssignStack.pop();
+
+      if (this.liftDeclStack.length !== 0 ||
+        this.liftAssignStack.length !== 0) {
+        throw new Error(`Not all declarations or assignments lifted \
+during boxing`);
+      }
+
+      path.node.body.unshift(...decls!, ...assigns!);
+    }
   },
 
   ReferencedIdentifier(this: State, path: NodePath<t.Identifier>) {
@@ -178,9 +196,8 @@ const visitor = {
       });
     }
     if (this.vars.includes(decl.id.name)) {
-      liftStatement(this.parentPath, path,
-        t.variableDeclaration('var',
-          [t.variableDeclarator(decl.id, box(bh.eUndefined))]));
+      liftDecl(this, t.variableDeclaration('var',
+        [t.variableDeclarator(decl.id, box(bh.eUndefined))]));
       if (decl.init === null) {
         path.remove();
       }
@@ -217,7 +234,6 @@ const visitor = {
     exit(this: State, path: NodePath<t.FunctionExpression>, state: any) {
       exitFunction(this, path);
       const vars = this.vars;
-      const parentPath = this.parentPath;
       // NOTE(rachit): in `func` mode, the input function is marked with
       // topFunction. It shouldn't be boxed since we want to preserve its
       // signature.
@@ -245,9 +261,10 @@ const visitor = {
           [t.variableDeclarator(path.node.id, box(bh.eUndefined))]);
         const stmt = t.expressionStatement(t.assignmentExpression('=',
           unbox(path.node.id) as t.LVal, fun));
-        //liftStatement(parentPath, path, stmt);
-        liftStatement(parentPath, path, decl);
-        path.replaceWith(stmt);
+        liftDecl(this, decl);
+        liftAssign(this, stmt);
+        //path.replaceWith(stmt);
+        path.remove();
         path.skip();
       }
     }

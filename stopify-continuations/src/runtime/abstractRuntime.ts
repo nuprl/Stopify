@@ -20,7 +20,9 @@ export interface KFrameTop {
 export interface KFrameRest {
   kind: 'rest';
   f: () => any;   // The function we are in
-  locals: any[];  // All locals and parameters
+  locals: any[];  // All locals
+  params: any[];  // All params
+  this: any;      // The object bound to `this`
   index: number;  // At this application index
 }
 
@@ -132,7 +134,7 @@ export abstract class Runtime implements RuntimeInterface {
         }
         else if(result.type === 'exception') {
           assert(this.mode,
-            `execution completed in restore mode, error was: ${result.value}`);
+            `execution completed in restore mode, error was: ${result.value}\n${result.value.stack}`);
           const stack = this.stackTrace;
           this.stackTrace = [];
           return onDone({ type: 'exception', value: result.value, stack });

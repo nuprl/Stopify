@@ -116,14 +116,14 @@ const visitor: Visitor = {
       path.node.body.push(t.expressionStatement(
         t.callExpression(
           t.memberExpression($__R, t.identifier('runtime')),
-          [$top, id])));
+          [t.memberExpression($top, t.identifier('box')), id])));
     }
 
 
     if (!state.opts.compileFunction) {
       path.node.body.unshift(
         h.letExpression(
-          t.identifier('$__R'),
+          $__R,
            t.callExpression(
              t.memberExpression(t.identifier('$__T'),
                t.identifier('newRTS')),

@@ -54,53 +54,6 @@ interface State {
   opts: CompilerOpts
 }
 
-const captureLogics: { [key: string]: CaptureFun } = {
-  lazy: capture.lazyCaptureLogic,
-  catch: capture.lazyGlobalCatch,
-  eager: capture.eagerCaptureLogic,
-  retval: capture.retvalCaptureLogic,
-  fudge: capture.fudgeCaptureLogic,
-};
-
-function isFlat(path: NodePath<t.Node>): boolean {
-  return (<any>path.getFunctionParent().node).mark === 'Flat';
-}
-
-function usesArguments(path: NodePath<t.Function>) {
-  let r = false;
-  const visitor = {
-    ReferencedIdentifier(path: NodePath<t.Identifier>) {
-      if (path.node.name === 'arguments') {
-        r = true;
-        path.stop();
-      }
-    },
-    Function(path: NodePath<t.Function>) {
-      path.skip();
-    }
-  };
-  path.traverse(visitor);
-  return r;
-}
-
-function paramToArg(node: t.LVal) {
-  if (node.type === 'Identifier') {
-    return node;
-  }
-  else if (node.type === 'RestElement' && node.argument.type === 'Identifier') {
-    return t.spreadElement(node.argument);
-  }
-  else {
-    throw new Error(`paramToArg: expected Identifier or RestElement, received ${node.type}`);
-  }
-}
-
-function runtimeInvoke(method: string,
-  ...args: t.Expression[]): t.CallExpression {
-  return t.callExpression(
-    t.memberExpression(runtime, t.identifier(method)), args);
-}
-
 function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const jsArgs = state.opts.jsArgs;
   if ((<any>path.node).mark === 'Flat') {
@@ -221,60 +174,193 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const defineArgsLen = letExpression(argsLen,
     t.memberExpression(t.identifier('arguments'), t.identifier('length')));
 
+  path.node.body.body.unshift(...[
+    ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
+    decreaseStackSize,
+    ifRestoring,
+    captureClosure,
+    reenterClosure,
+    ...mayMatArgs
+  ]);
 
-  if (state.opts.captureMethod === 'catch') {
-    const exn = fresh('exn');
-    const exnStack = t.memberExpression(exn, t.identifier('stack'));
-
-    const params = path.node.__usesArgs__
-      ?  matArgs :  t.arrayExpression(path.node.params.map(paramToArg));
-
-    const captureObject: t.ObjectProperty[] = [
-      t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-      t.objectProperty(t.identifier('f'), path.node.id),
-      t.objectProperty(t.identifier('index'), target),
-      t.objectProperty(t.identifier('locals'), t.arrayExpression(restoreLocals)),
-      t.objectProperty(t.identifier('params'), params),
-      t.objectProperty(t.identifier('this'), t.thisExpression()),
-    ];
-
-    if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
-      // ... save a copy of the parameters in the stack frame and
-      captureObject.push(t.objectProperty(t.identifier('formals'),
-        t.arrayExpression((<any>path.node.params))));
-      // ... save the length of the arguments array in the stack frame
-      captureObject.push(t.objectProperty(argsLen, argsLen));
-    }
-
-    const wrapBody = t.tryStatement(path.node.body,
-      t.catchClause(exn, t.blockStatement([
-        t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
-          t.blockStatement([
-            t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
-              t.objectExpression(captureObject),
-            ])),
-          ])),
-        t.throwStatement(exn)
-      ])));
-
-    path.node.body = t.blockStatement([
-      ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
-      decreaseStackSize,
-      ifRestoring,
-      ...mayMatArgs,
-      wrapBody,
-    ]);
-  } else {
-    path.node.body.body.unshift(...[
-      ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
-      decreaseStackSize,
-      ifRestoring,
-      captureClosure,
-      reenterClosure,
-      ...mayMatArgs
-    ]);
-  }
   path.skip();
+}
+
+function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
+  const jsArgs = state.opts.jsArgs;
+  if ((<any>path.node).mark === 'Flat') {
+    return;
+  }
+  const restoreLocals = path.node.localVars;
+
+  const exn = fresh('exn');
+  const exnStack = t.memberExpression(exn, t.identifier('stack'));
+
+  const params = path.node.__usesArgs__
+  ?  matArgs :  t.arrayExpression(path.node.params.map(paramToArg));
+
+  const captureObject: t.ObjectProperty[] = [
+    t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
+    t.objectProperty(t.identifier('f'), path.node.id),
+    t.objectProperty(t.identifier('index'), target),
+    t.objectProperty(t.identifier('locals'), t.arrayExpression(restoreLocals)),
+    t.objectProperty(t.identifier('params'), params),
+    t.objectProperty(t.identifier('this'), t.thisExpression()),
+  ];
+
+  if (path.node.__usesArgs__ && jsArgs === 'full') {
+    // ... save a copy of the parameters in the stack frame and
+    captureObject.push(t.objectProperty(t.identifier('formals'),
+      t.arrayExpression((<any>path.node.params))));
+    // ... save the length of the arguments array in the stack frame
+    captureObject.push(t.objectProperty(argsLen, argsLen));
+  }
+
+  const frame = t.identifier('$frame');
+
+  // We instrument every non-flat function to begin with a *restore block*
+  // that is able to re-construct a saved stack frame. When the function is
+  // invoked in restore mode, its formal arguments are already restored.
+  // The restore block must restore the local variables and deal with
+  // the *arguments* object. The arguments object is a real pain and hurts
+  // performance. So, we avoid restoring it faithfully unless we are explicitly
+  // configured to do so.
+  const restoreBlock = [
+    t.variableDeclaration('const', [t.variableDeclarator(frame, popRuntimeStack)]),
+    t.expressionStatement(t.assignmentExpression('=', target,
+      t.memberExpression(frame, t.identifier('index')))),
+  ];
+
+  if (restoreLocals.length > 0) {
+    // Restore all local variables. Creates the expression:
+    //   [local0, local1, ... ] = topStack.locals;
+    restoreBlock.push(t.expressionStatement(t.assignmentExpression('=',
+      t.arrayPattern(restoreLocals), t.memberExpression(frame,
+        t.identifier('locals')))));
+  }
+
+  if (path.node.__usesArgs__ && jsArgs === 'full') {
+    // To fully support the arguments object, we need to ensure that the
+    // formal parameters alias the arguments array. This restores the
+    // aliases using:
+    //
+    //   [param0, param1, ...] = topStack.formals
+    restoreBlock.push(
+      t.expressionStatement(t.assignmentExpression('=',
+        t.arrayPattern((<any>path.node.params)),
+        t.memberExpression(frame, t.identifier('formals')))));
+
+    restoreBlock.push(
+      t.expressionStatement(t.assignmentExpression('=',
+        argsLen, t.memberExpression(frame, argsLen))));
+  }
+
+  const ifRestoring = t.ifStatement(isRestoringMode,
+    t.blockStatement(restoreBlock));
+  const mayMatArgs: t.Statement[] = [];
+  if (path.node.__usesArgs__) {
+    const argExpr = jsArgs === 'faithful' || jsArgs === 'full'
+      ? bh.arrayPrototypeSliceCall(t.identifier('arguments'))
+      : t.identifier('arguments');
+
+    mayMatArgs.push(
+      t.variableDeclaration('const',
+        [t.variableDeclarator(matArgs, argExpr)]));
+
+    const boxedArgs = <imm.Set<string>>(<any>path.node).boxedArgs;
+
+    if (jsArgs === 'faithful' || jsArgs === 'full') {
+      const initMatArgs: t.Statement[] = [];
+      (<t.Identifier[]>path.node.params).forEach((x, i) => {
+        if (boxedArgs.contains(x.name)) {
+          const cons =  t.assignmentExpression('=',
+            t.memberExpression(matArgs, t.numericLiteral(i), true),
+            box(t.identifier(x.name)));
+            initMatArgs.push(t.expressionStatement(cons));
+        }
+      });
+      mayMatArgs.push(bh.sIf(isNormalMode, t.blockStatement(initMatArgs)));
+    }
+  }
+
+  const defineArgsLen = letExpression(argsLen,
+    t.memberExpression(t.identifier('arguments'), t.identifier('length')));
+
+  const wrapBody = t.tryStatement(path.node.body,
+    t.catchClause(exn, t.blockStatement([
+      t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
+        t.blockStatement([
+          t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
+            t.objectExpression(captureObject),
+          ])),
+        ])),
+      t.throwStatement(exn)
+    ])));
+
+  path.node.body = t.blockStatement([
+    ...(jsArgs === 'full' ? [defineArgsLen] : []),
+    decreaseStackSize,
+    ifRestoring,
+    ...mayMatArgs,
+    wrapBody,
+  ]);
+}
+
+const captureLogics: { [key: string]: CaptureFun } = {
+  lazy: capture.lazyCaptureLogic,
+  catch: capture.lazyGlobalCatch,
+  eager: capture.eagerCaptureLogic,
+  retval: capture.retvalCaptureLogic,
+  fudge: capture.fudgeCaptureLogic,
+};
+
+const instrumentLogics: {
+  [key: string]: (path: NodePath<Labeled<FunctionT>>, state: State) => void
+} = {
+  catch: catchFunc,
+  lazy: func,
+  eager: func,
+  retval: func,
+  fudge: func,
+};
+
+function isFlat(path: NodePath<t.Node>): boolean {
+  return (<any>path.getFunctionParent().node).mark === 'Flat';
+}
+
+function usesArguments(path: NodePath<t.Function>) {
+  let r = false;
+  const visitor = {
+    ReferencedIdentifier(path: NodePath<t.Identifier>) {
+      if (path.node.name === 'arguments') {
+        r = true;
+        path.stop();
+      }
+    },
+    Function(path: NodePath<t.Function>) {
+      path.skip();
+    }
+  };
+  path.traverse(visitor);
+  return r;
+}
+
+function paramToArg(node: t.LVal) {
+  if (node.type === 'Identifier') {
+    return node;
+  }
+  else if (node.type === 'RestElement' && node.argument.type === 'Identifier') {
+    return t.spreadElement(node.argument);
+  }
+  else {
+    throw new Error(`paramToArg: expected Identifier or RestElement, received ${node.type}`);
+  }
+}
+
+function runtimeInvoke(method: string,
+  ...args: t.Expression[]): t.CallExpression {
+  return t.callExpression(
+    t.memberExpression(runtime, t.identifier(method)), args);
 }
 
 function labelsIncludeTarget(labels: number[]): t.Expression {
@@ -364,7 +450,8 @@ const jumper = {
         return;
       }
 
-      func(path, state);
+      const instrumentFunction = instrumentLogics[state.opts.captureMethod];
+      instrumentFunction(path, state);
 
       const declTarget = bh.varDecl(target, t.nullLiteral());
       path.node.body.body.unshift(declTarget);

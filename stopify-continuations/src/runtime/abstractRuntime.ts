@@ -133,8 +133,7 @@ export abstract class Runtime implements RuntimeInterface {
           return onDone(result);
         }
         else if(result.type === 'exception') {
-          assert(this.mode,
-            `execution completed in restore mode, error was: ${result.value}\n${result.value.stack}`);
+          assert(this.mode, `execution completed in restore mode, error was: ${result.value}`);
           const stack = this.stackTrace;
           this.stackTrace = [];
           return onDone({ type: 'exception', value: result.value, stack });

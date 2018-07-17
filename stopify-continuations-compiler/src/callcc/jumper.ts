@@ -228,6 +228,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     ifRestoring,
     captureClosure,
     reenterClosure,
+    bindReenter,
     ...mayMatArgs
   ]);
 

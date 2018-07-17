@@ -6,6 +6,7 @@
  *
  * node built/src/callcc/callcc <filename.js>
  */
+const arrowFunctions = require('babel-plugin-transform-es2015-arrow-functions');
 import * as desugarLoop from '../common/desugarLoop';
 import * as desugarLabel from '../common/desugarLabel';
 import * as desugarSwitch from '../common/desugarSwitch';
@@ -79,6 +80,9 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
     }
 
+
+    timeSlow('arrow functions', () =>
+      h.transformFromAst(path, [arrowFunctions]));
     timeSlow('singleVarDecl', () =>
       h.transformFromAst(path, [[singleVarDecls, opts]]));
     timeSlow('free ID initialization', () =>

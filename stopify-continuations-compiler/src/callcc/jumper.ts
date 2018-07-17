@@ -74,8 +74,6 @@ interface State {
  */
 function captureAwait(path: NodePath<t.AssignmentExpression>): void {
   const applyLabel = t.numericLiteral(getLabels(path.node)[0]);
-  const resultStack = t.memberExpression(<t.Identifier>path.node.left,
-    t.identifier('stack'));
 
   const nodeStatement = t.expressionStatement(path.node);
   const restoreNode = t.assignmentExpression(path.node.operator,
@@ -87,18 +85,6 @@ function captureAwait(path: NodePath<t.AssignmentExpression>): void {
       t.ifStatement(t.binaryExpression('instanceof',
         <t.Identifier>path.node.left, captureExn),
         t.blockStatement([
-          t.expressionStatement(t.callExpression(t.memberExpression(resultStack, t.identifier('push')), [
-            t.objectExpression([
-              t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-              t.objectProperty(t.identifier('f'), restoreNextFrame),
-              t.objectProperty(t.identifier('index'), applyLabel),
-            ]),
-          ])),
-          t.expressionStatement(t.callExpression(captureLocals, [
-            t.memberExpression(resultStack, t.binaryExpression('-',
-              t.memberExpression(resultStack, t.identifier('length')),
-              t.numericLiteral(1)), true)
-          ])),
           t.throwStatement(<t.Identifier>path.node.left),
         ])),
     ]);

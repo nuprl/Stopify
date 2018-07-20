@@ -3,6 +3,7 @@ export type KFrame = KFrameTop | KFrameRest;
 export interface KFrameTop {
   kind: 'top';
   f: () => any;
+  this: any;
 }
 
 export interface KFrameRest {

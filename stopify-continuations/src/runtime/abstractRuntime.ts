@@ -15,6 +15,7 @@ export type KFrame = KFrameTop | KFrameRest;
 export interface KFrameTop {
   kind: 'top';
   f: () => any;
+  this: any;
 }
 
 export interface KFrameRest {
@@ -99,7 +100,8 @@ export abstract class Runtime implements RuntimeInterface {
         this.stack = [];
         this.mode = true;
         return f();
-      }
+      },
+      this: this,
     };
   }
 

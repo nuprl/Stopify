@@ -1,0 +1,48 @@
+<html>
+<body>
+  <button id="pauseResume">Pause / Resume</button>
+  <div id="webConsole"></div>
+  <script src="../../stopify/dist/stopify-full.bundle.js"></script>
+  <script>
+    const webConsole = document.getElementById('webConsole');
+
+    var paused = false;
+    document.getElementById('pauseResume').addEventListener('click', () => {
+      if (paused) {
+        paused = false;
+        runner.resume();
+      }
+      else {
+        alert('Pausing ...');
+        runner.pause(() => {
+          alert('Paused.');
+          paused = true;
+        });
+      }
+    });
+
+    function alert(message) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(message));
+      webConsole.appendChild(div);
+    }
+
+
+    const program = `
+      var i = 0;
+
+      while(true) {
+        if (i++ === 10000000) {
+          i = 0;
+          alert('Running ...');
+        }
+      }
+    `;
+
+    const runner = stopify.stopifyLocally(
+      program, { externals: [ 'alert' ] });
+
+    runner.run(() => alert('program complete'));
+  </script>
+</body>
+</html>

@@ -62,7 +62,9 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
+    "@types/babel-core": "^6.25.5",
     "@types/glob": "^5.0.35",
+    "@types/source-map": "^0.5.7",
     "assert": "^1.4.1",
     "babel-core": "^6.22.1",
     "babel-generator": "^6.24.0",
@@ -83,6 +85,7 @@
     "path": "^0.12.7",
     "process": "^0.11.10",
     "selenium-webdriver": "^3.5.0",
+    "source-map": "^0.7.3",
     "source-map-support": "^0.4.18",
     "sprintf": "^0.1.5",
     "stopify-continuations": "0.5.0",

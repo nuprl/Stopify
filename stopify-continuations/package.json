@@ -56,6 +56,7 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
+    "@types/babel-traverse": "^6.25.4",
     "assert": "^1.4.1",
     "babel-core": "^6.22.1",
     "babel-generator": "^6.24.0",

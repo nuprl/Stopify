@@ -8,12 +8,28 @@
   dependencies:
     acorn "^5.2.1"
 
+"@types/babel-core@^6.25.5":
+  version "6.25.5"
+  resolved "https://registry.yarnpkg.com/@types/babel-core/-/babel-core-6.25.5.tgz#7598b1287c2cb5a8e9150d60e4d4a8f2dbe29982"
+  dependencies:
+    "@types/babel-generator" "*"
+    "@types/babel-template" "*"
+    "@types/babel-traverse" "*"
+    "@types/babel-types" "*"
+    "@types/babylon" "*"
+
 "@types/babel-core@^6.7.14":
   version "6.25.0"
   resolved "https://registry.yarnpkg.com/@types/babel-core/-/babel-core-6.25.0.tgz#e6439b193c3644cf3fbd24b05620876f76017313"
   dependencies:
     "@types/babel-template" "*"
     "@types/babel-traverse" "*"
+    "@types/babel-types" "*"
+
+"@types/babel-generator@*":
+  version "6.25.2"
+  resolved "https://registry.yarnpkg.com/@types/babel-generator/-/babel-generator-6.25.2.tgz#fa13653ec2d34a4037be9c34dec32ae75bea04cc"
+  dependencies:
     "@types/babel-types" "*"
 
 "@types/babel-generator@^6.7.14":
@@ -32,6 +48,12 @@
 "@types/babel-traverse@*", "@types/babel-traverse@^6.7.17":
   version "6.25.1"
   resolved "https://registry.yarnpkg.com/@types/babel-traverse/-/babel-traverse-6.25.1.tgz#df646044d22e257a7de76744ce47a02f61be566c"
+  dependencies:
+    "@types/babel-types" "*"
+
+"@types/babel-traverse@^6.25.4":
+  version "6.25.4"
+  resolved "https://registry.yarnpkg.com/@types/babel-traverse/-/babel-traverse-6.25.4.tgz#269af6a25c80419b635c8fa29ae42b0d5ce2418c"
   dependencies:
     "@types/babel-types" "*"
 
@@ -135,6 +157,12 @@
 "@types/source-map@*", "@types/source-map@^0.5.0":
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/@types/source-map/-/source-map-0.5.1.tgz#7e74db5d06ab373a712356eebfaea2fad0ea2367"
+
+"@types/source-map@^0.5.7":
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/@types/source-map/-/source-map-0.5.7.tgz#165eeb583c1ef00196fe4ef4da5d7832b03b275b"
+  dependencies:
+    source-map "*"
 
 "@types/sprintf@0.0.28":
   version "0.0.28"
@@ -1343,10 +1371,6 @@ destroy@~1.0.4:
 detect-browser@^1.12.0:
   version "1.12.0"
   resolved "https://registry.yarnpkg.com/detect-browser/-/detect-browser-1.12.0.tgz#71b57d7809fc6e42050b28f89529123c1b3290f9"
-
-detect-browser@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/detect-browser/-/detect-browser-3.0.0.tgz#3fc232002c56d427410a9e1ac3b3e8c3a80bb848"
 
 detect-indent@^4.0.0:
   version "4.0.0"
@@ -3772,6 +3796,10 @@ source-map-support@^0.4.2:
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.15.tgz#03202df65c06d2bd8c7ec2362a193056fef8d3b1"
   dependencies:
     source-map "^0.5.6"
+
+source-map@*, source-map@^0.7.3:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.3.tgz#5302f8169031735226544092e64981f751750383"
 
 source-map@^0.4.4:
   version "0.4.4"

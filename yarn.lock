@@ -8,28 +8,12 @@
   dependencies:
     acorn "^5.2.1"
 
-"@types/babel-core@^6.25.5":
-  version "6.25.5"
-  resolved "https://registry.yarnpkg.com/@types/babel-core/-/babel-core-6.25.5.tgz#7598b1287c2cb5a8e9150d60e4d4a8f2dbe29982"
-  dependencies:
-    "@types/babel-generator" "*"
-    "@types/babel-template" "*"
-    "@types/babel-traverse" "*"
-    "@types/babel-types" "*"
-    "@types/babylon" "*"
-
 "@types/babel-core@^6.7.14":
   version "6.25.0"
   resolved "https://registry.yarnpkg.com/@types/babel-core/-/babel-core-6.25.0.tgz#e6439b193c3644cf3fbd24b05620876f76017313"
   dependencies:
     "@types/babel-template" "*"
     "@types/babel-traverse" "*"
-    "@types/babel-types" "*"
-
-"@types/babel-generator@*":
-  version "6.25.2"
-  resolved "https://registry.yarnpkg.com/@types/babel-generator/-/babel-generator-6.25.2.tgz#fa13653ec2d34a4037be9c34dec32ae75bea04cc"
-  dependencies:
     "@types/babel-types" "*"
 
 "@types/babel-generator@^6.7.14":
@@ -48,12 +32,6 @@
 "@types/babel-traverse@*", "@types/babel-traverse@^6.7.17":
   version "6.25.1"
   resolved "https://registry.yarnpkg.com/@types/babel-traverse/-/babel-traverse-6.25.1.tgz#df646044d22e257a7de76744ce47a02f61be566c"
-  dependencies:
-    "@types/babel-types" "*"
-
-"@types/babel-traverse@^6.25.4":
-  version "6.25.4"
-  resolved "https://registry.yarnpkg.com/@types/babel-traverse/-/babel-traverse-6.25.4.tgz#269af6a25c80419b635c8fa29ae42b0d5ce2418c"
   dependencies:
     "@types/babel-types" "*"
 

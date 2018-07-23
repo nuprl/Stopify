@@ -27,7 +27,7 @@ export interface RuntimeOpts {
 }
 
 export interface AsyncRun {
-  run(onDone: (error?: any) => void,
+  run(onDone: (result: Result) => void,
     onYield?: () => void,
     onBreakpoint?: (line: number) => void): void;
   pause(onPaused: (line?: number) => void): void;

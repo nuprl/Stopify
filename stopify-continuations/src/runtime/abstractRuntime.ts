@@ -152,7 +152,8 @@ export abstract class Runtime implements RuntimeInterface {
           this.mode = false;
           this.stack = result.stack;
           this.savedStack = result.savedStack;
-          return this.stack[this.stack.length - 1].f();
+          const params = (<KFrameRest>this.stack[this.stack.length - 1]).params || [];
+          return this.stack[this.stack.length - 1].f.apply(global, params);
         };
       }
       else if (result.type === 'end-turn') {

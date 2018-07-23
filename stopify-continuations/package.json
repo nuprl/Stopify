@@ -7,7 +7,6 @@
   "devDependencies": {
     "@types/babel-core": "^6.7.14",
     "@types/babel-generator": "^6.7.14",
-    "@types/babel-traverse": "^6.7.17",
     "@types/babel-types": "^6.7.16",
     "@types/babylon": "^6.16.0",
     "@types/body-parser": "^1.16.5",
@@ -56,6 +55,7 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
+    "@types/babel-traverse": "^6.7.17",
     "assert": "^1.4.1",
     "babel-core": "^6.22.1",
     "babel-generator": "^6.24.0",

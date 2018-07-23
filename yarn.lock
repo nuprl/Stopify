@@ -136,6 +136,12 @@
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/@types/source-map/-/source-map-0.5.1.tgz#7e74db5d06ab373a712356eebfaea2fad0ea2367"
 
+"@types/source-map@^0.5.7":
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/@types/source-map/-/source-map-0.5.7.tgz#165eeb583c1ef00196fe4ef4da5d7832b03b275b"
+  dependencies:
+    source-map "*"
+
 "@types/sprintf@0.0.28":
   version "0.0.28"
   resolved "https://registry.yarnpkg.com/@types/sprintf/-/sprintf-0.0.28.tgz#d8492827c13ade9bcb3c50095a828c26d5c95f20"
@@ -1343,10 +1349,6 @@ destroy@~1.0.4:
 detect-browser@^1.12.0:
   version "1.12.0"
   resolved "https://registry.yarnpkg.com/detect-browser/-/detect-browser-1.12.0.tgz#71b57d7809fc6e42050b28f89529123c1b3290f9"
-
-detect-browser@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/detect-browser/-/detect-browser-3.0.0.tgz#3fc232002c56d427410a9e1ac3b3e8c3a80bb848"
 
 detect-indent@^4.0.0:
   version "4.0.0"
@@ -3772,6 +3774,10 @@ source-map-support@^0.4.2:
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.15.tgz#03202df65c06d2bd8c7ec2362a193056fef8d3b1"
   dependencies:
     source-map "^0.5.6"
+
+source-map@*, source-map@^0.7.3:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.3.tgz#5302f8169031735226544092e64981f751750383"
 
 source-map@^0.4.4:
   version "0.4.4"

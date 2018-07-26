@@ -132,7 +132,7 @@
     "@types/express-serve-static-core" "*"
     "@types/mime" "*"
 
-"@types/source-map@*", "@types/source-map@^0.5.0":
+"@types/source-map@*":
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/@types/source-map/-/source-map-0.5.1.tgz#7e74db5d06ab373a712356eebfaea2fad0ea2367"
 

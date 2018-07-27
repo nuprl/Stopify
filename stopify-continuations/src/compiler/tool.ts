@@ -4,7 +4,7 @@
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
 import * as cli from './parse-compiler-opts';
-import * as fs from 'fs-extra';
+import * as fs from 'fs';
 import { NodePath, Visitor } from 'babel-traverse';
 import callcc from '../callcc/callcc';
 import { flatness } from './flatness';

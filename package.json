@@ -20,9 +20,9 @@
     "tslint-fix": "yarn run tslint-fix:stopify && yarn run tslint-fix:stopify-continuations && yarn run tslint-fix:stopify-estimators"
   },
   "workspaces": [
-      "stopify",
-      "stopify-continuations",
-      "stopify-estimators",
-      "stopify-module-test"
+    "stopify",
+    "stopify-continuations",
+    "stopify-estimators",
+    "stopify-module-test"
   ]
 }

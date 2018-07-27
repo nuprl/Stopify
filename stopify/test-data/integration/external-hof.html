@@ -1,0 +1,56 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+
+// Without Stopify, this function would be:
+// function(f) { return f(20) + 300; }
+window.externalFunction = function(f) {
+  runner.externalHOF(complete => {
+    runner.runStopifiedCode(
+      () => f(20), 
+      (result) => {
+        if (result.type === 'normal') {
+          complete({ type: 'normal', value: result.value + 300 });
+        }
+        else {
+          complete(result);
+        }
+      });
+  });
+}
+
+var x = 0;
+
+function setResult(_x) {
+  x = _x;
+}
+
+var program = `
+  setResult(4000 + externalFunction(function(x) { return x + 1; }));
+`;
+
+var runner = stopify.stopifyLocally(program, {
+  externals: ['externalFunction', 'setResult' ]
+});
+
+runner.run((result) => {
+  if (result.type === 'normal' && x === 4321) {
+    window.document.title = 'okay';
+    console.info('okay');
+    return;
+  }
+
+  console.error(result);
+  window.document.title = "error";
+});
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

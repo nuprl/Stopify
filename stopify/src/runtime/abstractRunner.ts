@@ -15,6 +15,18 @@ interface EventHandler {
   receiver: (x: Result) => void;
 }
 
+function wrapResult(x: Result, k: any): () => any {
+  return () => {
+    if (x.type === 'normal') {
+      return k(x.value);
+    }
+    else {
+      // TODO(arjun): This API is not great. makeCont should take a Result
+      return k(undefined, x.value);
+    }
+  }
+}
+
 export abstract class AbstractRunner implements AsyncRun {
   private continuationsRTS: Runtime;
   private suspendRTS: RuntimeWithSuspend;
@@ -192,6 +204,17 @@ export abstract class AbstractRunner implements AsyncRun {
     const { k, onDone } = this.k;
     this.k = undefined;
     return this.continuationsRTS.runtime(() => k(result), (result) => onDone(result));
+  }
+
+  externalHOF(body: (complete: (result: Result) => void) => never): void {
+    return this.continuationsRTS.captureCC((k) =>
+      this.continuationsRTS.endTurn(onDone =>
+        body(result => 
+          this.continuationsRTS.runtime(wrapResult(result, k), onDone))));
+  }
+
+  runStopifiedCode(body: () => void, callback: (x: Result) => void): void {
+    this.continuationsRTS.runtime(body, callback);
   }
 
   processEvent(body: () => void, receiver: (x: Result) => void): void {

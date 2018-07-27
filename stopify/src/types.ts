@@ -37,4 +37,10 @@ export interface AsyncRun {
   pauseImmediate(callback: () => void): void;
   continueImmediate(result: any): void;
   processEvent(body: () => any, receiver: (x: Result) => void): void;
+
+  /** Start an external higher-order function. */
+  externalHOF(body: (complete: (result: Result) => void) => never): void;
+
+  /** Run Stopified code from an external higher-order function. */
+  runStopifiedCode(body: () => void, callback: (x: Result) => void): void;
 }

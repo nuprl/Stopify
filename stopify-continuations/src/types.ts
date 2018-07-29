@@ -44,5 +44,5 @@ export interface Runtime {
   runtime<T>(body: () => any, onDone: (x: Result) => T): T;
 
   // Called when the stack needs to be captured.
-  captureCC(f: (k: any) => any): void;
+  captureCC(f: (k: (x: Result) => any) => any): void;
 }

@@ -2,15 +2,17 @@ import { setImmediate } from './setImmediate';
 import { ElapsedTimeEstimator } from 'stopify-estimators';
 import {  Runtime, Result } from 'stopify-continuations/dist/src/types';
 
-export function badResume() {
+export function badResume(x: Result): any {
   throw new Error('program is not paused. (Did you call .resume() twice?)');
 }
 
-export function defaultDone(x: Result) {
+export function defaultDone(x: Result): any {
   if (x.type === 'exception') {
     console.error(x.value);
   }
 }
+
+const normalUndefResult: Result = { type: 'normal', value: undefined };
 
 /**
  * Instance of a runtime extended with the suspend() function. Used by
@@ -54,7 +56,7 @@ export class RuntimeWithSuspend {
     // in a row will restart the computation.
     this.continuation = badResume;
     this.onDone = defaultDone;
-    return this.rts.runtime(cont, onDone);
+    return this.rts.runtime(() => cont(normalUndefResult), onDone);
   }
 
   /**
@@ -74,7 +76,7 @@ export class RuntimeWithSuspend {
       this.rts.remainingStack = this.rts.stackSize;
       return this.rts.captureCC((continuation) => {
         if(this.onYield()) {
-          return continuation();
+          return continuation(normalUndefResult);
         }
       });
     }
@@ -93,7 +95,7 @@ export class RuntimeWithSuspend {
           this.onDone = onDone;
           if (this.onYield()) {
             return setImmediate(() => {
-              this.rts.runtime(continuation, onDone);
+              this.rts.runtime(() => continuation(normalUndefResult), onDone);
             });
           }
         });

@@ -7,7 +7,7 @@ export class RetvalRuntime extends common.Runtime {
     super(stackSize, restoreFrames);
   }
 
-  captureCC(f: (k: any) => any): common.Capture {
+  captureCC(f: (k: (x: Result) => any) => any): any {
     this.capturing = true;
     return new common.Capture(f, []);
   }
@@ -19,13 +19,15 @@ export class RetvalRuntime extends common.Runtime {
       savedStack.push(stack.pop()!);
     }
 
-    return (v: any, err: any=this.noErrorProvided) => {
-      const throwExn = err !== this.noErrorProvided;
+    return (x: Result) => {
       let restarter = () => {
-        if (throwExn) { throw err; }
-        else { return v; }
+        if (x.type === 'exception') {
+          throw x.value;
+        }
+        else {
+          return x.value;
+        }
       };
-
       return new common.Restore([this.topK(restarter), ...stack], savedStack);
     };
   }

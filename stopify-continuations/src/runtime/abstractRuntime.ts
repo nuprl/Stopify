@@ -1,6 +1,6 @@
 import { unreachable } from '../generic';
 import * as assert from 'assert';
-import { Result } from '../types';
+import { Result, Runtime as RuntimeInterface } from '../types';
 
 export type RunResult =
   { type: 'normal', value: any } |
@@ -44,10 +44,10 @@ export class EndTurn {
 
 // This class is used by all the runtimes to start the stack capturing process.
 export class Capture {
-  constructor(public f: (k: any) => any, public stack: Stack) {}
+  constructor(public f: (k: ((x: Result) => any)) => any, public stack: Stack) {}
 }
 
-export abstract class Runtime {
+export abstract class Runtime implements RuntimeInterface {
   // Remaining number of stacks that this runtime can consume.
   remainingStack: number;
 
@@ -60,8 +60,6 @@ export abstract class Runtime {
   // Mode of the program. `true` represents 'normal' mode while `false`
   // represents 'restore' mode.
   mode: Mode;
-
-  noErrorProvided: any = {};
 
   /**
    *  A saved stack trace. This field is only used when a user-mode exception
@@ -175,8 +173,12 @@ export abstract class Runtime {
     this.stackTrace = [];
   }
 
-  // Called when the stack needs to be captured.
-  abstract captureCC(f: (k: any) => any): void;
+  /**
+   * Called when the stack needs to be captured.
+   * 
+   * The result type cannot be any more precise than any.
+   */
+  abstract captureCC(f: (k: (x: Result) => any) => any): any;
 
   /**
    * Wraps a stack in a function that throws an exception to discard the
@@ -184,8 +186,10 @@ export abstract class Runtime {
    * final frame that returns the supplied value. If err is provided, instead
    * of returning the supplied value, it throws an exception with the provided
    * error.
+   * 
+   * The result type cannot be any more precise than any.
    */
-  abstract makeCont(stack: Stack): (v: any, err: any) => any;
+  abstract makeCont(stack: Stack): (x: Result) => any;
 
   /**
    * Run the `body`. It can return four types of values (in the form RunResult):

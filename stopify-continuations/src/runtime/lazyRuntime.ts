@@ -7,7 +7,7 @@ export class LazyRuntime extends common.Runtime {
     super(stackSize, restoreFrames);
   }
 
-  captureCC(f: (k: any) => any): void {
+  captureCC(f: (k: (x: Result) => any) => any): any {
     this.capturing = true;
     throw new common.Capture(f, []);
   }
@@ -20,11 +20,14 @@ export class LazyRuntime extends common.Runtime {
       savedStack.push(stack.pop()!);
     }
 
-    return (v: any, err: any=this.noErrorProvided) => {
-      const throwExn = err !== this.noErrorProvided;
+    return (x: Result) => {
       let restarter = () => {
-        if(throwExn) { throw err; }
-        else { return v; }
+        if (x.type === 'exception') {
+          throw x.value;
+        }
+        else {
+          return x.value;
+        }
       };
       throw new common.Restore([this.topK(restarter), ...stack], savedStack);
     };

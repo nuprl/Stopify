@@ -23,7 +23,7 @@
             const value = input.value;
             div.appendChild(document.createTextNode(value));
             div.removeChild(input);
-            runner.continueImmediate(value);
+            runner.continueImmediate({ type: 'normal', value: value });
           }
         });
         webConsole.appendChild(div);

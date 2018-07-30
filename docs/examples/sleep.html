@@ -4,7 +4,7 @@
     <script>
     function sleep(duration) {
       asyncRun.pauseImmediate(() => {
-        window.setTimeout(() => asyncRun.continueImmediate(undefined), duration);
+        window.setTimeout(() => asyncRun.continueImmediate({ type: 'normal', value: undefined }), duration);
       });
     }
 

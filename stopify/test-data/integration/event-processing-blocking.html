@@ -16,7 +16,7 @@ function sleep(n) {
   runner.pauseImmediate(() => {
     window.setTimeout(() => {
       console.log(`sleep continuing with ${n}`);
-      runner.continueImmediate(n);
+      runner.continueImmediate({ type: 'normal', value: n });
     }, 100);
   });
 }

@@ -188,15 +188,13 @@ export abstract class AbstractRunner implements AsyncRun {
     });
   }
 
-  continueImmediate(x: any): void {
+  continueImmediate(x: Result): void {
     if (this.k === undefined) {
       throw new Error(`called continueImmediate before pauseImmediate`);
     }
     const { k, onDone } = this.k;
     this.k = undefined;
-    return this.continuationsRTS.runtime(
-      () => k({ type: 'normal', value: x}),
-      onDone);
+    return this.continuationsRTS.runtime(() => k(x), onDone);
   }
 
   externalHOF(body: (complete: (result: Result) => void) => never): void {

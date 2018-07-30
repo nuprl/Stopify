@@ -2,6 +2,16 @@
 Release Notes
 =============
 
+Stopify 0.6.0
+=============
+- **Breaking change:** The ``continueImmediate`` function requires a
+  ``Result``. In previous releases, it would receive an ordinary value.
+  This change allows external functions that pause stopified programs to
+  resume with an exception.
+  
+  To upgrade old code, replace ``continueImmediate(x)`` with
+  ``continueImmediate({ type: 'normal', value: x })``.
+
 Stopify 0.5.0
 =============
 

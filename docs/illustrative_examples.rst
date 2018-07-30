@@ -14,7 +14,7 @@ The browser does not have a blocking ``sleep`` function.  However, we can use
 
   function sleep(duration) {
     asyncRun.pauseImmediate(() => {
-      window.setTimeout(() => asyncRun.continueImmediate(undefined), duration);
+      window.setTimeout(() => asyncRun.continueImmediate({ type: 'normal', value: undefined }), duration);
     });
   }
 

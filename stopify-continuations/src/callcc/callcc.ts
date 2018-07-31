@@ -32,6 +32,7 @@ import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeHOFs from '../exposeHOFs';
 import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
+import * as useGlobalObject from '../compiler/useGlobalObject';
 
 const $__R = t.identifier('$__R');
 const $__C = t.identifier('$__C');
@@ -44,6 +45,7 @@ const visitor: Visitor = {
     const doNotWrap = (<any>opts).renames || opts.compileFunction;
 
     if (!doNotWrap) {
+      h.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
       // Wrap the program in 'function $top() { body }'
       path.node.body = [
         t.functionDeclaration($top, [], t.blockStatement(path.node.body))

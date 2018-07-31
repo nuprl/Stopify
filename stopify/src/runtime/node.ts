@@ -30,5 +30,8 @@ export function init(
         suspendRTS.onYield = () => false;
       }, opts.stop * 1000);
     }
+  let g = Object.create(null);
+  g.require = require;
+  (suspendRTS as any).g = g;
   return suspendRTS;
 }

@@ -11,8 +11,7 @@ const program = `
 `;
 
 const asyncRun = stopify.stopifyLocally(
-  `(function(){ ${program} })()`,
-  { externals: [ ] });
+  `(function(){ ${program} })()`);
 
 asyncRun.run(() => {
   // Top-level completed, but this pauses event handlers.

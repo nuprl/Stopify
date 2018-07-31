@@ -13,14 +13,17 @@ const program = `
   sleep(50);
 `;
 
-const asyncRun = stopify.stopifyLocally(
-  program,
-  { externals: [ 'sleep' ] });
+const asyncRun = stopify.stopifyLocally(program);
+asyncRun.g.sleep = sleep;
 
 var i = 0;
-asyncRun.run(() => {
+asyncRun.run((result) => {
+  if (result.type !== 'normal') {
+    console.error(`result ${result}`);
+    window.document.title = 'error';
+  }
   i = i + 1;
-  // Give the code time to call onDone again.
+  // Give the code time to call onDone again (which it should not do!)
   window.setTimeout(() => {
     if (i !== 1) {
       throw `onDone called ${i} times (expected 1 call)`;

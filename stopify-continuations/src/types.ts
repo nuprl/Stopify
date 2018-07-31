@@ -17,8 +17,7 @@ export interface CompilerOpts {
   hofs: 'builtin' | 'fill',
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
-  sourceMap: LineMapping;
-  externals: string[],
+  sourceMap: LineMapping,
   onDone: t.Expression
 }
 

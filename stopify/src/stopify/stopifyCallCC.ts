@@ -38,10 +38,6 @@ export const visitor: Visitor = {
 
     callcc.fastFreshId.init(path);
     const plugs: any[] = [];
-    // Cleanup globals when not running in `func` compile mode
-    if (!state.opts.compileFunction) {
-      plugs.push([callcc.cleanupGlobals, { allowed: opts.externals }]);
-    }
 
     timeSlow('hygiene, etc.', () =>
       callcc.transformFromAst(path, [

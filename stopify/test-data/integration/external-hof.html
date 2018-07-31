@@ -32,9 +32,10 @@ var program = `
   setResult(4000 + externalFunction(function(x) { return x + 1; }));
 `;
 
-var runner = stopify.stopifyLocally(program, {
-  externals: ['externalFunction', 'setResult' ]
-});
+var runner = stopify.stopifyLocally(program);
+
+runner.g.externalFunction = externalFunction;
+runner.g.setResult = setResult;
 
 runner.run((result) => {
   if (result.type === 'normal' && x === 4321) {

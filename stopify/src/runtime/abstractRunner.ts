@@ -27,6 +27,9 @@ export abstract class AbstractRunner implements AsyncRun {
   private eventMode = EventProcessingMode.Running;
   private eventQueue: EventHandler[] = [];
 
+  // The global object for Stopified code.
+  public g = Object.create(null);
+
   constructor(private opts: RuntimeOpts) { }
 
   private mayYieldRunning(): boolean {

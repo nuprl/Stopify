@@ -10,8 +10,12 @@ for (var i = 0; i < 10; i++) { };
 
 var runner = stopify.stopifyLocally(program);
 
-runner.run(() => {
-  console.log('wtf');
+runner.run((result) => {
+  if (result.type !== 'normal') {
+    console.error(`result ${result}`);
+    window.document.title = 'error';
+  }
+
   window.document.title = 'okay';
 });
 

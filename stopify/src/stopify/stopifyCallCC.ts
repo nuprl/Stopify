@@ -4,6 +4,7 @@ import * as callcc from 'stopify-continuations';
 import suspendStop from './suspendStop';
 import suspendStep from './suspendStep';
 import { timeSlow } from '../generic';
+import * as useGlobalObject from '../compiler/useGlobalObject';
 
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -38,10 +39,6 @@ export const visitor: Visitor = {
 
     callcc.fastFreshId.init(path);
     const plugs: any[] = [];
-    // Cleanup globals when not running in `func` compile mode
-    if (!state.opts.compileFunction) {
-      plugs.push([callcc.cleanupGlobals, { allowed: opts.externals }]);
-    }
 
     timeSlow('hygiene, etc.', () =>
       callcc.transformFromAst(path, [
@@ -53,6 +50,11 @@ export const visitor: Visitor = {
     }
     timeSlow('insertSuspend', () =>
       callcc.transformFromAst(path, [[insertSuspend, opts]]));
+
+    
+    if (!opts.compileFunction) {
+      callcc.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
+    }
 
     timeSlow('(control ...) elimination', () =>
       callcc.transformFromAst(path, [[callcc.plugin, opts]]));

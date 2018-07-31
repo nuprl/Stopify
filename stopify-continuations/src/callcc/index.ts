@@ -9,7 +9,6 @@ export { default as plugin } from './callcc';
 export { flatness } from '../compiler/flatness';
 export { fastFreshId };
 export { unreachable } from '../generic';
-export { default as cleanupGlobals } from '../common/cleanupGlobals';
 export { default as hygiene } from '../common/hygiene';
 export { transformFromAst } from '../common/helpers';
 export { getSourceMap } from '../compiler/sourceMaps';
@@ -32,6 +31,7 @@ export const reserved = [
   "captureCC",
   'materializedArguments',
   'argsLen',
-  '$top'
+  '$top',
+  '$S'
 ];
 

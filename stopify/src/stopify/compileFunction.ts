@@ -46,21 +46,6 @@ const visitor: Visitor = {
   }
 };
 
-// TODO(arjun): hand-coded in default externals. These should be picked up
-// from the runtime.
-const defaultExternals = [
-  "Object",
-  "exports",
-  "require",
-  "console",
-  "global",
-  "window",
-  "document",
-  "process",
-  "setTimeout",
-  "captureCC",
-];
-
 const defaultOpts: callcc.CompilerOpts = {
     getters: false,
     compileFunction: true,
@@ -72,7 +57,6 @@ const defaultOpts: callcc.CompilerOpts = {
     hofs: 'builtin',
     jsArgs: 'simple',
     requireRuntime: false,
-    externals: defaultExternals,
     onDone: t.arrowFunctionExpression([], t.blockStatement([])),
     sourceMap: { getLine: (x, y) => null }
 };

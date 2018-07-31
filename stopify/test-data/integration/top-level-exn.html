@@ -10,16 +10,16 @@ throw 'A';
 bad = true;
 `;
 
-var runner = stopify.stopifyLocally(program, {
-  externals: ['bad']
- });
+var runner = stopify.stopifyLocally(program);
+
+ runner.g.bad = false;
 
 window.onerror = function() {
   window.document.title = "error";
 }
 
 runner.run(() => {
-  if (bad) {
+  if (runner.g.bad) {
     window.document.title = 'error';
     console.error('Code ran after throw');
   }

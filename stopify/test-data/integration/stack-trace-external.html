@@ -24,8 +24,14 @@ function G() {
 G();
 `;
 
-var runner = stopify.stopifyLocally(program, { externals: [ 'Ext' ] });
+var runner = stopify.stopifyLocally(program);
+runner.g.Ext = Ext;
+
 runner.run((err) => {
+  if (err.type !== 'exception') {
+    console.error(`result ${result}`);
+    window.document.title = 'error';
+  }
   console.log(err.stack.join("\n"));
 
   // NOTE(arjun): This test case may appear over-specified. But, I believe that

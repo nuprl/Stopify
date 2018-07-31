@@ -4,8 +4,6 @@
   <p>This page runs Stopify in the browser.</p>
 <script src="../../dist/stopify-full.bundle.js"></script>
 <script>
-var paused = false;
-var i = 0;
 var program = `
 function F() {
   onInterval(function() {
@@ -35,12 +33,15 @@ function onInterval(callback) {
   var intervalID = window.setInterval(handler, 200);
 }
 
-var runner = stopify.stopifyLocally(program, {
-  externals: [ 'onInterval', 'paused', 'i', 'console' ]
-}, {
+var runner = stopify.stopifyLocally(program, { }, {
   estimator: 'countdown',
   yieldInterval: 1
 });
+
+runner.g.onInterval = onInterval;
+runner.g.paused = false;
+runner.g.console = console;
+runner.g.i = 0;
 
 runner.run((x) => {
   console.log('end of main turn');
@@ -49,22 +50,22 @@ runner.run((x) => {
 window.setTimeout(() => {
   console.log('Starting pause 1 ...');
   runner.pause(() => {
-    paused = true;
-    console.log('Pause 1 completed. i = ', i);
+    runner.g.paused = true;
+    console.log('Pause 1 completed. i = ', runner.g.i);
     window.setTimeout(() => {
-      console.log('Starting resume 1. i = ', i);
-      paused = false;
+      console.log('Starting resume 1. i = ', runner.g.i);
+      runner.g.paused = false;
       runner.resume();
-      var iPrev = i;
+      var iPrev = runner.g.i;
       window.setTimeout(() => {
-        console.log('Starting pause 2 ... i = ', i);
-        if (i === iPrev) {
+        console.log('Starting pause 2 ... i = ', runner.g.i);
+        if (runner.g.i === iPrev) {
           throw 'i did not advance';
         }
         runner.pause(() => {
-          console.log('Pause 2 completed. i = ', i);
+          console.log('Pause 2 completed. i = ', runner.g.i);
           // i may not have advanced, which is okay.
-          paused = true;
+          runner.g.paused = true;
           window.document.title = 'okay';
         });
       }, 1000);

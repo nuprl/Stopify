@@ -37,14 +37,22 @@ function onTimeout(callback) {
     0);
 }
 
-var runner = stopify.stopifyLocally(program, {
-  externals: [ 'onTimeout', 'window', 'console', 'sleep' ]
-}, {
+var runner = stopify.stopifyLocally(program, { }, {
   estimator: 'countdown',
   yieldInterval: 1
 });
 
-runner.run(() => { });
+runner.g.onTimeout = onTimeout;
+runner.g.window = window;
+runner.g.console = console;
+runner.g.sleep = sleep;
+
+runner.run((result) => {
+  if (result.type !== 'normal') {
+    console.error(`result ${result}`);
+    window.document.title = 'error';
+  }
+});
 
 window.onerror = function() {
   window.document.title = "error";

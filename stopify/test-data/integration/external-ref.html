@@ -22,11 +22,14 @@ if (typeof hiddenExternalFunction === 'function') {
 }
 `;
 
-var runner = stopify.stopifyLocally(program, {
-  externals: ['externalFunction']
-});
+var runner = stopify.stopifyLocally(program);
+runner.g.externalFunction = externalFunction;
 
-runner.run(() => {
+runner.run((result) => {
+  if (result.type !== 'normal') {
+    console.error(`result ${result}`);
+    window.document.title = 'error';
+  }
   window.document.title = 'okay';
 });
 

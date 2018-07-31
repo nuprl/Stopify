@@ -28,7 +28,7 @@ const defaultOpts = {
 // 1. Compile the function
 const transformed = stopify.compileFunction(prog, defaultOpts);
 console.log('1. Program succesfully compiles');
-
+console.log(transformed);
 // 2. Make sure transformed is a valid function.
 const func = eval(`(function(f) {return f})(${transformed})`);
 assert.equal(typeof func, 'function');

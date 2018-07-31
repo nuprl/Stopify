@@ -18,14 +18,19 @@ function onTimeout(callback) {
   window.setTimeout(() => runner.processEvent(callback, () => {}), 0);
 }
 
-var runner = stopify.stopifyLocally(program, {
-  externals: [ 'onTimeout', 'window' ]
-}, {
+var runner = stopify.stopifyLocally(program, { }, {
   estimator: 'countdown',
   yieldInterval: 1
 });
 
-runner.run(() => { });
+runner.g.onTimeout = onTimeout;
+runner.g.window = window;
+
+runner.run((result) => {
+  if (result.type !== 'normal') {
+    window.document.title = 'error';
+  }
+});
 
 window.onerror = function() {
   window.document.title = "error";

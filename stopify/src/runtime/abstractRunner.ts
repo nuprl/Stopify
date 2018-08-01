@@ -16,9 +16,9 @@ interface EventHandler {
 }
 
 export abstract class AbstractRunner implements AsyncRun {
-  private continuationsRTS: Runtime;
+  public continuationsRTS: Runtime;
   private suspendRTS: RuntimeWithSuspend;
-  private onDone: (result: Result) => void = (result) => { };
+  public onDone: (result: Result) => void = (result) => { };
   private onYield: () => void = function() {  };
   private onBreakpoint: (line: number) => void = function() { };
   private breakpoints: number[] = [];

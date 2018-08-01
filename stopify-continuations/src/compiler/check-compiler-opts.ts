@@ -87,7 +87,8 @@ export function checkAndFillCompilerOpts(
     jsArgs: 'simple',
     requireRuntime: false,
     sourceMap: sourceMaps.generateLineMapping(sourceMap),
-    onDone: t.functionExpression(undefined, [], t.blockStatement([]))
+    onDone: t.functionExpression(undefined, [], t.blockStatement([])),
+    eval2: false
   };
 
   copyProp(opts, value, 'compileFunction',

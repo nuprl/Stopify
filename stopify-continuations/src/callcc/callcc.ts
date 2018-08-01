@@ -42,10 +42,13 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
 
-    const doNotWrap = (<any>opts).renames || opts.compileFunction;
+    const doNotWrap = (<any>opts).renames || opts.compileFunction || opts.eval2;
 
-    if (!doNotWrap) {
+    if (!doNotWrap || opts.eval2) {
       h.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
+    }
+
+    if (!doNotWrap) {  
       // Wrap the program in 'function $top() { body }'
       path.node.body = [
         t.functionDeclaration($top, [], t.blockStatement(path.node.body))

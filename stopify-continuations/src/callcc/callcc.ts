@@ -32,6 +32,7 @@ import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeHOFs from '../exposeHOFs';
 import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
+import * as bh from '../babelHelpers';
 
 const $__R = t.identifier('$__R');
 const $__C = t.identifier('$__C');
@@ -41,12 +42,24 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
 
-    const doNotWrap = (<any>opts).renames || opts.compileFunction;
+    const doNotWrap = (<any>opts).renames || opts.compileFunction || opts.eval2;
 
     if (!doNotWrap) {
       // Wrap the program in 'function $top() { body }'
       path.node.body = [
         t.functionDeclaration($top, [], t.blockStatement(path.node.body))
+      ];
+    }
+    
+    // For eval, wrap the expression in 'function() { body }', which lets the
+    // rest of the code insert instrumentation to pause during eval. Note that
+    // later passes will create a name for this anonymous function to allow
+    // reentry.
+    if (opts.eval2) {
+      path.node.body = [
+        t.expressionStatement(
+          t.functionExpression(undefined, [], 
+            t.blockStatement(bh.returnLast(path.node.body))))
       ];
     }
 
@@ -107,6 +120,7 @@ const visitor: Visitor = {
           t.memberExpression($__R, t.identifier('runtime')),
           [$top, opts.onDone])));
     }
+
 
     if (!state.opts.compileFunction) {
       path.node.body.unshift(

@@ -12,9 +12,9 @@ import * as babylon from 'babylon';
  * @returns the stopified program
  */
 export function compileFromAst(
-  src: babel.types.Program, 
+  src: babel.types.Program,
   opts: types.CompilerOpts): string {
-  
+
   const babelOpts = {
     plugins: [[ stopifyCallCC.plugin, opts ]],
     babelrc: false,

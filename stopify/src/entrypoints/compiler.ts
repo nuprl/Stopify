@@ -4,9 +4,9 @@
  */
 import * as babylon from 'babylon';
 import { RawSourceMap } from 'source-map';
-import { CompilerOpts, RuntimeOpts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/types';
-import { AbstractRunner } from '../runtime/abstractRunner';
+import { CompilerOpts, RuntimeOpts, AsyncRun, AsyncEval, Error } from '../types';
+import { Runtime, Result } from 'stopify-continuations/dist/src/types';
+import { AbstractRunner, EventProcessingMode } from '../runtime/abstractRunner';
 import { compileFromAst } from '../compiler/compiler';
 import { checkAndFillCompilerOpts } from 'stopify-continuations/dist/src/compiler/check-compiler-opts';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
@@ -16,21 +16,55 @@ import * as t from 'babel-types';
 export * from 'stopify-continuations/dist/src/runtime/runtime';
 export * from 'stopify-continuations/dist/src/runtime/implicitApps';
 export { Result } from 'stopify-continuations/dist/src/types';
+export { AsyncRun, AsyncEval, Error, CompilerOpts, RuntimeOpts };
 
 let runner : Runner | undefined;
 
+function copyCompilerOpts(compileOpts: CompilerOpts): CompilerOpts {
+  return {
+    compileFunction: compileOpts.compileFunction,
+    getters: compileOpts.getters,
+    debug: compileOpts.debug,
+    captureMethod: compileOpts.captureMethod,
+    newMethod: compileOpts.newMethod,
+    eval: compileOpts.eval,
+    es: compileOpts.es,
+    hofs: compileOpts.hofs,
+    jsArgs: compileOpts.jsArgs,
+    requireRuntime: compileOpts.requireRuntime,
+    sourceMap: compileOpts.sourceMap,
+    onDone: compileOpts.onDone,
+    eval2: compileOpts.eval2
+  };
+}
+
 class Runner extends AbstractRunner {
 
-  constructor(private code: string, opts: RuntimeOpts) {
-    super(opts);
-   }
+  private evalOpts: CompilerOpts;
 
-  run(onDone: (error?: any) => void,
+  constructor(private code: string,
+    compilerOpts: CompilerOpts,
+    runtimeOpts: RuntimeOpts) {
+    super(runtimeOpts);
+    this.evalOpts = copyCompilerOpts(compilerOpts);
+    this.evalOpts.eval2 = true;
+  }
+
+  run(onDone: (result: Result) => void,
     onYield?: () => void,
     onBreakpoint?: (line: number) => void) {
-      console.log()
     this.runInit(onDone, onYield, onBreakpoint);
     eval(this.code);
+  }
+
+  evalAsyncFromAst(ast: t.Program, onDone: (result: Result) => void): void {
+    const stopifiedCode = compileFromAst(ast, this.evalOpts);
+    this.eventMode = EventProcessingMode.Running;
+    this.continuationsRTS.runtime(eval(stopifiedCode), onDone);
+  }
+
+  evalAsync(src: string, onDone: (result: Result) => void): void {
+    this.evalAsyncFromAst(babylon.parse(src).program, onDone);
   }
 }
 
@@ -48,13 +82,18 @@ export function stopifyLocallyFromAst(
   src: t.Program,
   sourceMap?: RawSourceMap,
   optionalCompileOpts?: Partial<CompilerOpts>,
-  optionalRuntimeOpts?: Partial<RuntimeOpts>): AsyncRun {
-  const compileOpts = checkAndFillCompilerOpts(optionalCompileOpts || {}, 
-    sourceMap);
-  const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
-
-  runner = new Runner(compileFromAst(src, compileOpts), runtimeOpts);
-  return runner;
+  optionalRuntimeOpts?: Partial<RuntimeOpts>): (AsyncRun & AsyncEval) | Error {
+  try {
+    const compileOpts = checkAndFillCompilerOpts(optionalCompileOpts || {},
+      sourceMap);
+    const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
+    const stopifiedCode = compileFromAst(src, compileOpts);
+    runner = new Runner(stopifiedCode, compileOpts, runtimeOpts);
+    return runner;
+  }
+  catch (exn) {
+    return { kind: 'error', exception: exn };
+  }
 }
 
 /**
@@ -66,9 +105,9 @@ export function stopifyLocallyFromAst(
 export function stopifyLocally(
   src: string,
   optionalCompileOpts?: Partial<CompilerOpts>,
-  optionalRuntimeOpts?: Partial<RuntimeOpts>): AsyncRun {
+  optionalRuntimeOpts?: Partial<RuntimeOpts>): (AsyncRun & AsyncEval) | Error {
   return stopifyLocallyFromAst(
-    babylon.parse(src).program, 
+    babylon.parse(src).program,
     getSourceMap(src),
     optionalCompileOpts,
     optionalRuntimeOpts);

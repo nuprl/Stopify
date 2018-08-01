@@ -18,7 +18,8 @@ export interface CompilerOpts {
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
   sourceMap: LineMapping,
-  onDone: t.Expression
+  onDone: t.Expression,
+  eval2: boolean
 }
 
 export type Result =

@@ -1,0 +1,42 @@
+<html>
+<body>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+const program = `
+  var x = 1 + 2;
+`;
+
+const asyncRun = stopify.stopifyLocally(program);
+
+var i = 0;
+asyncRun.run((result) => {
+  if (result.type !== 'normal') {
+    console.error(result);
+    window.document.title = 'error';
+    return;
+  }
+  asyncRun.evalAsync('y = x + 1', (result) => {
+    if (result.type !== 'normal') {
+      console.error('evalAsync failed');
+      console.error(result);
+      window.document.title = 'error';
+      return;
+    }
+    if (asyncRun.g.y !== 4) {
+      console.error(asyncRun.g);
+      window.document.title = 'error';
+      return;
+    }
+    window.document.title = 'okay';
+  });
+
+});
+
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+
+</script>
+</body>
+</html>

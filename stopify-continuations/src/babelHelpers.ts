@@ -216,3 +216,12 @@ export function locationString(functionName: string | undefined,
   }
   return result.join('');
 }
+
+export function returnLast(statements: t.Statement[]): t.Statement[] {
+  const N = statements.length - 1;
+  const last = statements[N];
+  if (t.isExpressionStatement(last)) {
+    statements[N] = t.returnStatement(last.expression);
+  }
+  return statements;
+}

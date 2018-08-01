@@ -19,7 +19,8 @@ const validFlags = [
   'jsArgs',
   'requireRuntime',
   'sourceMap',
-  'onDone'
+  'onDone',
+  'eval2'
 ];
 
 /**

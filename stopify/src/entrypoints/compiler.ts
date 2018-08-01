@@ -16,6 +16,7 @@ import * as t from 'babel-types';
 export * from 'stopify-continuations/dist/src/runtime/runtime';
 export * from 'stopify-continuations/dist/src/runtime/implicitApps';
 export { Result } from 'stopify-continuations/dist/src/types';
+export { AsyncRun };
 
 let runner : Runner | undefined;
 

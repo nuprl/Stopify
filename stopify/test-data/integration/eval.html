@@ -24,7 +24,10 @@ asyncRun.run((result) => {
     }
     if (asyncRun.g.y !== 4) {
       console.error(asyncRun.g);
+      window.document.title = 'error';
+      return;
     }
+    window.document.title = 'okay';
   });
 
 });

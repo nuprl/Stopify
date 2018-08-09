@@ -53,10 +53,6 @@
   "jest": {
     "roots": [
       "<rootDir>/dist"
-    ],
-    "testResultsProcessor": "../node_modules/jest-junit"
-  },
-  "jest-junit": {
-    "output": "./results.xml"
+    ]
   }
 }

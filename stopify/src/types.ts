@@ -26,7 +26,13 @@ export interface RuntimeOpts {
   env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari'
 }
 
+export type Error = {
+  kind: 'error',
+  exception: any
+}
+
 export interface AsyncRun {
+  kind : 'ok',
   run(onDone: (result: Result) => void,
     onYield?: () => void,
     onBreakpoint?: (line: number) => void): void;

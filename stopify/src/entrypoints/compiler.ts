@@ -4,7 +4,7 @@
  */
 import * as babylon from 'babylon';
 import { RawSourceMap } from 'source-map';
-import { CompilerOpts, RuntimeOpts, AsyncRun } from '../types';
+import { CompilerOpts, RuntimeOpts, AsyncRun, Error } from '../types';
 import { Runtime, Result } from 'stopify-continuations/dist/src/types';
 import { AbstractRunner } from '../runtime/abstractRunner';
 import { compileFromAst } from '../compiler/compiler';
@@ -16,7 +16,7 @@ import * as t from 'babel-types';
 export * from 'stopify-continuations/dist/src/runtime/runtime';
 export * from 'stopify-continuations/dist/src/runtime/implicitApps';
 export { Result } from 'stopify-continuations/dist/src/types';
-export { AsyncRun };
+export { AsyncRun, Error };
 
 let runner : Runner | undefined;
 
@@ -79,13 +79,18 @@ export function stopifyLocallyFromAst(
   src: t.Program,
   sourceMap?: RawSourceMap,
   optionalCompileOpts?: Partial<CompilerOpts>,
-  optionalRuntimeOpts?: Partial<RuntimeOpts>): AsyncRun {
-  const compileOpts = checkAndFillCompilerOpts(optionalCompileOpts || {}, 
-    sourceMap);
-  const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
-  const stopifiedCode = compileFromAst(src, compileOpts);
-  runner = new Runner(stopifiedCode, compileOpts, runtimeOpts);
-  return runner;
+  optionalRuntimeOpts?: Partial<RuntimeOpts>): AsyncRun | Error {
+  try {
+    const compileOpts = checkAndFillCompilerOpts(optionalCompileOpts || {}, 
+      sourceMap);
+    const runtimeOpts = checkAndFillRuntimeOpts(optionalRuntimeOpts || {});
+    const stopifiedCode = compileFromAst(src, compileOpts);
+    runner = new Runner(stopifiedCode, compileOpts, runtimeOpts);
+    return runner;
+  }
+  catch (exn) {
+    return { kind: 'error', exception: exn };
+  }
 }
 
 /**
@@ -97,7 +102,7 @@ export function stopifyLocallyFromAst(
 export function stopifyLocally(
   src: string,
   optionalCompileOpts?: Partial<CompilerOpts>,
-  optionalRuntimeOpts?: Partial<RuntimeOpts>): AsyncRun {
+  optionalRuntimeOpts?: Partial<RuntimeOpts>): AsyncRun | Error {
   return stopifyLocallyFromAst(
     babylon.parse(src).program, 
     getSourceMap(src),

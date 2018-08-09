@@ -16,6 +16,7 @@ interface EventHandler {
 }
 
 export abstract class AbstractRunner implements AsyncRun {
+  public kind : 'ok' = 'ok';
   public continuationsRTS: Runtime;
   private suspendRTS: RuntimeWithSuspend;
   public onDone: (result: Result) => void = (result) => { };

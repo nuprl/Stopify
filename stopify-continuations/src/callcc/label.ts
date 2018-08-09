@@ -17,6 +17,7 @@ export type Labeled<T> = T & {
 };
 
 type VisitorState = {
+  counter: number,
   inTryBlock: boolean,
   inTryBlockStack: boolean[]
 };
@@ -43,8 +44,6 @@ export function getLabels(...nodes: Labeled<t.Node>[]): number[] {
   }
   return [...(new Set(r)).values()];
 }
-
-let counter: number = 0;
 
 function getAppType(node: t.Statement | null): AppType {
   if (node === null) {
@@ -105,6 +104,7 @@ const visitor: Visitor = {
   ObjectMethod: visitFunction,
   Program: {
     enter(this: VisitorState, path: NodePath<Labeled<t.Program>>) {
+      this.counter = 0;
       this.inTryBlock = false;
       this.inTryBlockStack = [];
     }
@@ -126,12 +126,14 @@ const visitor: Visitor = {
     }
   },
 
-  CallExpression: function (path: NodePath<Labeled<t.CallExpression>>): void {
-    path.node.labels = [counter++];
+  CallExpression: function (this: VisitorState,
+    path: NodePath<Labeled<t.CallExpression>>): void {
+    path.node.labels = [this.counter++];
   },
 
-  NewExpression: function (path: NodePath<Labeled<t.NewExpression>>): void {
-    path.node.labels = [counter++];
+  NewExpression: function (this: VisitorState,
+    path: NodePath<Labeled<t.NewExpression>>): void {
+    path.node.labels = [this.counter++];
   },
 
   AssignmentExpression: {

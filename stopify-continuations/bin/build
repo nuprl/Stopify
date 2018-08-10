@@ -18,3 +18,6 @@ done
 cp dist/src/runtime/gettersSetters.js dist/tmp/gettersSetters.js
 
 ./node_modules/.bin/webpack --config js/webpack.config.js
+
+rm dist/tmp/*
+rmdir dist/tmp

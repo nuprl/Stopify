@@ -55,6 +55,20 @@ export const visitor: Visitor = {
 
     callcc.fastFreshId.cleanup();
 
+    if (opts.eval2) {
+      // NOTE(arjun): I feel that this is a little hacky. Does it even belong
+      // here? Should it be in stopify-continuations? This kind of code is
+      // what makes it very hard for me to understand what the interface to
+      // stopify-continuations should be.
+      const N = path.node.body.length - 1;
+      const funBody = (path.node.body[N] as any).consequent;
+      if (!t.isExpressionStatement(funBody)) {
+        throw new Error('Expected last statement to be an expression for eval');
+      }
+      path.node.body[N] = t.expressionStatement(
+        t.callExpression(funBody.expression, []));
+    }
+
     if (opts.compileFunction) {
       // Do nothing
     }

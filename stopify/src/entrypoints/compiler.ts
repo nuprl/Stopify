@@ -38,6 +38,15 @@ function copyCompilerOpts(compileOpts: CompilerOpts): CompilerOpts {
   };
 }
 
+function returnLast(statements: t.Statement[]): t.Statement[] {
+  const N = statements.length - 1;
+  const last = statements[N];
+  if (t.isExpressionStatement(last)) {
+    statements[N] = t.returnStatement(last.expression);
+  }
+  return statements;
+}
+
 class Runner extends AbstractRunner {
 
   private evalOpts: CompilerOpts;
@@ -58,7 +67,12 @@ class Runner extends AbstractRunner {
   }
 
   evalAsyncFromAst(ast: t.Program, onDone: (result: Result) => void): void {
-    const stopifiedCode = compileFromAst(ast, this.evalOpts);
+    const wrapAst = t.program([
+        t.expressionStatement(
+          t.functionExpression(undefined, [],
+            t.blockStatement(returnLast(ast.body))))]);
+
+    const stopifiedCode = compileFromAst(wrapAst, this.evalOpts);
     this.continuationsRTS.runtime(() => eval(stopifiedCode), onDone);
   }
 

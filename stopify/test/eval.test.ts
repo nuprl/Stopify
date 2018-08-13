@@ -171,3 +171,13 @@ test('eval with suspension at top-level', done => {
         done();
     });
 });
+
+test('eval that declares a global variable', done => {
+    const runner = harness(`
+        eval('let x = 200;');`);
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        expect(runner.g).toMatchObject({ x: 200 });
+        done();
+    });
+});

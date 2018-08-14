@@ -6,7 +6,7 @@ import * as babylon from 'babylon';
 import { RawSourceMap } from 'source-map';
 import { CompilerOpts, RuntimeOpts, AsyncRun, AsyncEval, Error } from '../types';
 import { Runtime, Result } from 'stopify-continuations/dist/src/types';
-import { AbstractRunner } from '../runtime/abstractRunner';
+import { AbstractRunner, EventProcessingMode } from '../runtime/abstractRunner';
 import { compileFromAst } from '../compiler/compiler';
 import { checkAndFillCompilerOpts } from 'stopify-continuations/dist/src/compiler/check-compiler-opts';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
@@ -59,6 +59,7 @@ class Runner extends AbstractRunner {
 
   evalAsyncFromAst(ast: t.Program, onDone: (result: Result) => void): void {
     const stopifiedCode = compileFromAst(ast, this.evalOpts);
+    this.eventMode = EventProcessingMode.Running;
     this.continuationsRTS.runtime(eval(stopifiedCode), onDone);
   }
 

@@ -181,3 +181,26 @@ test('eval that declares a global variable', done => {
         done();
     });
 });
+
+// I don't know how to write this test case. In the browser, this
+// test throws an exception in the background if evalAsync does not
+// set the EventProcessingMode to Running. I don't know how to test for that
+// exception in Jest.
+test.skip('(flaky) break out of infinite loop in evalAsync', done => {
+    const runner = stopify.stopifyLocally('x = 0;', {}, runtimeOpts);
+    if (runner.kind === 'error') {
+        throw new Error(runner.exception);
+    }
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        runner.evalAsync('while(true) { x = 1 }', result => {
+            assert.fail('infinite loop returned a result');
+        });
+        setTimeout(() => {
+            runner.pause(() => {
+                expect(runner.g.x).toBe(1);
+                setTimeout(() => done(), 2000);
+            })
+        }, 1000);
+    });
+});

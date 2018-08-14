@@ -4,7 +4,7 @@ import { RuntimeWithSuspend, badResume } from './suspend';
 import { makeEstimator } from './makeEstimator';
 import { Result } from 'stopify-continuations/dist/src/types';
 
-enum EventProcessingMode {
+export enum EventProcessingMode {
   Running,
   Paused,
   Waiting
@@ -25,7 +25,7 @@ export abstract class AbstractRunner implements AsyncRun {
   private breakpoints: number[] = [];
   private k: undefined | { k: (x: Result) => any, onDone: (x: Result) => any };
   // The runtime system starts executing the main body of the program.
-  private eventMode = EventProcessingMode.Running;
+  protected eventMode = EventProcessingMode.Running;
   private eventQueue: EventHandler[] = [];
 
   // The global object for Stopified code.

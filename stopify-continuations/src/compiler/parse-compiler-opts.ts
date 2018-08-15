@@ -44,6 +44,8 @@ commander.option(
 commander.option(
   '--func',
   'Compile a top-level function. Doesnt add runtime initialization or cleanup');
+commander.option('--compile-mode <mode>',
+  `either normal or library (default: normal)`);
 
 commander.arguments('<srcPath> <dstPath>');
 const args = commander.parse(process.argv);
@@ -56,6 +58,7 @@ export const compilerOpts: CompilerOpts = checkAndFillCompilerOpts({
   newMethod: args.new,
   eval: args.eval,
   es: args.es,
+  compileMode: args.compileMode,
   hofs: args.hofs,
   jsArgs: args.jsArgs,
   requireRuntime: args.requireRuntime

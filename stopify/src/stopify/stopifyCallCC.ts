@@ -5,6 +5,7 @@ import suspendStop from './suspendStop';
 import suspendStep from './suspendStep';
 import { timeSlow } from '../generic';
 import * as useGlobalObject from '../compiler/useGlobalObject';
+import * as exposeHOFs from '../compiler/exposeHOFs';
 
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -33,10 +34,6 @@ export const visitor: Visitor = {
       state.opts.esMode = 'sane';
     }
 
-    if (filename.endsWith('hofs.js')) {
-      state.opts.hofs = 'builtin';
-    }
-
     callcc.fastFreshId.init(path);
     const plugs: any[] = [];
 
@@ -51,9 +48,12 @@ export const visitor: Visitor = {
     timeSlow('insertSuspend', () =>
       callcc.transformFromAst(path, [[insertSuspend, opts]]));
 
-    
     if (!opts.compileFunction) {
       callcc.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
+    }
+
+    if (opts.hofs === 'fill') {
+      callcc.transformFromAst(path, [exposeHOFs.plugin]);
     }
 
     timeSlow('(control ...) elimination', () =>

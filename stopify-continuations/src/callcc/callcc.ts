@@ -29,7 +29,6 @@ import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import { timeSlow } from '../generic';
 import * as exposeImplicitApps from '../exposeImplicitApps';
-import * as exposeHOFs from '../exposeHOFs';
 import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
 import * as bh from '../babelHelpers';
@@ -42,7 +41,8 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
 
-    const doNotWrap = (<any>opts).renames || opts.compileFunction || opts.eval2;
+    const doNotWrap = (<any>opts).renames || opts.compileFunction || 
+      opts.eval2 || opts.compileMode === 'library';
 
     if (!doNotWrap) {
       // Wrap the program in 'function $top() { body }'
@@ -50,7 +50,7 @@ const visitor: Visitor = {
         t.functionDeclaration($top, [], t.blockStatement(path.node.body))
       ];
     }
-    
+
     // For eval, wrap the expression in 'function() { body }', which lets the
     // rest of the code insert instrumentation to pause during eval. Note that
     // later passes will create a name for this anonymous function to allow
@@ -76,10 +76,6 @@ const visitor: Visitor = {
 
     if (opts.es === 'es5') {
       h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
-    }
-
-    if (opts.hofs === 'fill') {
-      h.transformFromAst(path, [exposeHOFs.plugin]);
     }
 
     timeSlow('singleVarDecl', () =>

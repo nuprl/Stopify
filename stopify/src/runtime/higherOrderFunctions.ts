@@ -349,10 +349,10 @@ export function filter(o: any, args: any): any {
   }
 }
 
-export var stopifyArrayPrototype = {
+var stopifyArrayPrototype = {
   __proto__: Array.prototype,
-  map: function(f: any) { return map(this, f, this); },
-  filter: function(f: any) { return filter(this, f); },
+  map: function(f: any) { return stopifyArray(map(this, f, this)); },
+  filter: function(f: any) { return stopifyArray(filter(this, f)); },
   reduceRight: function(f: any, init: any) {
     // NOTE(arjun): The MDN polyfill did not pass a simple test. I am quite sure
     // we never tested it before. This version works just fine.
@@ -432,6 +432,12 @@ export var stopifyArrayPrototype = {
     }
   },
   sort: function(comparator: any) {
-    return array_sort(this, comparator);
+    return stopifyArray(array_sort(this, comparator));
   }
+};
+
+export function stopifyArray(arr: any) {
+  // @stopify flat
+  Reflect.setPrototypeOf(arr, stopifyArrayPrototype);
+  return arr;
 }

@@ -182,3 +182,17 @@ test('sort', done => {
         done();
     });
 });
+
+test('map must produce stopified arrays', done => {
+    const runner = harness(`
+        function F(x) {
+            while(false) { };
+            return x + 1;
+        }
+        alist = [1,2].map(F).map(F)`);
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        expect(runner.g.alist).toMatchObject([3, 4]);
+        done();
+    });
+});

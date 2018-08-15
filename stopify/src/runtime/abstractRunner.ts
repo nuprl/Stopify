@@ -54,8 +54,7 @@ export abstract class AbstractRunner implements AsyncRun {
   }
 
   stopifyArray(arr: Array<any>) {
-    Reflect.setPrototypeOf(arr, this.higherOrderFunctions.stopifyArrayPrototype);
-    return arr;
+    return this.higherOrderFunctions.stopifyArray(arr);
   }
 
   /**

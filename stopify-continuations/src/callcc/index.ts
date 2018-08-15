@@ -1,6 +1,5 @@
 import { knowns } from '../common/cannotCapture';
 import * as exposeImplicitApps from '../exposeImplicitApps';
-import * as exposeHOFs from '../exposeHOFs';
 import * as jumper from './jumper';
 import * as fastFreshId from '../fastFreshId';
 
@@ -16,7 +15,6 @@ export const reserved = [
   ...knowns,
   "name",
   exposeImplicitApps.implicitsIdentifier.name,
-  exposeHOFs.hofIdentifier.name,
   "$opts",
   "$result",
   "target",

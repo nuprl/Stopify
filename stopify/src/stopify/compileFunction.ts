@@ -59,7 +59,8 @@ const defaultOpts: callcc.CompilerOpts = {
     requireRuntime: false,
     onDone: t.arrowFunctionExpression([], t.blockStatement([])),
     sourceMap: { getLine: (x, y) => null },
-    eval2: false
+    eval2: false,
+    compileMode: 'normal'
 };
 
 export function compileFunction(

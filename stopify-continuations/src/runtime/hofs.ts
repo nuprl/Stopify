@@ -468,3 +468,9 @@ export function sort(o: any, comparator?: any): any {
     return o.sort.call(o, comparator);
   }
 }
+
+export var stopifyArrayPrototype = {
+  __proto__: Array.prototype,
+  map: function(f: any) { return map(this, f, this); },
+  filter: function(f: any) { return filter(this, f); }
+}

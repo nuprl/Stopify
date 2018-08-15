@@ -19,7 +19,8 @@ export interface CompilerOpts {
   requireRuntime: boolean,
   sourceMap: LineMapping,
   onDone: t.Expression,
-  eval2: boolean
+  eval2: boolean,
+  compileMode: 'library' | 'normal'
 }
 
 export type Result =

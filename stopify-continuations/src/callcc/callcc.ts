@@ -43,7 +43,8 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
 
-    const doNotWrap = (<any>opts).renames || opts.compileFunction || opts.eval2;
+    const doNotWrap = (<any>opts).renames || opts.compileFunction || 
+      opts.eval2 || opts.compileMode === 'library';
 
     if (!doNotWrap || opts.eval2) {
       h.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
@@ -104,7 +105,7 @@ const visitor: Visitor = {
         [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, jumperizeTry,
          nameExprs]));
     timeSlow('desugar logical', () =>
-      h.transformFromAst(path, [desugarLogical]));
+      h.transformFromAst(path, [desugarLogical]));doNotWrap
     timeSlow('ANF', () =>
       h.transformFromAst(path, [[anf, opts]]));
     timeSlow('declVars', () =>

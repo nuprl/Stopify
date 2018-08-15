@@ -1,17 +1,60 @@
-import * as tmp from 'tmp';
-import * as fs from 'fs';
-import { execSync } from 'child_process';
-const glob = require('glob');
+import * as stopify from '../src/entrypoints/compiler';
+import * as assert from 'assert';
 
-describe('separate compilation using --hofs=fill', () => {
-  const files = glob.sync('test/hofs/*.js');
+// The compiler produces code that expects Stopify to be a global variable.
+(global as any).stopify = stopify;
 
-  for (const src of files) {
-    test(src, () => {
-      const { name: dst } = tmp.fileSync({ dir: ".", postfix: '.js' });
-      execSync(`./bin/compile -t lazy --hofs=fill ${src} ${dst}`);
-      execSync(`./bin/browser chrome -t lazy --estimator countdown -y 1 ${dst}`, { stdio: 'inherit' });
-      fs.unlinkSync(dst);
+const runtimeOpts: Partial<stopify.RuntimeOpts> = {
+    yieldInterval: 1,
+    estimator: 'countdown'
+};
+
+const compilerOpts: Partial<stopify.CompilerOpts> = {
+    hofs: 'fill'    
+};
+
+function setupGlobals(runner: stopify.AsyncRun & stopify.AsyncEval) {
+    var globals: any = {
+        assert: assert,
+        console: console,
+        eval: (code: string) => {
+            runner.pauseImmediate(() => {
+                runner.evalAsync(code, result => {
+                    runner.continueImmediate(result);
+                });
+            });
+        }
+    };
+    runner.g = globals;
+}
+
+function harness(code: string) {
+    const runner = stopify.stopifyLocally(code, compilerOpts, runtimeOpts);
+    if (runner.kind === 'error') {
+        throw runner.exception;
+    }
+    setupGlobals(runner);
+    return runner;
+}
+
+test('map', done => {
+    const runner = harness(`
+        alist = [1,2].map(function(x) { while(false) { }; return x + 1 })`)
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        expect(runner.g.alist).toMatchObject([2, 3]);
+        done();
     });
-  }
 });
+
+
+test('filter', done => {
+    const runner = harness(`
+        alist = [1,2].filter(function(x) { while(false) { }; return x == 1 })`)
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        expect(runner.g.alist).toMatchObject([1]);
+        done();
+    });
+});
+

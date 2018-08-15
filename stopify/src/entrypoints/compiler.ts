@@ -34,7 +34,8 @@ function copyCompilerOpts(compileOpts: CompilerOpts): CompilerOpts {
     requireRuntime: compileOpts.requireRuntime,
     sourceMap: compileOpts.sourceMap,
     onDone: compileOpts.onDone,
-    eval2: compileOpts.eval2
+    eval2: compileOpts.eval2,
+    compileMode: compileOpts.compileMode
   };
 }
 

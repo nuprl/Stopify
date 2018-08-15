@@ -349,30 +349,6 @@ export function filter(o: any, args: any): any {
   }
 }
 
-export function reduce(o: any, args: any): any {
-  if (o instanceof Array) {
-    return array_reduce(o, args);
-  } else {
-    return o.reduce.call(o, args);
-  }
-}
-
-export function forEach(o: any, args: any): any {
-  if (o instanceof Array) {
-    return array_forEach(o, args);
-  } else {
-    return o.forEach.call(o, args);
-  }
-}
-
-export function sort(o: any, comparator?: any): any {
-  if (o instanceof Array && comparator !== undefined) {
-    return array_sort(o, comparator);
-  } else {
-    return o.sort.call(o, comparator);
-  }
-}
-
 export var stopifyArrayPrototype = {
   __proto__: Array.prototype,
   map: function(f: any) { return map(this, f, this); },
@@ -457,8 +433,5 @@ export var stopifyArrayPrototype = {
   },
   sort: function(comparator: any) {
     return array_sort(this, comparator);
-  },
-
-
-
+  }
 }

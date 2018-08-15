@@ -31,14 +31,6 @@ for (const transform of [ 'lazy', 'catch', 'eager', 'retval', 'fudge' ]) {
     }
   });
   targets.push({
-    entry: `./dist/tmp/hofs.${transform}.js`,
-    output: {
-      filename: `dist/stopifyHofs.${transform}.bundle.js`,
-      library: '$hof',
-      libraryTarget: 'var'
-    }
-  });
-  targets.push({
     entry: `./dist/tmp/gettersSetters.js`,
     output: {
       filename: `dist/stopifyGettersSetters.bundle.js`,

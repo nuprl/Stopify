@@ -1,8 +1,11 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 import { Result } from '../types';
+import * as types from '../types';
 
 export class LazyRuntime extends common.Runtime {
+  kind: types.CaptureMethod = 'lazy';
+
   constructor(stackSize: number, restoreFrames: number) {
     super(stackSize, restoreFrames);
   }

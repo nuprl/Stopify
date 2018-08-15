@@ -20,7 +20,8 @@ const validFlags = [
   'requireRuntime',
   'sourceMap',
   'onDone',
-  'eval2'
+  'eval2',
+  'compileMode'
 ];
 
 /**
@@ -89,7 +90,8 @@ export function checkAndFillCompilerOpts(
     requireRuntime: false,
     sourceMap: sourceMaps.generateLineMapping(sourceMap),
     onDone: t.functionExpression(undefined, [], t.blockStatement([])),
-    eval2: false
+    eval2: false,
+    compileMode: 'normal'
   };
 
   copyProp(opts, value, 'compileFunction',
@@ -129,5 +131,8 @@ export function checkAndFillCompilerOpts(
   copyProp(opts, value, 'onDone',
     (x) => t.isExpression(x),
     `.onDone must be an expression (Babylon)`);
+  copyProp(opts, value, 'compileMode',
+    (x) => [ 'normal', 'library' ].includes(x),
+    `.compileMode must be 'normal' or 'library'`);
   return opts;
 }

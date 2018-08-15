@@ -4,7 +4,6 @@ set -e
 ./node_modules/.bin/tsc
 
 mkdir -p dist/tmp
-mkdir -p dist/src/generated_runtime
 
 # Generate pre-stopified versions of each runtime
 
@@ -12,7 +11,6 @@ echo 'Generating pre-stopififed runtimes'
 
 for TRANSFORM in lazy catch eager retval fudge; do
   ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/implicitApps.js dist/tmp/implicitApps.$TRANSFORM.js
-  ./bin/stopify-continuations.js --compile-mode library -t $TRANSFORM dist/src/runtime/hofs.js dist/src/generated_runtime/hofs.$TRANSFORM.js
 done
 
 # gettersSetters doesn't need to be stopified

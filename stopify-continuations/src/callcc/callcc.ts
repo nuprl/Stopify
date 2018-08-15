@@ -29,7 +29,6 @@ import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import { timeSlow } from '../generic';
 import * as exposeImplicitApps from '../exposeImplicitApps';
-import * as exposeHOFs from '../exposeHOFs';
 import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
 import * as useGlobalObject from '../compiler/useGlobalObject';
@@ -50,13 +49,13 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
     }
 
-    if (!doNotWrap) {  
+    if (!doNotWrap) {
       // Wrap the program in 'function $top() { body }'
       path.node.body = [
         t.functionDeclaration($top, [], t.blockStatement(path.node.body))
       ];
     }
-    
+
     // For eval, wrap the expression in 'function() { body }', which lets the
     // rest of the code insert instrumentation to pause during eval. Note that
     // later passes will create a name for this anonymous function to allow
@@ -82,10 +81,6 @@ const visitor: Visitor = {
 
     if (opts.es === 'es5') {
       h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
-    }
-
-    if (opts.hofs === 'fill') {
-      h.transformFromAst(path, [exposeHOFs.plugin]);
     }
 
     timeSlow('singleVarDecl', () =>

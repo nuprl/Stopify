@@ -28,6 +28,17 @@ export type Result =
   { type: 'exception', value: any, stack: string[] };
 
 export interface Runtime {
+  /**
+   * Every instance of runtime has a 'kind' field that indicates the compilation
+   * strategy that it supports. An alternative approach would be to have callers
+   * check if the runtime is an instanceof LazyRuntime, EagerRuntime, etc.
+   * But, that would allow the caller to depend on runtime-specific features.
+   * The 'kind' field allows us to keep the implementation abstract, but
+   * still allows callers to determine the compilatrion strategy for the purpose
+   * of loading pre-stopified code.
+   */
+  kind: CaptureMethod;
+
   // Remaining number of stacks that this runtime can consume.
   remainingStack: number;
 

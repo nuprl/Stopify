@@ -2,6 +2,14 @@
 set -x
 set -e
 ./node_modules/.bin/tsc
+
+mkdir -p dist/src/stopified
+
+# Build runtime support for higher-order functions, etc.
+for TRANSFORM in lazy catch eager retval fudge; do
+  ../stopify-continuations/bin/stopify-continuations.js --compile-mode library -t $TRANSFORM dist/src/runtime/higherOrderFunctions.js dist/src/stopified/higherOrderFunctions.$TRANSFORM.js
+done
+
 ./node_modules/.bin/webpack --config js/stopify-webpack.config.js
 ./node_modules/.bin/webpack --config js/test-loader-webpack.config.js
 ./node_modules/.bin/webpack --config js/pyret-loader-webpack.config.js

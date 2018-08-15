@@ -14,11 +14,11 @@ const visitor: Visitor = {
     exit(path) {
       path.skip();
       path.replaceWith(t.callExpression(
-        t.memberExpression(t.identifier('$__R'), t.identifier('stopifyArray')),
+        t.memberExpression(t.identifier('$S'), t.identifier('stopifyArray')),
         [path.node]));
     }
   }
-}
+};
 
 export function plugin() {
   return { visitor };

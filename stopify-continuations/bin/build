@@ -4,6 +4,7 @@ set -e
 ./node_modules/.bin/tsc
 
 mkdir -p dist/tmp
+mkdir -p dist/src/generated_runtime
 
 # Generate pre-stopified versions of each runtime
 

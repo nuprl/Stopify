@@ -124,6 +124,21 @@ const visitor = {
 
       visitId(path, state);
     }
+  },
+  // Transforms calls to global functions f(x ...) to f.call(void 0, x ...).
+  // Without this step, the call would turn into $S.g.f(x ...), which binds
+  // this to $S.g within the body of f. Stopify tries to implement strict-mode,
+  // so this would be a bad thing.
+  CallExpression(path: NodePath<t.CallExpression>, state: S) {
+    const fun = path.node.callee;
+    if (!(fun.type === 'Identifier' && !state.boundIds.has(fun.name))) {
+      return;
+    }
+    // Calling a global function. T
+    path.node.callee = t.memberExpression(path.node.callee, 
+      t.identifier('call'), false);
+    path.node.arguments = [ t.unaryExpression('void', t.numericLiteral(0)),
+      ...path.node.arguments ];
   }
 };
 

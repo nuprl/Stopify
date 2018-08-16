@@ -1,6 +1,5 @@
 import { knowns } from '../common/cannotCapture';
 import * as exposeImplicitApps from '../exposeImplicitApps';
-import * as exposeHOFs from '../exposeHOFs';
 import * as jumper from './jumper';
 import * as fastFreshId from '../fastFreshId';
 
@@ -9,7 +8,6 @@ export { default as plugin } from './callcc';
 export { flatness } from '../compiler/flatness';
 export { fastFreshId };
 export { unreachable } from '../generic';
-export { default as cleanupGlobals } from '../common/cleanupGlobals';
 export { default as hygiene } from '../common/hygiene';
 export { transformFromAst } from '../common/helpers';
 export { getSourceMap } from '../compiler/sourceMaps';
@@ -17,7 +15,6 @@ export const reserved = [
   ...knowns,
   "name",
   exposeImplicitApps.implicitsIdentifier.name,
-  exposeHOFs.hofIdentifier.name,
   "$opts",
   "$result",
   "target",
@@ -32,6 +29,7 @@ export const reserved = [
   "captureCC",
   'materializedArguments',
   'argsLen',
-  '$top'
+  '$top',
+  '$S'
 ];
 

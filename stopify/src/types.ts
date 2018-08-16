@@ -1,6 +1,7 @@
 import { Result } from 'stopify-continuations/dist/src/types';
 export { Result };
 export { HandleNew, CaptureMethod, CompilerOpts } from 'stopify-continuations';
+import * as t from 'babel-types';
 
 export type Stoppable = (isStop: () => boolean,
                          onStop: () => void,
@@ -26,7 +27,19 @@ export interface RuntimeOpts {
   env: 'firefox' | 'chrome' | 'node' | 'MicrosoftEdge' | 'safari'
 }
 
+export type Error = {
+  kind: 'error',
+  exception: any
+}
+
+export interface AsyncEval {
+  evalAsyncFromAst(ast: t.Program, onDone: (result: Result) => void): void;
+  evalAsync(src: string, onDone: (result: Result) => void): void;
+}
+
 export interface AsyncRun {
+  kind : 'ok',
+  g: { [key: string]: any},
   run(onDone: (result: Result) => void,
     onYield?: () => void,
     onBreakpoint?: (line: number) => void): void;

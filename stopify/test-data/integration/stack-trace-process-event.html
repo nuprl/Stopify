@@ -38,7 +38,9 @@ onTimeout(function() {
 })
 `;
 
-var runner = stopify.stopifyLocally(program, { externals: [ 'onTimeout' ] });
+var runner = stopify.stopifyLocally(program);
+runner.g.onTimeout = onTimeout;
+
 runner.run((err) => {
   console.info('top-level', err);
   if (err.type !== 'normal') {

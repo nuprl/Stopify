@@ -1,8 +1,10 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 import { Result } from '../types';
+import * as types from '../types';
 
 export class EagerRuntime extends common.Runtime {
+  kind: types.CaptureMethod = 'eager';
   eagerStack: common.Stack;
 
   constructor(stackSize: number, restoreFrames: number) {

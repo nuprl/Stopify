@@ -21,7 +21,10 @@ G();
 `;
 
 var runner = stopify.stopifyLocally(program);
+runner.g.Error = Error;
+
 runner.run((err) => {
+  console.log(err);
   console.log(err.stack.join("\n"));
 
   // NOTE(arjun): This test case shows that the stack traces are observably

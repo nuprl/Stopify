@@ -1,6 +1,7 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
 import { Result } from '../types';
+import * as types from '../types';
 
 class FudgedContinuationError {
   constructor(public v: any) {}
@@ -21,6 +22,8 @@ class FudgedContinuationError {
  * transformation still helps with debugging.
  */
 export class FudgeRuntime extends common.Runtime {
+  kind: types.CaptureMethod = 'fudge';
+
   constructor() {
     super(Infinity, Infinity);
   }

@@ -11,7 +11,6 @@ echo 'Generating pre-stopififed runtimes'
 
 for TRANSFORM in lazy catch eager retval fudge; do
   ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/implicitApps.js dist/tmp/implicitApps.$TRANSFORM.js
-  ./bin/stopify-continuations.js -t $TRANSFORM dist/src/runtime/hofs.js dist/tmp/hofs.$TRANSFORM.js
 done
 
 # gettersSetters doesn't need to be stopified

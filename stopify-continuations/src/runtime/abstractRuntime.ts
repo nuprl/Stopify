@@ -1,6 +1,7 @@
 import { unreachable } from '../generic';
 import * as assert from 'assert';
 import { Result, Runtime as RuntimeInterface } from '../types';
+import * as types from '../types';
 
 export type RunResult =
   { type: 'normal', value: any } |
@@ -48,6 +49,7 @@ export class Capture {
 }
 
 export abstract class Runtime implements RuntimeInterface {
+  kind: types.CaptureMethod;
   // Remaining number of stacks that this runtime can consume.
   remainingStack: number;
 

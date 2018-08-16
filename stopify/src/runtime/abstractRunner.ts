@@ -4,7 +4,7 @@ import { RuntimeWithSuspend, badResume } from './suspend';
 import { makeEstimator } from './makeEstimator';
 import { Result } from 'stopify-continuations/dist/src/types';
 
-enum EventProcessingMode {
+export enum EventProcessingMode {
   Running,
   Paused,
   Waiting
@@ -16,16 +16,21 @@ interface EventHandler {
 }
 
 export abstract class AbstractRunner implements AsyncRun {
-  private continuationsRTS: Runtime;
+  public kind : 'ok' = 'ok';
+  public continuationsRTS: Runtime;
   private suspendRTS: RuntimeWithSuspend;
-  private onDone: (result: Result) => void = (result) => { };
+  public onDone: (result: Result) => void = (result) => { };
   private onYield: () => void = function() {  };
   private onBreakpoint: (line: number) => void = function() { };
   private breakpoints: number[] = [];
   private k: undefined | { k: (x: Result) => any, onDone: (x: Result) => any };
   // The runtime system starts executing the main body of the program.
-  private eventMode = EventProcessingMode.Running;
+  protected eventMode = EventProcessingMode.Running;
   private eventQueue: EventHandler[] = [];
+  private higherOrderFunctions: any;
+
+  // The global object for Stopified code.
+  public g = Object.create(null);
 
   constructor(private opts: RuntimeOpts) { }
 
@@ -48,6 +53,10 @@ export abstract class AbstractRunner implements AsyncRun {
     }
   }
 
+  stopifyArray(arr: Array<any>) {
+    return this.higherOrderFunctions.stopifyArray(arr);
+  }
+
   /**
    * Indirectly called by the stopified program.
    */
@@ -58,6 +67,12 @@ export abstract class AbstractRunner implements AsyncRun {
       this.opts.yieldInterval, estimator);
     this.suspendRTS.mayYield = () => this.mayYieldRunning();
     this.suspendRTS.onYield = () => this.onYieldRunning();
+
+    // We use require because this module requires Stopify to be loaded before
+    // it is loaded. A top-level import would not work.
+    if (this.continuationsRTS.kind === 'lazy') {
+      this.higherOrderFunctions = require('../stopified/higherOrderFunctions.lazy');
+    }
     return this;
   }
 

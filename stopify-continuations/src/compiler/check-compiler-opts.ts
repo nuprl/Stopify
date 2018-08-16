@@ -18,9 +18,10 @@ const validFlags = [
   'hofs',
   'jsArgs',
   'requireRuntime',
-  'externals',
   'sourceMap',
-  'onDone'
+  'onDone',
+  'eval2',
+  'compileMode'
 ];
 
 /**
@@ -88,19 +89,9 @@ export function checkAndFillCompilerOpts(
     jsArgs: 'simple',
     requireRuntime: false,
     sourceMap: sourceMaps.generateLineMapping(sourceMap),
-    externals: [
-      "Object",
-      "exports",
-      "require",
-      "console",
-      "global",
-      "window",
-      "document",
-      "process",
-      "setTimeout",
-      "captureCC"
-    ],
-    onDone: t.functionExpression(undefined, [], t.blockStatement([]))
+    onDone: t.functionExpression(undefined, [], t.blockStatement([])),
+    eval2: false,
+    compileMode: 'normal'
   };
 
   copyProp(opts, value, 'compileFunction',
@@ -137,11 +128,11 @@ export function checkAndFillCompilerOpts(
   copyProp(opts, value, 'sourceMap',
     (x) => true,
     '');
-  copyProp(opts, value, 'externals',
-    (x) => x instanceof Array && x.every(y => typeof y === 'string'),
-    `.externals must be an array of strings`);
   copyProp(opts, value, 'onDone',
     (x) => t.isExpression(x),
     `.onDone must be an expression (Babylon)`);
+  copyProp(opts, value, 'compileMode',
+    (x) => [ 'normal', 'library' ].includes(x),
+    `.compileMode must be 'normal' or 'library'`);
   return opts;
 }

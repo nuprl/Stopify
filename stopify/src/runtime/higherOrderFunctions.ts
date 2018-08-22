@@ -1,100 +1,5 @@
 // Do not directly use this file. We stopify and webpack this file for each
 // type of transformation.
-function array_map(obj: any, callback: any, thisArg?: any) {
-  var T, A, k;
-  if (obj === null) {
-    throw new TypeError('this is null or not defined');
-  }
-  // 1. Let O be the result of calling ToObject passing the |this|
-  //    value as the argument.
-  var O = Object(obj);
-  // 2. Let lenValue be the result of calling the Get internal
-  //    method of O with the argument "length".
-  // 3. Let len be ToUint32(lenValue).
-  var len = O.length >>> 0;
-  // 4. If IsCallable(callback) is false, throw a TypeError exception.
-  // See: http://es5.github.com/#x9.11
-  if (typeof callback !== 'function') {
-    throw new TypeError(callback + ' is not a function');
-  }
-  // 5. If thisArg was supplied, let T be thisArg; else let T be undefined.
-  if (arguments.length > 2) {
-    T = arguments[2];
-  }
-  // 6. Let A be a new array created as if by the expression new Array(len)
-  //    where Array is the standard built-in constructor with that name and
-  //    len is the value of len.
-  A = new Array(len);
-  // 7. Let k be 0
-  k = 0;
-  // 8. Repeat, while k < len
-  while (k < len) {
-    var kValue, mappedValue;
-    // a. Let Pk be ToString(k).
-    //   This is implicit for LHS operands of the in operator
-    // b. Let kPresent be the result of calling the HasProperty internal
-    //    method of O with argument Pk.
-    //   This step can be combined with c
-    // c. If kPresent is true, then
-    if (k in O) {
-      // i. Let kValue be the result of calling the Get internal
-      //    method of O with argument Pk.
-      kValue = O[k];
-      // ii. Let mappedValue be the result of calling the Call internal
-      //     method of callback with T as the this value and argument
-      //     list containing kValue, k, and O.
-      mappedValue = callback.call(T, kValue, k, O);
-      // iii. Call the DefineOwnProperty internal method of A with arguments
-      // Pk, Property Descriptor
-      // { Value: mappedValue,
-      //   Writable: true,
-      //   Enumerable: true,
-      //   Configurable: true },
-      // and false.
-      // In browsers that support Object.defineProperty, use the following:
-      // Object.defineProperty(A, k, {
-      //   value: mappedValue,
-      //   writable: true,
-      //   enumerable: true,
-      //   configurable: true
-      // });
-      // For best browser support, use the following:
-      A[k] = mappedValue;
-    }
-    // d. Increase k by 1.
-    k++;
-  }
-  // 9. return A
-  return A;
-}
-
-function array_filter(obj: any, fun: any/*, thisArg*/) {
-  'use strict';
-  if (obj === void 0 || obj === null) {
-    throw new TypeError();
-  }
-  var t = Object(obj);
-  var len = t.length >>> 0;
-  if (typeof fun !== 'function') {
-    throw new TypeError();
-  }
-  var res = [];
-  var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
-  for (var i = 0; i < len; i++) {
-    if (i in t) {
-      var val = t[i];
-      // NOTE: Technically this should Object.defineProperty at
-      //       the next index, as push can be affected by
-      //       properties on Object.prototype and Array.prototype.
-      //       But that method's new, and collisions should be
-      //       rare, so use the more-compatible alternative.
-      if (fun.call(thisArg, val, i, t)) {
-        res.push(val);
-      }
-    }
-  }
-  return res;
-}
 
 function array_sort(o: any, comparator?: any): any {
   "use strict";
@@ -333,53 +238,65 @@ function array_sort(o: any, comparator?: any): any {
   return array;
 }
 
-export function map(o: any, ...args: any[]): any {
-  if (o instanceof Array) {
-    return array_map(o, args[0], args[1]);
-  } else {
-    return o.map.call(o, ...args);
-  }
-}
-
-export function filter(o: any, args: any): any {
-  if (o instanceof Array) {
-    return array_filter(o, args);
-  } else {
-    return o.filter.call(o, args);
-  }
-}
-
 var stopifyArrayPrototype = {
   __proto__: Array.prototype,
-  map: function(f: any) { return stopifyArray(map(this, f, this)); },
-  filter: function(f: any) { return stopifyArray(filter(this, f)); },
+  map: function(f: any) { 
+    if (arguments.length !== 1) {
+      throw new Error(`.map requires 1 argument`);
+    }
+
+    let result = [ ];
+    for (let i = 0; i < this.length; ++i) {
+      result.push(f(this[i]));
+    }
+    return stopifyArray(result);
+  },
+  filter: function(f: any) {
+    if (arguments.length !== 1) {
+      throw new Error(`.filter requires 1 argument`);
+    }
+ 
+    let result = [ ];
+    for (let i = 0; i < this.length; ++i) {
+      if (f(this[i])) {
+        result.push(this[i]);
+      }
+    }
+    return stopifyArray(result);
+  },  
   reduceRight: function(f: any, init: any) {
-    // NOTE(arjun): The MDN polyfill did not pass a simple test. I am quite sure
-    // we never tested it before. This version works just fine.
+    if (arguments.length !== 2) {
+      throw new Error(`.reduceRight requires 2 arguments`);
+    }
+
     var arrLen = this.length;
-    var acc = arguments.length === 1 ? this[arrLen - 1] : init;
-    var i = arguments.length === 1 ? arrLen - 2 : arrLen - 1;
+    var acc = init;
+    var i = arrLen - 1;
     while (i >= 0) {
-      acc = f(acc, this[i], i, this);
+      acc = f(acc, this[i]);
       i = i - 1;
     }
     return acc;
   },
   reduce: function(f: any, init: any) {
-    // NOTE(arjun): The MDN polyfill did not pass a simple test. I am quite sure
-    // we never tested it before. This version works just fine.
+    if (arguments.length !== 2) {
+      throw new Error(`.reduce requires 2 arguments`);
+    }
+
     var arrLen = this.length;
-    var acc = arguments.length === 1 ? this[arrLen - 1] : init;
-    var bound = arguments.length === 1 ? arrLen - 1 : arrLen;
+    var acc = init;
     var i = 0;
-    while (i < bound) {
-      acc = f(acc, this[i], i, this);
+    while (i < arrLen) {
+      acc = f(acc, this[i]);
       i = i + 1;
     }
     return acc;
   },
-  // NOTE(arjun): thisArg ignored
   some: function(pred: any) {
+    if (arguments.length !== 1) {
+      throw new Error(`.some requires 1 argument`);
+    }
+
     var i = 0;
     var l = this.length;
     while (i < l) {
@@ -391,6 +308,10 @@ var stopifyArrayPrototype = {
     return false;
   },
   every: function(pred: any) {
+    if (arguments.length !== 1) {
+      throw new Error(`.every requires 1 argument`);
+    }
+
     var i = 0;
     var l = this.length;
     while (i < l) {
@@ -402,6 +323,10 @@ var stopifyArrayPrototype = {
     return true;
   },
   find: function(pred: any) {
+    if (arguments.length !== 1) {
+      throw new Error(`.find requires 1 argument`);
+    }
+
     var i = 0;
     var l = this.length;
     while (i < l) {
@@ -412,6 +337,10 @@ var stopifyArrayPrototype = {
     }
   },
   findIndex: function(pred: any) {
+    if (arguments.length !== 1) {
+      throw new Error(`.findIndex requires 1 argument`);
+    }
+
     var i = 0;
     var l = this.length;
     while (i < l) {
@@ -424,14 +353,20 @@ var stopifyArrayPrototype = {
   },
   // NOTE(arjun): Ignores thisArg
   forEach(f: any) {
+    if (arguments.length !== 1) {
+      throw new Error(`.forEach requires 1 argument`);
+    }
     var i = 0;
     var l = this.length;
     while (i < l) {
-      f(this[i], i, this);
+      f(this[i]);
       i = i + 1;
     }
   },
   sort: function(comparator: any) {
+    if (arguments.length !== 1) {
+      throw new Error(`.sort requires 1 argument`);
+    }
     return stopifyArray(array_sort(this, comparator));
   }
 };

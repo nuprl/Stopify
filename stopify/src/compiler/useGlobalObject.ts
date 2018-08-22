@@ -48,7 +48,7 @@ function visitId(path: NodePath<t.Identifier>, state: S) {
 
 const visitor = {
   Program(path: NodePath<t.Program>, state: S) {
-    state.boundIds = new Set();
+    state.boundIds = new Set(['arguments']);
     state.boundIdStack = [];
     state.programBody = path.node.body;
   },

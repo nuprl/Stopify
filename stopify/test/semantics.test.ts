@@ -44,3 +44,18 @@ test('in a function (not method), this should be the global this', done => {
         done();
     });
 });
+
+test('can refer to arguments', done => {
+    const runner = harness(`
+        var x = this;
+        var y;
+        function foo() {
+            return arguments.length;
+        }
+        foo(1,2,3);`);
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        expect(runner.g.x).toBe(runner.g.y);
+        done();
+    });
+});

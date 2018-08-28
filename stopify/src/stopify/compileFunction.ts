@@ -10,7 +10,7 @@
 
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
-import * as callcc from 'stopify-continuations';
+import * as callcc from 'stopify-continuations-compiler';
 import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
 import { NodePath, Visitor } from 'babel-traverse';

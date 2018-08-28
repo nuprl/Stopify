@@ -3,6 +3,9 @@ import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as jumper from './jumper';
 import * as fastFreshId from '../fastFreshId';
 
+export * from '../runtime/sentinels';
+export { knownBuiltIns } from '../common/cannotCapture';
+
 export * from '../types';
 export { default as plugin } from './callcc';
 export { flatness } from '../compiler/flatness';

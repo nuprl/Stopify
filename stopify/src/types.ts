@@ -1,6 +1,6 @@
-import { Result } from 'stopify-continuations/dist/src/types';
+import { Result } from 'stopify-continuations';
 export { Result };
-export { HandleNew, CaptureMethod, CompilerOpts } from 'stopify-continuations';
+export { HandleNew, CaptureMethod, CompilerOpts } from 'stopify-continuations-compiler';
 import * as t from 'babel-types';
 
 export type Stoppable = (isStop: () => boolean,

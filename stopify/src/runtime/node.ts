@@ -2,7 +2,7 @@
  * Runtime system for Node
  */
 import { RuntimeOpts } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/types';
+import { Runtime } from 'stopify-continuations';
 import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './makeEstimator';
 import { parseRuntimeOpts } from '../parse-runtime-opts';

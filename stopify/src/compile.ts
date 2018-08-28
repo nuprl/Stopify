@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import * as fs from 'fs';
 import { stopify } from './index';
-import * as parseCli from 'stopify-continuations/dist/src/compiler/parse-compiler-opts';
+import * as parseCli from 'stopify-continuations-compiler/dist/src/compiler/parse-compiler-opts';
 
 function main() {
   const src = fs.readFileSync(parseCli.srcPath, 'utf8');

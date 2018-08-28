@@ -2,7 +2,7 @@ import * as babel from 'babel-core';
 import * as t from 'babel-types';
 import { NodePath } from 'babel-traverse';
 
-export const runtimePath = 'stopify-continuations/dist/src/runtime';
+export const runtimePath = 'stopify-continuations/dist/runtime';
 
 export type FunctionNode =
   t.FunctionDeclaration | t.FunctionExpression | t.ObjectMethod;

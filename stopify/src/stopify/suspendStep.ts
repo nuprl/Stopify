@@ -1,6 +1,6 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { CompilerOpts } from 'stopify-continuations';
+import { CompilerOpts } from 'stopify-continuations-compiler';
 
 const insertSuspend: Visitor = {
   BlockStatement: {

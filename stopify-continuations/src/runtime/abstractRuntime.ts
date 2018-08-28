@@ -1,4 +1,3 @@
-import { unreachable } from '../generic';
 import * as assert from 'assert';
 import { Result, Runtime as RuntimeInterface } from '../types';
 import * as types from '../types';
@@ -138,9 +137,6 @@ export abstract class Runtime implements RuntimeInterface {
           this.stackTrace = [];
           return onDone({ type: 'exception', value: result.value, stack });
         }
-        else {
-          return unreachable();
-        }
       }
       else if (result.type === 'capture') {
         body = () => result.f.call(global, this.makeCont(result.stack));
@@ -158,9 +154,6 @@ export abstract class Runtime implements RuntimeInterface {
       }
       else if (result.type === 'end-turn') {
         return result.callback(onDone);
-      }
-      else {
-        return unreachable();
       }
     }
   }

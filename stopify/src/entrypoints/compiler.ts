@@ -5,17 +5,17 @@
 import * as babylon from 'babylon';
 import { RawSourceMap } from 'source-map';
 import { CompilerOpts, RuntimeOpts, AsyncRun, AsyncEval, Error } from '../types';
-import { Runtime, Result } from 'stopify-continuations/dist/src/types';
+import { Runtime, Result } from 'stopify-continuations';
 import { AbstractRunner, EventProcessingMode } from '../runtime/abstractRunner';
 import { compileFromAst } from '../compiler/compiler';
-import { checkAndFillCompilerOpts } from 'stopify-continuations/dist/src/compiler/check-compiler-opts';
+import { checkAndFillCompilerOpts } from 'stopify-continuations-compiler/dist/src/compiler/check-compiler-opts';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
-import { getSourceMap } from 'stopify-continuations';
+import { getSourceMap } from 'stopify-continuations-compiler';
 import * as t from 'babel-types';
 // We need to provide these for stopify-continuations
-export * from 'stopify-continuations/dist/src/runtime/runtime';
-export * from 'stopify-continuations/dist/src/runtime/implicitApps';
-export { Result } from 'stopify-continuations/dist/src/types';
+export * from 'stopify-continuations/dist/runtime/runtime';
+export * from 'stopify-continuations-compiler/dist/src/runtime/implicitApps';
+export { Result } from 'stopify-continuations';
 export { AsyncRun, AsyncEval, Error, CompilerOpts, RuntimeOpts };
 
 let runner : Runner | undefined;

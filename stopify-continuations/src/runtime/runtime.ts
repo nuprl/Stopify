@@ -7,10 +7,8 @@ import { LazyRuntime } from './lazyRuntime';
 import { EagerRuntime } from './eagerRuntime';
 import { RetvalRuntime } from './retvalRuntime';
 import { FudgeRuntime } from './fudgeRuntime';
-export * from './sentinels';
 
 export * from './abstractRuntime';
-export { knownBuiltIns } from '../common/cannotCapture';
 
 let savedRTS: Runtime | undefined;
 export function newRTS(transform: string): Runtime {

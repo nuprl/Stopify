@@ -1,8 +1,7 @@
 import { RuntimeOpts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/types';
+import { Result, Runtime } from 'stopify-continuations';
 import { RuntimeWithSuspend, badResume } from './suspend';
 import { makeEstimator } from './makeEstimator';
-import { Result } from 'stopify-continuations/dist/src/types';
 
 export enum EventProcessingMode {
   Running,

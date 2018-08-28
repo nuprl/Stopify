@@ -14,7 +14,6 @@ import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { FlatnessMark } from "./common/helpers";
 import { runtimePath } from './common/helpers';
-import * as types from './types';
 
 const gettersRuntime = t.identifier('$gs');
 
@@ -61,7 +60,7 @@ const visitor: Visitor = {
       path.stop();
     }
 
-    const opts: types.CompilerOpts  = state.opts;
+    const opts = state.opts;
     if (!opts.requireRuntime) {
       return;
     }

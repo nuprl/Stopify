@@ -1,6 +1,6 @@
 import { setImmediate } from './setImmediate';
 import { ElapsedTimeEstimator } from 'stopify-estimators';
-import {  Runtime, Result } from 'stopify-continuations/dist/src/types';
+import {  Runtime, Result } from 'stopify-continuations';
 
 export function badResume(x: Result): any {
   throw new Error('program is not paused. (Did you call .resume() twice?)');

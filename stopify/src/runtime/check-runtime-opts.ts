@@ -1,6 +1,6 @@
 import { RuntimeOpts } from '../types';
 import { copyProp, transformProp } from
-  'stopify-continuations/dist/src/compiler/check-compiler-opts';
+  'stopify-continuations-compiler/dist/src/compiler/check-compiler-opts';
 
 const validFlags = [
   'filename',

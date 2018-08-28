@@ -4,12 +4,12 @@
  * To run the compiler in the browser, see compiler.ts.
  */
 import { RuntimeOpts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations/dist/src/types';
+import { Runtime } from 'stopify-continuations';
 import { AbstractRunner } from '../runtime/abstractRunner';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
 // We need to provide these for stopify-continuations
-export * from 'stopify-continuations/dist/src/runtime/runtime';
-export * from 'stopify-continuations/dist/src/runtime/implicitApps';
+export * from 'stopify-continuations/dist/runtime/runtime';
+export * from 'stopify-continuations-compiler/dist/src/runtime/implicitApps';
 
 // For testing / benchmarking convenience.
 export { parseRuntimeOpts } from '../parse-runtime-opts';

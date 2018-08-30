@@ -97,7 +97,7 @@ const visitor: Visitor = {
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
         [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, jumperizeTry,
-         nameExprs]));
+          nameExprs]));
     timeSlow('desugar logical', () =>
       h.transformFromAst(path, [desugarLogical]));
     timeSlow('ANF', () =>

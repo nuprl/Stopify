@@ -15,6 +15,7 @@ import * as t from 'babel-types';
 // We need to provide these for stopify-continuations
 export * from 'stopify-continuations/dist/runtime/runtime';
 export * from 'stopify-continuations-compiler/dist/src/runtime/implicitApps';
+export { knownBuiltIns } from 'stopify-continuations-compiler/dist/src/common/cannotCapture';
 export { Result } from 'stopify-continuations';
 export { AsyncRun, AsyncEval, Error, CompilerOpts, RuntimeOpts };
 

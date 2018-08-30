@@ -67,6 +67,9 @@
     "source-map": "^0.6.0",
     "source-map-support": "^0.5.6",
     "sprintf": "^0.1.5",
+    "stopify-continuations": "^0.5.0-elementaryJS",
+    "stopify-continuations-compiler": "^0.5.0",
+    "stopify-estimators": "^0.5.0",
     "tmp": "0.0.31",
     "trie": "^0.2.1"
   },

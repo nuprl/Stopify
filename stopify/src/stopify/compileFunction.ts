@@ -57,7 +57,7 @@ const defaultOpts: callcc.CompilerOpts = {
     hofs: 'builtin',
     jsArgs: 'simple',
     requireRuntime: false,
-    onDone: t.arrowFunctionExpression([], t.blockStatement([])),
+    onDone: t.functionExpression(t.identifier('onDone'), [], t.blockStatement([])),
     sourceMap: { getLine: (x, y) => null },
     eval2: false,
     compileMode: 'normal'

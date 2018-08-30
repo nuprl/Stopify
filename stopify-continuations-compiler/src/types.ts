@@ -19,7 +19,7 @@ export interface CompilerOpts {
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
   sourceMap: LineMapping,
-  onDone: t.Expression,
+  onDone: t.FunctionExpression,
   eval2: boolean,
   compileMode: 'library' | 'normal'
 }

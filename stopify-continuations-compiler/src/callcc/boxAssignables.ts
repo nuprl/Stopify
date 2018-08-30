@@ -263,7 +263,7 @@ during boxing`);
           unbox(path.node.id) as t.LVal, fun));
         liftDecl(this, decl);
         liftAssign(this, stmt);
-        //path.replaceWith(stmt);
+
         path.remove();
         path.skip();
       }

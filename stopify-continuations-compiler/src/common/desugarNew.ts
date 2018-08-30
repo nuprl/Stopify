@@ -30,6 +30,7 @@ module.exports = function () {
     visitor: {
       Program: {
         exit(path: NodePath<t.Program>, state: {opts: CompilerOpts}) {
+          if (!state.opts.compileFunction) {
             const constr = t.identifier('constr');
             const args = t.identifier('args');
             const knownTest = t.callExpression(
@@ -70,6 +71,7 @@ module.exports = function () {
               ]));
 
             path.node.body.unshift(handleNewFunction);
+          }
         }
       },
       NewExpression(path: NodePath<FlatnessMark<t.NewExpression>>) {

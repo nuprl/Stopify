@@ -36,7 +36,7 @@ console.log('2. Result is a valid function');
 
 // 3. stopify-continuations provides required variables.
 const runFunc = `
-const $__T = require("stopify-continuations/dist/src/runtime/runtime")
+const $__T = require("stopify-continuations/dist/runtime/runtime")
 const $__R = $__T.newRTS('lazy')
 const $S = require("stopify/dist/src/runtime/node").init($__R);
 

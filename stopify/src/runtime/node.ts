@@ -33,5 +33,12 @@ export function init(
   let g = Object.create(null);
   g.require = require;
   (suspendRTS as any).g = g;
+  (suspendRTS as any).g.console = console;
+
+  let higherOrderFunctions: any;
+  if (continuationsRTS.kind === 'lazy') {
+    higherOrderFunctions = require('../stopified/higherOrderFunctions.lazy.node');
+  }
+  (suspendRTS as any).stopifyArray = (arr: any[]) => higherOrderFunctions.stopifyArray(arr);
   return suspendRTS;
 }

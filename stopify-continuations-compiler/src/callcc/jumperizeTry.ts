@@ -40,8 +40,8 @@ import { fresh } from '../fastFreshId';
 
 const returnSentinal = t.identifier('finally_rv');
 const throwSentinal = t.identifier('finally_exn');
-const sentinal = t.memberExpression(t.identifier('$__T'), t.identifier('RV_SENTINAL'));
-const sentinalExn = t.memberExpression(t.identifier('$__T'), t.identifier('EXN_SENTINAL'));
+const sentinal = t.memberExpression(t.identifier('$__C'), t.identifier('RV_SENTINAL'));
+const sentinalExn = t.memberExpression(t.identifier('$__C'), t.identifier('EXN_SENTINAL'));
 
 type VisitorState = {
   inTryWithFinally: boolean,

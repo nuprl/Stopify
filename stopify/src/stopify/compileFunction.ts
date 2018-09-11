@@ -15,6 +15,8 @@ import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
 import { NodePath, Visitor } from 'babel-traverse';
 
+export { RV_SENTINAL, EXN_SENTINAL, knownBuiltIns } from 'stopify-continuations-compiler';
+
 const visitor: Visitor = {
   Program: {
     enter(path: NodePath<t.Program>, { opts }) {

@@ -143,8 +143,7 @@ const visitor: Visitor = {
           'var'));
     }
 
-    if (opts.eval && !opts.compileFunction) {
-
+    if (!doNotWrap) {
       const req = opts.requireRuntime ?
         t.callExpression(t.identifier('require'),
           [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]) :
@@ -155,7 +154,6 @@ const visitor: Visitor = {
         h.letExpression(
           $__C, req, 'const'));
     }
-
   }
 };
 

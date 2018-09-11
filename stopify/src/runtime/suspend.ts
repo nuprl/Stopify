@@ -39,7 +39,7 @@ export class RuntimeWithSuspend {
     /**
      * Called when execution reaches the end of any stopified module.
      */
-    public onEnd = function(): void { this.estimator.cancel(); },
+    public onEnd = function(x: Result): void { this.estimator.cancel(); defaultDone(x); },
     public continuation = badResume,
     public onDone = defaultDone,
     /**

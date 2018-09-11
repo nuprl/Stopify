@@ -122,6 +122,12 @@ const visitor = {
         return;
       }
 
+      //`arguments` is a special keyword that is implicitly defined within
+      //function scopes.
+      if (path.node.name === 'arguments') {
+        return;
+      }
+
       visitId(path, state);
     }
   },

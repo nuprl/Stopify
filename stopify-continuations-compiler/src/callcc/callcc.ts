@@ -147,8 +147,7 @@ const visitor: Visitor = {
       const req = opts.requireRuntime ?
         t.callExpression(t.identifier('require'),
           [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]) :
-        // provided by dist/stopify-compiler.bundle.js
-        t.identifier('stopifyCompiler');
+        t.memberExpression(t.identifier('stopify'), t.identifier('compiler'));
 
       path.node.body.unshift(
         h.letExpression(

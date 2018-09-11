@@ -19,6 +19,9 @@ export { knownBuiltIns } from 'stopify-continuations-compiler/dist/src/common/ca
 export { Result } from 'stopify-continuations';
 export { AsyncRun, AsyncEval, Error, CompilerOpts, RuntimeOpts };
 
+import * as compiler from '../stopify/compileFunction';
+export { compiler };
+
 let runner : Runner | undefined;
 
 function copyCompilerOpts(compileOpts: CompilerOpts): CompilerOpts {

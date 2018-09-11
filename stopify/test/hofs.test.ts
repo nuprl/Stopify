@@ -1,7 +1,8 @@
 import * as stopify from '../src/entrypoints/compiler';
 import * as assert from 'assert';
 
-// The compiler produces code that expects Stopify to be a global variable.
+// The compiler produces code that expects Stopify and its runtime compiler to
+// be a global variable.
 (global as any).stopify = stopify;
 
 const runtimeOpts: Partial<stopify.RuntimeOpts> = {

@@ -9,8 +9,6 @@ function cleanup {
 
 trap cleanup EXIT
 
-npm run build
-
 if [ "$1" == '-int' ]; then
   ./node_modules/.bin/jest ${@:2}
 else

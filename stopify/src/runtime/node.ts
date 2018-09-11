@@ -30,10 +30,9 @@ export function init(
         suspendRTS.onYield = () => false;
       }, opts.stop * 1000);
     }
-  let g = Object.create(null);
+  let g: any = global;
   g.require = require;
   (suspendRTS as any).g = g;
-  (suspendRTS as any).g.console = console;
 
   let higherOrderFunctions = require(`../stopified/higherOrderFunctions.${continuationsRTS.kind}.node`);
 

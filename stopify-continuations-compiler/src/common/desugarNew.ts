@@ -35,7 +35,7 @@ module.exports = function () {
             const args = t.identifier('args');
             const knownTest = t.callExpression(
               t.memberExpression(
-                t.memberExpression(t.identifier('$__T'), t.identifier('knownBuiltIns')),
+                t.memberExpression(t.identifier('$__C'), t.identifier('knownBuiltIns')),
                 t.identifier('includes')),
               [constr]);
             (<any>knownTest).mark = 'Flat';

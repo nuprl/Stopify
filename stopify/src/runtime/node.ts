@@ -2,7 +2,7 @@
  * Runtime system for Node
  */
 import { RuntimeOpts } from '../types';
-import { Runtime } from 'stopify-continuations';
+import { Runtime, Result } from 'stopify-continuations';
 import { RuntimeWithSuspend } from './suspend';
 import { makeEstimator } from './makeEstimator';
 import { parseRuntimeOpts } from '../parse-runtime-opts';
@@ -23,7 +23,15 @@ export function init(
 
   const suspendRTS = new RuntimeWithSuspend(continuationsRTS,
     opts.yieldInterval,
-    makeEstimator(opts));
+    makeEstimator(opts),
+    function (): boolean { return false; },
+    function (): boolean { return true; },
+    function (x: Result): void {
+      this.estimator.cancel();
+      if (x.type === 'exception') {
+        throw x.value;
+      }
+    });
 
     if (typeof opts.stop !== 'undefined') {
       setTimeout(function() {

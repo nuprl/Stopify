@@ -41,7 +41,8 @@ test('in a function (not method), this should be the global this', done => {
         foo();`);
     runner.run(result => {
         expect(result).toMatchObject({ type: 'normal' });
-        expect(runner.g.x).toBe(runner.g.y);
+        expect(runner.g.x).toBe(global);
+        expect(runner.g.y).toBe(runner.g.x);
         done();
     });
 });

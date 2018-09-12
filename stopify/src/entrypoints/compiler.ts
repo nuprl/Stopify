@@ -59,7 +59,7 @@ class Runner extends AbstractRunner {
     onYield?: () => void,
     onBreakpoint?: (line: number) => void) {
     this.runInit(onDone, onYield, onBreakpoint);
-    eval(this.code);
+    eval.call(global, this.code);
   }
 
   evalAsyncFromAst(ast: t.Program, onDone: (result: Result) => void): void {

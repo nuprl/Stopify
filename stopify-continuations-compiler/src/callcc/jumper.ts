@@ -26,6 +26,7 @@ import { fresh } from '../fastFreshId';
 export { restoreNextFrame };
 
 const frame = t.identifier('$frame');
+const that = t.identifier('$that');
 const newTarget = t.identifier('newTarget');
 const captureFrameId = t.identifier('frame');
 const matArgs = t.identifier('materializedArguments');
@@ -73,6 +74,8 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     t.expressionStatement(t.assignmentExpression('=', frame, popRuntimeStack)),
     t.expressionStatement(t.assignmentExpression('=', target,
       t.memberExpression(frame, t.identifier('index')))),
+    t.expressionStatement(t.assignmentExpression('=', that,
+      t.memberExpression(frame, t.identifier('this')))),
   ];
 
   if (restoreLocals.length > 0) {
@@ -130,9 +133,9 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   // A local function to restore the next stack frame
   const reenterExpr = path.node.__usesArgs__
     ? t.callExpression(t.memberExpression(path.node.id, t.identifier('apply')),
-      [t.thisExpression(), matArgs])
+      [that, matArgs])
     : t.callExpression(t.memberExpression(path.node.id, t.identifier('call')),
-      [t.thisExpression(), ...<any>path.node.params.map(paramToArg)]);
+      [that, ...<any>path.node.params.map(paramToArg)]);
   const reenterClosure = t.variableDeclaration('var', [
     t.variableDeclarator(restoreNextFrame, t.arrowFunctionExpression([],
       t.blockStatement(path.node.__usesArgs__ ?
@@ -454,7 +457,8 @@ const jumper = {
 
       const declTarget = bh.varDecl(target, t.nullLiteral());
       const declFrame = bh.varDecl(frame, t.nullLiteral());
-      path.node.body.body.unshift(declTarget, declFrame);
+      const declThat = bh.varDecl(that, t.thisExpression());
+      path.node.body.body.unshift(declTarget, declFrame, declThat);
 
       // Increment the remainingStack at the last line of the function.
       // This does not break tail calls.
@@ -474,6 +478,15 @@ const jumper = {
         path.node.body.body.push(ifConstructor);
       }
     }
+  },
+
+  ThisExpression: function (path: NodePath<t.ThisExpression>): void {
+    if (isFlat(path)) {
+      return;
+    }
+
+    path.replaceWith(that);
+    path.skip();
   },
 
   WhileStatement: function (path: NodePath<Labeled<t.WhileStatement>>): void {

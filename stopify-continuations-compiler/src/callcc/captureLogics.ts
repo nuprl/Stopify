@@ -97,6 +97,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>,
               t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
               t.objectProperty(t.identifier('f'), restoreNextFrame),
               t.objectProperty(t.identifier('index'), applyLbl),
+              t.objectProperty(t.identifier('this'), t.thisExpression()),
             ]),
           ])),
           t.expressionStatement(t.callExpression(captureLocals, [
@@ -172,6 +173,7 @@ function eagerCaptureLogic(path: NodePath<t.AssignmentExpression>,
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(t.identifier('f'), restoreNextFrame),
     t.objectProperty(t.identifier('index'), applyLbl),
+    t.objectProperty(t.identifier('this'), t.thisExpression()),
   ]);
 
   const restoreNode =
@@ -230,6 +232,7 @@ function retvalCaptureLogic(path: NodePath<t.AssignmentExpression>,
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
     t.objectProperty(t.identifier('f'), restoreNextFrame),
     t.objectProperty(t.identifier('index'), applyLbl),
+    t.objectProperty(t.identifier('this'), t.thisExpression()),
   ]);
 
   const retStack = t.memberExpression(left, t.identifier('stack'));

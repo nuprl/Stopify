@@ -100,6 +100,12 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         argsLen, t.memberExpression(frame, argsLen))));
+
+    restoreBlock.push(
+      t.expressionStatement(t.assignmentExpression('=',
+        matArgs, t.logicalExpression('||',
+          t.memberExpression(frame, t.identifier('params')),
+          matArgs))));
   }
 
   const ifRestoring = t.ifStatement(isRestoringMode,
@@ -154,7 +160,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
       : t.identifier('arguments');
 
     mayMatArgs.push(
-      t.variableDeclaration('const',
+      t.variableDeclaration('let',
         [t.variableDeclarator(matArgs, argExpr)]));
 
     const boxedArgs = <imm.Set<string>>(<any>path.node).boxedArgs;
@@ -178,11 +184,11 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
 
   path.node.body.body.unshift(...[
     ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
+    ...mayMatArgs,
     decreaseStackSize,
     ifRestoring,
     captureClosure,
     reenterClosure,
-    ...mayMatArgs
   ]);
 
   path.skip();
@@ -255,6 +261,12 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         argsLen, t.memberExpression(frame, argsLen))));
+
+    restoreBlock.push(
+      t.expressionStatement(t.assignmentExpression('=',
+        matArgs, t.logicalExpression('||',
+          t.memberExpression(frame, t.identifier('params')),
+          matArgs))));
   }
 
   const ifRestoring = t.ifStatement(isRestoringMode,
@@ -266,7 +278,7 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
       : t.identifier('arguments');
 
     mayMatArgs.push(
-      t.variableDeclaration('const',
+      t.variableDeclaration('let',
         [t.variableDeclarator(matArgs, argExpr)]));
 
     const boxedArgs = <imm.Set<string>>(<any>path.node).boxedArgs;
@@ -301,9 +313,9 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
 
   path.node.body = t.blockStatement([
     ...(jsArgs === 'full' ? [defineArgsLen] : []),
+    ...mayMatArgs,
     decreaseStackSize,
     ifRestoring,
-    ...mayMatArgs,
     wrapBody,
   ]);
 }

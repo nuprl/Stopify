@@ -333,8 +333,18 @@ function usesArguments(path: NodePath<t.Function>) {
   const visitor = {
     ReferencedIdentifier(path: NodePath<t.Identifier>) {
       if (path.node.name === 'arguments') {
-        r = true;
-        path.stop();
+        const parent = path.parent;
+        if (t.isMemberExpression(parent) &&
+            parent.object === path.node &&
+            parent.computed === false &&
+            t.isIdentifier(parent.property) &&
+            parent.property.name === 'length') {
+          // arguments.length is harmless and does not require materialization
+        }
+        else {
+          r = true;
+          path.stop();
+        }
       }
     },
     Function(path: NodePath<t.Function>) {

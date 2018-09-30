@@ -61,3 +61,29 @@ test('can refer to arguments', done => {
         done();
     });
 });
+
+test('external HOF', done => {
+    const runner = harness(`
+        result = 4000 + externalFunction(function(x) { return x + 1; });`);
+    // Without Stopify, this function would be:
+    // function(f) { return f(20) + 300; }
+    runner.g.externalFunction = function(f: any) {
+        runner.externalHOF(complete => {
+        runner.runStopifiedCode(
+            () => f(20),
+            (result) => {
+            if (result.type === 'normal') {
+                complete({ type: 'normal', value: result.value + 300 });
+            }
+            else {
+                complete(result);
+            }
+            });
+        });
+    }
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        expect(runner.g.result).toBe(4321);
+        done();
+    });
+});

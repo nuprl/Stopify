@@ -10,3 +10,4 @@ package-lock.json
 auth-trial/html/src-noconflict
 /benchmarks
 dist
+stopify/src/version.ts

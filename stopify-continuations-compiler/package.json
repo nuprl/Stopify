@@ -1,6 +1,6 @@
 {
   "name": "stopify-continuations-compiler",
-  "version": "0.5.0",
+  "version": "0.5.3-elementaryJS",
   "description": "Continuations for JavaScript",
   "main": "dist/src/callcc/index",
   "typings": "dist/src/callcc/index",

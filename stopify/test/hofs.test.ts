@@ -48,7 +48,7 @@ test('map', done => {
     });
 });
 
-test('forEach', done => {
+test.skip('forEach', done => {
     const runner = harness(`
         var arr = [];
         [1,2].forEach(function(x, i) { while(false) { }; arr[i] = x })`)
@@ -85,7 +85,7 @@ test('reduce with initial value', done => {
 });
 
 
-test('reduce without initial value', done => {
+test.skip('reduce without initial value', done => {
     const runner = harness(`
         function f(x, y) {
             while(false) { };

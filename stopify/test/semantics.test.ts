@@ -52,12 +52,12 @@ test('can refer to arguments', done => {
         var x = this;
         var y;
         function foo() {
-            return arguments.length;
+            y = arguments.length;
         }
         foo(1,2,3);`);
     runner.run(result => {
         expect(result).toMatchObject({ type: 'normal' });
-        expect(runner.g.x).toBe(runner.g.y);
+        expect(runner.g.y).toBe(3);
         done();
     });
 });

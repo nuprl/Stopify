@@ -368,6 +368,12 @@ var stopifyArrayPrototype = {
       throw new Error(`.sort requires 1 argument`);
     }
     return stopifyArray(array_sort(this, comparator));
+  },
+  slice: function(begin: any, end: any) {
+    if (arguments.length !== 2) {
+      throw new Error(`.slice requires 2 arguments`);
+    }
+    return stopifyArray(this.slice(begin, end));
   }
 };
 

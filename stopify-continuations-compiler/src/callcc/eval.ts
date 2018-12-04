@@ -33,11 +33,6 @@ function reify(opts: CompilerOpts): t.ObjectExpression {
         props.push(t.objectProperty(t.stringLiteral(p),
           t.stringLiteral((opts as any)[p])));
         break;
-      case 'externals':
-        props.push(t.objectProperty(t.stringLiteral(p),
-          t.arrayExpression((opts as any)[p].map((s: string) =>
-            t.stringLiteral(s)))));
-        break;
       case 'sourceMap':
         break;
       case 'onDone':

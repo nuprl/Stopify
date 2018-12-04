@@ -17,7 +17,7 @@ type:
 .. code-block:: typescript
 
   interface RuntimeOpts {
-    estimator?: "velocity" | "reservoir" | "exact" | "countdown",
+    estimator?: "velocity" | "reservoir" | "exact" | "countdown" | "interrupt",
     yieldInterval?: number    /* must be greater than zero */,
     stackSize?: number        /* must be greater than zero */
     restoreFrames?: number    /* must be greater than zero */
@@ -54,6 +54,14 @@ a good value of $n$ will depend on platform performance and program
 characteristics that are very hard to predict. However, it is useful for
 reproducing bugs in Stopify, since the ``velocity`` estimator is
 nondeterministic.
+
+The ``interrupt`` estimator is a Node.js-only implementation which
+initializes a timer as a C++ extension to Node.js. With this estimator, a
+JavaScript ``Buffer`` object is signaled from C++ whenever a
+``yieldInterval`` milliseconds has elapsed from the timer. This estimator is
+only supported in Node.js (it depends on native code), but experiments have
+shown that it implements the most precise estimation technique, with the
+smallest overhead in this environment.
 
 Finally, the ``exact`` estimator checks the current time at every yield point,
 instead of sampling the time. This has a higher runtime overhead than

@@ -39,9 +39,8 @@
       });
     `;
 
-    const runner = stopify.stopifyLocally(
-      program,
-      { externals: [ 'onClick', 'alert' ] });
+    const runner = stopify.stopifyLocally(program);
+    runner.g = { onClick, alert, window, runner };
 
     runner.run(() => console.log('program complete'));
   </script>

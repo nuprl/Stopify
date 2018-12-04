@@ -39,9 +39,8 @@
       alert("Result is " + (x + y));
     `;
 
-    const runner = stopify.stopifyLocally(
-      program,
-      { externals: [ 'prompt', 'alert' ] });
+    const runner = stopify.stopifyLocally(program);
+    runner.g = { Number, prompt, alert, runner, document, webConsole };
 
     runner.run(() => console.log('program complete'));
   </script>

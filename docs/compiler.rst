@@ -74,15 +74,15 @@ The Stopify compiler accepts the following options:
 .. code-block:: typescript
 
   interface CompilerOpts {
-    captureMethod?: "lazy" | "retval" | "eager" | "original", // --transform from the CLI
-    newMethod?: "wrapper" | "direct",                         // --new from the CLI
-    getters?: boolean,                                        // --getters from the CLI
-    debug?: boolean,                                          // --debug from the CLI
-    eval?: boolean,                                           // --eval from the CLI
-    es?: "sane" | "es5",                                      // --es from the CLI
-    hofs: "builtin" | "fill",                                 // --hofs from the CLI
-    jsArgs?: "simple" | "faithful" | "full",                  // --js-args from the CLI
-    externals?: string[]                                      // not supported on the CLI
+    captureMethod?: "lazy" | "catch" | "retval" | "eager" | "original", // --transform from the CLI
+    newMethod?: "wrapper" | "direct",                                   // --new from the CLI
+    getters?: boolean,                                                  // --getters from the CLI
+    debug?: boolean,                                                    // --debug from the CLI
+    eval?: boolean,                                                     // --eval from the CLI
+    eval2?: boolean,                                                     // --eval2 from the CLI
+    es?: "sane" | "es5",                                                // --es from the CLI
+    hofs: "builtin" | "fill",                                           // --hofs from the CLI
+    jsArgs?: "simple" | "faithful" | "full",                            // --js-args from the CLI
   }
 
 If an option is not set, Stopify picks a default value that is documented
@@ -103,7 +103,8 @@ Transformation (``.captureMethod``)
 Stopify uses first-class continuations as a primitive to implement its
 execution control features. Stopify can represent continuations in several
 ways; the fastest approach depends on the application and the browser. The
-valid options are ``"lazy"``, ``"retval"``, ``"eager"``, and ``"original"``.
+valid options are ``"lazy"``, ``"catch"``, ``"retval"``, ``"eager"``, and
+``"original"``.
 For most cases, we recommend using ``"lazy"``.
 
 .. _new-method:
@@ -137,6 +138,21 @@ invoke the Stopify compiler. (Note: Stopify does *not* rewrite ``new Function``
 and dynamically generated ``<script>`` tags.) This allows Stopify to control
 execution in dynamically generated code. Naturally, this requires the online
 compiler.  However, the feature incurs considerable overhead.
+
+.. _eval2-flag:
+
+Alternative Eval Support (``.eval2``)
+-------------------------------------
+
+The ``eval2`` flag implements an alternative approach to supporting
+JavaScript's ``eval`` function from within Stopified code. This flag is
+mutually exclusive with the ``eval`` compiler flag; only one of the two can
+be specified at compile-time.
+
+If set to ``true``, Stopify supports evaluating new code in the same global
+environment as the main program. This means that code executed by the
+``eval`` function can refer to global variables and declare global variables
+that escape the scope of ``eval``.
 
 .. _implicit-ops-flag:
 
@@ -214,9 +230,3 @@ Single-stepping and Breakpointing (``.debug``)
 Set ``.debug`` to ``true`` to enable support for single-stepping and
 breakpointing. However, note that this requires more instrumentation and slows
 the program down further.
-
-External Symbols (``.externals``)
----------------------------------
-
-An array of free variables that the program is may reference. E.g.,
-`[ 'console', 'window', 'alert' ]`.

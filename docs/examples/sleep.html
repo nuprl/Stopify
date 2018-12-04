@@ -15,9 +15,8 @@
       }
     `;
 
-    const asyncRun = stopify.stopifyLocally(
-      program,
-      { externals: [ "sleep", "document" ] });
+    const asyncRun = stopify.stopifyLocally(program);
+    asyncRun.g = { sleep, document, window, asyncRun };
 
     asyncRun.run(() => { });
     </script>

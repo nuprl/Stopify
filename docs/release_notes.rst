@@ -4,13 +4,39 @@ Release Notes
 
 Stopify 0.6.0
 =============
+- **Breaking change:** Global variables must now be initialized onto the
+  ``g`` field of the Stopify ``runner`` object. This removes the
+  ``externals`` API from the ``AsyncRun`` interface. See the examples for how
+  to update code to this new interface.
+
 - **Breaking change:** The ``continueImmediate`` function requires a
   ``Result``. In previous releases, it would receive an ordinary value.
   This change allows external functions that pause stopified programs to
   resume with an exception.
-  
+
   To upgrade old code, replace ``continueImmediate(x)`` with
   ``continueImmediate({ type: 'normal', value: x })``.
+
+- **Breaking change:** The ``stopify-continuations`` package now only
+  provides the runtime components for continuation support. The Babel
+  continuation compiler backend now exists in a new package,
+  ``stopify-continuations-compiler``.
+
+  Code that only depends upon the ``stopify`` package directly does not need
+  to be updated.
+
+- Added the ``catch`` transform to the compiler. From experiments, ``catch``
+  often outperforms ``lazy`` and other transforms.
+
+- Added the ``eval2`` compiler flag. This new mode supports evaluating new
+  code in the same global environment as the main program.
+
+- Estimator implementations have been migrated to a separate
+  ``stopify-estimators`` package.
+
+- Along with the ``stopify-estimators`` package, a new ``interrupt``
+  estimator is introduced for Node.js programs, using a C++ extension to
+  Node.js to initialize a timer.
 
 Stopify 0.5.0
 =============
@@ -18,9 +44,11 @@ Stopify 0.5.0
 - **Breaking change:** The ``onDone`` callback passed to ``AsyncRun.run``
   always receives a ``Result``. In previous releases, it would receive an
   optional error argument.
+
 - Stopify now reports a stack trace when an an exception occurs in stopified
   code. However, stack traces only work with ``captureMethod: lazy`` (the
   default capture method).
+
 - Setting the ``debug`` flag would crash the online compiler. This is now
   fixed.
 

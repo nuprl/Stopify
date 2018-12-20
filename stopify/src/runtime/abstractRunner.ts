@@ -42,6 +42,7 @@ export abstract class AbstractRunner implements AsyncRun {
   }
 
   private onYieldRunning() {
+    this.eventMode = EventProcessingMode.Paused;
     if (this.mayYieldRunning()) {
       this.onBreakpoint(this.suspendRTS.linenum!);
       return false;

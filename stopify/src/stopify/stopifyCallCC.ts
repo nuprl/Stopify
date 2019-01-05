@@ -7,14 +7,30 @@ import { timeSlow } from '../generic';
 import * as useGlobalObject from '../compiler/useGlobalObject';
 import * as exposeHOFs from '../compiler/exposeHOFs';
 
+function callbackLast(stmts: t.Statement[]) {
+  const N = stmts.length - 1;
+  const last = stmts[N];
+  if (t.isExpressionStatement(last)) {
+    stmts[N] =
+      t.expressionStatement(t.callExpression(
+        t.memberExpression(
+          t.memberExpression(t.identifier('$S'), t.identifier('g')),
+          t.identifier('callbackLast')),
+        [last.expression]))
+  }
+  return stmts;
+}
+
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: callcc.CompilerOpts = state.opts;
     const insertSuspend = state.opts.debug ? suspendStep : suspendStop;
 
     const onDoneBody: t.Statement[] = [];
-    opts.onDone = t.functionExpression(t.identifier('onDone'), [t.identifier('result')],
+    opts.onDone =
+      t.functionExpression(t.identifier('onDone'), [t.identifier('result')],
       t.blockStatement(onDoneBody));
+
     if (!opts.compileFunction) {
       onDoneBody.push(
         t.expressionStatement(
@@ -22,6 +38,8 @@ export const visitor: Visitor = {
             t.memberExpression(t.identifier('$S'), t.identifier('onEnd')),
             [t.identifier('result')])));
     }
+
+    path.node.body = callbackLast(path.node.body);
 
     path.stop();
 
@@ -42,7 +60,7 @@ export const visitor: Visitor = {
         ...plugs,
         [callcc.hygiene, { reserved: callcc.reserved }],
       ]));
-    
+
     if (!opts.compileFunction) {
       // NOTE(arjun): This needs to occur before flatness. Flatness does
       // something (I don't know what) that this transformation messes up

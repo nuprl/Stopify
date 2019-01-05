@@ -20,7 +20,7 @@ export function compileFromAst(
     babelrc: false,
     ast: false,
     code: true,
-    minified: true,
+    minified: false,
     comments: false,
   };
 
@@ -38,5 +38,6 @@ export function compileFromAst(
  * @returns the stopified program
  */
 export function compile(src: string, opts: types.CompilerOpts): string {
-  return compileFromAst(babylon.parse(src).program, opts);
+  const code = compileFromAst(babylon.parse(src).program, opts);
+  return code
 }

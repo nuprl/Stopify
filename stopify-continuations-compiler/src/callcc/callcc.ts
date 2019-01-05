@@ -18,7 +18,7 @@ import * as supportEval from './eval';
 import * as desugarNew from '../common/desugarNew';
 import * as anf from '../common/anf';
 import * as label from './label';
-import * as jumper from './jumper';
+//import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
 import jumperizeTry from './jumperizeTry';
@@ -42,7 +42,7 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
 
-    const doNotWrap = (<any>opts).renames || opts.compileFunction || 
+    const doNotWrap = (<any>opts).renames || opts.compileFunction ||
       opts.eval2 || opts.compileMode === 'library';
 
     if (!doNotWrap) {
@@ -59,7 +59,7 @@ const visitor: Visitor = {
     if (opts.eval2) {
       path.node.body = [
         t.expressionStatement(
-          t.functionExpression(undefined, [], 
+          t.functionExpression(undefined, [],
             t.blockStatement(bh.returnLast(path.node.body))))
       ];
     }
@@ -108,8 +108,8 @@ const visitor: Visitor = {
     // we can suspend through the eval.
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
-    timeSlow('jumper', () =>
-      h.transformFromAst(path, [[jumper.plugin, opts]]));
+    //timeSlow('jumper', () =>
+      //h.transformFromAst(path, [[jumper.plugin, opts]]));
 
     path.stop();
 

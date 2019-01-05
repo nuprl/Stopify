@@ -1,7 +1,7 @@
 /**
  * This module transforms programs to use `$S.g` as the global object. We use
  * the following algorithm:
- * 
+ *
  * 1. At the top-level, transform `var x = e` into `$S.g.x = e`.
  * 2. At the start of the program, insert the statement `$S.g.f = f`
  *    for each top-level `function f(...) { ... }`.  i.e., function declarations
@@ -13,8 +13,10 @@
 
 import * as t from 'babel-types';
 import { NodePath } from 'babel-traverse';
-import { $S_g, $S } from './common';
+import { $S } from './common';
 import * as babel from 'babel-core';
+
+const $S_g = t.identifier('window');
 
 type S = {
   boundIds: Set<string>,
@@ -91,7 +93,7 @@ const visitor = {
       }
       state.boundIdStack.push(state.boundIds);
       const newIds = Object.keys(path.scope.bindings);
-      const oldIds = state.boundIds.values(); 
+      const oldIds = state.boundIds.values();
       state.boundIds = new Set([...newIds, ...oldIds]);
     },
     exit(path: NodePath<t.Scopable>, state: S) {
@@ -124,7 +126,7 @@ const visitor = {
 
       //`arguments` is a special keyword that is implicitly defined within
       //function scopes.
-      if (path.node.name === 'arguments') {
+      if (path.node.name === 'arguments' || path.node.name === 'window') {
         return;
       }
 
@@ -141,7 +143,7 @@ const visitor = {
       return;
     }
     // Calling a global function. T
-    path.node.callee = t.memberExpression(path.node.callee, 
+    path.node.callee = t.memberExpression(path.node.callee,
       t.identifier('call'), false);
     path.node.arguments = [ t.unaryExpression('void', t.numericLiteral(0)),
       ...path.node.arguments ];

@@ -212,7 +212,7 @@ export abstract class AbstractRunner implements AsyncRun {
   externalHOF(body: (complete: (result: Result) => void) => never): void {
     return this.continuationsRTS.captureCC((k) =>
       this.continuationsRTS.endTurn(onDone =>
-        body(result => 
+        body(result =>
           this.continuationsRTS.runtime(() => k(result), onDone))));
   }
 

@@ -18,7 +18,7 @@ import * as supportEval from './eval';
 import * as desugarNew from '../common/desugarNew';
 import * as anf from '../common/anf';
 import * as label from './label';
-//import * as jumper from './jumper';
+import * as jumper from './jumper';
 import * as declVars from './declVars';
 import * as nameExprs from './nameExprs';
 import jumperizeTry from './jumperizeTry';
@@ -79,7 +79,6 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
     }
 
-
     timeSlow('arrow functions', () =>
       h.transformFromAst(path, [arrowFunctions]));
     timeSlow('singleVarDecl', () =>
@@ -108,8 +107,8 @@ const visitor: Visitor = {
     // we can suspend through the eval.
     timeSlow('label', () =>
       h.transformFromAst(path, [label.plugin]));
-    //timeSlow('jumper', () =>
-      //h.transformFromAst(path, [[jumper.plugin, opts]]));
+    timeSlow('jumper', () =>
+      h.transformFromAst(path, [[jumper.plugin, opts]]));
 
     path.stop();
 

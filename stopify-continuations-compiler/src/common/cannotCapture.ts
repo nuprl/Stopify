@@ -32,7 +32,8 @@ const knowns = ['Object',
   'WeakMap',
   'WeakSet',
   'ArrayBuffer',
-  'TextDecoder'
+  'TextDecoder',
+  'Event'
 ];
 
 function cannotCapture(node: t.CallExpression | t.NewExpression): boolean  {
@@ -42,7 +43,7 @@ function cannotCapture(node: t.CallExpression | t.NewExpression): boolean  {
   return knowns.includes(node.callee.name);
 }
 
-const unavailableOnNode = [ 'TextDecoder' ];
+const unavailableOnNode = [ 'TextDecoder', 'Event' ];
 const knownBuiltIns = knowns.filter(x => !unavailableOnNode.includes(x))
   .map(o => eval(o));
 

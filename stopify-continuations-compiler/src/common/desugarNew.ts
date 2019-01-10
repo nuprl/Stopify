@@ -11,6 +11,19 @@ import * as t from 'babel-types';
 
 import { knowns } from './cannotCapture';
 
+function knownPath(path: NodePath<FlatnessMark<t.NewExpression>>) {
+  const { callee } = path.node;
+  if (t.isIdentifier(callee)) {
+    return knowns.includes(callee.name)
+  }
+  else if (t.isMemberExpression(callee) &&
+            t.isIdentifier(callee.property) && t.isIdentifier(callee.object) &&
+            callee.object.name === 'window') {
+    return knowns.includes(callee.property.name)
+  }
+  return false;
+}
+
 /**
  * function handleNew(constr, ...args) {
  *
@@ -78,8 +91,7 @@ module.exports = function () {
         if (path.node.mark === 'Flat') {
           return;
         }
-        if (t.isIdentifier(path.node.callee) &&
-          knowns.includes(path.node.callee.name)) {
+        if (knownPath(path)) {
           return;
         }
         const { callee, arguments: args } = path.node;

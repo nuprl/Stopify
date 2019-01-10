@@ -13,10 +13,8 @@
 
 import * as t from 'babel-types';
 import { NodePath } from 'babel-traverse';
-import { $S } from './common';
+import { $S, $S_g } from './common';
 import * as babel from 'babel-core';
-
-const $S_g = t.identifier('window');
 
 type S = {
   boundIds: Set<string>,

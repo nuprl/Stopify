@@ -42,7 +42,6 @@ export abstract class AbstractRunner implements AsyncRun {
   }
 
   private onYieldRunning() {
-    this.eventMode = EventProcessingMode.Paused;
     if (this.mayYieldRunning()) {
       this.onBreakpoint(this.suspendRTS.linenum!);
       return false;
@@ -119,10 +118,7 @@ export abstract class AbstractRunner implements AsyncRun {
     }
     else {
       this.suspendRTS.onYield = () => {
-        this.suspendRTS.onYield = () => {
-          this.onYield();
-          return true;
-        };
+        this.suspendRTS.onYield = () => this.mayYieldRunning();
         const maybeLine = this.suspendRTS.linenum;
         if (typeof maybeLine === 'number') {
           onPaused(maybeLine);

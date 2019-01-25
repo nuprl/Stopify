@@ -9,6 +9,19 @@ export enum EventProcessingMode {
   Waiting
 }
 
+const enum mayYieldFlagValues {
+  Resume,
+  Step
+}
+
+const enum onYieldFlagValues {
+  Paused,
+  PausedAndMayYield,
+  PausedAndWaiting,
+  Resume,
+  Step
+}
+
 interface EventHandler {
   body: () => void;
   receiver: (x: Result) => void;
@@ -19,7 +32,7 @@ export abstract class AbstractRunner implements AsyncRun {
   public continuationsRTS: Runtime;
   private suspendRTS: RuntimeWithSuspend;
   public onDone: (result: Result) => void = (result) => { };
-  private onYield: () => void = function() {  };
+  private onYield: () => void = function() { };
   private onBreakpoint: (line: number) => void = function() { };
   private breakpoints: number[] = [];
   private k: undefined | { k: (x: Result) => any, onDone: (x: Result) => any };
@@ -27,6 +40,12 @@ export abstract class AbstractRunner implements AsyncRun {
   protected eventMode = EventProcessingMode.Running;
   private eventQueue: EventHandler[] = [];
   private higherOrderFunctions: any;
+
+  private onYieldFlag: onYieldFlagValues = onYieldFlagValues.Resume;
+  private mayYieldFlag: mayYieldFlagValues = mayYieldFlagValues.Resume;
+  private captureCurrentLine: number | undefined;
+  private capturePauseFn: (line?: number) => void;
+  private captureOnStepFn: (line: number) => void;
 
   // The global object for Stopified code.
   public g = Object.create(null);
@@ -64,8 +83,37 @@ export abstract class AbstractRunner implements AsyncRun {
     const estimator = makeEstimator(this.opts);
     this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS,
       this.opts.yieldInterval, estimator);
-    this.suspendRTS.mayYield = () => this.mayYieldRunning();
-    this.suspendRTS.onYield = () => this.onYieldRunning();
+    this.suspendRTS.mayYield = () => {
+      if(this.mayYieldFlag === mayYieldFlagValues.Resume) {
+       return this.mayYieldRunning();
+      } else { //Step
+        // Yield control if the line number changes.
+        const maybeLine = this.suspendRTS.linenum;
+        if (typeof maybeLine !== 'number' || maybeLine === this.captureCurrentLine) {
+          return false;
+        } else {
+          this.captureOnStepFn(maybeLine);
+          return true;
+        }
+      }
+    };
+    this.suspendRTS.onYield = () => {
+      if(this.onYieldFlag === onYieldFlagValues.Paused) {
+        this.onYieldFlag = onYieldFlagValues.PausedAndMayYield;
+        const maybeLine = this.suspendRTS.linenum;
+        typeof maybeLine === 'number' ? this.capturePauseFn(maybeLine) : this.capturePauseFn();
+        return false;
+      } else if(this.onYieldFlag === onYieldFlagValues.PausedAndMayYield) {
+        return this.mayYieldRunning();
+      } else if(this.onYieldFlag === onYieldFlagValues.PausedAndWaiting) {
+        throw new Error('Stopify internal error: onYield invoked during pause+wait');
+      } else if(this.onYieldFlag === onYieldFlagValues.Resume) {
+        return this.onYieldRunning();
+      } else { // Step
+        // Pause if the line number changes.
+        return !this.suspendRTS.mayYield();//Is this sufficient?
+      }
+    };
 
     // We use require because this module requires Stopify to be loaded before
     // it is loaded. A top-level import would not work.
@@ -111,23 +159,12 @@ export abstract class AbstractRunner implements AsyncRun {
     }
 
     if (this.eventMode === EventProcessingMode.Waiting) {
-      this.suspendRTS.onYield = function() {
-        throw new Error('Stopify internal error: onYield invoked during pause+wait');
-      };
+      this.onYieldFlag = onYieldFlagValues.PausedAndWaiting;
       onPaused(); // onYield will not be invoked
     }
     else {
-      this.suspendRTS.onYield = () => {
-        this.suspendRTS.onYield = () => this.mayYieldRunning();
-        const maybeLine = this.suspendRTS.linenum;
-        if (typeof maybeLine === 'number') {
-          onPaused(maybeLine);
-        }
-        else {
-          onPaused();
-        }
-        return false;
-      };
+      this.capturePauseFn = onPaused;
+      this.onYieldFlag = onYieldFlagValues.Paused;
     }
 
     this.eventMode = EventProcessingMode.Paused;
@@ -153,36 +190,22 @@ export abstract class AbstractRunner implements AsyncRun {
     }
     else {
       this.eventMode = EventProcessingMode.Running;
-      this.suspendRTS.mayYield = () => this.mayYieldRunning();
-      this.suspendRTS.onYield = () => this.onYieldRunning();
+      this.mayYieldFlag = mayYieldFlagValues.Resume;
+      this.onYieldFlag = onYieldFlagValues.Resume;
       this.suspendRTS.resumeFromCaptured();
     }
   }
 
+  // NOTE: The program remains Paused while stepping.
   step(onStep: (line: number) => void) {
     if (this.eventMode !== EventProcessingMode.Paused) {
       throw new Error(`step(onStep) requires the program to be paused`);
     }
 
-    // NOTE: The program remains Paused while stepping.
-    const currentLine = this.suspendRTS.linenum;
-    // Yield control if the line number changes.
-    const mayYield = () => {
-      const n = this.suspendRTS.linenum;
-      if (typeof n !== 'number') {
-        return false;
-      }
-      if (n !== currentLine) {
-        onStep(n);
-        return true;
-      }
-      else {
-        return false;
-      }
-    };
-    this.suspendRTS.mayYield = mayYield;
-    // Pause if the line number changes.
-    this.suspendRTS.onYield = () => !mayYield();
+    this.captureCurrentLine = this.suspendRTS.linenum;
+    this.captureOnStepFn = onStep;
+    this.mayYieldFlag = mayYieldFlagValues.Step;
+    this.onYieldFlag = onYieldFlagValues.Step;
     this.suspendRTS.resumeFromCaptured();
   }
 

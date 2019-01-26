@@ -81,9 +81,7 @@ export abstract class AbstractRunner implements AsyncRun {
   init(rts: Runtime) {
     this.continuationsRTS = rts;
     const estimator = makeEstimator(this.opts);
-    this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS,
-      this.opts.yieldInterval, estimator);
-    this.suspendRTS.mayYield = () => {
+    this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS, this.opts.yieldInterval, estimator, () => {
       if(this.mayYieldFlag === mayYieldState.Resume) {
        return this.mayYieldRunning();
       } else { //Step
@@ -96,8 +94,7 @@ export abstract class AbstractRunner implements AsyncRun {
           return true;
         }
       }
-    };
-    this.suspendRTS.onYield = () => {
+    }, () => {
       if(this.onYieldFlag === onYieldState.Paused) {
         this.onYieldFlag = onYieldState.PausedAndMayYield;
         this.captureOnPausedFn(this.suspendRTS.linenum);
@@ -112,7 +109,7 @@ export abstract class AbstractRunner implements AsyncRun {
         // Pause if the line number changes.
         return !this.suspendRTS.mayYield();
       }
-    };
+    });
 
     // We use require because this module requires Stopify to be loaded before
     // it is loaded. A top-level import would not work.

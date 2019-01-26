@@ -82,32 +82,33 @@ export abstract class AbstractRunner implements AsyncRun {
     this.continuationsRTS = rts;
     const estimator = makeEstimator(this.opts);
     this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS, this.opts.yieldInterval, estimator, () => {
-      if(this.mayYieldFlag === mayYieldState.Resume) {
-       return this.mayYieldRunning();
-      } else { //Step
-        // Yield control if the line number changes.
-        const maybeLine = this.suspendRTS.linenum;
-        if (typeof maybeLine !== 'number' || maybeLine === this.captureCurrentLine) {
-          return false;
-        } else {
-          this.captureOnStepFn(maybeLine);
-          return true;
-        }
+      switch (this.mayYieldFlag) {
+        case mayYieldState.Resume:
+          return this.mayYieldRunning();
+        default: //Step
+          // Yield control if the line number changes.
+          const maybeLine = this.suspendRTS.linenum;
+          if (typeof maybeLine !== 'number' || maybeLine === this.captureCurrentLine) {
+            return false;
+          } else {
+            this.captureOnStepFn(maybeLine);
+            return true;
+          }
       }
     }, () => {
-      if(this.onYieldFlag === onYieldState.Paused) {
-        this.onYieldFlag = onYieldState.PausedAndMayYield;
-        this.captureOnPausedFn(this.suspendRTS.linenum);
-        return false;
-      } else if(this.onYieldFlag === onYieldState.PausedAndMayYield) {
-        return this.mayYieldRunning();
-      } else if(this.onYieldFlag === onYieldState.PausedAndWaiting) {
-        throw new Error('Stopify internal error: onYield invoked during pause+wait');
-      } else if(this.onYieldFlag === onYieldState.Resume) {
-        return this.onYieldRunning();
-      } else { // Step
-        // Pause if the line number changes.
-        return !this.suspendRTS.mayYield();
+      switch (this.onYieldFlag) {
+        case onYieldState.Paused:
+          this.onYieldFlag = onYieldState.PausedAndMayYield;
+          this.captureOnPausedFn(this.suspendRTS.linenum);
+          return false;
+        case onYieldState.PausedAndMayYield:
+          return this.mayYieldRunning();
+        case onYieldState.PausedAndWaiting:
+          throw new Error('Stopify internal error: onYield invoked during pause+wait');
+        case onYieldState.Resume:
+          return this.onYieldRunning();
+        default: // Step
+          return !this.suspendRTS.mayYield();
       }
     });
 

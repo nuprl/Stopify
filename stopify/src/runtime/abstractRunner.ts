@@ -9,6 +9,9 @@ export enum EventProcessingMode {
   Waiting
 }
 
+type MayYieldState = { kind: 'resume' }
+  | { kind: 'step', onStep: (line: number) => void };
+
 const enum mayYieldState {
   Resume,
   Step
@@ -42,10 +45,9 @@ export abstract class AbstractRunner implements AsyncRun {
   private higherOrderFunctions: any;
 
   private onYieldFlag: onYieldState = onYieldState.Resume;
-  private mayYieldFlag: mayYieldState = mayYieldState.Resume;
+  private mayYieldFlag: MayYieldState =  { kind: 'resume' };
   private captureCurrentLine: number | undefined;
   private captureOnPausedFn: (line?: number) => void;
-  private captureOnStepFn: (line: number) => void;
 
   // The global object for Stopified code.
   public g = Object.create(null);
@@ -82,8 +84,8 @@ export abstract class AbstractRunner implements AsyncRun {
     this.continuationsRTS = rts;
     const estimator = makeEstimator(this.opts);
     this.suspendRTS = new RuntimeWithSuspend(this.continuationsRTS, this.opts.yieldInterval, estimator, () => {
-      switch (this.mayYieldFlag) {
-        case mayYieldState.Resume:
+      switch (this.mayYieldFlag.kind) {
+        case 'resume':
           return this.mayYieldRunning();
         default: //Step
           // Yield control if the line number changes.
@@ -91,7 +93,7 @@ export abstract class AbstractRunner implements AsyncRun {
           if (typeof maybeLine !== 'number' || maybeLine === this.captureCurrentLine) {
             return false;
           } else {
-            this.captureOnStepFn(maybeLine);
+            this.mayYieldFlag.onStep(maybeLine);
             return true;
           }
       }
@@ -187,7 +189,7 @@ export abstract class AbstractRunner implements AsyncRun {
     }
     else {
       this.eventMode = EventProcessingMode.Running;
-      this.mayYieldFlag = mayYieldState.Resume;
+      this.mayYieldFlag = { kind: 'resume' };
       this.onYieldFlag = onYieldState.Resume;
       this.suspendRTS.resumeFromCaptured();
     }
@@ -200,8 +202,7 @@ export abstract class AbstractRunner implements AsyncRun {
     }
 
     this.captureCurrentLine = this.suspendRTS.linenum;
-    this.captureOnStepFn = onStep;
-    this.mayYieldFlag = mayYieldState.Step;
+    this.mayYieldFlag = { kind: 'step', onStep: onStep };
     this.onYieldFlag = onYieldState.Step;
     this.suspendRTS.resumeFromCaptured();
   }

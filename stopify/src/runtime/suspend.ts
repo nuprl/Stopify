@@ -33,7 +33,7 @@ export class RuntimeWithSuspend {
     public mayYield = function(): boolean { return false; },
     /** This function is applied immediately before stopify yields control to
      *  the browser's event loop. If the function produces 'false', the
-     *  computation terminates.
+     *  computation does not resume.
      */
     public onYield = function(): boolean { return true; },
     /**

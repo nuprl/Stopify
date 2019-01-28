@@ -15,7 +15,6 @@ type MayYieldState = { kind: 'resume' }
 const enum onYieldState {
   Paused,
   PausedAndMayYield,
-  PausedAndWaiting,
   Resume,
   Step
 }
@@ -93,6 +92,9 @@ export abstract class AbstractRunner implements AsyncRun {
           }
       }
     }, () => {
+      if (this.eventMode === EventProcessingMode.Waiting) {
+        throw new Error('Stopify internal error: onYield invoked during pause+wait');
+      }
       switch (this.onYieldFlag) {
         case onYieldState.Paused:
           this.onYieldFlag = onYieldState.PausedAndMayYield;
@@ -100,8 +102,6 @@ export abstract class AbstractRunner implements AsyncRun {
           return false;
         case onYieldState.PausedAndMayYield:
           return this.mayYieldRunning();
-        case onYieldState.PausedAndWaiting:
-          throw new Error('Stopify internal error: onYield invoked during pause+wait');
         case onYieldState.Resume:
           return this.onYieldRunning();
         default: // Step
@@ -153,7 +153,6 @@ export abstract class AbstractRunner implements AsyncRun {
     }
 
     if (this.eventMode === EventProcessingMode.Waiting) {
-      this.onYieldFlag = onYieldState.PausedAndWaiting;
       onPaused(); // onYield will not be invoked
     }
     else {

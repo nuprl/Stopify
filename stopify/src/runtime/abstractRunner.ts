@@ -9,7 +9,8 @@ export enum EventProcessingMode {
   Waiting
 }
 
-type MayYieldState = { kind: 'resume' }
+type MayYieldState = 
+    { kind: 'resume' }
   | { kind: 'step', onStep: (line: number) => void };
 
 const enum onYieldState {

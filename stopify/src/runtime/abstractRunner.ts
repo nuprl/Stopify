@@ -101,7 +101,7 @@ export abstract class AbstractRunner implements AsyncRun {
           this.captureOnPausedFn(this.suspendRTS.linenum);
           return false;
         case onYieldState.PausedAndMayYield:
-          return this.mayYieldRunning();
+          throw new Error('Internal error: onYield called while paused');
         case onYieldState.Resume:
           return this.onYieldRunning();
         default: // Step

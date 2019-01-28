@@ -9,16 +9,16 @@ export enum EventProcessingMode {
   Waiting
 }
 
-type MayYieldState = 
+type MayYieldState =
     { kind: 'resume' }
-  | { kind: 'step', onStep: (line: number) => void };
+  | { kind: 'step', currentLine: number | undefined,
+      onStep: (line: number) => void };
 
-const enum onYieldState {
-  Paused,
-  PausedAndMayYield,
-  Resume,
-  Step
-}
+type OnYieldState =
+    { kind: 'paused', onPaused: (line?: number) => void }
+  | { kind: 'pausedAndMayYield' }
+  | { kind: 'resume' }
+  | { kind: 'step' }
 
 interface EventHandler {
   body: () => void;
@@ -39,10 +39,8 @@ export abstract class AbstractRunner implements AsyncRun {
   private eventQueue: EventHandler[] = [];
   private higherOrderFunctions: any;
 
-  private onYieldFlag: onYieldState = onYieldState.Resume;
+  private onYieldFlag: OnYieldState = { kind: 'resume' };
   private mayYieldFlag: MayYieldState =  { kind: 'resume' };
-  private captureCurrentLine: number | undefined;
-  private captureOnPausedFn: (line?: number) => void;
 
   // The global object for Stopified code.
   public g = Object.create(null);
@@ -85,7 +83,7 @@ export abstract class AbstractRunner implements AsyncRun {
         default: //Step
           // Yield control if the line number changes.
           const maybeLine = this.suspendRTS.linenum;
-          if (typeof maybeLine !== 'number' || maybeLine === this.captureCurrentLine) {
+          if (typeof maybeLine !== 'number' || maybeLine === this.mayYieldFlag.currentLine) {
             return false;
           } else {
             this.mayYieldFlag.onStep(maybeLine);
@@ -96,14 +94,14 @@ export abstract class AbstractRunner implements AsyncRun {
       if (this.eventMode === EventProcessingMode.Waiting) {
         throw new Error('Stopify internal error: onYield invoked during pause+wait');
       }
-      switch (this.onYieldFlag) {
-        case onYieldState.Paused:
-          this.onYieldFlag = onYieldState.PausedAndMayYield;
-          this.captureOnPausedFn(this.suspendRTS.linenum);
+      switch (this.onYieldFlag.kind) {
+        case 'paused':
+          this.onYieldFlag.onPaused(this.suspendRTS.linenum);
+          this.onYieldFlag = { kind: 'pausedAndMayYield' };
           return false;
-        case onYieldState.PausedAndMayYield:
+        case 'pausedAndMayYield':
           throw new Error('Internal error: onYield called while paused');
-        case onYieldState.Resume:
+        case 'resume':
           return this.onYieldRunning();
         default: // Step
           return !this.suspendRTS.mayYield();
@@ -155,10 +153,8 @@ export abstract class AbstractRunner implements AsyncRun {
 
     if (this.eventMode === EventProcessingMode.Waiting) {
       onPaused(); // onYield will not be invoked
-    }
-    else {
-      this.captureOnPausedFn = onPaused;
-      this.onYieldFlag = onYieldState.Paused;
+    } else {
+      this.onYieldFlag = { kind: 'paused', onPaused };
     }
 
     this.eventMode = EventProcessingMode.Paused;
@@ -185,7 +181,7 @@ export abstract class AbstractRunner implements AsyncRun {
     else {
       this.eventMode = EventProcessingMode.Running;
       this.mayYieldFlag = { kind: 'resume' };
-      this.onYieldFlag = onYieldState.Resume;
+      this.onYieldFlag = { kind: 'resume' }
       this.suspendRTS.resumeFromCaptured();
     }
   }
@@ -196,9 +192,8 @@ export abstract class AbstractRunner implements AsyncRun {
       throw new Error(`step(onStep) requires the program to be paused`);
     }
 
-    this.captureCurrentLine = this.suspendRTS.linenum;
-    this.mayYieldFlag = { kind: 'step', onStep: onStep };
-    this.onYieldFlag = onYieldState.Step;
+    this.mayYieldFlag = { kind: 'step', currentLine: this.suspendRTS.linenum, onStep };
+    this.onYieldFlag = { kind: 'step' }
     this.suspendRTS.resumeFromCaptured();
   }
 

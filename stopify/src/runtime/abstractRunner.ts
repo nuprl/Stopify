@@ -12,11 +12,6 @@ export enum EventProcessingMode {
 type MayYieldState = { kind: 'resume' }
   | { kind: 'step', onStep: (line: number) => void };
 
-const enum mayYieldState {
-  Resume,
-  Step
-}
-
 const enum onYieldState {
   Paused,
   PausedAndMayYield,

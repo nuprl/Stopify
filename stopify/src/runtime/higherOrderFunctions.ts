@@ -373,7 +373,18 @@ var stopifyArrayPrototype = {
     if (arguments.length !== 2) {
       throw new Error(`.slice requires 2 arguments`);
     }
-    return stopifyArray(this.slice(begin, end));
+    if (begin < 0 || end > this.length) {
+      throw new Error(`.slice requires begin and end range to be within array`);
+    }
+
+    return stopifyArray(Array.prototype.slice.call(this, begin, end));
+  },
+  concat: function(anotherArray: any) {
+    if (arguments.length !== 1) {
+      throw new Error(`.concat requires 1 argument`);
+    }
+
+    return stopifyArray(Array.prototype.concat.call(this, anotherArray));
   }
 };
 

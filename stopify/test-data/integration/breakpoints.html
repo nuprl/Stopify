@@ -1,0 +1,76 @@
+<html>
+<body>
+<title>running</title>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+window.onerror = function() {
+  window.document.title = "error";
+}
+
+let breakAt = [];
+let log = [];
+
+const program = `
+function app(f, x) {
+  var r = f(x);
+  return r;
+}
+
+function incr(y) {
+  return y + 10;
+}
+
+log(app(incr, 5));
+log(app(incr, 10));
+log('at breakpoint');
+log('test');
+`;
+
+function arrayEquals(arr1, arr2) {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+const asyncRun = stopify.stopifyLocally(program,
+  // per-line instrumentation for breakpoints
+  { debug: true  },
+  // check each line for breakpoints
+  {estimator: 'countdown', yieldInterval: 1 });
+
+asyncRun.g.log = (message) => log.push(message);
+
+asyncRun.setBreakpoints([3, 13]);
+
+asyncRun.run(
+  // on done handler
+  (result) => {
+    if (result.type !== 'normal') {
+      console.error('Result is ', result);
+      window.document.title = 'error';
+    }
+    else if (arrayEquals(breakAt, [3, 3, 13])) {
+      window.document.title = 'okay';
+    }
+    else {
+      console.log('Breakpoints hit at lines ', breakAt);
+      window.document.title = 'error';
+    }
+  },
+  // on yield handler
+  () => { },
+  // breakpoint handler
+  (line) => {
+      breakAt.push(line);
+      asyncRun.resume();
+  });
+
+</script>
+</body>
+</html>

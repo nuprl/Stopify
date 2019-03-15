@@ -2,35 +2,37 @@ import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { CompilerOpts } from 'stopify-continuations-compiler';
 
+function insertSuspendHelper(body: t.Statement[], opts: CompilerOpts) {
+  const newBody: t.Statement[] = [];
+  (<any>newBody).suspends = false;
+  body.forEach((v, i) => {
+    const loc = v.loc;
+    let ln: number | null;
+    if (loc) {
+      ln = opts.sourceMap.getLine(loc.start.line, loc.start.column);
+      if (ln) {
+        newBody.push(
+          t.expressionStatement(t.assignmentExpression('=',
+            t.memberExpression(t.memberExpression(t.identifier('$S'), t.identifier('suspendRTS')), t.identifier('linenum')),
+            t.numericLiteral(ln))),
+          t.expressionStatement(
+            t.callExpression(t.memberExpression(t.identifier("$S"),
+              t.identifier("suspend")), [])),
+          v);
+        (<any>newBody).suspends = true;
+      } else {
+        newBody.push(v);
+      }
+    } else {
+      newBody.push(v);
+    }
+  });
+  return newBody;
+}
 const insertSuspend: Visitor = {
   BlockStatement: {
     exit(path: NodePath<t.BlockStatement>, s: { opts: CompilerOpts }): void {
-      const { body } = path.node;
-      const newBody: t.Statement[] = [];
-      (<any>newBody).suspends = false;
-      body.forEach((v, i) => {
-        const loc = v.loc;
-        let ln: number | null;
-        if (loc) {
-          ln = s.opts.sourceMap.getLine(loc.start.line, loc.start.column);
-          if (ln) {
-            newBody.push(
-              t.expressionStatement(t.assignmentExpression('=',
-                t.memberExpression(t.identifier('$__R'), t.identifier('linenum')),
-                t.numericLiteral(ln))),
-              t.expressionStatement(
-                t.callExpression(t.memberExpression(t.identifier("$S"),
-                  t.identifier("suspend")), [])),
-              v);
-            (<any>newBody).suspends = true;
-          } else {
-            newBody.push(v);
-          }
-        } else {
-          newBody.push(v);
-        }
-      });
-      path.node.body = newBody;
+      path.node.body = insertSuspendHelper(path.node.body, s.opts);
     }
   },
 
@@ -75,6 +77,7 @@ const insertSuspend: Visitor = {
             `Compile function expected top-level functionDeclaration`);
         }
       }
+      path.node.body = insertSuspendHelper(path.node.body, opts);
     }
   },
 };

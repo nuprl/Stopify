@@ -2,6 +2,7 @@ import { RuntimeOpts, AsyncRun } from '../types';
 import { Result, Runtime } from 'stopify-continuations';
 import { RuntimeWithSuspend, badResume } from './suspend';
 import { makeEstimator } from './makeEstimator';
+import { setImmediate } from './setImmediate';
 
 export enum EventProcessingMode {
   Running,
@@ -55,17 +56,6 @@ export abstract class AbstractRunner implements AsyncRun {
     return this.breakpoints.includes(n);
   }
 
-  private onYieldRunning() {
-    if (this.mayYieldRunning()) {
-      this.onBreakpoint(this.suspendRTS.linenum!);
-      return false;
-    }
-    else {
-      this.onYield();
-      return true;
-    }
-  }
-
   stopifyArray(arr: Array<any>) {
     return this.higherOrderFunctions.stopifyArray(arr);
   }
@@ -102,7 +92,20 @@ export abstract class AbstractRunner implements AsyncRun {
         case 'pausedAndMayYield':
           throw new Error('Internal error: onYield called while paused');
         case 'resume':
-          return this.onYieldRunning();
+          if (this.mayYieldRunning()) {
+            this.onYieldFlag = {
+              kind: 'paused',
+              onPaused: this.onBreakpoint
+            };
+            this.eventMode = EventProcessingMode.Paused;
+            // Invoke the breakpoint handler on the next turn, after the stack
+            // is fully reified.
+            setImmediate(() =>
+              this.onBreakpoint(this.suspendRTS.linenum!));
+            return false;
+          }
+          this.onYield();
+          return true;
         default: // Step
           return !this.suspendRTS.mayYield();
       }
@@ -181,7 +184,7 @@ export abstract class AbstractRunner implements AsyncRun {
     else {
       this.eventMode = EventProcessingMode.Running;
       this.mayYieldFlag = { kind: 'resume' };
-      this.onYieldFlag = { kind: 'resume' }
+      this.onYieldFlag = { kind: 'resume' };
       this.suspendRTS.resumeFromCaptured();
     }
   }

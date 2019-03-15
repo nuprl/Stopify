@@ -38,6 +38,8 @@ Stopify 0.6.0
   estimator is introduced for Node.js programs, using a C++ extension to
   Node.js to initialize a timer.
 
+- Fixed several issues with breakpoints. See https://github.com/plasma-umass/Stopify/issues/424.
+
 Stopify 0.5.0
 =============
 

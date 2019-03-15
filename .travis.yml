@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+  "8"
+install:
+  - yarn install
+script:
+- yarn run build
+- (cd stopify-continuations-compiler && yarn run test)
+- (cd stopify && yarn run test)
+cache:
+  directories:
+  - node_modules
+notifications:
+  email:false
+addons:
+  chrome: stable
+  firefox: latest

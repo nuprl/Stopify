@@ -1,4 +1,4 @@
-# Stopify [![Build Status](http://35.207.24.48:5000/buildStatus/icon?job=stopify-build/master)](http://35.207.24.48:5000/blue/organizations/jenkins/stopify-build/activity?branch=master) [![Documentation Status](https://readthedocs.org/projects/stopify/badge/?version=latest)](http://stopify.readthedocs.io/en/latest/?badge=latest)
+# Stopify [![Build Status](https://travis-ci.org/plasma-umass/Stopify.svg?branch=master)](https://travis-ci.org/plasma-umass/Stopify) [![Documentation Status](https://readthedocs.org/projects/stopify/badge/?version=latest)](http://stopify.readthedocs.io/en/latest/?badge=latest)
 
 Stopify is a JavaScript-to-JavaScript compiler that makes JavaScript a better
 target language for high-level languages and web-based programming tools.

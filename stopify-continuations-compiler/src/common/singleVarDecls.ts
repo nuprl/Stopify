@@ -16,7 +16,6 @@ function getFunctionArgs(path: NodePath<t.Node>): string[] {
 }
 
 type S = {
-  opts: { eval: boolean },
   renameStack: { [key: string]: string }[],
   functionParent: NodePath<bh.FunWithBody | t.Program>,
   functionParentStack: NodePath<bh.FunWithBody | t.Program>[]
@@ -55,14 +54,6 @@ const visitor = {
       this.renameStack.pop();
     },
   },
-
-  'ReferencedIdentifier|BindingIdentifier': function (path: NodePath<t.Identifier>): void {
-    if (this.opts.renames && this.opts.renames[path.node.name]) {
-      const x = this.opts.renames[path.node.name];
-      path.node.name = x;
-    }
-  },
-
   VariableDeclaration: {
     enter(this: S, path: NodePath<t.VariableDeclaration>) {
       if (path.node.declarations.length !== 1) {

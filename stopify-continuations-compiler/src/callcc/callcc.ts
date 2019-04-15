@@ -81,7 +81,7 @@ const visitor: Visitor = {
     timeSlow('arrow functions', () =>
       h.transformFromAst(path, [arrowFunctions]));
     timeSlow('singleVarDecl', () =>
-      h.transformFromAst(path, [[singleVarDecls, opts]]));
+      h.transformFromAst(path, [[singleVarDecls]]));
     timeSlow('free ID initialization', () =>
       freeIds.annotate(path));
     timeSlow('box assignables', () =>

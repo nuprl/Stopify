@@ -74,11 +74,13 @@ const visitor: Visitor = {
       if (path.node.finalizer) {
         // NOTE(arjun): If we have several finally blocks in the same scope,
         // this probably creates duplicate declarations.
-        const sentinalDecl = t.variableDeclaration('let', [
-            t.variableDeclarator(returnSentinal, sentinal),
+        const sentinalDecl0 = t.variableDeclaration('let', [
+            t.variableDeclarator(returnSentinal, sentinal) ]);
+        const sentinalDecl1 = t.variableDeclaration('let', [
             t.variableDeclarator(throwSentinal, sentinalExn),
           ]);
-        bh.enclosingScopeBlock(path).unshift(sentinalDecl);
+        bh.enclosingScopeBlock(path).unshift(sentinalDecl0);
+        bh.enclosingScopeBlock(path).unshift(sentinalDecl1);
         path.node.finalizer.body.push(bh.sIf(t.binaryExpression('!==',
           returnSentinal, sentinal),
           t.returnStatement(returnSentinal),

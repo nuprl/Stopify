@@ -84,17 +84,16 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[singleVarDecls]]));
     timeSlow('free ID initialization', () =>
       freeIds.annotate(path));
-    timeSlow('box assignables', () =>
-      h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
-
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,
-        [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, jumperizeTry,
-          nameExprs]));
+        [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, nameExprs,
+         jumperizeTry]));
     timeSlow('desugar logical', () =>
       h.transformFromAst(path, [desugarLogical]));
     timeSlow('ANF', () =>
       h.transformFromAst(path, [[anf, opts]]));
+    timeSlow('box assignables', () =>
+      h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
     timeSlow('declVars', () =>
       h.transformFromAst(path, [declVars]));
     // If stopifying eval'd string at runtime, don't delimit statements so that

@@ -5,9 +5,13 @@ import * as fastFreshId from '../fastFreshId';
 const names: Visitor = {
   ObjectMethod: function (path: NodePath<t.ObjectMethod>): void {
     if (path.node.kind === "method") {
+      let fun = t.functionExpression(fastFreshId.fresh('method'),
+          path.node.params, path.node.body);
+        // Little hack necessary to preserve annotation left by freeIds and singleVarDecls
+        (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
+        (<any>fun).renames = (<any>path.node).renames;
       path.replaceWith(t.objectProperty(path.node.key,
-        t.functionExpression(fastFreshId.fresh('funExpr'),
-          path.node.params, path.node.body),
+        fun,
         path.node.computed));
     }
   },

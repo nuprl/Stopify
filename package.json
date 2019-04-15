@@ -22,7 +22,6 @@
     "stopify",
     "stopify-continuations",
     "stopify-continuations-compiler",
-    "stopify-estimators",
-    "stopify-module-test"
+    "stopify-estimators"
   ]
 }

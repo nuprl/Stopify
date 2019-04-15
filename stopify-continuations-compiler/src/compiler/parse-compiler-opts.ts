@@ -56,7 +56,6 @@ export const compilerOpts: CompilerOpts = checkAndFillCompilerOpts({
   debug: args.debug,
   captureMethod: args.transform,
   newMethod: args.new,
-  eval: args.eval,
   es: args.es,
   compileMode: args.compileMode,
   hofs: args.hofs,

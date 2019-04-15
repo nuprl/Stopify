@@ -14,7 +14,6 @@ import * as desugarLogical from '../common/desugarLogical';
 import * as singleVarDecls from '../common/singleVarDecls';
 import * as makeBlocks from '../common/makeBlockStmt';
 import * as boxAssignables from './boxAssignables';
-import * as supportEval from './eval';
 import * as desugarNew from '../common/desugarNew';
 import * as anf from '../common/anf';
 import * as label from './label';
@@ -79,20 +78,14 @@ const visitor: Visitor = {
       h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
     }
 
-
     timeSlow('arrow functions', () =>
       h.transformFromAst(path, [arrowFunctions]));
     timeSlow('singleVarDecl', () =>
       h.transformFromAst(path, [[singleVarDecls, opts]]));
     timeSlow('free ID initialization', () =>
-      freeIds.annotate(path, opts.eval));
+      freeIds.annotate(path));
     timeSlow('box assignables', () =>
       h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
-    if (opts.eval) {
-      timeSlow('instrument eval calls', () =>
-        h.transformFromAst(path, [[supportEval.plugin, opts]]));
-    }
-
 
     timeSlow('desugaring passes', () =>
       h.transformFromAst(path,

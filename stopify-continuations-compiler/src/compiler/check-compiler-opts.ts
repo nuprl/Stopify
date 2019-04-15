@@ -13,7 +13,6 @@ const validFlags = [
   'debug',
   'captureMethod',
   'newMethod',
-  'eval',
   'es',
   'hofs',
   'jsArgs',
@@ -83,7 +82,6 @@ export function checkAndFillCompilerOpts(
     debug: false,
     captureMethod: 'lazy',
     newMethod: 'wrapper',
-    eval: false,
     es: 'sane',
     hofs: 'builtin',
     jsArgs: 'simple',
@@ -109,9 +107,6 @@ export function checkAndFillCompilerOpts(
   copyProp(opts, value, 'newMethod',
     (x) => ['direct', 'wrapper'].includes(x),
     `.newMethod must be 'direct' or 'wrapper'`);
-  copyProp(opts, value, 'eval',
-    (x) => typeof x === 'boolean',
-    `.eval must be a boolean`);
   copyProp(opts, value, 'es',
     (x) => ['sane', 'es5'].includes(x),
     `.es must be either 'sane' or 'es5'`);

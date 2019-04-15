@@ -19,7 +19,6 @@ interface FreeIds {
 }
 
 interface State {
-  opts: { eval: boolean },
   refIds: Set<string>,
   refIdStack: Set<string>[]
 }
@@ -37,20 +36,12 @@ const visitor = {
     exit(this: State, path: NodePath<t.Scopable & FreeIds & NestedFunctionFree>) {
       const boundIds = new Set<string>(Object.keys(path.scope.bindings));
       let freeIds = SetExt.diff(this.refIds, boundIds);
-      if (this.opts.eval && freeIds.has('eval')) {
-        freeIds = SetExt.union(freeIds, boundIds);
-      }
       path.node.freeIds = freeIds;
       this.refIds = this.refIdStack.pop()!;
       for (const x of freeIds) {
         this.refIds.add(x);
       }
 
-      if (this.opts.eval && freeIds.has('eval')) {
-        for (const x of path.node.freeIds) {
-          path.node.nestedFunctionFree.add(x);
-        }
-      }
       if (functionTypes.includes(path.node.type)) {
         const parent = enclosingFunction(path);
         const nestedFunctionFree = parent.node.nestedFunctionFree;
@@ -84,9 +75,9 @@ const visitor = {
   }
 };
 
-export function annotate(path: NodePath<t.Node>, supportEval: boolean) {
+export function annotate(path: NodePath<t.Node>) {
   const opts = {
-    plugins: [ [() => ({visitor}), { eval: supportEval }] ],
+    plugins: [ [() => ({visitor})] ],
     babelrc: false,
     code: false,
     ast: false

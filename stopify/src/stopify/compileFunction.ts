@@ -54,7 +54,6 @@ const defaultOpts: callcc.CompilerOpts = {
     debug: false,
     captureMethod: 'lazy',
     newMethod: 'wrapper',
-    eval: false,
     es: 'sane',
     hofs: 'builtin',
     jsArgs: 'simple',

@@ -1,7 +1,7 @@
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as bh from '../babelHelpers';
-import * as fastFreshId from '../fastFreshId';
+import { fastFreshId, babelHelpers as bh } from '@stopify/normalize-js';
+import * as h from '../helpers';
 import { getLabels } from './label';
 import { CompilerOpts } from '../types';
 
@@ -110,7 +110,7 @@ function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>,
           t.expressionStatement(
             t.callExpression(
               t.memberExpression(runtime, t.identifier('pushTrace')),
-              [t.stringLiteral(bh.locationString(funName, path, opts))]))
+              [t.stringLiteral(h.locationString(funName, path, opts))]))
         ])),
       t.throwStatement(exn)
     ])));

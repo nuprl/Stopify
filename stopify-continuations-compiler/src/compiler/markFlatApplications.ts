@@ -5,7 +5,7 @@
  */
 import { NodePath, VisitNode, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { FlatTag, FlatnessMark } from '../common/helpers';
+import { FlatTag, FlatnessMark } from '../helpers';
 
 /**
  * 0 -> No debugging

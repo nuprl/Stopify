@@ -1,4 +1,4 @@
-import * as h from '../src/common/helpers';
+import * as h from '../src/helpers';
 import { markFlatFunctions } from '../src/compiler/markFlatFunctions'
 import { markFlatApplications } from '../src/compiler/markFlatApplications'
 import * as babel from 'babel-core';

@@ -71,6 +71,7 @@
     "sprintf": "^0.1.5",
     "stopify-continuations": "^0.6.0",
     "stopify-continuations-compiler": "^0.6.0",
+    "@stopify/normalize-js": "0.6.0",
     "stopify-estimators": "^0.6.0",
     "tmp": "0.0.31",
     "trie": "^0.2.1"

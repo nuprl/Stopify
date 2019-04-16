@@ -3,7 +3,7 @@ import { NodePath, Visitor } from 'babel-traverse';
 import { markFlatFunctions } from './markFlatFunctions';
 import { markAnnotated } from './markAnnotated';
 import { markFlatApplications } from './markFlatApplications';
-import { transformFromAst } from '../common/helpers';
+import { transformFromAst } from '@stopify/normalize-js';
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>) {

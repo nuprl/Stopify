@@ -12,8 +12,7 @@
  */
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { FlatnessMark } from "./common/helpers";
-import { runtimePath } from './common/helpers';
+import { FlatnessMark, runtimePath } from "./helpers";
 
 const gettersRuntime = t.identifier('$gs');
 

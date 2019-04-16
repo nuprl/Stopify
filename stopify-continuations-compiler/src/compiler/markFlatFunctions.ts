@@ -6,7 +6,7 @@
 
 import * as t from 'babel-types';
 import { NodePath, Visitor } from 'babel-traverse';
-import { FlatnessMark } from '../common/helpers';
+import {  FlatnessMark } from '../helpers';
 
 let debug = false;
 

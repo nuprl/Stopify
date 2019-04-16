@@ -5,6 +5,7 @@ install:
   - yarn install
 script:
 - yarn run build
+- (cd normalize-js && yarn run test)
 - (cd stopify-continuations-compiler && yarn run test)
 - (cd stopify && yarn run test)
 cache:

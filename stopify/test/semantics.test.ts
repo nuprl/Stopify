@@ -1,28 +1,41 @@
+import * as fs from 'fs';
 import * as stopify from '../src/entrypoints/compiler';
 import * as assert from 'assert';
+import * as fixtures from './testFixtures.js';
+import * as types from '../src/types';
 
 // The compiler produces code that expects Stopify and its runtime compiler to
 // be a global variable.
 (global as any).stopify = stopify;
 
-const runtimeOpts: Partial<stopify.RuntimeOpts> = {
-    yieldInterval: 1,
-    estimator: 'countdown'
-};
-
-const compilerOpts: Partial<stopify.CompilerOpts> = {
-    // empty options
-};
-
 function setupGlobals(runner: stopify.AsyncRun & stopify.AsyncEval) {
     var globals: any = {
         assert: assert,
+        require: function(str: string) {
+            if (str === 'assert') {
+                return assert;
+            }
+            else {
+                throw 'unknown library';
+            }
+        },
+        Math: Math,
+        Number: Number,
+        String: String,
+        WeakMap: WeakMap, // TODO(arjun): We rely on this for tests?!
         console: console,
+        Array: Array,
+        Object: Object
     };
     runner.g = globals;
 }
 
-function harness(code: string) {
+function harness(code: string,
+    compilerOpts: Partial<stopify.CompilerOpts> = { },
+    runtimeOpts: Partial<stopify.RuntimeOpts> = {
+        yieldInterval: 1,
+        estimator: 'countdown'
+    }) {
     const runner = stopify.stopifyLocally(code, compilerOpts, runtimeOpts);
     if (runner.kind === 'error') {
         throw runner.exception;
@@ -117,10 +130,229 @@ test('external HOF with arguments materialization', done => {
                 }
             });
         });
-    }
+    };
     runner.run(result => {
         expect(result).toMatchObject({ type: 'normal' });
         expect(runner.g.r).toBe(true);
         done();
     });
+});
+
+function expectNontermination(code: string,
+    compilerOpts: Partial<types.CompilerOpts>,
+    onDone: () => void) {
+    let timers: NodeJS.Timer[] = [ ];
+    function clearTimers() {
+        timers.forEach(timerId => clearTimeout(timerId));
+    }
+    const runtimeOpts: Partial<types.RuntimeOpts> = {
+        estimator: 'countdown',
+        yieldInterval: 10
+    };
+    const runner = harness(code, compilerOpts, runtimeOpts);
+    runner.run(result => {
+        clearTimers();
+        assert(false, `program terminated with ${JSON.stringify(result)}`);
+    });
+    timers.push(setTimeout(() => {
+        runner.pause(line => {
+            clearTimers();
+            onDone();
+        });
+        timers.push(setTimeout(() => {
+            clearTimers();
+            assert(false, 'program did not pause');
+        }, 5000));
+    }, 5000));
+}
+
+describe('stopping nonterminating programs', () => {
+
+    test('infinite loop (lazy, nontermination)', onDone => {
+        expectNontermination(`while (true) { }`,
+            { captureMethod: 'lazy' }, onDone);
+    }, 12 * 1000);
+
+    test('infinite loop (eager, nontermination)', onDone => {
+        expectNontermination(`while (true) { }`,
+            { captureMethod: 'eager' }, onDone);
+    }, 12 * 1000);
+
+    test('infinite loop (retval, nontermination)', onDone => {
+        expectNontermination(`while (true) { }`,
+            { captureMethod: 'retval' }, onDone);
+    }, 12 * 1000);
+
+});
+
+function runTest(code: string,
+    compilerOpts: Partial<types.CompilerOpts>,
+    runtimeOpts: Partial<types.RuntimeOpts>,
+    onDone: () => void) {
+    let runner = harness(code, compilerOpts, runtimeOpts);
+    let done = false;
+    runner.run(result => {
+        if (done) {
+            return;
+        }
+        done = true;
+        expect(result).toMatchObject({ type: 'normal' });
+        onDone();
+    });
+    setTimeout(() => {
+        if (done) {
+            return;
+        }
+        done = true;
+        runner.pause(() => undefined);
+        assert(false);
+    }, 10000);
+
+}
+
+describe('in-file tests', function() {
+    for (let filename of fixtures.unitTests) {
+        test(`in-file ${filename} (lazy, wrapper)`, done => {
+            let code = fs.readFileSync(filename, { encoding: 'utf-8' });
+            runTest(code, {
+                captureMethod: 'lazy',
+                newMethod: 'wrapper',
+                jsArgs: 'full'
+            }, {
+                yieldInterval: 1,
+                estimator: 'countdown'
+            }, done);
+        });
+
+        test(`in-file ${filename} (lazy, direct)`, done => {
+            let code = fs.readFileSync(filename, { encoding: 'utf-8' });
+            runTest(code,  {
+                captureMethod: 'lazy',
+                newMethod: 'direct',
+                jsArgs: 'full'
+            }, {
+                yieldInterval: 1,
+                estimator: 'countdown'
+            }, done);
+        });
+
+        test(`in-file ${filename} (catch, direct)`, done => {
+            let code = fs.readFileSync(filename, { encoding: 'utf-8' });
+            runTest(code,  {
+                captureMethod: 'catch',
+                newMethod: 'wrapper',
+                jsArgs: 'full'
+            }, {
+                yieldInterval: 1,
+                estimator: 'countdown'
+            }, done);
+        });
+    }
+});
+
+describe('integration tests', function () {
+    for (let filename of fixtures.intTests) {
+        test(`integration: ${filename} lazy-wrapper`, done => {
+            let code = fs.readFileSync(filename, { encoding: 'utf-8' });
+            runTest(code, {
+                captureMethod: 'lazy',
+                newMethod: 'wrapper',
+                jsArgs: 'full'
+            }, { }, done);
+        }, 30000);
+
+        test(`integration: ${filename} eager-wrapper`, done => {
+            let code = fs.readFileSync(filename, { encoding: 'utf-8' });
+            runTest(code, {
+                captureMethod: 'eager',
+                newMethod: 'wrapper',
+                jsArgs: 'full'
+            }, { }, done);
+        }, 30000);
+
+        test(`integration: ${filename} retval-wrapper`, done => {
+            let code = fs.readFileSync(filename, { encoding: 'utf-8' });
+            runTest(code, {
+                captureMethod: 'retval',
+                newMethod: 'wrapper',
+                jsArgs: 'full'
+            }, { }, done);
+        }, 30000);
+
+    }
+});
+
+describe('Test cases that require deep stacks',() => {
+    const runtimeOpts: Partial<types.RuntimeOpts> = {
+        stackSize: 100,
+        restoreFrames: 1,
+        estimator: 'countdown',
+        yieldInterval: 25
+    };
+
+    test.skip('non-tail recursive function (deep, lazy)', onDone => {
+        const runner = harness(`
+            function sum(x) {
+                if (x <= 1) {
+                    return 1;
+                } else {
+                    return x + sum(x-1);
+                }
+            }
+            assert.equal(sum(200), 1250025000);
+            `, { captureMethod: 'lazy' }, runtimeOpts);
+        runner.run(result => {
+            expect(result).toEqual({ type: 'normal' });
+            onDone();
+        });
+    }, 10000);
+
+    test.skip('non-tail recursive function (deep, eager)', onDone => {
+        const runner = harness(`
+            function sum(x) {
+                if (x <= 1) {
+                    return 1;
+                } else {
+                    return x + sum(x-1);
+                }
+            }
+            assert.equal(sum(200), 1250025000);
+            `, { captureMethod: 'eager' }, runtimeOpts);
+        runner.run(result => {
+            expect(result).toEqual({ type: 'normal' });
+            onDone();
+        });
+    }, 10000);
+
+    // This test makes sure that an exception thrown from a stack
+    // frame is properly threaded through a captured stack.
+    test.skip('deep stacks with exceptions (deep, eager)', onDone => {
+        const runner = harness(`
+            const assert = require('assert');
+
+            function sumThrow(n) {
+                if (n <= 0) {
+                    throw 0;
+                }
+                else {
+                    try {
+                        sumThrow(n - 1);
+                    }
+                    catch(e) {
+                        throw e + n;
+                    }
+                }
+            }
+            try {
+                sumThrow(50000)
+            }
+            catch(e) {
+                assert.equal(e, 1250025000)
+            }
+            `, { captureMethod: 'eager' }, runtimeOpts);
+        runner.run(result => {
+            expect(result).toEqual({ type: 'normal' });
+            onDone();
+        });
+    }, 10000);
 });

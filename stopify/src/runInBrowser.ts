@@ -1,9 +1,6 @@
 /**
  * This program uses Selenium to run a Stopify benchmark in a browser.
  *
- * The program must have been compiled without the '--require-runtime' flag. If not,
- * the benchmark will timeout after several minutes.
- *
  * There are a few steps involved:
  *
  * 1. We serve the dist/ directory and the directory containing the benchmark

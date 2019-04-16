@@ -12,12 +12,12 @@ export * from './abstractRuntime';
 
 let savedRTS: Runtime | undefined;
 export function newRTS(transform: string): Runtime {
-  if (!savedRTS) {
+  if (!savedRTS || savedRTS.kind !== transform) {
     switch (transform) {
       // Default to shallow runtime.
       case 'catch':
         savedRTS = new LazyRuntime(Infinity, Infinity);
-        savedRTS.kind = 'catch';
+        savedRTS.kind = 'catch'; // TODO(arjun): Sloppy
         break;
       case 'lazy': savedRTS = new LazyRuntime(Infinity, Infinity); break;
       case 'eager': savedRTS = new EagerRuntime(Infinity, Infinity); break;

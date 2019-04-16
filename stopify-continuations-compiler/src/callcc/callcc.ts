@@ -6,32 +6,20 @@
  *
  * node built/src/callcc/callcc <filename.js>
  */
-const arrowFunctions = require('babel-plugin-transform-es2015-arrow-functions');
-import * as desugarLoop from '../common/desugarLoop';
-import * as desugarLabel from '../common/desugarLabel';
-import * as desugarSwitch from '../common/desugarSwitch';
-import * as desugarLogical from '../common/desugarLogical';
-import * as singleVarDecls from '../common/singleVarDecls';
-import * as makeBlocks from '../common/makeBlockStmt';
+import * as normalizeJs from '@stopify/normalize-js';
 import * as boxAssignables from './boxAssignables';
 import * as desugarNew from '../common/desugarNew';
-import * as anf from '../common/anf';
 import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
-import * as nameExprs from './nameExprs';
-import jumperizeTry from './jumperizeTry';
-import * as freeIds from '../common/freeIds';
-import cleanup from './cleanup';
-import * as h from '../common/helpers';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as babel from 'babel-core';
-import { timeSlow } from '../generic';
 import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
-import * as bh from '../babelHelpers';
+import { babelHelpers as bh } from '@stopify/normalize-js';
+import { runtimePath } from '../helpers';
 
 const $__R = t.identifier('$__R');
 const $__C = t.identifier('$__C');
@@ -41,7 +29,7 @@ const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     const opts: types.CompilerOpts  = state.opts;
 
-    const doNotWrap = (<any>opts).renames || opts.compileFunction || 
+    const doNotWrap = (<any>opts).renames || opts.compileFunction ||
       opts.eval2 || opts.compileMode === 'library';
 
     if (!doNotWrap) {
@@ -58,57 +46,37 @@ const visitor: Visitor = {
     if (opts.eval2) {
       path.node.body = [
         t.expressionStatement(
-          t.functionExpression(undefined, [], 
+          t.functionExpression(undefined, [],
             t.blockStatement(bh.returnLast(path.node.body))))
       ];
     }
 
-    timeSlow('cleanup arguments.callee', () =>
-      h.transformFromAst(path, [cleanup]));
-
     if (opts.getters) {
-      h.transformFromAst(path, [exposeGS.plugin]);
+      normalizeJs.transformFromAst(path, [exposeGS.plugin]);
     }
 
     if (opts.newMethod === 'wrapper') {
-      h.transformFromAst(path, [[desugarNew, opts]]);
+      normalizeJs.transformFromAst(path, [[desugarNew, opts]]);
     }
 
     if (opts.es === 'es5') {
-      h.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
+      normalizeJs.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
     }
 
-    timeSlow('arrow functions', () =>
-      h.transformFromAst(path, [arrowFunctions]));
-    timeSlow('singleVarDecl', () =>
-      h.transformFromAst(path, [[singleVarDecls]]));
-    timeSlow('free ID initialization', () =>
-      freeIds.annotate(path));
-    timeSlow('desugaring passes', () =>
-      h.transformFromAst(path,
-        [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, nameExprs,
-         jumperizeTry]));
-    timeSlow('desugar logical', () =>
-      h.transformFromAst(path, [desugarLogical]));
-    timeSlow('ANF', () =>
-      h.transformFromAst(path, [[anf, opts]]));
-    timeSlow('box assignables', () =>
-      h.transformFromAst(path, [[boxAssignables.plugin, opts]]));
-    timeSlow('declVars', () =>
-      h.transformFromAst(path, [declVars]));
+    normalizeJs.transformFromAst(path, [[normalizeJs.plugin, { nameReturns: opts.captureMethod === 'catch' }]]);
+    normalizeJs.transformFromAst(path, [[boxAssignables.plugin, opts]]);
+    normalizeJs.transformFromAst(path, [declVars]);
     // If stopifying eval'd string at runtime, don't delimit statements so that
     // we can suspend through the eval.
-    timeSlow('label', () =>
-      h.transformFromAst(path, [label.plugin]));
-    timeSlow('jumper', () =>
-      h.transformFromAst(path, [[jumper.plugin, opts]]));
+    normalizeJs.transformFromAst(path, [label.plugin]);
+    normalizeJs.transformFromAst(path, [[jumper.plugin, opts]]);
 
     path.stop();
 
     if (!doNotWrap) {
       const id = opts.onDone.id;
       // $__R.runtime($top, opts.onDone);
-      path.node.body.push(h.letExpression(id, opts.onDone as t.Expression, 'const'));
+      path.node.body.push(bh.letExpression(id, opts.onDone as t.Expression, 'const'));
       path.node.body.push(t.expressionStatement(
         t.callExpression(
           t.memberExpression($__R, t.identifier('runtime')),
@@ -118,7 +86,7 @@ const visitor: Visitor = {
 
     if (!state.opts.compileFunction) {
       path.node.body.unshift(
-        h.letExpression(
+        bh.letExpression(
           $__R,
            t.callExpression(
              t.memberExpression(t.identifier('$__T'),
@@ -126,12 +94,12 @@ const visitor: Visitor = {
               [t.stringLiteral(opts.captureMethod)]),
           'var'));
       path.node.body.unshift(
-        h.letExpression(
+        bh.letExpression(
           t.identifier("$__T"),
           !opts.requireRuntime ?
             t.identifier('stopify')
             : t.callExpression(t.identifier('require'),
-                [t.stringLiteral(`${h.runtimePath}/runtime`)]),
+                [t.stringLiteral(`${runtimePath}/runtime`)]),
           'var'));
     }
 
@@ -142,7 +110,7 @@ const visitor: Visitor = {
         t.memberExpression(t.identifier('stopify'), t.identifier('compiler'));
 
       path.node.body.unshift(
-        h.letExpression(
+        bh.letExpression(
           $__C, req, 'const'));
     }
   }

@@ -1,7 +1,7 @@
 import {NodePath, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import { cannotCapture } from '../common/cannotCapture';
-import * as bh from '../babelHelpers';
+import { babelHelpers as bh } from '@stopify/normalize-js';
 import * as imm from 'immutable';
 
 export enum AppType {

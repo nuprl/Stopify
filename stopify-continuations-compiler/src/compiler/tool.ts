@@ -8,8 +8,7 @@ import * as fs from 'fs';
 import { NodePath, Visitor } from 'babel-traverse';
 import callcc from '../callcc/callcc';
 import { flatness } from './flatness';
-import { transformFromAst } from '../common/helpers';
-import { fastFreshId } from '../callcc/index';
+import { transformFromAst, fastFreshId } from '@stopify/normalize-js';
 import 'source-map-support/register';
 
 const visitor: Visitor = {

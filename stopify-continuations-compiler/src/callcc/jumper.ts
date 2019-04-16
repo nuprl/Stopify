@@ -1,14 +1,14 @@
 import * as t from 'babel-types';
 import * as assert from 'assert';
-import * as bh from '../babelHelpers';
-import * as generic from '../generic';
+import { fastFreshId, babelHelpers as bh, generic } from '@stopify/normalize-js';
 import * as imm from 'immutable';
 import * as capture from './captureLogics';
 import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
 import { getLabels, AppType } from './label';
 import { NodePath } from 'babel-traverse';
-import { letExpression } from '../common/helpers';
+import * as h from '../helpers';
+
 import {
   isNormalMode,
   captureExn,
@@ -21,7 +21,9 @@ import {
   runtimeStack,
   types,
 } from './captureLogics';
-import { fresh } from '../fastFreshId';
+
+let letExpression = bh.letExpression;
+let fresh = fastFreshId.fresh;
 
 export { restoreNextFrame };
 
@@ -633,7 +635,7 @@ const jumper = {
     // statement. We assume that the `throw e` occurs in a block.
     exit(path: NodePath<t.ThrowStatement>, s: State) {
       const fName = bh.enclosingFunctionName(path);
-      const l = t.stringLiteral(bh.locationString(fName, path, s.opts));
+      const l = t.stringLiteral(h.locationString(fName, path, s.opts));
       path.insertBefore(t.expressionStatement(runtimeInvoke('pushTrace', l)));
     }
     }

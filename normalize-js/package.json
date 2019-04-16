@@ -1,9 +1,9 @@
 {
-  "name": "stopify-continuations-compiler",
+  "name": "@stopify/normalize-js",
   "version": "0.6.0",
   "description": "Continuations for JavaScript",
-  "main": "dist/src/callcc/index",
-  "typings": "dist/src/callcc/index",
+  "main": "dist/ts/index",
+  "typings": "dist/ts/index",
   "devDependencies": {
     "@types/babel-core": "^6.7.14",
     "@types/babel-traverse": "^6.7.17",
@@ -21,7 +21,7 @@
     "webpack": "^3.10.0"
   },
   "scripts": {
-    "build": "./bin/build",
+    "build": "./node_modules/.bin/tsc",
     "test": "./node_modules/.bin/jest",
     "tslint": "./node_modules/.bin/tslint -c ../tslint.json 'src/**/*.ts'",
     "tslint-fix": "./node_modules/.bin/tslint --fix -c ../tslint.json 'src/**/*.ts'"
@@ -48,12 +48,11 @@
     "immutable": "^3.8.1",
     "source-map": "^0.6.0",
     "source-map-support": "^0.5.6",
-    "trie": "^0.2.1",
-    "@stopify/normalize-js": "0.6.0"
+    "trie": "^0.2.1"
   },
   "jest": {
     "roots": [
-      "<rootDir>/dist"
+      "<rootDir>/dist/test"
     ]
   }
 }

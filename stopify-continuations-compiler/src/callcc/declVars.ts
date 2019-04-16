@@ -9,7 +9,7 @@
  * originally occurred.
  */
 import * as t from 'babel-types';
-import * as bh from '../babelHelpers';
+import { babelHelpers as bh } from '@stopify/normalize-js';
 import { NodePath, Visitor } from 'babel-traverse';
 
 type TopDecl<T> = T & {

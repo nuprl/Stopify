@@ -9,9 +9,7 @@ import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import * as assert from 'assert';
 import { Binding, NodePath } from 'babel-traverse';
-import * as freeIds from '../common/freeIds';
-import * as fastFreshId from '../fastFreshId';
-import * as bh from '../babelHelpers';
+import { fastFreshId, freeIds, babelHelpers as bh } from '@stopify/normalize-js';
 import { Set } from 'immutable';
 
 type Parent = t.Program | t.FunctionDeclaration | t.FunctionExpression;

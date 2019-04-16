@@ -6,6 +6,7 @@ import suspendStep from './suspendStep';
 import { timeSlow } from '../generic';
 import * as useGlobalObject from '../compiler/useGlobalObject';
 import * as exposeHOFs from '../compiler/exposeHOFs';
+import * as normalizeJs from '@stopify/normalize-js';
 
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -34,13 +35,13 @@ export const visitor: Visitor = {
       state.opts.esMode = 'sane';
     }
 
-    callcc.fastFreshId.init(path);
+    normalizeJs.fastFreshId.init(path);
     const plugs: any[] = [];
 
     timeSlow('hygiene, etc.', () =>
-      callcc.transformFromAst(path, [
+      normalizeJs.transformFromAst(path, [
         ...plugs,
-        [callcc.hygiene, { reserved: callcc.reserved }],
+        [normalizeJs.hygiene, { reserved: callcc.reserved }],
       ]));
     
     if (!opts.compileFunction) {
@@ -48,23 +49,23 @@ export const visitor: Visitor = {
       // something (I don't know what) that this transformation messes up
       // badly. It is likely the annotations that flatness puts on
       // call expressions.
-      callcc.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
+      normalizeJs.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
     }
     if (!state.opts.debug) {
-      callcc.transformFromAst(path, [ callcc.flatness ]);
+      normalizeJs.transformFromAst(path, [ callcc.flatness ]);
     }
     timeSlow('insertSuspend', () =>
-      callcc.transformFromAst(path, [[insertSuspend, opts]]));
+      normalizeJs.transformFromAst(path, [[insertSuspend, opts]]));
 
 
     if (opts.hofs === 'fill') {
-      callcc.transformFromAst(path, [exposeHOFs.plugin]);
+      normalizeJs.transformFromAst(path, [exposeHOFs.plugin]);
     }
 
     timeSlow('(control ...) elimination', () =>
-      callcc.transformFromAst(path, [[callcc.plugin, opts]]));
+      normalizeJs.transformFromAst(path, [[callcc.plugin, opts]]));
 
-    callcc.fastFreshId.cleanup();
+    normalizeJs.fastFreshId.cleanup();
 
     if (opts.compileFunction) {
       // Do nothing

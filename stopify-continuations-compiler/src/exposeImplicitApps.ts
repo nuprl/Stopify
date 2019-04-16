@@ -1,7 +1,7 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import * as imm from 'immutable';
-import { runtimePath } from './common/helpers';
+import { runtimePath } from './helpers';
 
 export const implicitsIdentifier = t.identifier('$i');
 

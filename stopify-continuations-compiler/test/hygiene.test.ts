@@ -1,8 +1,7 @@
 import * as babel from 'babel-core';
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
-import Hygiene from '../src/common/hygiene';
-import * as fastFreshId from '../src/fastFreshId';
+import { hygiene as Hygiene, fastFreshId } from '@stopify/normalize-js';
 
 const assert = require('assert');
 

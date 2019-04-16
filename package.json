@@ -2,11 +2,12 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "build:normalize-js": "cd normalize-js && yarn run build && cd -",
     "build:stopify": "cd stopify/ && yarn run build && cd -",
     "build:stopify-continuations": "cd stopify-continuations/ && yarn run build && cd -",
     "build:stopify-continuations-compiler": "cd stopify-continuations-compiler/ && yarn run build && cd -",
     "build:stopify-estimators": "cd stopify-estimators/ && yarn run build && cd -",
-    "build": "yarn run build:stopify-continuations && yarn run build:stopify-continuations-compiler && yarn run build:stopify-estimators && yarn run build:stopify",
+    "build": "yarn run build:normalize-js && yarn run build:stopify-continuations && yarn run build:stopify-continuations-compiler && yarn run build:stopify-estimators && yarn run build:stopify",
     "tslint:stopify": "cd stopify && yarn run tslint && cd -",
     "tslint:stopify-continuations": "cd stopify-continuations && yarn run tslint && cd -",
     "tslint:stopify-continuations-compiler": "cd stopify-continuations-compiler && yarn run tslint && cd -",
@@ -22,6 +23,7 @@
     "stopify",
     "stopify-continuations",
     "stopify-continuations-compiler",
-    "stopify-estimators"
+    "stopify-estimators",
+    "normalize-js"
   ]
 }

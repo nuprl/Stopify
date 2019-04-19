@@ -1,5 +1,5 @@
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import { CompilerOpts } from 'stopify-continuations-compiler';
 
 function insertSuspendHelper(body: t.Statement[], opts: CompilerOpts) {
@@ -29,14 +29,14 @@ function insertSuspendHelper(body: t.Statement[], opts: CompilerOpts) {
   });
   return newBody;
 }
-const insertSuspend: Visitor = {
+export const visitor: Visitor<{ opts: CompilerOpts }> = {
   BlockStatement: {
-    exit(path: NodePath<t.BlockStatement>, s: { opts: CompilerOpts }): void {
-      path.node.body = insertSuspendHelper(path.node.body, s.opts);
+    exit(path, state) {
+      path.node.body = insertSuspendHelper(path.node.body, state.opts);
     }
   },
 
-  IfStatement(path: NodePath<t.IfStatement>): void {
+  IfStatement(path) {
     if (path.node.consequent.type !== "BlockStatement") {
       const block = t.blockStatement([path.node.consequent]);
       path.node.consequent = block;
@@ -49,14 +49,14 @@ const insertSuspend: Visitor = {
   },
 
   Loop: {
-    enter(path: NodePath<t.Loop>): void {
+    enter(path) {
       if (path.node.body.type !== "BlockStatement") {
         const body = t.blockStatement([path.node.body]);
         path.node.body = body;
       }
     },
 
-    exit(path: NodePath<t.Loop>): void {
+    exit(path) {
       if (t.isBlockStatement(path.node.body) &&
         !(<any>path.node.body).suspends) {
         path.node.body.body.push(t.expressionStatement(
@@ -67,8 +67,8 @@ const insertSuspend: Visitor = {
   },
 
   Program: {
-    exit(path: NodePath<t.Program>, { opts }): void {
-      if(opts.compileFunction && !opts.eval) {
+    exit(path, { opts }) {
+      if(opts.compileFunction) {
         if(path.node.body[0].type === 'FunctionDeclaration') {
           (<any>path.node.body[0]).topFunction = true;
         }
@@ -81,7 +81,3 @@ const insertSuspend: Visitor = {
     }
   },
 };
-
-export default function () {
-  return { visitor: insertSuspend};
-}

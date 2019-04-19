@@ -1,6 +1,5 @@
-import * as babel from 'babel-core';
-import { NodePath } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, VisitNode, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import * as bh from "./babelHelpers";
 import { fresh } from './fastFreshId';
 
@@ -21,18 +20,18 @@ type S = {
   functionParentStack: NodePath<bh.FunWithBody | t.Program>[]
 };
 
-const visitFunWithBody = {
-  enter(this: S, path: NodePath<bh.FunWithBody>) {
+const visitFunWithBody: VisitNode<S, bh.FunWithBody> = {
+  enter(path) {
     this.functionParentStack.push(this.functionParent);
     this.functionParent = path;
   },
-  exit(this: S, path: NodePath<bh.FunWithBody>) {
+  exit(path) {
     this.functionParent = this.functionParentStack.pop()!;
   }
 };
 
-const visitor = {
-  Program(this: S, path: NodePath<t.Program>) {
+export const visitor: Visitor<S> = {
+  Program(this, path) {
     this.renameStack = [];
     this.functionParent = path;
     this.functionParentStack = [];
@@ -44,18 +43,18 @@ const visitor = {
     throw new Error("ArrowFunctionExpressions are unsupported");
   },
 
-  Scope: {
-    enter(this: S, path: NodePath<t.Scopable>): void {
+  Scopable: {
+    enter(this, path) {
       (<any>path.node).renames = {};
       this.renameStack.push((<any>path.node).renames);
     },
 
-    exit(this: S, path: NodePath<t.Scopable>): void {
+    exit(this, path) {
       this.renameStack.pop();
     },
   },
   VariableDeclaration: {
-    enter(this: S, path: NodePath<t.VariableDeclaration>) {
+    enter(this, path) {
       if (path.node.declarations.length !== 1) {
         return;
       }
@@ -106,7 +105,7 @@ const visitor = {
         this.renameStack[this.renameStack.length-1][oldId] = newId;
       }
     },
-    exit(this: S, path: NodePath<t.VariableDeclaration>): void {
+    exit(this, path) {
       if (path.node.declarations.length > 1) {
         let l = path.node.declarations.map(d =>
           t.variableDeclaration(path.node.kind, [d]));
@@ -115,25 +114,3 @@ const visitor = {
     }
   },
 };
-
-module.exports = function() {
-  return { visitor };
-};
-
-function main() {
-  const filename = process.argv[2];
-  const opts = {
-    plugins: [() => ({ visitor })],
-    babelrc: false
-  };
-  babel.transformFile(filename, opts, (err, result) => {
-    if (err !== null) {
-      throw err;
-    }
-    console.log(result.code);
-  });
-}
-
-if (require.main === module) {
-  main();
-}

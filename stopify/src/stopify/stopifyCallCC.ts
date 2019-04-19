@@ -1,15 +1,17 @@
-import * as t from 'babel-types';
-import { NodePath, Visitor } from 'babel-traverse';
+import * as t from '@babel/types';
+import { Visitor } from '@stopify/normalize-js/dist/ts/types';
 import * as callcc from 'stopify-continuations-compiler';
-import suspendStop from './suspendStop';
-import suspendStep from './suspendStep';
+import * as suspendStop from './suspendStop';
+import * as suspendStep from './suspendStep';
 import { timeSlow } from '../generic';
 import * as useGlobalObject from '../compiler/useGlobalObject';
 import * as exposeHOFs from '../compiler/exposeHOFs';
 import * as normalizeJs from '@stopify/normalize-js';
+import * as assert from 'assert';
+import * as gen from '@babel/generator';
 
-export const visitor: Visitor = {
-  Program(path: NodePath<t.Program>, state) {
+export const visitor: Visitor<{ filename?: string, opts: callcc.CompilerOpts }> = {
+  Program(path, state) {
     const opts: callcc.CompilerOpts = state.opts;
     const insertSuspend = state.opts.debug ? suspendStep : suspendStop;
 
@@ -24,46 +26,39 @@ export const visitor: Visitor = {
             [t.identifier('result')])));
     }
 
-    path.stop();
-
-    const filename: string = state.file.opts.filename;
+    const filename = state.filename!;
 
     // NOTE(arjun): Small hack to force the implicitApps file to be in
     // "sane mode". Without something like this, we get non-terminating
     // behavior.
-    if (filename.endsWith('implicitApps.js')) {
-      state.opts.esMode = 'sane';
+    if (filename && filename.endsWith('implicitApps.js')) {
+      assert(false);
+      // state.opts.esMode = 'sane';
     }
 
     normalizeJs.fastFreshId.init(path);
-    const plugs: any[] = [];
+    normalizeJs.traverse(path, normalizeJs.hygiene, { reserved: callcc.reserved });
 
-    timeSlow('hygiene, etc.', () =>
-      normalizeJs.transformFromAst(path, [
-        ...plugs,
-        [normalizeJs.hygiene, { reserved: callcc.reserved }],
-      ]));
-    
     if (!opts.compileFunction) {
       // NOTE(arjun): This needs to occur before flatness. Flatness does
       // something (I don't know what) that this transformation messes up
       // badly. It is likely the annotations that flatness puts on
       // call expressions.
-      normalizeJs.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
+      normalizeJs.traverse(path, useGlobalObject.visitor, {} as any);
     }
     if (!state.opts.debug) {
-      normalizeJs.transformFromAst(path, [ callcc.flatness ]);
+      normalizeJs.traverse(path, callcc.flatness);
     }
     timeSlow('insertSuspend', () =>
-      normalizeJs.transformFromAst(path, [[insertSuspend, opts]]));
+      normalizeJs.traverse(path, insertSuspend.visitor, state));
 
 
     if (opts.hofs === 'fill') {
-      normalizeJs.transformFromAst(path, [exposeHOFs.plugin]);
+      normalizeJs.traverse(path, exposeHOFs.visitor);
     }
 
     timeSlow('(control ...) elimination', () =>
-      normalizeJs.transformFromAst(path, [[callcc.plugin, opts]]));
+      normalizeJs.traverse(path, callcc.visitor, state));
 
     normalizeJs.fastFreshId.cleanup();
 
@@ -96,11 +91,7 @@ export const visitor: Visitor = {
                   t.identifier('init')),
                   [t.identifier('$__R')]))]));
     }
+    path.replaceWith(path.node);
+    path.stop();
   }
 };
-
-export function plugin() {
-  return {
-    visitor: visitor
-  };
-}

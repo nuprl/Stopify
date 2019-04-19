@@ -5,12 +5,12 @@ import * as jumper from './jumper';
 export * from '../runtime/sentinels';
 export { knownBuiltIns } from '../common/cannotCapture';
 
-export { default as plugin } from './callcc';
-export { flatness } from '../compiler/flatness';
+export { visitor } from './callcc';
+export { visitor as flatness } from '../compiler/flatness';
 export { getSourceMap } from '../compiler/sourceMaps';
 export * from '../types';
 
-export const reserved = [
+export const reserved: string[] = [
   ...knowns,
   "name",
   exposeImplicitApps.implicitsIdentifier.name,

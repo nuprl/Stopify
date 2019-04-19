@@ -4,7 +4,7 @@
 
 import { CompilerOpts } from '../types';
 import * as sourceMaps from './sourceMaps';
-import * as t from 'babel-types';
+import * as t from '@babel/types';
 import { RawSourceMap } from 'source-map';
 
 const validFlags = [

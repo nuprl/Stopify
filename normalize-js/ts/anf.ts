@@ -7,8 +7,8 @@
  * assumptions do not hold.
  */
 
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import * as h from './helpers';
 import * as fastFreshId from './fastFreshId';
 
@@ -17,8 +17,10 @@ function withinTryBlock(path: NodePath<t.Node>): boolean {
   return t.isTryStatement(funOrTryParent);
 }
 
-const anfVisitor : Visitor = {
-  FunctionExpression: function (path: NodePath<t.FunctionExpression>): void {
+type S =  { opts: { nameReturns: boolean } };
+
+export const visitor : Visitor<S> = {
+  FunctionExpression(path) {
     const p = path.parent;
     if (!t.isVariableDeclarator(p)) {
       // Name the function application if it is not already named.
@@ -29,11 +31,12 @@ const anfVisitor : Visitor = {
     }
   },
 
-  ArrayExpression: function (path: NodePath<t.ArrayExpression>): void {
+  ArrayExpression(path) {
     if (!h.containsCall(path)) {
       return;
     }
-    const { elements } = path.node;
+    const { elements: es } = path.node;
+    let elements = es as t.Expression[];
     elements.forEach((e: t.Expression, i) => {
       const id = fastFreshId.fresh('element');
       path.getStatementParent().insertBefore(h.letExpression(id, e));
@@ -41,23 +44,23 @@ const anfVisitor : Visitor = {
     });
   },
 
-  ObjectExpression: function (path: NodePath<t.ObjectExpression>): void {
+  ObjectExpression(path) {
     if (!h.containsCall(path)) {
       return;
     }
-    const { properties } = path.node;
+    const { properties: ps } = path.node;
+    let properties = ps as t.ObjectProperty[];
     properties.forEach((p: t.ObjectProperty, i) => {
       if (!t.isObjectProperty) {
         throw new Error(`Expected ObjectProperty but got ${p.type}`);
       }
       const id = fastFreshId.fresh('element');
-      path.getStatementParent().insertBefore(h.letExpression(id, p.value));
+      path.getStatementParent().insertBefore(h.letExpression(id, p.value as t.Expression));
       (<t.ObjectProperty>path.node.properties[i]).value = id;
     });
   },
-
   CallExpression: {
-    enter(path: NodePath<t.CallExpression>): void {
+    enter(path) {
       if (h.containsCall(path)) {
         if (t.isCallExpression(path.node.callee)) {
           const id = fastFreshId.fresh('callee');
@@ -65,15 +68,14 @@ const anfVisitor : Visitor = {
             h.letExpression(id, path.node.callee));
           path.node.callee = id;
         }
-        path.node.arguments.forEach((e: t.Expression, i) => {
+        (path.node.arguments as t.Expression[]).forEach((e: t.Expression, i) => {
           const id = fastFreshId.fresh('arg');
           path.getStatementParent().insertBefore(h.letExpression(id, e));
           path.node.arguments[i] = id;
         });
       }
     },
-
-    exit(path: NodePath<t.CallExpression>, state: { opts: { nameReturns: boolean } }): void {
+    exit(path, state: { opts: { nameReturns: boolean } }) {
       if ((<any>path.node.callee).mark === 'Flat') {
         return;
       }
@@ -98,7 +100,7 @@ const anfVisitor : Visitor = {
     }
   },
 
-  NewExpression: function (path: NodePath<t.NewExpression>): void {
+  NewExpression(path) {
     if ((<any>path.node.callee).mark === 'Flat') {
       return;
     }
@@ -111,8 +113,4 @@ const anfVisitor : Visitor = {
       path.replaceWith(name);
     }
   },
-};
-
-module.exports = function() {
-  return { visitor: anfVisitor };
 };

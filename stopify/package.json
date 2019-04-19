@@ -5,9 +5,7 @@
   "main": "dist/src/index.js",
   "typings": "dist/src/index",
   "devDependencies": {
-    "@types/babel-core": "^6.7.14",
-    "@types/babel-traverse": "^6.7.17",
-    "@types/babel-types": "^6.7.16",
+    "@types/babel__traverse": "^7.0.6",
     "@types/babylon": "^6.16.0",
     "@types/commander": "^2.9.1",
     "@types/detect-browser": "^1.6.0",
@@ -23,10 +21,10 @@
     "chromedriver": "^2.46.0",
     "geckodriver": "^1.16.0",
     "glob": "^7.1.1",
-    "jest": "^20.0.4",
+    "jest": "^24.7.1",
     "jest-junit": "^3.1.0",
     "tslint": "^5.9.1",
-    "typescript": "~2.3",
+    "typescript": "^3.4.4",
     "webpack": "^3.10.0"
   },
   "bin": {
@@ -36,7 +34,7 @@
   },
   "scripts": {
     "build": "./bin/build",
-    "test": "./node_modules/.bin/jest",
+    "test": "./node_modules/.bin/jest --env=node",
     "test:integration": "./bin/test -int",
     "bench": "./bin/benchmark --wd=perf",
     "tslint": "./node_modules/.bin/tslint -c ../tslint.json 'src/**/*.ts'",
@@ -55,26 +53,22 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
-    "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.2",
-    "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
-    "babel-traverse": "^6.26.0",
-    "babel-types": "^6.26.0",
-    "babylon": "^6.16.1",
+    "@babel/traverse": "^7.4.3",
+    "@babel/types": "^7.4.0",
+    "@stopify/normalize-js": "0.6.0",
     "commander": "^2.11.0",
     "detect-browser": "^1.12.0",
     "express": "^4.16.0",
     "immutable": "^3.8.1",
+    "jest": "^24.7.1",
     "selenium-webdriver": "^3.5.0",
     "source-map": "^0.6.0",
     "source-map-support": "^0.5.6",
     "sprintf": "^0.1.5",
     "stopify-continuations": "^0.6.0",
     "stopify-continuations-compiler": "^0.6.0",
-    "@stopify/normalize-js": "0.6.0",
     "stopify-estimators": "^0.6.0",
-    "tmp": "0.0.31",
-    "trie": "^0.2.1"
+    "tmp": "0.0.31"
   },
   "jest": {
     "roots": [

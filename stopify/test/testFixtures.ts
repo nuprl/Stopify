@@ -3,6 +3,8 @@ import * as path from 'path';
 import * as tmp from 'tmp';
 import * as glob from 'glob';
 import { execSync } from 'child_process';
+import * as stopify from '../src/entrypoints/compiler';
+import * as assert from 'assert';
 
 export {
   unitTests,
@@ -37,4 +39,44 @@ function browserTest(srcPath: string, transform: string) {
       fs.unlinkSync(dstPath);
     });
   }
+}
+
+
+function setupGlobals(runner: stopify.AsyncRun & stopify.AsyncEval) {
+  var globals: any = {
+      assert: assert,
+      require: function(str: string) {
+          if (str === 'assert') {
+              return assert;
+          }
+          else {
+              throw 'unknown library';
+          }
+      },
+      Math: Math,
+      Number: Number,
+      String: String,
+      WeakMap: WeakMap, // TODO(arjun): We rely on this for tests?!
+      console: console,
+      Array: Array,
+      Object: Object
+  };
+  runner.g = globals;
+}
+
+let N = 0;
+
+export function harness(code: string,
+  compilerOpts: Partial<stopify.CompilerOpts> = { },
+  runtimeOpts: Partial<stopify.RuntimeOpts> = {
+      yieldInterval: 1,
+      estimator: 'countdown'
+  }) {
+  const runner = stopify.stopifyLocally(code, compilerOpts, runtimeOpts);
+  if (runner.kind === 'error') {
+      throw runner.exception;
+  }
+  setupGlobals(runner);
+  console.log(`Harness ${N++}`);
+  return runner;
 }

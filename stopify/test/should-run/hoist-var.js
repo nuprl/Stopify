@@ -6,4 +6,4 @@ function foo() {
   return isEven;
 }
 
-assert.equal(8, foo());
+assert.equal( foo(), 8);

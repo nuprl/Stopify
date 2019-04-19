@@ -9,8 +9,7 @@
         "pretty": true,
         "noFallthroughCasesInSwitch": true,
         "declaration": true,
-        "inlineSourceMap": true,
-        "noUnusedLocals": true
+        "inlineSourceMap": true
     },
     "include": [
       "ts",

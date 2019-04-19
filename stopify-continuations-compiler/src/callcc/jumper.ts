@@ -1,4 +1,4 @@
-import * as t from 'babel-types';
+import * as t from '@babel/types';
 import * as assert from 'assert';
 import { fastFreshId, babelHelpers as bh, generic } from '@stopify/normalize-js';
 import * as imm from 'immutable';
@@ -6,7 +6,7 @@ import * as capture from './captureLogics';
 import { CompilerOpts } from '../types';
 import { box } from './boxAssignables';
 import { getLabels, AppType } from './label';
-import { NodePath } from 'babel-traverse';
+import { NodePath } from '@babel/traverse';
 import * as h from '../helpers';
 
 import {
@@ -31,15 +31,15 @@ const frame = t.identifier('$frame');
 const newTarget = t.identifier('newTarget');
 const captureFrameId = t.identifier('frame');
 const matArgs = t.identifier('materializedArguments');
-const restoreExn = t.memberExpression(types, t.identifier('Restore'));
+const restoreExn = mem(types, t.identifier('Restore'));
 const isRestoringMode = t.unaryExpression('!', isNormalMode);
-const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
+const popRuntimeStack = t.callExpression(mem(runtimeStack,
   t.identifier('pop')), []);
 const argsLen = t.identifier('argsLen');
 const increaseStackSize = t.expressionStatement(t.updateExpression(
-  '++', t.memberExpression(runtime, t.identifier('remainingStack'))));
+  '++', mem(runtime, t.identifier('remainingStack'))));
 const decreaseStackSize = t.expressionStatement(t.updateExpression(
-  '--', t.memberExpression(runtime, t.identifier('remainingStack'))));
+  '--', mem(runtime, t.identifier('remainingStack'))));
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
   localVars: t.Identifier[]
@@ -57,10 +57,19 @@ interface State {
   opts: CompilerOpts
 }
 
+function mem(x: any, y: any, computed = false): t.MemberExpression {
+  if (x === null) {
+    throw new Error('whoops');
+  }
+  else {
+    return t.memberExpression(x, y, computed);
+  }
+}
+
 function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const jsArgs = state.opts.jsArgs;
   if ((<any>path.node).mark === 'Flat') {
-    return;
+      return;
   }
   const restoreLocals = path.node.localVars;
 
@@ -74,14 +83,14 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const restoreBlock = [
     t.expressionStatement(t.assignmentExpression('=', frame, popRuntimeStack)),
     t.expressionStatement(t.assignmentExpression('=', target,
-      t.memberExpression(frame, t.identifier('index')))),
+      mem(frame, t.identifier('index')))),
   ];
 
   if (restoreLocals.length > 0) {
     // Restore all local variables. Creates the expression:
     //   [local0, local1, ... ] = topStack.locals;
     restoreBlock.push(t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), t.memberExpression(frame,
+      t.arrayPattern(restoreLocals), mem(frame,
         t.identifier('locals')))));
   }
 
@@ -94,16 +103,16 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         t.arrayPattern((<any>path.node.params)),
-        t.memberExpression(frame, t.identifier('formals')))));
+        mem(frame, t.identifier('formals')))));
 
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
-        argsLen, t.memberExpression(frame, argsLen))));
+        argsLen, mem(frame, argsLen))));
 
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         matArgs, t.logicalExpression('||',
-          t.memberExpression(frame, t.identifier('params')),
+          mem(frame, t.identifier('params')),
           matArgs))));
   }
 
@@ -117,7 +126,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   if (restoreLocals.length > 0) {
     captureBody.push(
       t.expressionStatement(t.assignmentExpression('=',
-        t.memberExpression(captureFrameId, t.identifier('locals')),
+        mem(captureFrameId, t.identifier('locals')),
         t.arrayExpression(restoreLocals))));
   }
 
@@ -125,29 +134,30 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
     // ... save a copy of the parameters in the stack frame and
     captureBody.push(t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(captureFrameId, t.identifier('formals')),
+      mem(captureFrameId, t.identifier('formals')),
       t.arrayExpression((<any>path.node.params)))));
     // ... save the length of the arguments array in the stack frame
     captureBody.push(t.expressionStatement(t.assignmentExpression('=',
-      t.memberExpression(captureFrameId, argsLen),
+      mem(captureFrameId, argsLen),
       argsLen)));
   }
   const captureClosure = t.functionDeclaration(captureLocals,
     [captureFrameId], t.blockStatement(captureBody));
 
+  const id = path.node.id as t.Identifier;
   // A local function to restore the next stack frame
   const reenterExpr = path.node.__usesArgs__
-    ? t.callExpression(t.memberExpression(path.node.id, t.identifier('apply')),
+    ? t.callExpression(mem(id, t.identifier('apply')),
       [t.thisExpression(), matArgs])
-    : t.callExpression(t.memberExpression(path.node.id, t.identifier('call')),
+    : t.callExpression(mem(id, t.identifier('call')),
       [t.thisExpression(), ...<any>path.node.params.map(paramToArg)]);
   const reenterClosure = t.variableDeclaration('var', [
     t.variableDeclarator(restoreNextFrame, t.arrowFunctionExpression([],
       t.blockStatement(path.node.__usesArgs__ ?
         [t.expressionStatement(t.assignmentExpression('=',
-          t.memberExpression(matArgs, t.identifier('length')),
-          t.memberExpression(
-            t.callExpression(t.memberExpression(t.identifier('Object'),
+          mem(matArgs, t.identifier('length')),
+          mem(
+            t.callExpression(mem(t.identifier('Object'),
               t.identifier('keys')), [matArgs]), t.identifier('length')))),
         t.returnStatement(reenterExpr)] :
         [t.returnStatement(reenterExpr)])))]);
@@ -169,7 +179,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
       (<t.Identifier[]>path.node.params).forEach((x, i) => {
         if (boxedArgs.contains(x.name)) {
           const cons =  t.assignmentExpression('=',
-            t.memberExpression(matArgs, t.numericLiteral(i), true),
+            mem(matArgs, t.numericLiteral(i), true),
             box(t.identifier(x.name)));
             initMatArgs.push(t.expressionStatement(cons));
         }
@@ -179,7 +189,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   }
 
   const defineArgsLen = letExpression(argsLen,
-    t.memberExpression(t.identifier('arguments'), t.identifier('length')));
+    mem(t.identifier('arguments'), t.identifier('length')));
 
   path.node.body.body.unshift(...[
     ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
@@ -201,14 +211,14 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const restoreLocals = path.node.localVars;
 
   const exn = fresh('exn');
-  const exnStack = t.memberExpression(exn, t.identifier('stack'));
+  const exnStack = mem(exn, t.identifier('stack'));
 
   const params = path.node.__usesArgs__
   ?  matArgs :  t.arrayExpression(path.node.params.map(paramToArg));
 
   const captureObject: t.ObjectProperty[] = [
     t.objectProperty(t.identifier('kind'), t.stringLiteral('rest')),
-    t.objectProperty(t.identifier('f'), path.node.id),
+    t.objectProperty(t.identifier('f'), path.node.id as t.Identifier),
     t.objectProperty(t.identifier('index'), target),
     t.objectProperty(t.identifier('locals'), t.arrayExpression(restoreLocals)),
     t.objectProperty(t.identifier('params'), params),
@@ -235,14 +245,14 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const restoreBlock = [
     t.variableDeclaration('const', [t.variableDeclarator(frame, popRuntimeStack)]),
     t.expressionStatement(t.assignmentExpression('=', target,
-      t.memberExpression(frame, t.identifier('index')))),
+      mem(frame, t.identifier('index')))),
   ];
 
   if (restoreLocals.length > 0) {
     // Restore all local variables. Creates the expression:
     //   [local0, local1, ... ] = topStack.locals;
     restoreBlock.push(t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), t.memberExpression(frame,
+      t.arrayPattern(restoreLocals), mem(frame,
         t.identifier('locals')))));
   }
 
@@ -255,16 +265,16 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         t.arrayPattern((<any>path.node.params)),
-        t.memberExpression(frame, t.identifier('formals')))));
+        mem(frame, t.identifier('formals')))));
 
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
-        argsLen, t.memberExpression(frame, argsLen))));
+        argsLen, mem(frame, argsLen))));
 
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         matArgs, t.logicalExpression('||',
-          t.memberExpression(frame, t.identifier('params')),
+          mem(frame, t.identifier('params')),
           matArgs))));
   }
 
@@ -287,7 +297,7 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
       (<t.Identifier[]>path.node.params).forEach((x, i) => {
         if (boxedArgs.contains(x.name)) {
           const cons =  t.assignmentExpression('=',
-            t.memberExpression(matArgs, t.numericLiteral(i), true),
+            mem(matArgs, t.numericLiteral(i), true),
             box(t.identifier(x.name)));
             initMatArgs.push(t.expressionStatement(cons));
         }
@@ -297,13 +307,13 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
   }
 
   const defineArgsLen = letExpression(argsLen,
-    t.memberExpression(t.identifier('arguments'), t.identifier('length')));
+    mem(t.identifier('arguments'), t.identifier('length')));
 
   const wrapBody = t.tryStatement(path.node.body,
     t.catchClause(exn, t.blockStatement([
       t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
         t.blockStatement([
-          t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
+          t.expressionStatement(t.callExpression(mem(exnStack, t.identifier('push')), [
             t.objectExpression(captureObject),
           ])),
         ])),
@@ -338,7 +348,7 @@ const instrumentLogics: {
 };
 
 function isFlat(path: NodePath<t.Node>): boolean {
-  return (<any>path.getFunctionParent().node).mark === 'Flat';
+  return (<any>bh.parentFunOrProg(path)).mark === 'Flat';
 }
 
 function usesArguments(path: NodePath<t.Function>) {
@@ -383,7 +393,7 @@ function paramToArg(node: t.LVal) {
 function runtimeInvoke(method: string,
   ...args: t.Expression[]): t.CallExpression {
   return t.callExpression(
-    t.memberExpression(runtime, t.identifier(method)), args);
+    mem(runtime, t.identifier(method)), args);
 }
 
 function labelsIncludeTarget(labels: number[]): t.Expression {
@@ -398,7 +408,7 @@ function isNormalGuarded(stmt: t.Statement): stmt is t.IfStatement {
     stmt.alternate === null);
 }
 
-const jumper = {
+export const visitor = {
   Identifier: function (path: NodePath<t.Identifier>, s: State): void {
     if (s.opts.jsArgs === 'full' && path.node.name === 'arguments' &&
       (t.isMemberExpression(path.parent) &&
@@ -487,7 +497,7 @@ const jumper = {
       if (state.opts.newMethod === 'direct') {
         path.node.localVars.push(newTarget);
         const declNewTarget = bh.varDecl(newTarget,
-          t.memberExpression(t.identifier('new'), t.identifier('target')));
+          mem(t.identifier('new'), t.identifier('target')));
 
         path.node.body.body.unshift(declNewTarget);
 
@@ -554,7 +564,7 @@ const jumper = {
 
           if (s.opts.newMethod === 'direct') {
             const retval = fresh('retval');
-            const declRetval = letExpression(retval, path.node.argument);
+            const declRetval = letExpression(retval, path.node.argument as t.Expression);
             const isObject = t.binaryExpression('instanceof',
               retval, t.identifier('Object'));
             const conditional = t.conditionalExpression(bh.and(newTarget,
@@ -600,7 +610,8 @@ const jumper = {
       if (s.opts.captureMethod === 'retval' || isFlat(path)) {
         return;
       }
-      const { param, body } = path.node;
+      const { param: p, body } = path.node;
+      const param = p as t.Identifier;
       body.body.unshift(t.ifStatement(
         bh.or(
           t.binaryExpression('instanceof', param, captureExn),
@@ -624,7 +635,7 @@ const jumper = {
       if (path.node.finalizer) {
         path.node.finalizer = t.blockStatement([
           bh.sIf(t.unaryExpression('!',
-            t.memberExpression(runtime, t.identifier('capturing'))),
+            mem(runtime, t.identifier('capturing'))),
             path.node.finalizer)]);
       }
     }
@@ -640,7 +651,3 @@ const jumper = {
     }
     }
 };
-
-export function plugin(): any {
-  return { visitor: jumper };
-}

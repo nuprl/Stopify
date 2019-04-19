@@ -1,7 +1,8 @@
-import * as babel from 'babel-core';
-import * as t from 'babel-types';
-import { NodePath } from 'babel-traverse';
+import * as babel from '@babel/core';
+import * as t from '@babel/types';
+import { Visitor, NodePath } from '@babel/traverse';
 export { letExpression } from './babelHelpers';
+import * as gen from '@babel/generator';
 
 export type FunctionNode =
   t.FunctionDeclaration | t.FunctionExpression | t.ObjectMethod;
@@ -79,21 +80,16 @@ export function flatBodyStatement(body: t.Statement[]): t.BlockStatement {
   return t.blockStatement(newBody);
 }
 
-/**
- * A simple wrapper around Babel's `transformFromAst` function.
- */
-export function transformFromAst(
-  path: NodePath<t.Node>,
-  plugins: any[],
-  ast = false,
-  code = false): babel.BabelFileResult {
-  const opts: babel.TransformOptions = {
-    plugins: plugins,
-    babelrc: false,
-    code: false,
-    ast: false,
-  };
-  return babel.transformFromAst(path.node, undefined, opts);
+export function traverse<S = {}>(path: NodePath<t.Node>,
+  visitor: Visitor<S>,
+  state?: S) {
+  if (state === undefined) {
+    babel.traverse(path.parent, visitor as any, path.scope, {});
+  }
+  else {
+    babel.traverse(path.parent, visitor, path.scope, state);
+  }
 }
+
 
 

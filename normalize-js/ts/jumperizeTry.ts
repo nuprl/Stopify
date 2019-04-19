@@ -33,8 +33,8 @@
  *     'exn_'. Therefore, jumper can transfer control to the catch block by
  *     'throw exn_'.
  */
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import * as bh from './babelHelpers';
 import { fresh } from './fastFreshId';
 
@@ -48,7 +48,7 @@ type VisitorState = {
   inTryBlockStack: boolean[]
 };
 
-const visitor: Visitor = {
+export const visitor: Visitor<VisitorState> = {
   TryStatement: {
     enter(this: VisitorState, path: NodePath<t.TryStatement>) {
       if (path.node.finalizer) {
@@ -62,7 +62,7 @@ const visitor: Visitor = {
         (<any>path.node.handler).eVar = x;
         path.node.handler.body.body.unshift(
           t.expressionStatement( t.assignmentExpression('=', x,
-            path.node.handler.param)));
+            path.node.handler.param!)));
         if (path.node.finalizer) {
           path.node.handler.body.body.unshift(
             t.expressionStatement(t.assignmentExpression('=', throwSentinal,
@@ -134,7 +134,3 @@ const visitor: Visitor = {
     }
   },
 };
-
-export default function () {
-  return { visitor };
-}

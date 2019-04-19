@@ -6,7 +6,7 @@
  *
  * node built/src/callcc/callcc <filename.js>
  */
-const arrowFunctions = require('babel-plugin-transform-es2015-arrow-functions');
+
 import * as desugarLoop from './desugarLoop';
 import * as desugarLabel from './desugarLabel';
 import * as desugarSwitch from './desugarSwitch';
@@ -15,42 +15,49 @@ import * as singleVarDecls from './singleVarDecls';
 import * as makeBlocks from './makeBlockStmt';
 import * as anf from './anf';
 import * as nameExprs from './nameExprs';
-import jumperizeTry from './jumperizeTry';
+import * as jumperizeTry from './jumperizeTry';
 import * as freeIds from './freeIds';
-import cleanup from './cleanup';
+import * as cleanup from './cleanup';
 import * as h from './helpers';
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import * as t from '@babel/types';
+import {  Visitor, NodePath } from '@babel/traverse';
 import { timeSlow } from './generic';
 import * as fastFreshId from './fastFreshId';
+import * as bh from './babelHelpers';
+const arrowFunctions = require('@babel/plugin-transform-arrow-functions');
 
-const visitor: Visitor = {
-  Program(path: NodePath<t.Program>, state) {
-    let nameReturns = typeof state.opts.nameReturns === 'boolean' ? state.opts.nameReturns : false;
-    fastFreshId.init(path);
-    timeSlow('cleanup arguments.callee', () =>
-      h.transformFromAst(path, [cleanup]));
-
-
-    timeSlow('arrow functions', () =>
-      h.transformFromAst(path, [arrowFunctions]));
-    timeSlow('singleVarDecl', () =>
-      h.transformFromAst(path, [[singleVarDecls]]));
-    timeSlow('free ID initialization', () =>
-      freeIds.annotate(path));
-    timeSlow('desugaring passes', () =>
-      h.transformFromAst(path,
-        [makeBlocks, desugarLoop, desugarLabel, desugarSwitch, nameExprs,
-         jumperizeTry, nameExprs]));
-    timeSlow('desugar logical', () =>
-      h.transformFromAst(path, [desugarLogical]));
-    timeSlow('ANF', () =>
-      h.transformFromAst(path, [[anf, { nameReturns: nameReturns }]]));
-
-    path.stop();
+type S = {
+  opts: {
+    nameReturns: boolean | undefined
   }
 };
 
-export default function() {
-  return { visitor };
+export function visitorBody(path: NodePath<t.Program>, state: S) {
+  let nameReturns = typeof state.opts.nameReturns === 'boolean' ? state.opts.nameReturns : false;
+  fastFreshId.init(path);
+  timeSlow('cleanup arguments.callee', () =>
+    h.traverse(path, cleanup.visitor, {}));
+
+  path.replaceWith(bh.transformFromAst(path.node, [arrowFunctions]));
+  timeSlow('singleVarDecl', () =>
+    h.traverse(path, singleVarDecls.visitor, {} as any));
+
+  timeSlow('free ID initialization', () =>
+    freeIds.annotate(path));
+
+  h.traverse(path, makeBlocks.visitor);
+  h.traverse(path, desugarLoop.visitor);
+  h.traverse(path, desugarLabel.visitor);
+  h.traverse(path, desugarSwitch.visitor);
+  h.traverse(path, jumperizeTry.visitor);
+  h.traverse(path, nameExprs.visitor);
+  h.traverse(path, desugarLogical.visitor);
+  h.traverse(path, anf.visitor, { opts: { nameReturns: nameReturns } });
 }
+
+export const visitor: Visitor<S> = {
+  Program(path, state) {
+    visitorBody(path, state);
+    path.stop();
+  }
+};

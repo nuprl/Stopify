@@ -1,5 +1,5 @@
-import {NodePath, Visitor} from 'babel-traverse';
-import * as t from 'babel-types';
+import {NodePath, Visitor} from '@babel/traverse';
+import * as t from '@babel/types';
 import { cannotCapture } from '../common/cannotCapture';
 import { babelHelpers as bh } from '@stopify/normalize-js';
 import * as imm from 'immutable';
@@ -37,10 +37,12 @@ function getLabels0(node: Labeled<t.Node>): number[] {
   return node.labels === undefined ?  [] : [...node.labels];
 }
 
-export function getLabels(...nodes: Labeled<t.Node>[]): number[] {
+export function getLabels(...nodes: (null | Labeled<t.Node>)[]): number[] {
   const r: number[] = [];
   for (const node of nodes) {
-    r.push(...getLabels0(node));
+    if (node !== null) {
+      r.push(...getLabels0(node));
+    }
   }
   return [...(new Set(r)).values()];
 }
@@ -61,10 +63,10 @@ const visitFunction = {
   enter(this: VisitorState, path: NodePath<Labeled<bh.FunWithBody>>) {
     this.inTryBlockStack.push(this.inTryBlock);
     this.inTryBlock = false;
-
+    const id = (path.node as any).id as { name: string } | undefined;
     const allVars = imm.Set.of(...Object.keys(path.scope.bindings));
     let otherVars = imm.Set.of(...path.node.params.map(bh.lvaltoName))
-      .union(path.node.id ? imm.Set.of(path.node.id.name) : imm.Set<string>());
+      .union(id ? imm.Set.of(id.name) : imm.Set<string>());
     path.node.localVars = allVars.subtract(otherVars).toArray()
       .map(x => t.identifier(x));
   },
@@ -78,7 +80,7 @@ const visitFunction = {
 
 };
 
-const visitor: Visitor = {
+export const visitor: Visitor = {
   TryStatement: {
     enter(this: VisitorState, path: NodePath<Labeled<t.TryStatement>>) {
       this.inTryBlockStack.push(this.inTryBlock);
@@ -113,7 +115,7 @@ const visitor: Visitor = {
   ReturnStatement: {
     exit(this: VisitorState, path: NodePath<Labeled<t.ReturnStatement>>) {
       // Assumes no nested calls.
-      const isCall = isUnsafeCall(path.node.argument);
+      const isCall = isUnsafeCall(path.node.argument as t.Expression);
       if (!isCall) {
         path.node.appType = AppType.None;
       }
@@ -190,7 +192,3 @@ const visitor: Visitor = {
     }
   },
 };
-
-export function plugin() {
-  return { visitor };
-}

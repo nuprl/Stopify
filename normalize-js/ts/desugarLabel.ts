@@ -4,11 +4,11 @@
  *
  */
 
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import { While, Break } from './helpers';
 
-const labelVisitor : Visitor = {
+export const visitor : Visitor = {
   ContinueStatement: function (path: NodePath<t.ContinueStatement>): void {
     const { label } = path.node;
     if (label) {
@@ -37,8 +37,4 @@ const labelVisitor : Visitor = {
       path.node.label = <t.Identifier>labeledParent.node.break_label;
     }
   },
-};
-
-module.exports = function() {
-  return { visitor: labelVisitor };
 };

@@ -1,15 +1,15 @@
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import * as fastFreshId from './fastFreshId';
 
-const names: Visitor = {
+export const visitor: Visitor = {
   ObjectMethod: function (path: NodePath<t.ObjectMethod>): void {
     if (path.node.kind === "method") {
       let fun = t.functionExpression(fastFreshId.fresh('method'),
           path.node.params, path.node.body);
-        // Little hack necessary to preserve annotation left by freeIds and singleVarDecls
-        (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
-        (<any>fun).renames = (<any>path.node).renames;
+      // Little hack necessary to preserve annotation left by freeIds and singleVarDecls
+      (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
+      (<any>fun).renames = (<any>path.node).renames;
       path.replaceWith(t.objectProperty(path.node.key,
         fun,
         path.node.computed));
@@ -38,14 +38,10 @@ const names: Visitor = {
   // NOTE(arjun): Dead code? I think no FunctionDeclarations exist at this
   // point.
   FunctionDeclaration: function (path: NodePath<t.FunctionDeclaration>): void {
-    if (path.scope.hasOwnBinding(path.node.id.name) &&
-      <any>path.scope.bindings[path.node.id.name].kind !== 'local') {
+    if (path.scope.hasOwnBinding(path.node.id!.name) &&
+      <any>path.scope.bindings[path.node.id!.name].kind !== 'local') {
       const new_id = fastFreshId.fresh('funExpr');
-      path.scope.rename(path.node.id.name, new_id.name);
+      path.scope.rename(path.node.id!.name, new_id.name);
     }
   },
-};
-
-module.exports = function () {
-  return { visitor: names };
 };

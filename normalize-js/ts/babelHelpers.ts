@@ -1,5 +1,6 @@
-import { NodePath } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
+import * as babel from '@babel/core';
 
 export type FunWithBody = t.FunctionDeclaration | t.FunctionExpression |
   t.ObjectMethod;
@@ -137,10 +138,13 @@ export function lvaltoName(lval: t.LVal): string {
   }
 }
 
-function isPropertyValue(p: t.ObjectProperty | t.ObjectMethod): boolean {
+function isPropertyValue(p: t.ObjectMember | t.SpreadElement): boolean {
   return (
     t.isObjectMethod(p) ||
-    (p.computed === false && isValue(p.value)));
+    (t.isObjectProperty(p) &&
+     p.computed === false &&
+     t.isExpression(p.value) &&
+     isValue(p.value)));
 }
 
 /**
@@ -148,13 +152,20 @@ function isPropertyValue(p: t.ObjectProperty | t.ObjectMethod): boolean {
  *
  * @param e
  */
-export function isValue(e: t.Expression): boolean {
-  return (
-    t.isLiteral(e) ||
-    t.isFunction(e) ||
-    (t.isArrayExpression(e) && e.elements.every(isValue)) ||
-    (t.isObjectExpression(e) && e.properties.every(isPropertyValue)) ||
-    t.isIdentifier(e));
+export function isValue(e: t.Expression | t.PatternLike | null | t.SpreadElement): boolean {
+  if (e === null) {
+    return false;
+  }
+  if (t.isLiteral(e) || t.isFunction(e) || t.isIdentifier(e)) {
+    return true;
+  }
+  if (t.isArrayExpression(e)) {
+    return e.elements.every(isValue);
+  }
+  if (t.isObjectExpression(e)) {
+    return e.properties.every(isPropertyValue);
+  }
+  return false;
 }
 
 export function arrayPrototypeSliceCall(e: t.Expression): t.Expression {
@@ -177,10 +188,10 @@ export function enclosingFunctionName(path: NodePath<t.Node>): string | undefine
   // TODO(arjun): this traversal is slow
   const f = path.getFunctionParent().node;
   if (t.isFunctionExpression(f)) {
-    return (f as any).originalName || f.id.name;
+    return (f as any).originalName || f.id!.name;
   }
   else if (t.isFunctionDeclaration(f)) {
-    return f.id.name;
+    return f.id!.name;
   }
   else {
     return;
@@ -203,3 +214,24 @@ export function letExpression(name: t.LVal,
   kind: kind = 'let'): t.VariableDeclaration {
     return t.variableDeclaration(kind, [t.variableDeclarator(name, value)]);
   }
+
+export function parentFunOrProg(path: NodePath<t.Node>): t.Function | t.Program {
+  const parentPath = path.findParent(path => path.isFunction() || path.isProgram());
+  if (!path.node) {
+    throw new Error(`could not find a Function/Program parent!`);
+  }
+  return parentPath.node as t.Function | t.Program; // safe coercion
+}
+
+
+export function transformFromAst(
+  node: t.Node,
+  plugins: any[]): t.Program {
+  const opts: babel.TransformOptions = {
+    plugins: plugins,
+    babelrc: false,
+    code: false,
+    ast: true,
+  };
+  return babel.transformFromAstSync(node, undefined, opts)!.ast!.program;
+}

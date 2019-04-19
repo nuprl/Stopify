@@ -5,10 +5,9 @@
  * Preconditions:
  * 1. The freeIds pass has been applied.
  */
-import * as t from 'babel-types';
-import * as babel from 'babel-core';
+import * as t from '@babel/types';
 import * as assert from 'assert';
-import { Binding, NodePath } from 'babel-traverse';
+import { Visitor, Binding, NodePath, VisitNode } from '@babel/traverse';
 import { fastFreshId, freeIds, babelHelpers as bh } from '@stopify/normalize-js';
 import { Set } from 'immutable';
 
@@ -21,7 +20,7 @@ type State = {
   varsStack: Set<string>[],
   liftDeclStack: t.Statement[][],
   liftAssignStack: t.Statement[][],
-  opts: { boxes: string[] },
+  opts: { boxes: string[], compileFunction: boolean },
 };
 
 export function box(e: t.Expression): t.ObjectExpression {
@@ -83,7 +82,7 @@ function liftAssign(self: State, assign: t.Statement): void {
   // }
 
 
-function enterFunction(self: State, path: NodePath<t.FunctionExpression>) {
+function enterFunction(self: State, path: NodePath<t.FunctionExpression | t.FunctionDeclaration>) {
     const locals = Set.of(...Object.keys(path.scope.bindings));
     // Mutable variables from this scope that are not shadowed
     const vars0 = self.vars.subtract(locals);
@@ -104,7 +103,7 @@ function enterFunction(self: State, path: NodePath<t.FunctionExpression>) {
   self.liftAssignStack.push([]);
 }
 
-function exitFunction(self: State, path: NodePath<t.FunctionExpression>) {
+function exitFunction(self: State, path: NodePath<t.FunctionExpression | t.FunctionDeclaration>) {
   // Lift boxed declarations and hoisted function decl assignments.
   const decls = self.liftDeclStack.pop();
   const assigns = self.liftAssignStack.pop();
@@ -124,9 +123,9 @@ function exitFunction(self: State, path: NodePath<t.FunctionExpression>) {
   self.parentPath = self.parentPathStack.pop()!;
 }
 
-const visitor = {
+export const visitor: Visitor<State> & { ReferencedIdentifier: VisitNode<State, t.Identifier>, BindingIdentifier: VisitNode<State, t.Identifier> } = {
   Program: {
-    enter(this: State, path: NodePath<t.Program>): void {
+    enter(path) {
       this.parentPathStack = [];
       this.varsStack = [];
       this.parentPath = path;
@@ -154,7 +153,7 @@ const visitor = {
       this.liftAssignStack = [[]];
     },
 
-    exit(this: State, path: NodePath<t.Program>): void {
+    exit(path) {
       const decls = this.liftDeclStack.pop();
       const assigns = this.liftAssignStack.pop();
 
@@ -167,8 +166,7 @@ during boxing`);
       path.node.body.unshift(...decls!, ...assigns!);
     }
   },
-
-  ReferencedIdentifier(this: State, path: NodePath<t.Identifier>) {
+  ReferencedIdentifier(path: NodePath<t.Identifier>) {
     path.skip();
     // NOTE(arjun): The parent type tests are because labels are
     // categorized as ReferencedIdentifiers, which is a bug in
@@ -184,7 +182,7 @@ during boxing`);
     }
   },
 
-  VariableDeclaration(this: State, path: NodePath<t.VariableDeclaration>) {
+  VariableDeclaration(path) {
     assert(path.node.declarations.length === 1,
       'variable declarations must have exactly one binding');
     const decl = path.node.declarations[0];
@@ -205,7 +203,7 @@ during boxing`);
     }
   },
 
-  BindingIdentifier(this: State, path: NodePath<t.Identifier>) {
+  BindingIdentifier(path: NodePath<t.Identifier>) {
     path.skip();
     if (path.parent.type !== "AssignmentExpression") {
       return;
@@ -217,25 +215,25 @@ during boxing`);
   },
 
   FunctionExpression: {
-    enter(this: State, path: NodePath<t.FunctionExpression>, state: any) {
+    enter(path) {
       enterFunction(this, path);
     },
-    exit(this: State, path: NodePath<t.FunctionExpression>, state: any) {
+    exit(path) {
       exitFunction(this, path);
     }
   },
 
   FunctionDeclaration: {
-    enter(this: State, path: NodePath<t.FunctionExpression>, state: any) {
+    enter(path) {
       enterFunction(this, path);
     },
-    exit(this: State, path: NodePath<t.FunctionExpression>, state: any) {
+    exit(path, state) {
       exitFunction(this, path);
       const vars = this.vars;
       // NOTE(rachit): in `func` mode, the input function is marked with
       // topFunction. It shouldn't be boxed since we want to preserve its
       // signature.
-      if (vars.includes(path.node.id.name) &&
+      if (vars.includes(path.node.id!.name) &&
           !(state.opts.compileFunction && (<any>path.node).topFunction)) {
         const fun = t.functionExpression(
           fastFreshId.fresh('fun'),
@@ -244,8 +242,8 @@ during boxing`);
 
         // This is necessary to get the right function name in
         // a stack trace.
-        if (path.node.id.name !== undefined) {
-          (<any>fun).originalName = path.node.id.name;
+        if (path.node.id!.name !== undefined) {
+          (<any>fun).originalName = path.node.id!.name;
         }
 
         (<any>fun).mark = (<any>path.node).mark;
@@ -256,9 +254,9 @@ during boxing`);
         (<any>fun).renames = (<any>path.node).renames;
 
         const decl = t.variableDeclaration('var',
-          [t.variableDeclarator(path.node.id, box(bh.eUndefined))]);
+          [t.variableDeclarator(path.node.id!, box(bh.eUndefined))]);
         const stmt = t.expressionStatement(t.assignmentExpression('=',
-          unbox(path.node.id) as t.LVal, fun));
+          unbox(path.node.id!) as t.LVal, fun));
         liftDecl(this, decl);
         liftAssign(this, stmt);
 
@@ -268,22 +266,3 @@ during boxing`);
     }
   }
 };
-
-export function plugin() {
-  return { visitor };
-}
-
-function main() {
-  const filename = process.argv[2];
-  const opts = { plugins: [() => ({ visitor })], babelrc: false };
-  babel.transformFile(filename, opts, (err, result) => {
-    if (err !== null) {
-      throw err;
-    }
-    console.log(result.code);
-  });
-}
-
-if (require.main === module) {
-  main();
-}

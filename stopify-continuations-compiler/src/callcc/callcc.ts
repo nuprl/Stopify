@@ -12,22 +12,22 @@ import * as desugarNew from '../common/desugarNew';
 import * as label from './label';
 import * as jumper from './jumper';
 import * as declVars from './declVars';
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
-import * as babel from 'babel-core';
+import { Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
-import { babelHelpers as bh } from '@stopify/normalize-js';
+import { babelHelpers as bh, traverse } from '@stopify/normalize-js';
 import { runtimePath } from '../helpers';
+
 
 const $__R = t.identifier('$__R');
 const $__C = t.identifier('$__C');
 const $top = t.identifier('$top');
 
-const visitor: Visitor = {
-  Program(path: NodePath<t.Program>, state) {
-    const opts: types.CompilerOpts  = state.opts;
+export const visitor: Visitor<{ opts: types.CompilerOpts }> = {
+  Program(path, state) {
+    const opts = state.opts;
 
     const doNotWrap = (<any>opts).renames || opts.compileFunction ||
       opts.eval2 || opts.compileMode === 'library';
@@ -52,32 +52,40 @@ const visitor: Visitor = {
     }
 
     if (opts.getters) {
-      normalizeJs.transformFromAst(path, [exposeGS.plugin]);
+      traverse(path, exposeGS.visitor, { opts: opts });
     }
 
     if (opts.newMethod === 'wrapper') {
-      normalizeJs.transformFromAst(path, [[desugarNew, opts]]);
+      traverse(path, desugarNew.visitor, { opts: opts });
     }
 
     if (opts.es === 'es5') {
-      normalizeJs.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
+      traverse(path, exposeImplicitApps.visitor, { opts: opts });
     }
 
-    normalizeJs.transformFromAst(path, [[normalizeJs.plugin, { nameReturns: opts.captureMethod === 'catch' }]]);
-    normalizeJs.transformFromAst(path, [[boxAssignables.plugin, opts]]);
-    normalizeJs.transformFromAst(path, [declVars]);
-    // If stopifying eval'd string at runtime, don't delimit statements so that
-    // we can suspend through the eval.
-    normalizeJs.transformFromAst(path, [label.plugin]);
-    normalizeJs.transformFromAst(path, [[jumper.plugin, opts]]);
+    const inner: Visitor = {
+      Program(path) {
+        traverse(path, boxAssignables.visitor, { opts: opts } as any);
+        traverse(path, declVars.visitor);
+        traverse(path, label.visitor);
+        traverse(path, jumper.visitor, { opts: opts });
+        path.stop();
+      }
+    };
 
-    path.stop();
+    let node = normalizeJs.babelHelpers.transformFromAst(path.node, [
+      [ () => ({ visitor: normalizeJs.visitor }),
+        { nameReturns: opts.captureMethod === 'catch' } ]
+    ]);
+    node = normalizeJs.babelHelpers.transformFromAst(node, [
+      [ () => ({ visitor: inner }), opts ]
+    ]);
 
     if (!doNotWrap) {
-      const id = opts.onDone.id;
+      const id = opts.onDone.id as t.Identifier;
       // $__R.runtime($top, opts.onDone);
-      path.node.body.push(bh.letExpression(id, opts.onDone as t.Expression, 'const'));
-      path.node.body.push(t.expressionStatement(
+      node.body.push(bh.letExpression(id, opts.onDone as t.Expression, 'const'));
+      node.body.push(t.expressionStatement(
         t.callExpression(
           t.memberExpression($__R, t.identifier('runtime')),
           [t.memberExpression($top, t.identifier('box')), id])));
@@ -85,7 +93,7 @@ const visitor: Visitor = {
 
 
     if (!state.opts.compileFunction) {
-      path.node.body.unshift(
+      node.body.unshift(
         bh.letExpression(
           $__R,
            t.callExpression(
@@ -93,7 +101,7 @@ const visitor: Visitor = {
                t.identifier('newRTS')),
               [t.stringLiteral(opts.captureMethod)]),
           'var'));
-      path.node.body.unshift(
+      node.body.unshift(
         bh.letExpression(
           t.identifier("$__T"),
           !opts.requireRuntime ?
@@ -109,34 +117,11 @@ const visitor: Visitor = {
           [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]) :
         t.memberExpression(t.identifier('stopify'), t.identifier('compiler'));
 
-      path.node.body.unshift(
+      node.body.unshift(
         bh.letExpression(
           $__C, req, 'const'));
     }
+    path.replaceWith(node);
+    path.stop();
   }
 };
-
-export default function() {
-  return { visitor };
-}
-
-function main() {
-  const filename = process.argv[2];
-  const opts = {
-    plugins: [[() => ({ visitor }), {
-      captureMethod: 'eager',
-      handleNew: 'wrapper',
-    }]],
-    babelrc: false
-  };
-  babel.transformFile(filename, opts, (err, result) => {
-    if (err !== null) {
-      throw err;
-    }
-    console.log(result.code);
-  });
-}
-
-if (require.main === module) {
-  main();
-}

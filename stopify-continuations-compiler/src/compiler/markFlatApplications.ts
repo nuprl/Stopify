@@ -3,8 +3,8 @@
  * function nodes have a `.mark` field that says whether or not they
  * are flat.
  */
-import { NodePath, VisitNode, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, VisitNode, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import { FlatTag, FlatnessMark } from '../helpers';
 
 /**
@@ -92,8 +92,8 @@ function nodeToString(node: t.Expression | t.LVal): string | null {
 /**
  * Visitors that run mark call expressions as 'flat'
  */
-const markCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
-  function (path: NodePath<FlatnessMark<t.CallExpression>>): void {
+const markCallExpression: VisitNode<{}, FlatnessMark<t.CallExpression>> =
+  function (path) {
     if (path.node.mark === 'Flat') { return; }
     const node = path.node;
     const name = nodeToString(node.callee);
@@ -108,8 +108,8 @@ const markCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
     }
   };
 
-const programMarkCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
-  function (path: NodePath<FlatnessMark<t.CallExpression>>) {
+const programMarkCallExpression: VisitNode<{}, FlatnessMark<t.CallExpression>> =
+  function (path) {
     if (path.node.mark === 'Flat') { return; }
     const fParent = path.findParent(p => t.isFunctionDeclaration(p) ||
       t.isFunctionExpression(p));
@@ -132,8 +132,8 @@ const programMarkCallExpression: VisitNode<FlatnessMark<t.CallExpression>> =
     }
   };
 
-const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> = {
-  enter(path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>) {
+const func: VisitNode<{}, FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> = {
+  enter(path) {
     let paramsBind : any =
       path.node.params.map(p => [(<t.Identifier>p).name, 'NotFlat']);
     if (path.node.id) {
@@ -147,13 +147,13 @@ const func: VisitNode<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>> 
     }
   },
 
-  exit(path: NodePath<FlatnessMark<t.FunctionDeclaration|t.FunctionExpression>>) {
+  exit(path) {
     if(debug > 1) {
-      console.error(`\n-------${path.node.id.name}----------`);
+      console.error(`\n-------${path.node.id!.name}----------`);
       console.error(globalEnv.toString());
       console.error(`\n-------------------------`);
     }
-    path.traverse(markingVisitor);
+    path.traverse(markingVisitor as Visitor);
     globalEnv.popScope();
   }
 };
@@ -174,36 +174,34 @@ const assign = {
   }
 };
 
-const program: VisitNode<t.Program> = {
-  enter(path: NodePath<t.Program>) {
+const program: VisitNode<{}, t.Program> = {
+  enter(path) {
     globalEnv = new Env();
   },
-  exit(path: NodePath<t.Program>) {
+  exit(path) {
     if (debug > 1) {
       console.error(`\n-------program----------`);
       console.error(globalEnv.toString());
       console.error(`\n-------------------------`);
     }
-    path.traverse(programMarkingVisitor);
+    path.traverse(programMarkingVisitor as Visitor);
   }
 };
 
 // The Program visitor needs to ignore all function bodies
 const programMarkingVisitor = {
-  "CallExpression|NewExpression": programMarkCallExpression
+  CallExpression: programMarkCallExpression,
+  NewExpression: programMarkCallExpression
 };
 
 const markingVisitor = {
-  "CallExpression|NewExpression": markCallExpression,
+  CallExpression: markCallExpression,
+  NewExpression: markCallExpression
 };
 
-const visitor: Visitor = {
+export const visitor: Visitor = {
   Program: program,
   FunctionDeclaration: <any>func,
   FunctionExpression: <any>func,
   AssignmentExpression: assign,
 };
-
-export function markFlatApplications() {
-  return { visitor };
-}

@@ -1,7 +1,7 @@
 import { Result } from 'stopify-continuations';
 export { Result };
 export { HandleNew, CaptureMethod, CompilerOpts } from 'stopify-continuations-compiler';
-import * as t from 'babel-types';
+import * as t from '@babel/types';
 
 export type Stoppable = (isStop: () => boolean,
                          onStop: () => void,
@@ -33,7 +33,7 @@ export type Error = {
 }
 
 export interface AsyncEval {
-  evalAsyncFromAst(ast: t.Program, onDone: (result: Result) => void): void;
+  evalAsyncFromAst(ast: t.File, onDone: (result: Result) => void): void;
   evalAsync(src: string, onDone: (result: Result) => void): void;
 }
 

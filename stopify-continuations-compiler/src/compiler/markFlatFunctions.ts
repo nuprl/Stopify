@@ -4,8 +4,8 @@
  * the transformation to use the information.
  */
 
-import * as t from 'babel-types';
-import { NodePath, Visitor } from 'babel-traverse';
+import * as t from '@babel/types';
+import { NodePath, Visitor } from '@babel/traverse';
 import {  FlatnessMark } from '../helpers';
 
 let debug = false;
@@ -26,7 +26,7 @@ const funcMarkUntransformed = {
     if(debug && t.isFunctionDeclaration(path.node)) {
       const { loc, mark } = path.node;
       const info =
-        `${mark}: ${path.node.id.name}${ loc ? ` on line ${loc.start.line}` : ''}`;
+        `${mark}: ${path.node.id!.name}${ loc ? ` on line ${loc.start.line}` : ''}`;
       console.error(info);
     }
 
@@ -59,14 +59,10 @@ const callExpr = {
   }
 };
 
-const visitor = {
+export const visitor = {
   Program: prog,
   CallExpression: callExpr,
   NewExpression: callExpr,
   Loop: callExpr,
   ThrowStatement: callExpr
 };
-
-export function markFlatFunctions() {
-  return { visitor };
-}

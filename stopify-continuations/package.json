@@ -5,7 +5,7 @@
   "main": "dist/types",
   "typings": "dist/types",
   "devDependencies": {
-    "typescript": "~2.3"
+    "typescript": "^3.4.4"
   },
   "scripts": {
     "build": "./node_modules/.bin/tsc",
@@ -24,6 +24,5 @@
     }
   ],
   "license": "BSD-3-Clause",
-  "dependencies": {
-  }
+  "dependencies": {}
 }

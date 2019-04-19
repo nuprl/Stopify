@@ -1,7 +1,8 @@
-import * as babel from 'babel-core';
-import { NodePath } from 'babel-traverse';
-import * as t from 'babel-types';
-import { hygiene as Hygiene, fastFreshId } from '@stopify/normalize-js';
+import * as babel from '@babel/core';
+import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
+import { hygiene, fastFreshId } from '@stopify/normalize-js';
+import * as parser from '@babel/parser';
 
 const assert = require('assert');
 
@@ -22,38 +23,20 @@ const visitor = {
       assert.fail(`${name} was not renamed`);
     }
   }
-};
+} as babel.Visitor;
 
 const initVisitor = {
   Program(path: NodePath<t.Program>) {
-    fastFreshId.init(path)
+    fastFreshId.init(path);
   }
-}
-
-let is_init = false
+};
 
 function check(src: string, ...reserved: string[]) {
-  if (is_init === false) {
-    let { ast: init_ast } = babel.transform(src, {
-      babelrc: false,
-      plugins: []
-    });
-
-    babel.traverse(init_ast!, initVisitor, undefined)
-
-    is_init = true
-  }
-
-  const { ast } = babel.transform(src, {
-    babelrc: false,
-    plugins: [ [ Hygiene, { reserved } ] ]
-  });
-
-  const state = {
-    reserved: new Set(reserved)
-  };
-
-  babel.traverse(ast!, visitor, undefined, state);
+  let ast = parser.parse(src);
+  babel.traverse(ast, initVisitor);
+babel.traverse(ast, hygiene, undefined as any, { reserved });
+  babel.traverse(ast, visitor, undefined, { reserved: new Set(reserved) });
+  fastFreshId.cleanup();
 }
 
 describe("Testing hygiene visitor", function() {

@@ -1,5 +1,6 @@
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, Visitor } from '@babel/traverse';
+import { CompilerOpts } from 'stopify-continuations-compiler';
+import * as t from '@babel/types';
 
 function handleBlock(body: t.BlockStatement) {
   body.body.unshift(t.expressionStatement(
@@ -18,16 +19,16 @@ function handleFunction(path: NodePath<t.Node> & BlockBody) {
   handleBlock(path.node.body);
 }
 
-const insertSuspend: Visitor = {
-  FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
+export const visitor: Visitor<{ opts: CompilerOpts }> = {
+  FunctionDeclaration(path) {
     handleFunction(path);
   },
 
-  FunctionExpression(path: NodePath<t.FunctionExpression>) {
+  FunctionExpression(path) {
     handleFunction(path);
   },
 
-  Loop(path: NodePath<t.Loop>) {
+  Loop(path) {
     if (path.node.body.type === "BlockStatement") {
       handleBlock(path.node.body);
     }
@@ -39,8 +40,8 @@ const insertSuspend: Visitor = {
   },
 
   Program: {
-    exit(path: NodePath<t.Program>, { opts }) {
-      if(opts.compileFunction && !opts.eval) {
+    exit(path, { opts }) {
+      if (opts.compileFunction) {
         if(path.node.body[0].type === 'FunctionDeclaration') {
           (<any>path.node.body[0]).topFunction = true;
         }
@@ -52,7 +53,3 @@ const insertSuspend: Visitor = {
     }
   },
 };
-
-export default function () {
-  return { visitor: insertSuspend};
-}

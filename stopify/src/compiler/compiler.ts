@@ -1,8 +1,10 @@
-import * as babel from 'babel-core';
+import * as babel from '@babel/core';
+import * as t from '@babel/types';
 import *  as types from '../types';
 import * as stopifyCallCC from '../stopify/stopifyCallCC';
-import * as babylon from 'babylon';
-
+import * as parser from '@babel/parser';
+import * as gen from '@babel/generator';
+import * as normalizeJs from '@stopify/normalize-js';
 /**
  * Compiles (i.e., "stopifies") a program. This function should not be used
  * directly by clients of Stopify.
@@ -12,22 +14,12 @@ import * as babylon from 'babylon';
  * @returns the stopified program
  */
 export function compileFromAst(
-  src: babel.types.Program,
+  src: t.File,
   opts: types.CompilerOpts): string {
-
-  const babelOpts = {
-    plugins: [[ stopifyCallCC.plugin, opts ]],
-    babelrc: false,
-    ast: false,
-    code: true,
-    minified: true,
-    comments: false,
-  };
-
-  const { code } = babel.transformFromAst(src, undefined, babelOpts);
-  return code!;
+  let args = { opts: opts };
+  babel.traverse(src, stopifyCallCC.visitor, undefined as any, args);
+  return gen.default(src).code!;
 }
-
 
 /**
  * Compiles (i.e., "stopifies") a program. This function should not be used
@@ -38,5 +30,5 @@ export function compileFromAst(
  * @returns the stopified program
  */
 export function compile(src: string, opts: types.CompilerOpts): string {
-  return compileFromAst(babylon.parse(src).program, opts);
+  return compileFromAst(parser.parse(src), opts);
 }

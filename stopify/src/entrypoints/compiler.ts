@@ -2,7 +2,7 @@
  * This is the entrypoint for stopify-full.bundle.js. A page that includes
  * this entrypoint can compile programs in the browser.
  */
-import * as babylon from 'babylon';
+import * as parser from '@babel/parser';
 import { RawSourceMap } from 'source-map';
 import { CompilerOpts, RuntimeOpts, AsyncRun, AsyncEval, Error } from '../types';
 import { Runtime, Result } from 'stopify-continuations';
@@ -11,7 +11,7 @@ import { compileFromAst } from '../compiler/compiler';
 import { checkAndFillCompilerOpts } from 'stopify-continuations-compiler/dist/src/compiler/check-compiler-opts';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
 import { getSourceMap } from 'stopify-continuations-compiler';
-import * as t from 'babel-types';
+import * as t from '@babel/types';
 // We need to provide these for stopify-continuations
 export * from 'stopify-continuations/dist/runtime/runtime';
 export * from 'stopify-continuations-compiler/dist/src/runtime/implicitApps';
@@ -61,14 +61,14 @@ class Runner extends AbstractRunner {
     eval.call(global, this.code);
   }
 
-  evalAsyncFromAst(ast: t.Program, onDone: (result: Result) => void): void {
+  evalAsyncFromAst(ast: t.File, onDone: (result: Result) => void): void {
     const stopifiedCode = compileFromAst(ast, this.evalOpts);
     this.eventMode = EventProcessingMode.Running;
     this.continuationsRTS.runtime(eval(stopifiedCode), onDone);
   }
 
   evalAsync(src: string, onDone: (result: Result) => void): void {
-    this.evalAsyncFromAst(babylon.parse(src).program, onDone);
+    this.evalAsyncFromAst(parser.parse(src), onDone);
   }
 }
 
@@ -83,7 +83,7 @@ export function init(rts: Runtime): AsyncRun {
 }
 
 export function stopifyLocallyFromAst(
-  src: t.Program,
+  src: t.File,
   sourceMap?: RawSourceMap,
   optionalCompileOpts?: Partial<CompilerOpts>,
   optionalRuntimeOpts?: Partial<RuntimeOpts>): (AsyncRun & AsyncEval) | Error {
@@ -111,7 +111,7 @@ export function stopifyLocally(
   optionalCompileOpts?: Partial<CompilerOpts>,
   optionalRuntimeOpts?: Partial<RuntimeOpts>): (AsyncRun & AsyncEval) | Error {
   return stopifyLocallyFromAst(
-    babylon.parse(src).program,
+    parser.parse(src),
     getSourceMap(src),
     optionalCompileOpts,
     optionalRuntimeOpts);

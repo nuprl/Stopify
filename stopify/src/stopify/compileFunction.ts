@@ -1,4 +1,6 @@
 /**
+ * NOTE(arjun): This module has almost certainly bit-rotted.
+ *
  * `func` compile mode should be used when function bodies need to be compiled
  * while preserving the function signatures. This is currently being used in
  * the pyret compiler.
@@ -8,16 +10,16 @@
  * - globals are not redeclared (since the input function might capture variables)
  */
 
-import * as babel from 'babel-core';
-import * as t from 'babel-types';
+import * as babel from '@babel/core';
+import * as t from '@babel/types';
 import * as callcc from 'stopify-continuations-compiler';
 import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
-import { NodePath, Visitor } from 'babel-traverse';
+import { NodePath, Visitor } from '@babel/traverse';
 import * as normalizeJs from '@stopify/normalize-js';
 export { RV_SENTINAL, EXN_SENTINAL, knownBuiltIns } from 'stopify-continuations-compiler';
 
-const visitor: Visitor = {
+const visitor: Visitor<{ opts: callcc.CompilerOpts }> = {
   Program: {
     enter(path: NodePath<t.Program>, { opts }) {
       path.stop();
@@ -30,20 +32,20 @@ const visitor: Visitor = {
       else {
         // If compile a string to be eval'd, convert last statement to a return
         // statement
-        if (opts.eval) {
-          const lastStatement = (<t.FunctionDeclaration>func).body.body.pop()!;
+        // if (opts.eval) {
+        //   const lastStatement = (<t.FunctionDeclaration>func).body.body.pop()!;
 
-          if (lastStatement.type === 'ExpressionStatement') {
-            func.body.body.push(t.returnStatement(lastStatement.expression));
-          }
-          else {
-            func.body.body.push(lastStatement);
-          }
-        }
+        //   if (lastStatement.type === 'ExpressionStatement') {
+        //     func.body.body.push(t.returnStatement(lastStatement.expression));
+        //   }
+        //   else {
+        //     func.body.body.push(lastStatement);
+        //   }
+        // }
 
       }
 
-      normalizeJs.transformFromAst(path, [[stopifyCallCC.plugin, opts]]);
+      normalizeJs.traverse(path, stopifyCallCC.visitor, { opts: opts });
     }
   }
 };
@@ -71,24 +73,9 @@ export function compileFunction(
     plugins: [[() => ({ visitor }), opts]],
     babelrc: false
   };
-  const { code:transformed } = babel.transform(code, babelOpts);
+  const { code:transformed } = babel.transformSync(code, babelOpts)!;
   if (!transformed) {
     throw new Error("Failed to transform function");
   }
   return transformed;
-}
-
-export function compileEval(code: string, compilerOpts: callcc.CompilerOpts,
-  renames: { [key: string]: string }, boxes: string[]): string {
-    const toCompile = `function __eval__function() { ${code} }`;
-    const transformed = compileFunction(toCompile, {
-      ...compilerOpts,
-      renames,
-      boxes,
-    });
-    return `(${transformed!})()`;
-  }
-
-export default function () {
-  return { visitor };
 }

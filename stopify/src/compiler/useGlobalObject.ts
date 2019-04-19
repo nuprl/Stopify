@@ -1,7 +1,7 @@
 /**
  * This module transforms programs to use `$S.g` as the global object. We use
  * the following algorithm:
- * 
+ *
  * 1. At the top-level, transform `var x = e` into `$S.g.x = e`.
  * 2. At the start of the program, insert the statement `$S.g.f = f`
  *    for each top-level `function f(...) { ... }`.  i.e., function declarations
@@ -11,16 +11,16 @@
  *    set of identifiers tracked in Step 3, transform `x` into `$S.g.x`.
  */
 
-import * as t from 'babel-types';
-import { NodePath } from 'babel-traverse';
+import * as t from '@babel/types';
+import { NodePath } from '@babel/traverse';
 import { $S_g, $S } from './common';
-import * as babel from 'babel-core';
+import { Visitor } from '@stopify/normalize-js/dist/ts/types';
 
 type S = {
   boundIds: Set<string>,
   boundIdStack: Set<string>[],
   programBody: t.Statement[]
-}
+};
 
 /** Produces the statement `$S.g.name = expr`. */
 function setGlobal(name: t.Identifier, expr: t.Expression): t.Statement {
@@ -46,14 +46,14 @@ function visitId(path: NodePath<t.Identifier>, state: S) {
   path.skip();
 }
 
-const visitor = {
+export const visitor: Visitor<S> = {
   Program(path: NodePath<t.Program>, state: S) {
     state.boundIds = new Set(['arguments']);
     state.boundIdStack = [];
     state.programBody = path.node.body;
   },
   VariableDeclaration: {
-    exit(path: NodePath<t.VariableDeclaration>, state: S) {
+    exit(path, state) {
       const isGlobal = state.boundIdStack.length === 0;
       if (!isGlobal) {
         return;
@@ -81,20 +81,20 @@ const visitor = {
       return;
     }
 
-    state.programBody.unshift(setGlobal(path.node.id, path.node.id));
+    state.programBody.unshift(setGlobal(path.node.id!, path.node.id!));
   },
   // Track the set of identifiers bound at all scopes, *except* for Program.
-  Scope: {
-    enter(path: NodePath<t.Scopable>, state: S) {
+  Scopable: {
+    enter(path, state) {
       if (path.node.type === 'Program') {
         return;
       }
       state.boundIdStack.push(state.boundIds);
       const newIds = Object.keys(path.scope.bindings);
-      const oldIds = state.boundIds.values(); 
+      const oldIds = state.boundIds.values();
       state.boundIds = new Set([...newIds, ...oldIds]);
     },
-    exit(path: NodePath<t.Scopable>, state: S) {
+    exit(path, state) {
       if (path.node.type === 'Program') {
         return;
       }
@@ -102,7 +102,7 @@ const visitor = {
     }
   },
   BindingIdentifier: {
-    exit(path: NodePath<t.Identifier>, state: S) {
+    exit(path, state) {
       // This is *not* a binding occurence! The Babel AST is wrong.
       if (path.parent.type !== 'AssignmentExpression') {
         return;
@@ -113,12 +113,12 @@ const visitor = {
   // Transforms non-binding occurrences of identifiers that are in the
   // set of identifiers tracked above.
   ReferencedIdentifier: {
-    exit(path: NodePath<t.Identifier>, state: S) {
+    exit(path, state) {
       // The following three clauses only exist because the Babel AST treats
       // labels as identifiers.
       if (path.parent.type === 'ContinueStatement' ||
           path.parent.type === 'BreakStatement' ||
-          path.parent.type === 'LabelledStatement') {
+          path.parent.type === 'LabeledStatement') {
         return;
       }
 
@@ -135,35 +135,15 @@ const visitor = {
   // Without this step, the call would turn into $S.g.f(x ...), which binds
   // this to $S.g within the body of f. Stopify tries to implement strict-mode,
   // so this would be a bad thing.
-  CallExpression(path: NodePath<t.CallExpression>, state: S) {
+  CallExpression(path, state) {
     const fun = path.node.callee;
     if (!(fun.type === 'Identifier' && !state.boundIds.has(fun.name))) {
       return;
     }
     // Calling a global function. T
-    path.node.callee = t.memberExpression(path.node.callee, 
+    path.node.callee = t.memberExpression(path.node.callee,
       t.identifier('call'), false);
     path.node.arguments = [ t.unaryExpression('void', t.numericLiteral(0)),
       ...path.node.arguments ];
   }
 };
-
-export function plugin() {
-  return { visitor: visitor };
-}
-
-// Runs this plugin standalone.
-function main() {
-  const filename = process.argv[2];
-  const opts = { plugins: [() => ({ visitor })], babelrc: false };
-  babel.transformFile(filename, opts, (err, result) => {
-    if (err !== null) {
-      throw err;
-    }
-    console.log(result.code);
-  });
-}
-
-if (require.main === module) {
-  main();
-}

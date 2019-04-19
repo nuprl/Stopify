@@ -8,9 +8,9 @@
  * transformation introduces assignment statements where the var statement
  * originally occurred.
  */
-import * as t from 'babel-types';
+import * as t from '@babel/types';
 import { babelHelpers as bh } from '@stopify/normalize-js';
-import { NodePath, Visitor } from 'babel-traverse';
+import { NodePath, Visitor } from '@babel/traverse';
 
 type TopDecl<T> = T & {
   decls?: Array<t.Identifier>
@@ -29,7 +29,7 @@ const funWithBody = {
   }
 };
 
-const lift: Visitor = {
+export const visitor: Visitor = {
   Program: {
     enter(path: NodePath<TopDecl<t.Program>>) {
       path.node.decls = [];
@@ -47,7 +47,7 @@ const lift: Visitor = {
   ObjectMethod: funWithBody,
   VariableDeclaration(path: NodePath<t.VariableDeclaration>) {
     const { declarations } = path.node;
-    let fParent = path.getFunctionParent().node;
+    const fParent  = bh.parentFunOrProg(path) as bh.FunWithBody | t.Program;
 
     if (!bh.isFunWithBody(fParent) && !t.isProgram(fParent)) {
       throw new Error(
@@ -76,8 +76,4 @@ const lift: Visitor = {
     }
     path.replaceWithMultiple(stmts);
   }
-};
-
-module.exports = function() {
-  return { visitor: lift };
 };

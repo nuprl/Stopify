@@ -7,20 +7,15 @@
  * The end of this file has code to run the plugin standalone and shows how
  * to invoke the plugin.
  */
-import * as babel from 'babel-core';
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { Visitor } from '@babel/traverse';
 import * as fastFreshId from './fastFreshId';
 
 interface State {
-  opts: {
-    reserved: string[]
-  }
+  reserved: string[]
 }
 
-const visitor: Visitor = {
-  Scope({ scope }: NodePath<t.Scopable>,
-        { opts: { reserved } }: State) {
+export const visitor: Visitor<State> = {
+  Scopable({ scope }, { reserved }) {
     const shadows = Object.keys(scope.bindings)
       .filter(x => reserved.includes(x));
     for (const x of shadows) {
@@ -29,29 +24,3 @@ const visitor: Visitor = {
     }
   }
 };
-
-export default function() {
-  return { visitor: visitor };
-}
-
-// Runs this plugin standalone.
-function main() {
-  const filename = process.argv[2];
-  const reserved = process.argv.slice(3);
-  const opts = {
-    plugins: [
-      [() => ({ visitor }), { reserved }]
-    ],
-    babelrc: false
-  };
-  babel.transformFile(filename, opts, (err, result) => {
-    if (err !== null) {
-      throw err;
-    }
-    console.log(result.code);
-  });
-}
-
-if (require.main === module) {
-  main();
-}

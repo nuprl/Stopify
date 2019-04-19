@@ -1,6 +1,6 @@
 import { CompilerOpts } from './types';
-import { NodePath } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
 
 export const runtimePath = 'stopify-continuations/dist/runtime';
 
@@ -12,22 +12,21 @@ export const runtimePath = 'stopify-continuations/dist/runtime';
  * @param opts compiler options, for the source map
  */
 export function locationString(functionName: string | undefined,
-    path: NodePath<t.Node>,
+    path: Readonly<NodePath<t.Node>>,
     opts: CompilerOpts): string {
-  
+
     let result: string[] = [];
-  
+
     const loc = t.isAssignmentExpression(path.node) ? path.node.right.loc :
       path.node.loc;
     // TODO(arjun): handleNew triggers this case
-    if (loc !== undefined) {
+    if (loc !== undefined && loc !== null) {
       const line = opts.sourceMap.getLine(loc.start.line, loc.start.column);
       if (typeof line === 'number') {
         result.push(`Line ${line}`);
       }
     }
-  
-    if (typeof functionName === 'string') {
+      if (typeof functionName === 'string') {
       result.push(`: in ${functionName}`);
     }
     return result.join('');

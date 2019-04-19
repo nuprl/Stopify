@@ -10,9 +10,10 @@
  * The functions simply access the property. The benefit of making this a
  * function call is that it allows a getter to capture itself.
  */
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import { FlatnessMark, runtimePath } from "./helpers";
+import { CompilerOpts } from './types';
 
 const gettersRuntime = t.identifier('$gs');
 
@@ -33,14 +34,14 @@ const gettersRuntimePath = `${runtimePath}/gettersSetters.js`;
 
 let enableGetters = false;
 
-const gettersUsedVisitor = {
-  ObjectMethod(path: NodePath<t.ObjectMethod>) {
+const gettersUsedVisitor: Visitor = {
+  ObjectMethod(path) {
     if (path.node.kind !== 'method') {
       enableGetters = true;
       path.stop();
     }
   },
-  MemberExpression(path: NodePath<t.MemberExpression>) {
+  MemberExpression(path) {
     const { object, property } = path.node;
     if (t.isIdentifier(object) && object.name === 'Object' &&
         t.isIdentifier(property) && property.name === 'defineProperty') {
@@ -50,8 +51,8 @@ const gettersUsedVisitor = {
   }
 };
 
-const visitor: Visitor = {
-  Program(path: NodePath<t.Program>, state) {
+export const visitor: Visitor<{ opts: CompilerOpts }> = {
+  Program(path, state) {
     path.traverse(gettersUsedVisitor);
 
     if (!enableGetters) {
@@ -122,7 +123,3 @@ const visitor: Visitor = {
   }
 
 };
-
-export function plugin() {
-  return { visitor };
-}

@@ -1,7 +1,8 @@
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import * as imm from 'immutable';
 import { runtimePath } from './helpers';
+import { CompilerOpts } from './types';
 
 export const implicitsIdentifier = t.identifier('$i');
 
@@ -19,8 +20,9 @@ function implicit(name: string, ...args: t.Expression[]): t.Expression {
 
 const implicitsPath = `${runtimePath}/implicitApps`;
 
-const visitor: Visitor = {
-  Program(path: NodePath<t.Program>, state) {
+
+export const visitor: Visitor<{ opts: CompilerOpts }> = {
+  Program(path, state) {
     const opts = state.opts;
     if (!opts.requireRuntime) {
       return;
@@ -32,7 +34,7 @@ const visitor: Visitor = {
          t.callExpression(t.identifier('require'),
            [t.stringLiteral(implicitsPath)]))]));
   },
-  BinaryExpression(path: NodePath<t.BinaryExpression>) {
+  BinaryExpression(path) {
     const fun = binopTable.get(path.node.operator);
     if (typeof fun !== 'string') {
       return;
@@ -40,7 +42,7 @@ const visitor: Visitor = {
     path.replaceWith(implicit(fun, path.node.left, path.node.right));
   },
   MemberExpression: {
-    exit(path: NodePath<t.MemberExpression>) {
+    exit(path) {
       if (!path.node.computed) {
         return;
       }
@@ -48,7 +50,3 @@ const visitor: Visitor = {
     }
   }
 };
-
-export function plugin() {
-  return { visitor };
-}

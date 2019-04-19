@@ -16,8 +16,8 @@
  *   1. The program only has while loops.
  */
 
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import * as h from './helpers';
 import * as fastFreshId from './fastFreshId';
 import * as bh from './babelHelpers';
@@ -27,7 +27,7 @@ interface State {
 }
 
 // Object containing the visitor functions
-const loopVisitor : Visitor = {
+export const visitor : Visitor = {
   ForInStatement(path: NodePath<h.While<t.ForInStatement>>): void {
     const { left, right, body } = path.node;
     const it_obj = fastFreshId.fresh('it_obj');
@@ -64,13 +64,13 @@ const loopVisitor : Visitor = {
   ForStatement(path: NodePath<h.While<t.ForStatement>>): void {
     const node = path.node;
     let { init, test, update, body: wBody } = node;
-    let nupdate : t.Statement|t.Expression = update;
+    let nupdate : t.Statement|t.Expression = update!;
 
     // New body is a the old body with the update appended to the end.
     if (nupdate === null) {
       nupdate = t.emptyStatement();
     } else {
-      nupdate = t.expressionStatement(update);
+      nupdate = t.expressionStatement(update!);
     }
 
     const loopContinue = path.node.continue_label ||
@@ -184,8 +184,4 @@ const loopVisitor : Visitor = {
       path.node.label = lbls[lbls.length - 1];
     }
   }
-};
-
-module.exports = function() {
-  return { visitor: loopVisitor };
 };

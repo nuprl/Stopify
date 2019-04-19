@@ -1,20 +1,13 @@
-import * as t from 'babel-types';
-import { NodePath, Visitor } from 'babel-traverse';
-import { markFlatFunctions } from './markFlatFunctions';
-import { markAnnotated } from './markAnnotated';
-import { markFlatApplications } from './markFlatApplications';
-import { transformFromAst } from '@stopify/normalize-js';
+import { Visitor } from '@babel/traverse';
+import * as markFlatFunctions from './markFlatFunctions';
+import * as markAnnotated from './markAnnotated';
+import * as markFlatApplications from './markFlatApplications';
+import { traverse } from '@stopify/normalize-js';
 
-const visitor: Visitor = {
-  Program(path: NodePath<t.Program>) {
-      transformFromAst(path, [ markAnnotated ]);
-      transformFromAst(path, [ [markFlatFunctions] ]);
-      transformFromAst(path, [ markFlatApplications ]);
+export const visitor: Visitor = {
+  Program(path) {
+    traverse(path, markAnnotated.visitor as any);
+    traverse(path, markFlatFunctions.visitor as any);
+    traverse(path, markFlatApplications.visitor);
   }
 };
-
-export function flatness() {
-  return {
-    visitor: visitor
-  };
-}

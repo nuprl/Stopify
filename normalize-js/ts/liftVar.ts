@@ -5,8 +5,8 @@
  * transformation introduces assignment statements where the var statement
  * originally occurred.
  */
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import { tag } from './helpers';
 
 type Hoisted<T> = T & {
@@ -44,7 +44,7 @@ const lift: Visitor = {
           path.replaceWith(exp);
           break;
         }
-        case 'Program':
+        case 'Program' as any: // TODO(arjun): Really?
           const ids = declarations.map(decl => decl.id);
           // TODO(sbaxter): Update babel typescript declaration to type
           // `unshiftContainer` and remove `any` cast
@@ -64,6 +64,6 @@ const lift: Visitor = {
   }
 };
 
-module.exports = function() {
+export default function() {
   return { visitor: lift };
 };

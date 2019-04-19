@@ -9,9 +9,9 @@
  *      ternary expressions, and  expression sequences (the comma operator).
  *   2. Function applications do not occur in a loop guard.
  */
-import * as babel from 'babel-core';
-import { NodePath, Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { PluginItem } from '@babel/core';
+import { NodePath, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 import { containsCall } from './helpers';
 import * as fastFreshId from './fastFreshId';
 import * as bh from './babelHelpers';
@@ -98,21 +98,3 @@ export const visitor: Visitor = {
     path.replaceWith(r);
   }
 };
-
-function main() {
-  const filename = process.argv[2];
-  const opts = {
-    plugins: [() => ({ visitor })],
-    babelrc: false
-  };
-  babel.transformFile(filename, opts, (err, result) => {
-    if (err !== null) {
-      throw err;
-    }
-    console.log(result.code);
-  });
-}
-
-if (require.main === module) {
-  main();
-}

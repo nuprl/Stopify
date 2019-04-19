@@ -1,12 +1,12 @@
 /**
  * Transforms loop bodies and conditional branches to block statements.
  */
-import {NodePath, VisitNode, Visitor} from 'babel-traverse';
-import * as t from 'babel-types';
+import { VisitNode, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
 
 // Consequents and alternatives in if statements must always be blocked,
 // otherwise variable declaration get pulled outside the branch.
-const ifStatement : VisitNode<t.IfStatement> = function (path: NodePath<t.IfStatement>): void {
+const ifStatement : VisitNode<{}, t.IfStatement> = function(path) {
   const { consequent, alternate } = path.node;
 
   if (t.isBlockStatement(consequent) === false) {
@@ -18,16 +18,12 @@ const ifStatement : VisitNode<t.IfStatement> = function (path: NodePath<t.IfStat
   }
 };
 
-const loop: VisitNode<t.Loop> = function (path: NodePath<t.Loop>): void {
+const loop: VisitNode<{}, t.Loop> = function(path) {
   if(t.isBlockStatement(path.node.body)) { return; }
   path.node.body = t.blockStatement([path.node.body]);
 };
 
-const visitor : Visitor = {
+export const visitor : Visitor = {
   IfStatement: ifStatement,
-  "Loop": loop,
-};
-
-module.exports = function() {
-  return { visitor: visitor };
+  Loop: loop,
 };

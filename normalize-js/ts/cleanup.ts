@@ -5,11 +5,11 @@
  * 1. Eliminate arguments.callee
  *
  */
-import { NodePath } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
 import * as fastFreshId from './fastFreshId';
 
-const visitor = {
+export const visitor = {
 
   MemberExpression(path: NodePath<t.MemberExpression>) {
     const object = path.node.object;
@@ -22,19 +22,16 @@ const visitor = {
          (!path.node.computed &&
           property.type === 'Identifier' &&
           property.name === 'callee'))) {
-      const functionParent = path.getFunctionParent();
-      let id;
-      if (!(<t.Function>functionParent.node).id) {
-        id = fastFreshId.fresh('funExpr');
-        (<t.Function>functionParent.node).id = id;
-      } else {
-        id = (<t.Function>functionParent.node).id;
+      const parent = path.getFunctionParent().node;
+      if (t.isFunctionDeclaration(parent) || t.isFunctionExpression(parent)) {
+        if (parent.id === null) {
+          parent.id = fastFreshId.fresh('funExpr');
+        }
+        path.replaceWith(parent.id!);
       }
-      path.replaceWith(id);
+      else {
+        throw new Error(`found arguments.callee in ${parent.type}`);
+      }
     }
   }
 };
-
-export default function () {
-  return { visitor: visitor };
-}

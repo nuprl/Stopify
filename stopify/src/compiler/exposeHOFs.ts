@@ -6,10 +6,10 @@
  * as Array or String. For now, it is up to the user of Stopify to configure
  * the global environment correctly.
  */
-import { Visitor } from 'babel-traverse';
-import * as t from 'babel-types';
+import { Visitor } from '@stopify/normalize-js/dist/ts/types';
+import * as t from '@babel/types';
 
-const visitor: Visitor = {
+export const visitor: Visitor<{}> = {
   ArrayExpression: {
     exit(path) {
       path.skip();
@@ -19,8 +19,3 @@ const visitor: Visitor = {
     }
   }
 };
-
-export function plugin() {
-  return { visitor };
-}
-

@@ -1,5 +1,5 @@
-import { NodePath } from 'babel-traverse';
-import * as t from 'babel-types';
+import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
 import { fastFreshId, babelHelpers as bh } from '@stopify/normalize-js';
 import * as h from '../helpers';
 import { getLabels } from './label';

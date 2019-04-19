@@ -4,7 +4,7 @@
  * To run the compiler in the browser, see compiler.ts.
  */
 import { RuntimeOpts, AsyncRun } from '../types';
-import { Runtime } from 'stopify-continuations';
+import { Runtime, Result } from 'stopify-continuations';
 import { AbstractRunner } from '../runtime/abstractRunner';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
 // We need to provide these for stopify-continuations
@@ -22,7 +22,7 @@ class Runner extends AbstractRunner {
     super(opts);
    }
 
-  run(onDone: () => void,
+  run(onDone: (result: Result) => void,
     onYield?: () => void,
     onBreakpoint?: (line: number) => void) {
     this.runInit(onDone, onYield, onBreakpoint);

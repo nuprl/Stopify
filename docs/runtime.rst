@@ -70,6 +70,8 @@ instead of sampling the time. This has a higher runtime overhead than
 Unbounded stacks (``.stackSize`` and ``.restoreFrames``)
 --------------------------------------------------------
 
+*This feature is currently broken.*
+
 On certain browsers, the JavaScript stack is very shallow. This is a problem
 for programming languages that rely heavily on recursion (e.g., idiomatic
 functional code). If this is not a concern, you can ignore these options.

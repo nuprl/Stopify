@@ -567,19 +567,6 @@ test('uninitialized variable', () => {
     `);
 });
 
-test('variable hoisting', () => {
-    normalizeEquiv(`
-        function foo() {
-        for (let i = 0; i < 10; i++) {
-            var isEven = i % 2 === 0 ? i : isEven;
-        }
-        return isEven;
-        }
-        let r = foo();
-        r;
-    `);
-});
-
 test('eliminate arrow functions', () => {
     normalizeEquiv(`
         let f = (x) => x + 10;

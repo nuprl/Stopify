@@ -31,15 +31,15 @@ const frame = t.identifier('$frame');
 const newTarget = t.identifier('newTarget');
 const captureFrameId = t.identifier('frame');
 const matArgs = t.identifier('materializedArguments');
-const restoreExn = mem(types, t.identifier('Restore'));
+const restoreExn = t.memberExpression(types, t.identifier('Restore'));
 const isRestoringMode = t.unaryExpression('!', isNormalMode);
-const popRuntimeStack = t.callExpression(mem(runtimeStack,
+const popRuntimeStack = t.callExpression(t.memberExpression(runtimeStack,
   t.identifier('pop')), []);
 const argsLen = t.identifier('argsLen');
 const increaseStackSize = t.expressionStatement(t.updateExpression(
-  '++', mem(runtime, t.identifier('remainingStack'))));
+  '++', t.memberExpression(runtime, t.identifier('remainingStack'))));
 const decreaseStackSize = t.expressionStatement(t.updateExpression(
-  '--', mem(runtime, t.identifier('remainingStack'))));
+  '--', t.memberExpression(runtime, t.identifier('remainingStack'))));
 
 type FunctionT = (t.FunctionExpression | t.FunctionDeclaration) & {
   localVars: t.Identifier[]
@@ -55,15 +55,6 @@ type CaptureFun = (path: NodePath<t.AssignmentExpression>,
 
 interface State {
   opts: CompilerOpts
-}
-
-function mem(x: any, y: any, computed = false): t.MemberExpression {
-  if (x === null) {
-    throw new Error('whoops');
-  }
-  else {
-    return t.memberExpression(x, y, computed);
-  }
 }
 
 function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
@@ -83,14 +74,14 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const restoreBlock = [
     t.expressionStatement(t.assignmentExpression('=', frame, popRuntimeStack)),
     t.expressionStatement(t.assignmentExpression('=', target,
-      mem(frame, t.identifier('index')))),
+      t.memberExpression(frame, t.identifier('index')))),
   ];
 
   if (restoreLocals.length > 0) {
     // Restore all local variables. Creates the expression:
     //   [local0, local1, ... ] = topStack.locals;
     restoreBlock.push(t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), mem(frame,
+      t.arrayPattern(restoreLocals), t.memberExpression(frame,
         t.identifier('locals')))));
   }
 
@@ -103,16 +94,16 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         t.arrayPattern((<any>path.node.params)),
-        mem(frame, t.identifier('formals')))));
+        t.memberExpression(frame, t.identifier('formals')))));
 
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
-        argsLen, mem(frame, argsLen))));
+        argsLen, t.memberExpression(frame, argsLen))));
 
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         matArgs, t.logicalExpression('||',
-          mem(frame, t.identifier('params')),
+          t.memberExpression(frame, t.identifier('params')),
           matArgs))));
   }
 
@@ -126,7 +117,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   if (restoreLocals.length > 0) {
     captureBody.push(
       t.expressionStatement(t.assignmentExpression('=',
-        mem(captureFrameId, t.identifier('locals')),
+        t.memberExpression(captureFrameId, t.identifier('locals')),
         t.arrayExpression(restoreLocals))));
   }
 
@@ -134,11 +125,11 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   if (path.node.__usesArgs__ && state.opts.jsArgs === 'full') {
     // ... save a copy of the parameters in the stack frame and
     captureBody.push(t.expressionStatement(t.assignmentExpression('=',
-      mem(captureFrameId, t.identifier('formals')),
+      t.memberExpression(captureFrameId, t.identifier('formals')),
       t.arrayExpression((<any>path.node.params)))));
     // ... save the length of the arguments array in the stack frame
     captureBody.push(t.expressionStatement(t.assignmentExpression('=',
-      mem(captureFrameId, argsLen),
+      t.memberExpression(captureFrameId, argsLen),
       argsLen)));
   }
   const captureClosure = t.functionDeclaration(captureLocals,
@@ -147,17 +138,17 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const id = path.node.id as t.Identifier;
   // A local function to restore the next stack frame
   const reenterExpr = path.node.__usesArgs__
-    ? t.callExpression(mem(id, t.identifier('apply')),
+    ? t.callExpression(t.memberExpression(id, t.identifier('apply')),
       [t.thisExpression(), matArgs])
-    : t.callExpression(mem(id, t.identifier('call')),
+    : t.callExpression(t.memberExpression(id, t.identifier('call')),
       [t.thisExpression(), ...<any>path.node.params.map(paramToArg)]);
   const reenterClosure = t.variableDeclaration('var', [
     t.variableDeclarator(restoreNextFrame, t.arrowFunctionExpression([],
       t.blockStatement(path.node.__usesArgs__ ?
         [t.expressionStatement(t.assignmentExpression('=',
-          mem(matArgs, t.identifier('length')),
-          mem(
-            t.callExpression(mem(t.identifier('Object'),
+          t.memberExpression(matArgs, t.identifier('length')),
+          t.memberExpression(
+            t.callExpression(t.memberExpression(t.identifier('Object'),
               t.identifier('keys')), [matArgs]), t.identifier('length')))),
         t.returnStatement(reenterExpr)] :
         [t.returnStatement(reenterExpr)])))]);
@@ -179,7 +170,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
       (<t.Identifier[]>path.node.params).forEach((x, i) => {
         if (boxedArgs.contains(x.name)) {
           const cons =  t.assignmentExpression('=',
-            mem(matArgs, t.numericLiteral(i), true),
+            t.memberExpression(matArgs, t.numericLiteral(i), true),
             box(t.identifier(x.name)));
             initMatArgs.push(t.expressionStatement(cons));
         }
@@ -189,7 +180,7 @@ function func(path: NodePath<Labeled<FunctionT>>, state: State): void {
   }
 
   const defineArgsLen = letExpression(argsLen,
-    mem(t.identifier('arguments'), t.identifier('length')));
+    t.memberExpression(t.identifier('arguments'), t.identifier('length')));
 
   path.node.body.body.unshift(...[
     ...(state.opts.jsArgs === 'full' ? [defineArgsLen] : []),
@@ -211,7 +202,7 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const restoreLocals = path.node.localVars;
 
   const exn = fresh('exn');
-  const exnStack = mem(exn, t.identifier('stack'));
+  const exnStack = t.memberExpression(exn, t.identifier('stack'));
 
   const params = path.node.__usesArgs__
   ?  matArgs :  t.arrayExpression(path.node.params.map(paramToArg));
@@ -245,14 +236,14 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
   const restoreBlock = [
     t.variableDeclaration('const', [t.variableDeclarator(frame, popRuntimeStack)]),
     t.expressionStatement(t.assignmentExpression('=', target,
-      mem(frame, t.identifier('index')))),
+      t.memberExpression(frame, t.identifier('index')))),
   ];
 
   if (restoreLocals.length > 0) {
     // Restore all local variables. Creates the expression:
     //   [local0, local1, ... ] = topStack.locals;
     restoreBlock.push(t.expressionStatement(t.assignmentExpression('=',
-      t.arrayPattern(restoreLocals), mem(frame,
+      t.arrayPattern(restoreLocals), t.memberExpression(frame,
         t.identifier('locals')))));
   }
 
@@ -265,16 +256,16 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         t.arrayPattern((<any>path.node.params)),
-        mem(frame, t.identifier('formals')))));
+        t.memberExpression(frame, t.identifier('formals')))));
 
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
-        argsLen, mem(frame, argsLen))));
+        argsLen, t.memberExpression(frame, argsLen))));
 
     restoreBlock.push(
       t.expressionStatement(t.assignmentExpression('=',
         matArgs, t.logicalExpression('||',
-          mem(frame, t.identifier('params')),
+          t.memberExpression(frame, t.identifier('params')),
           matArgs))));
   }
 
@@ -297,7 +288,7 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
       (<t.Identifier[]>path.node.params).forEach((x, i) => {
         if (boxedArgs.contains(x.name)) {
           const cons =  t.assignmentExpression('=',
-            mem(matArgs, t.numericLiteral(i), true),
+            t.memberExpression(matArgs, t.numericLiteral(i), true),
             box(t.identifier(x.name)));
             initMatArgs.push(t.expressionStatement(cons));
         }
@@ -307,13 +298,13 @@ function catchFunc(path: NodePath<Labeled<FunctionT>>, state: State): void {
   }
 
   const defineArgsLen = letExpression(argsLen,
-    mem(t.identifier('arguments'), t.identifier('length')));
+    t.memberExpression(t.identifier('arguments'), t.identifier('length')));
 
   const wrapBody = t.tryStatement(path.node.body,
     t.catchClause(exn, t.blockStatement([
       t.ifStatement(t.binaryExpression('instanceof', exn, captureExn),
         t.blockStatement([
-          t.expressionStatement(t.callExpression(mem(exnStack, t.identifier('push')), [
+          t.expressionStatement(t.callExpression(t.memberExpression(exnStack, t.identifier('push')), [
             t.objectExpression(captureObject),
           ])),
         ])),
@@ -393,7 +384,7 @@ function paramToArg(node: t.LVal) {
 function runtimeInvoke(method: string,
   ...args: t.Expression[]): t.CallExpression {
   return t.callExpression(
-    mem(runtime, t.identifier(method)), args);
+    t.memberExpression(runtime, t.identifier(method)), args);
 }
 
 function labelsIncludeTarget(labels: number[]): t.Expression {
@@ -497,7 +488,7 @@ export const visitor = {
       if (state.opts.newMethod === 'direct') {
         path.node.localVars.push(newTarget);
         const declNewTarget = bh.varDecl(newTarget,
-          mem(t.identifier('new'), t.identifier('target')));
+          t.memberExpression(t.identifier('new'), t.identifier('target')));
 
         path.node.body.body.unshift(declNewTarget);
 
@@ -635,7 +626,7 @@ export const visitor = {
       if (path.node.finalizer) {
         path.node.finalizer = t.blockStatement([
           bh.sIf(t.unaryExpression('!',
-            mem(runtime, t.identifier('capturing'))),
+            t.memberExpression(runtime, t.identifier('capturing'))),
             path.node.finalizer)]);
       }
     }

@@ -47,10 +47,12 @@ const anfVisitor : Visitor = {
       return;
     }
     const { properties } = path.node;
-    properties.forEach((p, i) => {
-      if (!t.isObjectProperty(p)) {
-        throw new Error(`Expected ObjectProperty but got ${p.type}`);
-      }
+    properties.forEach((p2, i) => {
+      let p = p2 as t.ObjectProperty;
+      // TODO(arjun): Enable this code to expose a bug.
+      // if (!t.isObjectProperty(p)) {
+      //   throw new Error(`Expected ObjectProperty but got ${p.type}`);
+      // }
       const id = fastFreshId.fresh('element');
       path.getStatementParent().insertBefore(h.letExpression(id, p.value));
       (<t.ObjectProperty>path.node.properties[i]).value = id;

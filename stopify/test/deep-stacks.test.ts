@@ -4,6 +4,10 @@
 import { harness } from './testFixtures';
 import * as types from '../src/types';
 
+// The compiler produces code that expects Stopify and its runtime compiler to
+// be a global variable.
+(global as any).stopify = stopify;
+
 const runtimeOpts: Partial<types.RuntimeOpts> = {
     stackSize: 100,
     restoreFrames: 1,

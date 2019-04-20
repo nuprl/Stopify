@@ -4,6 +4,10 @@ import * as fixtures from './testFixtures';
 import { harness } from './testFixtures';
 import * as types from '../src/types';
 
+// The compiler produces code that expects Stopify and its runtime compiler to
+// be a global variable.
+(global as any).stopify = stopify;
+
 function runTest(code: string,
     compilerOpts: Partial<types.CompilerOpts>,
     runtimeOpts: Partial<types.RuntimeOpts>,

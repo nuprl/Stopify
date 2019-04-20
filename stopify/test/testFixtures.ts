@@ -64,8 +64,6 @@ function setupGlobals(runner: stopify.AsyncRun & stopify.AsyncEval) {
   runner.g = globals;
 }
 
-let N = 0;
-
 export function harness(code: string,
   compilerOpts: Partial<stopify.CompilerOpts> = { },
   runtimeOpts: Partial<stopify.RuntimeOpts> = {
@@ -77,6 +75,5 @@ export function harness(code: string,
       throw runner.exception;
   }
   setupGlobals(runner);
-  console.log(`Harness ${N++}`);
   return runner;
 }

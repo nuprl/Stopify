@@ -137,10 +137,13 @@ export function lvaltoName(lval: t.LVal): string {
   }
 }
 
-function isPropertyValue(p: t.ObjectProperty | t.ObjectMethod): boolean {
+function isPropertyValue(p: t.ObjectMember | t.SpreadProperty): boolean {
   return (
     t.isObjectMethod(p) ||
-    (p.computed === false && isValue(p.value)));
+    (t.isObjectProperty(p) &&
+     p.computed === false &&
+     t.isExpression(p.value) &&
+     isValue(p.value)));
 }
 
 /**
@@ -148,14 +151,22 @@ function isPropertyValue(p: t.ObjectProperty | t.ObjectMethod): boolean {
  *
  * @param e
  */
-export function isValue(e: t.Expression): boolean {
-  return (
-    t.isLiteral(e) ||
-    t.isFunction(e) ||
-    (t.isArrayExpression(e) && e.elements.every(isValue)) ||
-    (t.isObjectExpression(e) && e.properties.every(isPropertyValue)) ||
-    t.isIdentifier(e));
+export function isValue(e: t.Expression | null | t.SpreadElement): boolean {
+  if (e === null) {
+    return false;
+  }
+  if (t.isLiteral(e) || t.isFunction(e) || t.isIdentifier(e)) {
+    return true;
+  }
+  if (t.isArrayExpression(e)) {
+    return e.elements.every(isValue);
+  }
+  if (t.isObjectExpression(e)) {
+    return e.properties.every(isPropertyValue);
+  }
+  return false;
 }
+
 
 export function arrayPrototypeSliceCall(e: t.Expression): t.Expression {
   return t.callExpression(

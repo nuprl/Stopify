@@ -190,12 +190,14 @@ const program: VisitNode<t.Program> = {
 
 // The Program visitor needs to ignore all function bodies
 const programMarkingVisitor = {
-  "CallExpression|NewExpression": programMarkCallExpression
-};
+  CallExpression: programMarkCallExpression,
+  NewExpression: programMarkCallExpression
+} as Visitor;
 
 const markingVisitor = {
-  "CallExpression|NewExpression": markCallExpression,
-};
+  CallExpression: markCallExpression,
+  NewExpression: markCallExpression
+} as Visitor;
 
 const visitor: Visitor = {
   Program: program,

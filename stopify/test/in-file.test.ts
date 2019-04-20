@@ -3,6 +3,7 @@ import * as assert from 'assert';
 import * as fixtures from './testFixtures';
 import { harness } from './testFixtures';
 import * as types from '../src/types';
+import * as stopify from '../src/entrypoints/compiler';
 
 // The compiler produces code that expects Stopify and its runtime compiler to
 // be a global variable.

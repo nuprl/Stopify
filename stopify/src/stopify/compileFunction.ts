@@ -85,7 +85,7 @@ export function compileEval(code: string, compilerOpts: callcc.CompilerOpts,
       ...compilerOpts,
       renames,
       boxes,
-    });
+    } as any);
     return `(${transformed!})()`;
   }
 

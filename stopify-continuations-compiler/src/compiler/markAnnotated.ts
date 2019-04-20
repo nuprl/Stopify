@@ -1,4 +1,4 @@
-import { NodePath, Visitor } from 'babel-traverse';
+import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 import { isStopifyAnnotation, FlatnessMark } from '../helpers';
 
@@ -11,7 +11,7 @@ function markerVisitor(path: NodePath<FlatnessMark<t.CallExpression|t.NewExpress
     }
 }
 
-const visitor: Visitor = {
+const visitor = {
   CallExpression: markerVisitor,
   NewExpression: markerVisitor,
   FunctionDeclaration: markerVisitor,

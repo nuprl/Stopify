@@ -15,14 +15,15 @@
     "@types/node": "*",
     "@types/tmp": "0.0.33",
     "glob": "^7.1.1",
-    "jest": "^20.0.4",
     "tslint": "^5.9.1",
-    "typescript": "~2.3",
-    "webpack": "^3.10.0"
+    "webpack": "^3.10.0",
+    "jest": "^24.7.1",
+    "typescript": "^3.4.4"
+
   },
   "scripts": {
     "build": "./node_modules/.bin/tsc",
-    "test": "./node_modules/.bin/jest",
+    "test": "./node_modules/.bin/jest --env=node",
     "tslint": "./node_modules/.bin/tslint -c ../tslint.json 'src/**/*.ts'",
     "tslint-fix": "./node_modules/.bin/tslint --fix -c ../tslint.json 'src/**/*.ts'"
   },

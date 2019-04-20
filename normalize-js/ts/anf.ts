@@ -33,7 +33,8 @@ const anfVisitor : Visitor = {
     if (!h.containsCall(path)) {
       return;
     }
-    const { elements } = path.node;
+    const { elements: es } = path.node;
+    let elements = es as t.Expression[];
     elements.forEach((e: t.Expression, i) => {
       const id = fastFreshId.fresh('element');
       path.getStatementParent().insertBefore(h.letExpression(id, e));
@@ -46,8 +47,8 @@ const anfVisitor : Visitor = {
       return;
     }
     const { properties } = path.node;
-    properties.forEach((p: t.ObjectProperty, i) => {
-      if (!t.isObjectProperty) {
+    properties.forEach((p, i) => {
+      if (!t.isObjectProperty(p)) {
         throw new Error(`Expected ObjectProperty but got ${p.type}`);
       }
       const id = fastFreshId.fresh('element');
@@ -65,7 +66,10 @@ const anfVisitor : Visitor = {
             h.letExpression(id, path.node.callee));
           path.node.callee = id;
         }
-        path.node.arguments.forEach((e: t.Expression, i) => {
+        path.node.arguments.forEach((e, i) => {
+          if (!t.isExpression(e)) {
+            throw new Error(`Expected expression`);
+          }
           const id = fastFreshId.fresh('arg');
           path.getStatementParent().insertBefore(h.letExpression(id, e));
           path.node.arguments[i] = id;

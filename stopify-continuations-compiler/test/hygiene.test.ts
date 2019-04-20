@@ -53,7 +53,7 @@ function check(src: string, ...reserved: string[]) {
     reserved: new Set(reserved)
   };
 
-  babel.traverse(ast!, visitor, undefined, state);
+  babel.traverse(ast!, visitor as any, undefined, state);
 }
 
 describe("Testing hygiene visitor", function() {

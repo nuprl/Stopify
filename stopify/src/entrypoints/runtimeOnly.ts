@@ -3,7 +3,7 @@
  * entrypoint can only run stopified code that is compiled on the server.
  * To run the compiler in the browser, see compiler.ts.
  */
-import { RuntimeOpts, AsyncRun } from '../types';
+import { RuntimeOpts, AsyncRun, Result } from '../types';
 import { Runtime } from 'stopify-continuations';
 import { AbstractRunner } from '../runtime/abstractRunner';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
@@ -22,7 +22,7 @@ class Runner extends AbstractRunner {
     super(opts);
    }
 
-  run(onDone: () => void,
+  run(onDone: (result: Result) => void,
     onYield?: () => void,
     onBreakpoint?: (line: number) => void) {
     this.runInit(onDone, onYield, onBreakpoint);

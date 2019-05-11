@@ -36,14 +36,12 @@ export const visitor: Visitor = {
     }
 
     normalizeJs.fastFreshId.init(path);
-    const plugs: any[] = [];
 
     timeSlow('hygiene, etc.', () =>
       normalizeJs.transformFromAst(path, [
-        ...plugs,
         [normalizeJs.hygiene, { reserved: callcc.reserved }],
       ]));
-    
+
     if (!opts.compileFunction) {
       // NOTE(arjun): This needs to occur before flatness. Flatness does
       // something (I don't know what) that this transformation messes up

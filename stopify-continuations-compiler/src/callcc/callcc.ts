@@ -18,7 +18,7 @@ import * as babel from 'babel-core';
 import * as exposeImplicitApps from '../exposeImplicitApps';
 import * as exposeGS from '../exposeGettersSetters';
 import * as types from '../types';
-import { babelHelpers as bh } from '@stopify/normalize-js';
+import * as bh from '@stopify/util';
 import { runtimePath } from '../helpers';
 
 const $__R = t.identifier('$__R');
@@ -52,24 +52,24 @@ const visitor: Visitor = {
     }
 
     if (opts.getters) {
-      normalizeJs.transformFromAst(path, [exposeGS.plugin]);
+      bh.transformFromAst(path, [exposeGS.plugin]);
     }
 
     if (opts.newMethod === 'wrapper') {
-      normalizeJs.transformFromAst(path, [[desugarNew, opts]]);
+      bh.transformFromAst(path, [[desugarNew, opts]]);
     }
 
     if (opts.es === 'es5') {
-      normalizeJs.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
+      bh.transformFromAst(path, [[exposeImplicitApps.plugin, opts]]);
     }
 
-    normalizeJs.transformFromAst(path, [[normalizeJs.plugin, { nameReturns: opts.captureMethod === 'catch' }]]);
-    normalizeJs.transformFromAst(path, [[boxAssignables.plugin, opts]]);
-    normalizeJs.transformFromAst(path, [declVars]);
+    bh.transformFromAst(path, [[normalizeJs.plugin, { nameReturns: opts.captureMethod === 'catch' }]]);
+    bh.transformFromAst(path, [[boxAssignables.plugin, opts]]);
+    bh.transformFromAst(path, [declVars]);
     // If stopifying eval'd string at runtime, don't delimit statements so that
     // we can suspend through the eval.
-    normalizeJs.transformFromAst(path, [label.plugin]);
-    normalizeJs.transformFromAst(path, [[jumper.plugin, opts]]);
+    bh.transformFromAst(path, [label.plugin]);
+    bh.transformFromAst(path, [[jumper.plugin, opts]]);
 
     path.stop();
 

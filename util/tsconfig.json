@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "strict": true,
         "module": "commonjs",
         "outDir": "./dist",
         "allowUnreachableCode": true,
@@ -7,15 +8,12 @@
         "target": "es6",
         "pretty": true,
         "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
         "declaration": true,
         "inlineSourceMap": true,
-        "noUnusedLocals": false
+        "noUnusedLocals": true
     },
     "include": [
-      "src",
+      "ts",
       "test"
     ],
     "exclude": [

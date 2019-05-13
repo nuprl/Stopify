@@ -977,6 +977,7 @@ babel-traverse@^6.25.0:
 babel-traverse@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-traverse/-/babel-traverse-6.26.0.tgz#46a9cbd7edcc62c8e5c064e2d2d8d0f4035766ee"
+  integrity sha1-RqnL1+3MYsjlwGTi0tjQ9ANXZu4=
   dependencies:
     babel-code-frame "^6.26.0"
     babel-messages "^6.23.0"
@@ -1000,6 +1001,7 @@ babel-types@^6.25.0:
 babel-types@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-types/-/babel-types-6.26.0.tgz#a3b073f94ab49eb6fa55cd65227a334380632497"
+  integrity sha1-o7Bz+Uq0nrb6Vc1lInozQ4BjJJc=
   dependencies:
     babel-runtime "^6.26.0"
     esutils "^2.0.2"
@@ -5700,6 +5702,27 @@ stealthy-require@^1.1.1:
   resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
   integrity sha1-NbCYdbT/SfJqd35QmzCQoyJr8ks=
 
+stopify-continuations-compiler@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/stopify-continuations-compiler/-/stopify-continuations-compiler-0.6.0.tgz#9c695239ad4b6f00ba872e32f4fc02b6107c5177"
+  integrity sha512-ikg8znx8HqF8aXJXG/OcdQO501T0XwY9uIo8xUtH96mxaUISiHdiHQzSXlCiMVaJ14qceKc8Iwn+rpGhTAB9LQ==
+  dependencies:
+    babel-core "^6.26.3"
+    babel-plugin-transform-es2015-arrow-functions "^6.22.0"
+    babel-traverse "^6.26.0"
+    babel-types "^6.26.0"
+    commander "^2.11.0"
+    convert-source-map "^1.5.0"
+    immutable "^3.8.1"
+    source-map "^0.6.0"
+    source-map-support "^0.5.6"
+    trie "^0.2.1"
+
+stopify-continuations@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/stopify-continuations/-/stopify-continuations-0.6.0.tgz#bd2aa1222f36099c4114ca8285691cfd5fa92aba"
+  integrity sha512-xfIkktyT8qxXWF4UPlyIlFXHbhGH69wUoSyjA5EuC63yV0a6QhvtHCO0lirKsV+cE6DFVuFdw5F/hptELoHqRQ==
+
 stream-browserify@^2.0.0, stream-browserify@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/stream-browserify/-/stream-browserify-2.0.1.tgz#66266ee5f9bdb9940a4e4514cafb43bb71e5c9db"
@@ -6032,6 +6055,7 @@ tr46@^1.0.1:
 trie@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/trie/-/trie-0.2.1.tgz#72cf0ae9f1c53f54d82df4911aa8705945997298"
+  integrity sha1-cs8K6fHFP1TYLfSRGqhwWUWZcpg=
 
 trim-right@^1.0.1:
   version "1.0.1"

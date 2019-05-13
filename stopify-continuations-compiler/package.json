@@ -1,6 +1,6 @@
 {
   "name": "stopify-continuations-compiler",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Continuations for JavaScript",
   "main": "dist/src/callcc/index",
   "typings": "dist/src/callcc/index",
@@ -39,7 +39,8 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@stopify/normalize-js": "0.6.0",
+    "@stopify/normalize-js": "0.7.0",
+    "@stopify/util": "0.7.0",
     "babel-core": "^6.26.3",
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
     "babel-traverse": "^6.26.0",

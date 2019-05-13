@@ -7,7 +7,7 @@
  */
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as fastFreshId from './fastFreshId';
+import { fresh } from '@stopify/hygiene';
 
 const visitor = {
 
@@ -25,7 +25,7 @@ const visitor = {
       const functionParent = path.getFunctionParent();
       let id;
       if (!(<t.Function>functionParent.node).id) {
-        id = fastFreshId.fresh('funExpr');
+        id = fresh('funExpr');
         (<t.Function>functionParent.node).id = id;
       } else {
         id = (<t.Function>functionParent.node).id;

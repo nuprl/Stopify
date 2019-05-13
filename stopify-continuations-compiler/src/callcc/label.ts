@@ -1,7 +1,7 @@
 import {NodePath, Visitor} from 'babel-traverse';
 import * as t from 'babel-types';
 import { cannotCapture } from '../common/cannotCapture';
-import { babelHelpers as bh } from '@stopify/normalize-js';
+import * as h from '@stopify/util';
 import * as imm from 'immutable';
 
 export enum AppType {
@@ -58,17 +58,17 @@ function isUnsafeCall(e: t.Expression): boolean {
 }
 
 const visitFunction = {
-  enter(this: VisitorState, path: NodePath<Labeled<bh.FunWithBody>>) {
+  enter(this: VisitorState, path: NodePath<Labeled<h.FunWithBody>>) {
     this.inTryBlockStack.push(this.inTryBlock);
     this.inTryBlock = false;
 
     const allVars = imm.Set.of(...Object.keys(path.scope.bindings));
-    let otherVars = imm.Set.of(...path.node.params.map(bh.lvaltoName))
+    let otherVars = imm.Set.of(...path.node.params.map(h.lvaltoName))
       .union(path.node.id ? imm.Set.of(path.node.id.name) : imm.Set<string>());
     path.node.localVars = allVars.subtract(otherVars).toArray()
       .map(x => t.identifier(x));
   },
-  exit(this: VisitorState, path: NodePath<Labeled<bh.FunWithBody>>) {
+  exit(this: VisitorState, path: NodePath<Labeled<h.FunWithBody>>) {
     this.inTryBlock = this.inTryBlockStack.pop()!;
 
     if (path.node.type === 'FunctionDeclaration') {

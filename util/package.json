@@ -1,0 +1,32 @@
+{
+  "name": "@stopify/util",
+  "version": "0.7.0",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@types/babel-core": "^6.7.14",
+    "@types/babel-traverse": "^6.7.17",
+    "@types/babel-types": "^6.7.16",
+    "typescript": "^3.4.4"
+  },
+  "scripts": {
+    "build": "./node_modules/.bin/tsc"
+  },
+  "contributors": [
+    {
+      "name": "Rachit Nigam"
+    },
+    {
+      "name": "Samuel Baxter"
+    },
+    {
+      "name": "Arjun Guha"
+    }
+  ],
+  "dependencies": {
+    "babel-core": "^6.26.3",
+    "babel-traverse": "^6.26.0",
+    "babel-types": "^6.26.0"
+  }
+}

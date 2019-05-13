@@ -1,6 +1,8 @@
 import * as t from 'babel-types';
 import * as assert from 'assert';
-import { fastFreshId, babelHelpers as bh, generic } from '@stopify/normalize-js';
+import * as bh from '@stopify/util';
+import { generic } from '@stopify/normalize-js';
+import { fresh } from '@stopify/hygiene';
 import * as imm from 'immutable';
 import * as capture from './captureLogics';
 import { CompilerOpts } from '../types';
@@ -23,7 +25,6 @@ import {
 } from './captureLogics';
 
 let letExpression = bh.letExpression;
-let fresh = fastFreshId.fresh;
 
 export { restoreNextFrame };
 

@@ -9,8 +9,8 @@
 
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as h from './helpers';
-import * as fastFreshId from './fastFreshId';
+import * as h from '@stopify/util';
+import { fresh } from '@stopify/hygiene';
 
 function withinTryBlock(path: NodePath<t.Node>): boolean {
   const funOrTryParent = path.findParent(p => p.isFunction() || p.isTryStatement());
@@ -22,7 +22,7 @@ const anfVisitor : Visitor = {
     const p = path.parent;
     if (!t.isVariableDeclarator(p)) {
       // Name the function application if it is not already named.
-      const name = fastFreshId.fresh('fun');
+      const name = fresh('fun');
       const bind = h.letExpression(name, path.node);
       path.getStatementParent().insertBefore(bind);
       path.replaceWith(name);
@@ -36,7 +36,7 @@ const anfVisitor : Visitor = {
     const { elements: es } = path.node;
     let elements = es as t.Expression[];
     elements.forEach((e: t.Expression, i) => {
-      const id = fastFreshId.fresh('element');
+      const id = fresh('element');
       path.getStatementParent().insertBefore(h.letExpression(id, e));
       path.node.elements[i] = id;
     });
@@ -53,7 +53,7 @@ const anfVisitor : Visitor = {
       // if (!t.isObjectProperty(p)) {
       //   throw new Error(`Expected ObjectProperty but got ${p.type}`);
       // }
-      const id = fastFreshId.fresh('element');
+      const id = fresh('element');
       path.getStatementParent().insertBefore(h.letExpression(id, p.value));
       (<t.ObjectProperty>path.node.properties[i]).value = id;
     });
@@ -63,7 +63,7 @@ const anfVisitor : Visitor = {
     enter(path: NodePath<t.CallExpression>): void {
       if (h.containsCall(path)) {
         if (t.isCallExpression(path.node.callee)) {
-          const id = fastFreshId.fresh('callee');
+          const id = fresh('callee');
           path.getStatementParent().insertBefore(
             h.letExpression(id, path.node.callee));
           path.node.callee = id;
@@ -72,7 +72,7 @@ const anfVisitor : Visitor = {
           if (!t.isExpression(e)) {
             throw new Error(`Expected expression`);
           }
-          const id = fastFreshId.fresh('arg');
+          const id = fresh('arg');
           path.getStatementParent().insertBefore(h.letExpression(id, e));
           path.node.arguments[i] = id;
         });
@@ -90,7 +90,7 @@ const anfVisitor : Visitor = {
             withinTryBlock(path))) {
         // Name the function application if it is not already named or
         // if it is not a flat application.
-        const name = fastFreshId.fresh('app');
+        const name = fresh('app');
         const bind = h.letExpression(name, path.node);
         path.getStatementParent().insertBefore(bind);
 
@@ -111,7 +111,7 @@ const anfVisitor : Visitor = {
     const p = path.parent;
     if (!t.isVariableDeclarator(p)) {
       // Name the function application if it is not already named.
-      const name = fastFreshId.fresh('app');
+      const name = fresh('app');
       const bind = h.letExpression(name, path.node);
       path.getStatementParent().insertBefore(bind);
       path.replaceWith(name);

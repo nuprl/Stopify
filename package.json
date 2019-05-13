@@ -24,6 +24,8 @@
     "stopify-continuations",
     "stopify-continuations-compiler",
     "stopify-estimators",
-    "normalize-js"
+    "normalize-js",
+    "hygiene",
+    "util"
   ]
 }

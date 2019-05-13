@@ -12,9 +12,9 @@
 import * as babel from 'babel-core';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { containsCall } from './helpers';
-import * as fastFreshId from './fastFreshId';
-import * as bh from './babelHelpers';
+import { containsCall } from '@stopify/util';
+import { fresh, nameExprBefore } from '@stopify/hygiene';
+import * as bh from '@stopify/util';
 
 export const visitor: Visitor = {
   WhileStatement: function (path: NodePath<t.WhileStatement>) {
@@ -35,8 +35,8 @@ export const visitor: Visitor = {
 
     const op = path.node.operator;
     const stmt = path.getStatementParent();
-    const lhs = fastFreshId.nameExprBefore(stmt, path.node.left);
-    const r = fastFreshId.fresh(op === "&&" ? "and" : "or");
+    const lhs = nameExprBefore(stmt, path.node.left);
+    const r = fresh(op === "&&" ? "and" : "or");
 
     stmt.insertBefore(
       t.variableDeclaration("let", [t.variableDeclarator(r)]));
@@ -79,12 +79,12 @@ export const visitor: Visitor = {
       return;
     }
 
-    const r = fastFreshId.fresh("cond");
+    const r = fresh("cond");
 
     const stmt = path.getStatementParent();
     stmt.insertBefore(
       t.variableDeclaration("let", [t.variableDeclarator(r)]));
-      const test = fastFreshId.nameExprBefore(stmt, path.node.test);
+      const test = nameExprBefore(stmt, path.node.test);
     stmt.insertBefore(
       t.ifStatement(
         test,

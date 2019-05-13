@@ -8,12 +8,13 @@ import * as fs from 'fs';
 import { NodePath, Visitor } from 'babel-traverse';
 import callcc from '../callcc/callcc';
 import { flatness } from './flatness';
-import { transformFromAst, fastFreshId } from '@stopify/normalize-js';
+import { transformFromAst } from '@stopify/util';
+import * as hygiene  from '@stopify/hygiene';
 import 'source-map-support/register';
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>) {
-    fastFreshId.init(path);
+    transformFromAst(path, [[ hygiene.plugin, { reserved: [] } ]]);
     transformFromAst(path, [flatness]);
     transformFromAst(path, [[callcc, cli.compilerOpts]]);
     path.stop();

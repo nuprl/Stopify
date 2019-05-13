@@ -18,16 +18,14 @@ import * as nameExprs from './nameExprs';
 import jumperizeTry from './jumperizeTry';
 import * as freeIds from './freeIds';
 import cleanup from './cleanup';
-import * as h from './helpers';
+import * as h from '@stopify/util';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
 import { timeSlow } from './generic';
-import * as fastFreshId from './fastFreshId';
 
 const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
     let nameReturns = typeof state.opts.nameReturns === 'boolean' ? state.opts.nameReturns : false;
-    fastFreshId.init(path);
     timeSlow('cleanup arguments.callee', () =>
       h.transformFromAst(path, [cleanup]));
 

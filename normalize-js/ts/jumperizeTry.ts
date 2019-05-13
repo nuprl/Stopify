@@ -35,8 +35,8 @@
  */
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as bh from './babelHelpers';
-import { fresh } from './fastFreshId';
+import * as bh from '@stopify/util';
+import { fresh } from '@stopify/hygiene';
 
 const returnSentinal = t.identifier('finally_rv');
 const throwSentinal = t.identifier('finally_exn');

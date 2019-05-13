@@ -6,7 +6,7 @@
 
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { While, Break } from './helpers';
+import { While, Break } from '@stopify/util';
 
 const labelVisitor : Visitor = {
   ContinueStatement: function (path: NodePath<t.ContinueStatement>): void {

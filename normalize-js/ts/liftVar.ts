@@ -7,7 +7,7 @@
  */
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { tag } from './helpers';
+import { tag } from '@stopify/util';
 
 type Hoisted<T> = T & {
   hoisted?: boolean

@@ -9,7 +9,7 @@
  * originally occurred.
  */
 import * as t from 'babel-types';
-import { babelHelpers as bh } from '@stopify/normalize-js';
+import * as h from '@stopify/util';
 import { NodePath, Visitor } from 'babel-traverse';
 
 type TopDecl<T> = T & {
@@ -17,10 +17,10 @@ type TopDecl<T> = T & {
 };
 
 const funWithBody = {
-  enter (path: NodePath<TopDecl<bh.FunWithBody>>) {
+  enter (path: NodePath<TopDecl<h.FunWithBody>>) {
     path.node.decls = [];
   },
-  exit (path: NodePath<TopDecl<bh.FunWithBody>>) {
+  exit (path: NodePath<TopDecl<h.FunWithBody>>) {
     if (path.node.decls!.length > 0) {
       const decl = t.variableDeclaration('var',
         path.node.decls!.map(id => t.variableDeclarator(id)));
@@ -49,7 +49,7 @@ const lift: Visitor = {
     const { declarations } = path.node;
     let fParent = path.getFunctionParent().node;
 
-    if (!bh.isFunWithBody(fParent) && !t.isProgram(fParent)) {
+    if (!h.isFunWithBody(fParent) && !t.isProgram(fParent)) {
       throw new Error(
         `Variable declarations should be inside a function. Parent was ${path.node.type}`);
     }
@@ -65,7 +65,7 @@ const lift: Visitor = {
         throw new Error(`Destructuring assignment not supported`);
       }
 
-      (fParent as TopDecl<bh.FunWithBody | t.Program>).decls!.push(decl.id);
+      (fParent as TopDecl<h.FunWithBody | t.Program>).decls!.push(decl.id);
 
       if (decl.init !== null) {
         // If we call path.insertAfter here, we will add assignments in reverse

@@ -35,6 +35,7 @@ export const visitor: Visitor = {
       state.opts.esMode = 'sane';
     }
 
+    hygiene.init(path);
     util.transformFromAst(path, [
       [ hygiene.plugin,
         {

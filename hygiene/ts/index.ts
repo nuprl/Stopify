@@ -10,7 +10,7 @@ import * as fastFreshId from './fastFreshId';
 import * as hygiene from './hygiene';
 import { transformFromAst  } from '@stopify/util';
 import { State } from './types';
-export { fresh, nameExprBefore, reset } from './fastFreshId';
+export { fresh, nameExprBefore, reset, init } from './fastFreshId';
 
 const visitor: Visitor = {
     Program(path, state: State) {

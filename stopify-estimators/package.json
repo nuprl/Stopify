@@ -1,6 +1,6 @@
 {
   "name": "stopify-estimators",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Elapsed-time estimators for JavaScript",
   "main": "dist/elapsedTimeEstimator",
   "typings": "dist/elapsedTimeEstimator",

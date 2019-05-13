@@ -1,11 +1,11 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as fastFreshId from './fastFreshId';
+import { fresh } from '@stopify/hygiene';
 
 const names: Visitor = {
   ObjectMethod: function (path: NodePath<t.ObjectMethod>): void {
     if (path.node.kind === "method") {
-      let fun = t.functionExpression(fastFreshId.fresh('method'),
+      let fun = t.functionExpression(fresh('method'),
           path.node.params, path.node.body);
         // Little hack necessary to preserve annotation left by freeIds and singleVarDecls
         (<any>fun).nestedFunctionFree = (<any>path.node).nestedFunctionFree;
@@ -18,7 +18,7 @@ const names: Visitor = {
 
   FunctionExpression: function (path: NodePath<t.FunctionExpression>): void {
     if (path.node.id === undefined || path.node.id === null) {
-      path.node.id = fastFreshId.fresh('funExpr');
+      path.node.id = fresh('funExpr');
       (path.node as any).originalName = '(anonymous function)';
     }
     /*
@@ -31,7 +31,7 @@ const names: Visitor = {
      */
     else if (path.scope.hasOwnBinding(path.node.id.name) &&
       <any>path.scope.bindings[path.node.id.name].kind !== 'local') {
-      const new_id = fastFreshId.fresh('x');
+      const new_id = fresh('x');
       path.scope.rename(path.node.id.name, new_id.name);
     }
   },
@@ -40,7 +40,7 @@ const names: Visitor = {
   FunctionDeclaration: function (path: NodePath<t.FunctionDeclaration>): void {
     if (path.scope.hasOwnBinding(path.node.id.name) &&
       <any>path.scope.bindings[path.node.id.name].kind !== 'local') {
-      const new_id = fastFreshId.fresh('funExpr');
+      const new_id = fresh('funExpr');
       path.scope.rename(path.node.id.name, new_id.name);
     }
   },

@@ -4,9 +4,9 @@ import * as callcc from 'stopify-continuations-compiler';
 import suspendStop from './suspendStop';
 import suspendStep from './suspendStep';
 import { timeSlow } from '../generic';
-import * as useGlobalObject from '../compiler/useGlobalObject';
+import * as hygiene from '@stopify/hygiene';
 import * as exposeHOFs from '../compiler/exposeHOFs';
-import * as normalizeJs from '@stopify/normalize-js';
+import * as util from '@stopify/util';
 
 export const visitor: Visitor = {
   Program(path: NodePath<t.Program>, state) {
@@ -35,37 +35,31 @@ export const visitor: Visitor = {
       state.opts.esMode = 'sane';
     }
 
-    normalizeJs.fastFreshId.init(path);
-    const plugs: any[] = [];
+    hygiene.init(path);
+    util.transformFromAst(path, [
+      [ hygiene.plugin,
+        {
+          reserved: callcc.reserved,
+          global: t.memberExpression(t.identifier('$S'), t.identifier('g'))
+        }
+      ]
+    ]);
 
-    timeSlow('hygiene, etc.', () =>
-      normalizeJs.transformFromAst(path, [
-        ...plugs,
-        [normalizeJs.hygiene, { reserved: callcc.reserved }],
-      ]));
-    
-    if (!opts.compileFunction) {
-      // NOTE(arjun): This needs to occur before flatness. Flatness does
-      // something (I don't know what) that this transformation messes up
-      // badly. It is likely the annotations that flatness puts on
-      // call expressions.
-      normalizeJs.transformFromAst(path, [[useGlobalObject.plugin, opts]]);
-    }
     if (!state.opts.debug) {
-      normalizeJs.transformFromAst(path, [ callcc.flatness ]);
+      util.transformFromAst(path, [ callcc.flatness ]);
     }
     timeSlow('insertSuspend', () =>
-      normalizeJs.transformFromAst(path, [[insertSuspend, opts]]));
+      util.transformFromAst(path, [[insertSuspend, opts]]));
 
 
     if (opts.hofs === 'fill') {
-      normalizeJs.transformFromAst(path, [exposeHOFs.plugin]);
+      util.transformFromAst(path, [exposeHOFs.plugin]);
     }
 
     timeSlow('(control ...) elimination', () =>
-      normalizeJs.transformFromAst(path, [[callcc.plugin, opts]]));
+      util.transformFromAst(path, [[callcc.plugin, opts]]));
 
-    normalizeJs.fastFreshId.cleanup();
+    hygiene.reset();
 
     if (opts.compileFunction) {
       // Do nothing

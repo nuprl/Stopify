@@ -1,6 +1,6 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import {letExpression} from './helpers';
+import { letExpression } from '@stopify/util';
 
 const functionDecl: Visitor = {
   FunctionDeclaration: function (path: NodePath<t.FunctionDeclaration>) {

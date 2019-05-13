@@ -1,6 +1,6 @@
 {
   "name": "stopify",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Stopify makes JavaScript a better target language for high-level languages and web-based programming tools",
   "main": "dist/src/index.js",
   "typings": "dist/src/index",
@@ -23,7 +23,6 @@
     "chromedriver": "^2.46.0",
     "geckodriver": "^1.16.0",
     "glob": "^7.1.1",
-    "jest-junit": "^3.1.0",
     "tslint": "^5.9.1",
     "jest": "^24.7.1",
     "typescript": "^3.4.4",
@@ -55,7 +54,9 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@stopify/normalize-js": "0.6.0",
+    "@stopify/normalize-js": "0.7.0",
+    "@stopify/util": "0.7.0",
+    "@stopify/hygiene": "0.7.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
@@ -70,18 +71,14 @@
     "source-map": "^0.6.0",
     "source-map-support": "^0.5.6",
     "sprintf": "^0.1.5",
-    "stopify-continuations": "^0.6.0",
-    "stopify-continuations-compiler": "^0.6.0",
-    "stopify-estimators": "^0.6.0",
+    "stopify-continuations": "0.7.0",
+    "stopify-continuations-compiler": "0.7.0",
+    "stopify-estimators": "0.7.0",
     "tmp": "0.0.31"
   },
   "jest": {
     "roots": [
       "<rootDir>/dist/test"
-    ],
-    "testResultsProcessor": "../node_modules/jest-junit"
-  },
-  "jest-junit": {
-    "output": "./results.xml"
+    ]
   }
 }

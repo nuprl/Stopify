@@ -977,6 +977,7 @@ babel-traverse@^6.25.0:
 babel-traverse@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-traverse/-/babel-traverse-6.26.0.tgz#46a9cbd7edcc62c8e5c064e2d2d8d0f4035766ee"
+  integrity sha1-RqnL1+3MYsjlwGTi0tjQ9ANXZu4=
   dependencies:
     babel-code-frame "^6.26.0"
     babel-messages "^6.23.0"
@@ -1000,6 +1001,7 @@ babel-types@^6.25.0:
 babel-types@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-types/-/babel-types-6.26.0.tgz#a3b073f94ab49eb6fa55cd65227a334380632497"
+  integrity sha1-o7Bz+Uq0nrb6Vc1lInozQ4BjJJc=
   dependencies:
     babel-runtime "^6.26.0"
     esutils "^2.0.2"
@@ -3504,14 +3506,6 @@ jest-jasmine2@^24.7.1:
     jest-util "^24.7.1"
     pretty-format "^24.7.0"
     throat "^4.0.0"
-
-jest-junit@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/jest-junit/-/jest-junit-3.1.0.tgz#3bd0b7a8bfd5b91f86376d44ff0f4c7f136f4287"
-  dependencies:
-    mkdirp "^0.5.1"
-    strip-ansi "^4.0.0"
-    xml "^1.0.1"
 
 jest-leak-detector@^24.7.0:
   version "24.7.0"
@@ -6032,6 +6026,7 @@ tr46@^1.0.1:
 trie@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/trie/-/trie-0.2.1.tgz#72cf0ae9f1c53f54d82df4911aa8705945997298"
+  integrity sha1-cs8K6fHFP1TYLfSRGqhwWUWZcpg=
 
 trim-right@^1.0.1:
   version "1.0.1"
@@ -6427,10 +6422,6 @@ xml2js@^0.4.17:
   dependencies:
     sax ">=0.6.0"
     xmlbuilder "^4.1.0"
-
-xml@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/xml/-/xml-1.0.1.tgz#78ba72020029c5bc87b8a81a3cfcd74b4a2fc1e5"
 
 xmlbuilder@^4.1.0:
   version "4.2.1"

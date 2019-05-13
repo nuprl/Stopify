@@ -35,7 +35,7 @@
  */
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { letExpression, Break, breakLbl } from './helpers';
+import { letExpression, Break, breakLbl } from '@stopify/util';
 
 function ifTest(e: t.Expression,
   discriminant: t.Identifier,

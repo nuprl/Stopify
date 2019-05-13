@@ -9,8 +9,10 @@ import * as t from 'babel-types';
 import * as babel from 'babel-core';
 import * as assert from 'assert';
 import { Binding, NodePath } from 'babel-traverse';
-import { fastFreshId, freeIds, babelHelpers as bh } from '@stopify/normalize-js';
+import * as h from '@stopify/util';
+import { freeIds } from '@stopify/normalize-js';
 import { Set } from 'immutable';
+import { fresh } from '@stopify/hygiene';
 
 type Parent = t.Program | t.FunctionDeclaration | t.FunctionExpression;
 
@@ -195,7 +197,7 @@ during boxing`);
     }
     if (this.vars.includes(decl.id.name)) {
       liftDecl(this, t.variableDeclaration('var',
-        [t.variableDeclarator(decl.id, box(bh.eUndefined))]));
+        [t.variableDeclarator(decl.id, box(h.eUndefined))]));
       if (decl.init === null) {
         path.remove();
       }
@@ -238,7 +240,7 @@ during boxing`);
       if (vars.includes(path.node.id.name) &&
           !(state.opts.compileFunction && (<any>path.node).topFunction)) {
         const fun = t.functionExpression(
-          fastFreshId.fresh('fun'),
+          fresh('fun'),
           path.node.params,
           path.node.body);
 
@@ -256,7 +258,7 @@ during boxing`);
         (<any>fun).renames = (<any>path.node).renames;
 
         const decl = t.variableDeclaration('var',
-          [t.variableDeclarator(path.node.id, box(bh.eUndefined))]);
+          [t.variableDeclarator(path.node.id, box(h.eUndefined))]);
         const stmt = t.expressionStatement(t.assignmentExpression('=',
           unbox(path.node.id) as t.LVal, fun));
         liftDecl(this, decl);

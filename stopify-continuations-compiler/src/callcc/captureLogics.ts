@@ -1,6 +1,7 @@
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
-import { fastFreshId, babelHelpers as bh } from '@stopify/normalize-js';
+import { fresh } from '@stopify/hygiene';
+import * as bh from '@stopify/util';
 import * as h from '../helpers';
 import { getLabels } from './label';
 import { CompilerOpts } from '../types';
@@ -65,7 +66,7 @@ const pushEagerStack = t.memberExpression(eagerStack, t.identifier('unshift'));
 function lazyCaptureLogic(path: NodePath<t.AssignmentExpression>,
   opts: CompilerOpts): void {
   const applyLbl = t.numericLiteral(getLabels(path.node)[0]);
-  const exn = fastFreshId.fresh('exn');
+  const exn = fresh('exn');
 
   const nodeStmt = t.expressionStatement(path.node);
 

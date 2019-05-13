@@ -3,7 +3,7 @@
  * own functions to do so.
  */
 import { NodePath } from 'babel-traverse';
-import * as h from './helpers';
+import { transformFromAst  } from '@stopify/util';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 const trie = require('trie'); // NOTE(arjun): No @types on 08/28/2017
@@ -31,17 +31,17 @@ const visitor = {
   }
 };
 
-function plugin() {
+export function plugin() {
   return { visitor: visitor };
 }
 
 export function init(path: NodePath<t.Node>): void {
   known.clear();
-  h.transformFromAst(path, [plugin]);
+  transformFromAst(path, [plugin]);
   isInitialized = true;
 }
 
-export function cleanup(): void {
+export function reset(): void {
   prefixes = new trie.Trie();
   isInitialized = false;
 }

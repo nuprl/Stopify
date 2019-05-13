@@ -18,9 +18,8 @@
 
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as h from './helpers';
-import * as fastFreshId from './fastFreshId';
-import * as bh from './babelHelpers';
+import * as h from '@stopify/util';
+import { fresh } from '@stopify/hygiene';
 
 interface State {
   [orig: string]: t.Identifier[];
@@ -30,9 +29,9 @@ interface State {
 const loopVisitor : Visitor = {
   ForInStatement(path: NodePath<h.While<t.ForInStatement>>): void {
     const { left, right, body } = path.node;
-    const it_obj = fastFreshId.fresh('it_obj');
-    const keys = fastFreshId.fresh('keys');
-    const idx = fastFreshId.fresh('idx');
+    const it_obj = fresh('it_obj');
+    const keys = fresh('keys');
+    const idx = fresh('idx');
     const prop = t.isVariableDeclaration(left) ?
     t.variableDeclaration(left.kind, [
       t.variableDeclarator(left.declarations[0].id, t.memberExpression(keys, idx, true))
@@ -74,7 +73,7 @@ const loopVisitor : Visitor = {
     }
 
     const loopContinue = path.node.continue_label ||
-      fastFreshId.fresh('loop_continue');
+      fresh('loop_continue');
     const labelContinue = t.labeledStatement(loopContinue, wBody);
     (<any>labelContinue).skip = true;
 
@@ -96,7 +95,7 @@ const loopVisitor : Visitor = {
       nInit = t.isExpression(init) ? t.expressionStatement(init) : init;
     }
 
-    bh.replaceWithStatements(path, nInit, wl);
+    h.replaceWithStatements(path, nInit, wl);
   },
 
   // Convert do-while statements into while statements.
@@ -105,7 +104,7 @@ const loopVisitor : Visitor = {
     let { test, body } = node;
 
     // Add flag to run the while loop at least once
-    const runOnce = fastFreshId.fresh('runOnce');
+    const runOnce = fresh('runOnce');
     const runOnceInit = t.variableDeclaration('let',
       [t.variableDeclarator(runOnce, t.booleanLiteral(true))]);
     const runOnceSetFalse =
@@ -119,14 +118,14 @@ const loopVisitor : Visitor = {
 
     test = t.logicalExpression('||', runOnce, test);
 
-    bh.replaceWithStatements(path,runOnceInit,
+    h.replaceWithStatements(path,runOnceInit,
       h.continueLbl(t.whileStatement(test, body),
         <any>path.node.continue_label));
   },
 
   WhileStatement(path: NodePath<h.While<h.Break<t.WhileStatement>>>): void {
     if (!path.node.continue_label) {
-      const loopContinue = fastFreshId.fresh('loop_continue');
+      const loopContinue = fresh('loop_continue');
       // Wrap the body in a labeled continue block.
       path.node = h.continueLbl(path.node, loopContinue);
       path.node.body = t.labeledStatement(loopContinue, path.node.body);
@@ -135,7 +134,7 @@ const loopVisitor : Visitor = {
 
     // Wrap the loop in labeled break block.
     if (!path.node.break_label) {
-      const loopBreak = fastFreshId.fresh('loop_break');
+      const loopBreak = fresh('loop_break');
       path.node = h.breakLbl(path.node, loopBreak);
       const labeledStatement = t.labeledStatement(loopBreak, path.node);
       (<any>labeledStatement).skip = true;
@@ -150,7 +149,7 @@ const loopVisitor : Visitor = {
       }
       const { label, body } = path.node;
       if (t.isLoop(body) && !(<any>body).continue_label) {
-        const lbl = fastFreshId.fresh('loop_continue');
+        const lbl = fresh('loop_continue');
         if (!(label.name in s)) {
           s[label.name] = [lbl];
         } else {

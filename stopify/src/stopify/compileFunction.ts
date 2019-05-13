@@ -14,7 +14,7 @@ import * as callcc from 'stopify-continuations-compiler';
 import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
 import { NodePath, Visitor } from 'babel-traverse';
-import * as normalizeJs from '@stopify/normalize-js';
+import * as util from '@stopify/util';
 export { RV_SENTINAL, EXN_SENTINAL, knownBuiltIns } from 'stopify-continuations-compiler';
 
 const visitor: Visitor = {
@@ -43,7 +43,7 @@ const visitor: Visitor = {
 
       }
 
-      normalizeJs.transformFromAst(path, [[stopifyCallCC.plugin, opts]]);
+      util.transformFromAst(path, [[stopifyCallCC.plugin, opts]]);
     }
   }
 };

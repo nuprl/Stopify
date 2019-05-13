@@ -1,8 +1,8 @@
 import * as babel from 'babel-core';
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
-import * as bh from "./babelHelpers";
-import { fresh } from './fastFreshId';
+import * as bh from "@stopify/util";
+import { fresh } from '@stopify/hygiene';
 
 function getFunctionArgs(path: NodePath<t.Node>): string[] {
   const node = path.node;

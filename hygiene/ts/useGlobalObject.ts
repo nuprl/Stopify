@@ -13,20 +13,24 @@
 
 import * as t from 'babel-types';
 import { NodePath } from 'babel-traverse';
-import { $S_g, $S } from './common';
-import * as babel from 'babel-core';
+
+export const $S = t.identifier('$S');
+// export const $S_g = t.memberExpression($S, t.identifier('g'), false);
 
 type S = {
   boundIds: Set<string>,
   boundIdStack: Set<string>[],
-  programBody: t.Statement[]
-}
+  programBody: t.Statement[],
+  opts: {
+    global: t.Expression
+  }
+};
 
 /** Produces the statement `$S.g.name = expr`. */
-function setGlobal(name: t.Identifier, expr: t.Expression): t.Statement {
+function setGlobal(global: t.Expression, name: t.Identifier, expr: t.Expression): t.Statement {
   return t.expressionStatement(
     t.assignmentExpression('=',
-      t.memberExpression($S_g, name, false),
+      t.memberExpression(global, name, false),
       expr));
 }
 
@@ -36,7 +40,7 @@ function visitId(path: NodePath<t.Identifier>, state: S) {
     return;
   }
 
-  const newNode = t.memberExpression($S_g, path.node, false);
+  const newNode = t.memberExpression(state.opts.global, path.node, false);
 
   if ((path.node as any).mark) {
     (newNode as any).mark = (path.node as any).mark;
@@ -53,7 +57,7 @@ const visitor = {
     state.programBody = path.node.body;
   },
   VariableDeclaration: {
-    exit(path: NodePath<t.VariableDeclaration>, state: S) {
+    enter(path: NodePath<t.VariableDeclaration>, state: S) {
       const isGlobal = state.boundIdStack.length === 0;
       if (!isGlobal) {
         return;
@@ -67,10 +71,10 @@ const visitor = {
         if (declarator.init === null) {
           continue;
         }
-        nodes.push(setGlobal(declarator.id, declarator.init));
+        nodes.push(t.expressionStatement(
+          t.assignmentExpression('=', declarator.id, declarator.init)));
       }
       path.replaceWithMultiple(nodes);
-      path.skip();
     }
   },
   FunctionDeclaration(path: NodePath<t.FunctionDeclaration>, state: S) {
@@ -81,7 +85,7 @@ const visitor = {
       return;
     }
 
-    state.programBody.unshift(setGlobal(path.node.id, path.node.id));
+    state.programBody.unshift(setGlobal(state.opts.global, path.node.id, path.node.id));
   },
   // Track the set of identifiers bound at all scopes, *except* for Program.
   Scope: {
@@ -150,20 +154,4 @@ const visitor = {
 
 export function plugin() {
   return { visitor: visitor };
-}
-
-// Runs this plugin standalone.
-function main() {
-  const filename = process.argv[2];
-  const opts = { plugins: [() => ({ visitor })], babelrc: false };
-  babel.transformFile(filename, opts, (err, result) => {
-    if (err !== null) {
-      throw err;
-    }
-    console.log(result.code);
-  });
-}
-
-if (require.main === module) {
-  main();
 }

@@ -5,7 +5,7 @@
  */
 
 import { NodePath } from 'babel-traverse';
-import { babelHelpers as bh } from '@stopify/normalize-js';
+import { letExpression } from '@stopify/util';
 
 import { FlatnessMark } from '../helpers';
 import { CompilerOpts } from '../types';
@@ -13,7 +13,6 @@ import * as t from 'babel-types';
 
 import { knowns } from './cannotCapture';
 
-let letExpression = bh.letExpression;
 /**
  * function handleNew(constr, ...args) {
  *

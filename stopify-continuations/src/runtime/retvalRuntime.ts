@@ -1,9 +1,9 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
-import { Result } from '../types';
+import { Result, Stack } from '../types';
 import * as types from '../types';
 
-export class RetvalRuntime extends common.Runtime {
+export class RetvalRuntime extends common.RuntimeImpl {
   kind: types.CaptureMethod = 'retval';
 
   constructor(stackSize: number, restoreFrames: number) {
@@ -15,7 +15,7 @@ export class RetvalRuntime extends common.Runtime {
     return new common.Capture(f, []);
   }
 
-  makeCont(stack: common.Stack) {
+  makeCont(stack: Stack) {
     const savedStack = this.savedStack;
     this.savedStack = [];
     for(let i = stack.length - 1; i >= this.restoreFrames; i -= 1) {

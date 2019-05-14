@@ -1,11 +1,11 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
-import { Result } from '../types';
+import { Result, Stack  } from '../types';
 import * as types from '../types';
 
-export class EagerRuntime extends common.Runtime {
+export class EagerRuntime extends common.RuntimeImpl {
   kind: types.CaptureMethod = 'eager';
-  eagerStack: common.Stack;
+  eagerStack: Stack;
 
   constructor(stackSize: number, restoreFrames: number) {
     super(stackSize, restoreFrames);
@@ -17,7 +17,7 @@ export class EagerRuntime extends common.Runtime {
     throw new common.Capture(f, [...this.eagerStack]);
   }
 
-  makeCont(stack: common.Stack) {
+  makeCont(stack: Stack) {
     return (x: Result) => {
       let restarter = () => {
         if (x.type === 'exception') {

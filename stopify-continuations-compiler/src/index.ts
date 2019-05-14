@@ -37,20 +37,28 @@ const visitor: babel.Visitor = {
  * @param src the program to compile, which may use callCC
  * @returns an ordinary JavaScript program
  */
-export function compileFromAst(src: babel.types.Program, global: t.Expression | undefined): string {
+export function compileFromAst(src: babel.types.Program, global: t.Expression | undefined): h.Result<string> {
+    try {
+        const babelOpts = {
+            plugins: [ [ () => ({ visitor }), { reserved: [], global: global } ] ],
+            babelrc: false,
+            ast: false,
+            code: true,
+            minified: false,
+            comments: false,
+        };
 
-
-    const babelOpts = {
-        plugins: [ [ () => ({ visitor }), { reserved: [], global: global } ] ],
-        babelrc: false,
-        ast: false,
-        code: true,
-        minified: false,
-        comments: false,
-    };
-
-    const { code } = babel.transformFromAst(src, undefined, babelOpts);
-    return code!;
+        const result = babel.transformFromAst(src, undefined, babelOpts);
+        if (typeof result.code === 'string') {
+            return h.ok(result.code);
+        }
+        else {
+            return h.error('compile failed: no code returned');
+        }
+    }
+    catch (exn) {
+        return h.error(exn.toString());
+    }
 }
 
 
@@ -60,6 +68,7 @@ export function compileFromAst(src: babel.types.Program, global: t.Expression | 
  * @param src the program to compile, which may use callCC
  * @returns an ordinary JavaScript program
  */
-export function compile(src: string, global: t.Expression | undefined): string {
-    return compileFromAst(babylon.parse(src).program, global);
+export function compile(src: string, global: t.Expression | undefined): h.Result<string> {
+    return h.asResult(() => babylon.parse(src).program)
+        .then(p => compileFromAst(p, global));
 }

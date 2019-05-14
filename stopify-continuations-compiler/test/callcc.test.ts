@@ -19,7 +19,7 @@ function compileForTest(code: string): { globals: any, code: string } {
         },
         assert: assert
     };
-    let compiled = compile(code, t.identifier('globals'));
+    let compiled = compile(code, t.identifier('globals')).unwrap();
     return { globals: globals, code: compiled };
 }
 
@@ -114,6 +114,24 @@ test('function object state should be preserved when continuation is resumed', (
     expect(globals).toMatchObject({ result: 200 });
 });
 
+test('global state is not reset', () => {
+    let { code, globals } = compileForTest(`
+        let i = [];
+        function F() {
+            callCC(function(k) {
+                i.push(10);
+                k();
+            });
+        }
+        F();
+    `);
+
+    console.log(code);
+    expect(eval(code)).toMatchObject({ type: 'normal' });
+    expect(globals).toMatchObject({
+        i: 1,
+    });
+});
 
 
 test('fringe generator rest', () => {
@@ -175,6 +193,7 @@ test('fringe generator rest', () => {
      });
 });
 
+test
 
 test.skip('resume with an exception', () => {
     // TODO(arjun): We do not have the right API to resume with an exception.

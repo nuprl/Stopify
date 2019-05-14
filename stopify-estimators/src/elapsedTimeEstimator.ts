@@ -1,5 +1,3 @@
-import * as interrupt from './timer';
-
 /**
  * Interface for an object that estimates elapsed time.
  */
@@ -16,28 +14,6 @@ export abstract class ElapsedTimeEstimator {
    * Clean up any necessary state. Called from the runtime's `onEnd` function.
    */
   cancel(): void { }
-}
-
-export class InterruptEstimator extends ElapsedTimeEstimator {
-  private state: Buffer;
-
-  public constructor(private ms: number) {
-    super();
-    this.state = interrupt.init(this.ms);
-  }
-
-  reset() {
-    interrupt.reset();
-  }
-
-  elapsedTime(): number {
-    return !!this.state.readUInt8(0) ? Infinity : 0;
-//    return !!this.state.readUInt8(0);
-  }
-
-  cancel(): void {
-    interrupt.cancel();
-  }
 }
 
 export class ExactTimeEstimator extends ElapsedTimeEstimator {

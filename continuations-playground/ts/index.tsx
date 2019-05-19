@@ -66,14 +66,14 @@ class CodeLoader extends React.Component<{}, CodeLoaderState> {
     }
 }
 
-class ContinuationsPlayground extends React.Component<{ initialCode: string }, { logs: any[] }> {
+class ContinuationsPlayground extends React.Component<{ initialCode: string }, { logs: any[], code: string }> {
 
-    private code: string;
     constructor(props: { initialCode: string }) {
         super(props);
-
-        this.code = props.initialCode;
-        this.state = { logs: [] };
+        this.state = {
+            logs: [],
+            code: props.initialCode
+        };
     }
 
     reportError(message: any) {
@@ -81,12 +81,12 @@ class ContinuationsPlayground extends React.Component<{ initialCode: string }, {
     }
 
     onRun() {
-        const compiledResult = compile(this.code);
+        const compiledResult = compile(this.state.code);
         if (compiledResult.kind === 'error') {
             this.reportError(compiledResult.message);
             return;
         }
-        window.localStorage.setItem('code', this.code);
+        window.localStorage.setItem('code', this.state.code);
         const runner = compiledResult.value;
         let globals = {
             setTimeout: (f: () => void, timeout: number) => {
@@ -97,6 +97,11 @@ class ContinuationsPlayground extends React.Component<{ initialCode: string }, {
                         }
                     });
                 }, timeout);
+            },
+            Array: {
+                from: function(iterable: any) {
+                    return Array.from(iterable);
+                }
             },
             console: {
                 log: (msg: any) => this.setState(appendLog('log', msg))
@@ -126,10 +131,10 @@ class ContinuationsPlayground extends React.Component<{ initialCode: string }, {
                 </div>
                 <div style={{ gridColumnStart: 1, gridColumnEnd: 1, gridRowStart: 2 }}>
                     <MonacoEditor
-                        onChange = { (newValue) => this.code = newValue }
+                        onChange = { (newValue) => this.setState({ code: newValue }) }
                         language="javascript"
                         theme="vs-dark"
-                        value={this.props.initialCode}
+                        value={this.state.code}
                         options={ { automaticLayout: true } }
                         >
                     </MonacoEditor>

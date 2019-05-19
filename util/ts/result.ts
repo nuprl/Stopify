@@ -7,6 +7,10 @@ class Ok<T> {
         return f(this.value);
     }
 
+    map<S>(f: (x: T) => S): Result<S> {
+        return asResult(() => f(this.value));
+    }
+
     unwrap(): T {
         return this.value;
     }
@@ -18,6 +22,10 @@ class Error<T> {
     }
 
     then<S>(f: (x: T) => Result<S>): Result<S> {
+        return error(this.message);
+    }
+
+    map<S>(f: (x: T) => S): Result<S> {
         return error(this.message);
     }
 

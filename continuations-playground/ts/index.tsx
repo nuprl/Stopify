@@ -1,57 +1,117 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-// import Index from './mainPage';
 import MonacoEditor from 'react-monaco-editor';
 import { Hook, Console, Decode } from 'console-feed';
 import { compile } from 'stopify-continuations-compiler';
-import * as t from 'babel-types';
-import * as continuationsRTS from 'stopify-continuations';
 
-function appendLog(msg: any) {
+function appendLog(method: 'log' | 'error', msg: any) {
     return function(prevState: { logs: any[] }) {
-        console.log(msg);
         return {
             logs: [...prevState.logs, {
-                method: 'log',
+                method: method,
                 data: [msg]
             }]
         };
     };
 }
 
-class ContinuationsPlayground extends React.Component<{}, { logs: any[] }> {
+/*
+if (window.location.hash !== '') {
+            let url = window.location.hash.substring(1);
+            fetch(url).then(resp => {
+                thisString(resp.body)
+            })
+        
+*/
 
-    private code: string;
+type CodeLoaderState =
+  { kind: 'loading' } |
+  { kind: 'ok', code: string } |
+  { kind: 'error', message: string }
+
+class CodeLoader extends React.Component<{}, CodeLoaderState> {
+
     constructor(props: {}) {
         super(props);
-        this.code = window.localStorage.getItem('code') || "";
+        // Try to fetch code from the URL after the #
+        if (window.location.hash !== '') {
+            this.state = { kind: 'loading' };
+            let url = window.location.hash.substring(1);
+            fetch(url)
+            .then(resp => resp.text())
+            .then(code => this.setState({ kind: 'ok', code: code }))
+            .catch(reason =>
+                this.setState({ kind: 'error', message: String(reason) }));
+        }
+        else {
+            this.state = {
+                kind: 'ok',
+                code: window.localStorage.getItem('code') || ''
+            };
+        }
+    }
+
+    render() {
+        switch (this.state.kind) {
+        case 'loading':
+            return <div>Loading...</div>;
+        case 'error':
+            return <div>
+                <p>Error loading code</p>
+                <p>{this.state.message}</p>
+            </div>;
+        case 'ok':
+            return <ContinuationsPlayground initialCode={this.state.code} />;
+        }
+    }
+}
+
+class ContinuationsPlayground extends React.Component<{ initialCode: string }, { logs: any[] }> {
+
+    private code: string;
+    constructor(props: { initialCode: string }) {
+        super(props);
+
+        this.code = props.initialCode;
         this.state = { logs: [] };
     }
 
-    onRun() {
+    reportError(message: any) {
+        this.setState(appendLog('error', String(message).replace('$rts.g.','')));
+    }
 
-        // The variables below are used by the eval'd code.
-        // @ts-ignore
-        let globals = {
-            console: {
-                log: (msg: any) => this.setState(appendLog(msg))
-            },
-            control: function(f: any) {
-                const rts = continuationsRTS.newRTS('lazy');
-                return rts.captureCC(k => {
-                    return f((x: any) => k({ type: 'normal', value: x }));
-                });
-            }
-        };
-        // @ts-ignore
-        const stopify = continuationsRTS;
-        const compiledCode = compile(this.code, t.identifier('globals'));
-        if (compiledCode.kind === 'error') {
-            globals.console.log(compiledCode.message);
+    onRun() {
+        const compiledResult = compile(this.code);
+        if (compiledResult.kind === 'error') {
+            this.reportError(compiledResult.message);
             return;
         }
         window.localStorage.setItem('code', this.code);
-        eval(compiledCode.value);
+        const runner = compiledResult.value;
+        let globals = {
+            setTimeout: (f: () => void, timeout: number) => {
+                window.setTimeout(() => {
+                    runner.processEvent(f, result => {
+                        if (result.type === 'exception') {
+                            this.reportError(result.value.toString());
+                        }
+                    });
+                }, timeout);
+            },
+            console: {
+                log: (msg: any) => this.setState(appendLog('log', msg))
+            },
+            control: function(f: any) {
+                return runner.control(f);
+            }
+        };
+        runner.g = globals;
+        this.setState({ logs: [] });
+        runner.run(result => {
+            if (result.type === 'exception') {
+                this.reportError(result.value.toString());
+            }
+        });
     }
 
     render() {
@@ -69,7 +129,7 @@ class ContinuationsPlayground extends React.Component<{}, { logs: any[] }> {
                         onChange = { (newValue) => this.code = newValue }
                         language="javascript"
                         theme="vs-dark"
-                        value={this.code}
+                        value={this.props.initialCode}
                         options={ { automaticLayout: true } }
                         >
                     </MonacoEditor>
@@ -84,6 +144,6 @@ class ContinuationsPlayground extends React.Component<{}, { logs: any[] }> {
 
 }
 ReactDOM.render(
-    <ContinuationsPlayground/>,
+    <CodeLoader />,
     document.querySelector('#root')
 );

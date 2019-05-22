@@ -15,15 +15,6 @@ function appendLog(method: 'log' | 'error', msg: any) {
     };
 }
 
-/*
-if (window.location.hash !== '') {
-            let url = window.location.hash.substring(1);
-            fetch(url).then(resp => {
-                thisString(resp.body)
-            })
-        
-*/
-
 type CodeLoaderState =
   { kind: 'loading' } |
   { kind: 'ok', code: string } |

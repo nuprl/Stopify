@@ -7,7 +7,39 @@ import * as hygiene from '@stopify/hygiene';
 import * as h from '@stopify/util';
 import { Result } from 'stopify-continuations';
 import * as continuationsRTS from 'stopify-continuations';
+import { knowns } from './common/cannotCapture';
+import * as exposeImplicitApps from './exposeImplicitApps';
+import { restoreNextFrame } from './callcc/jumper';
 
+export { flatness } from './compiler/flatness';
+export { getSourceMap } from './compiler/sourceMaps';
+export { default as plugin } from './callcc/callcc';
+export * from './types';
+export * from './runtime/sentinels';
+export { knownBuiltIns } from './common/cannotCapture';
+
+export const reserved = [
+    ...knowns,
+    "name",
+    exposeImplicitApps.implicitsIdentifier.name,
+    "$opts",
+    "$result",
+    "target",
+    "newTarget",
+    "captureLocals",
+    restoreNextFrame.name,
+    "frame",
+    "RV_SENTINAL",
+    "EXN_SENTINAL",
+    "finally_rv",
+    "finally_exn",
+    "captureCC",
+    'materializedArguments',
+    'argsLen',
+    '$top',
+    '$S'
+  ];
+  
 const visitor: babel.Visitor = {
     Program(path, state) {
         const opts: types.CompilerOpts = {

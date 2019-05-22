@@ -2,21 +2,11 @@ import { RuntimeOpts } from '../types';
 import { unreachable } from '../generic';
 import {
   ElapsedTimeEstimator,
-  InterruptEstimator,
   ExactTimeEstimator,
   CountdownTimeEstimator,
   SampleAverageTimeEstimator,
   VelocityEstimator,
 } from 'stopify-estimators';
-
-/**
- * Calls out to a C++ extension, which monitors a timer in a worker thread.
- *
- * **NOTE: This is only supported in Node.js environments, not browsers.**
- */
-export function makeInterrupt(ms: number): ElapsedTimeEstimator {
-  return new InterruptEstimator(ms);
-}
 
 /**
  * Checks the current time whenever 'elapsedTime' is applied, instead of
@@ -68,9 +58,6 @@ export function makeEstimator(opts: RuntimeOpts): ElapsedTimeEstimator {
   }
   else if (opts.estimator === 'velocity') {
     return makeVelocityEstimator(opts.resampleInterval);
-  }
-  else if (opts.estimator === 'interrupt') {
-    return makeInterrupt(opts.yieldInterval!);
   }
   else {
     return unreachable();

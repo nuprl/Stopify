@@ -26,6 +26,7 @@
     "stopify-estimators",
     "normalize-js",
     "hygiene",
-    "util"
+    "util",
+    "continuations-playground"
   ]
 }

@@ -1,6 +1,6 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
-import { Result } from '../types';
+import { Result, Stack } from '../types';
 import * as types from '../types';
 
 class FudgedContinuationError {
@@ -21,7 +21,7 @@ class FudgedContinuationError {
  * 'FudgedContinuationError(done)'. This is unfortunate. But, this
  * transformation still helps with debugging.
  */
-export class FudgeRuntime extends common.Runtime {
+export class FudgeRuntime extends common.RuntimeImpl {
   kind: types.CaptureMethod = 'fudge';
 
   constructor() {
@@ -32,7 +32,7 @@ export class FudgeRuntime extends common.Runtime {
     throw new common.Capture(f, []);
   }
 
-  makeCont(stack: common.Stack) {
+  makeCont(stack: Stack) {
     return (v: any) => {
       throw new FudgedContinuationError(v);
     };

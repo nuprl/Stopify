@@ -1,9 +1,9 @@
 import * as common from './abstractRuntime';
 export * from './abstractRuntime';
-import { Result } from '../types';
+import { Result, Stack } from '../types';
 import * as types from '../types';
 
-export class LazyRuntime extends common.Runtime {
+export class LazyRuntime extends common.RuntimeImpl {
   kind: types.CaptureMethod = 'lazy';
 
   constructor(stackSize: number, restoreFrames: number) {
@@ -15,7 +15,7 @@ export class LazyRuntime extends common.Runtime {
     throw new common.Capture(f, []);
   }
 
-  makeCont(stack: common.Stack) {
+  makeCont(stack: Stack) {
     const savedStack = this.savedStack;
     this.savedStack = [];
 

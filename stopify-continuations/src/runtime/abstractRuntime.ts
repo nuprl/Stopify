@@ -1,5 +1,6 @@
 import * as assert from 'assert';
-import { Result, Runtime as RuntimeInterface } from '../types';
+import { Result, Runtime, Stack, Mode, KFrameTop,
+  KFrameRest } from '../types';
 import * as types from '../types';
 
 export type RunResult =
@@ -8,30 +9,6 @@ export type RunResult =
   { type: 'capture', stack: Stack, f: (value: any) => any } |
   { type: 'restore', stack: Stack, savedStack: Stack } |
   { type: 'end-turn', callback: (onDone: (x: Result) => any) => any };
-
-// The type of continuation frames
-export type KFrame = KFrameTop | KFrameRest;
-
-export interface KFrameTop {
-  kind: 'top';
-  f: () => any;
-  this: any;
-}
-
-export interface KFrameRest {
-  kind: 'rest';
-  f: () => any;   // The function we are in
-  locals: any[];  // All locals
-  params: any[];  // All params
-  this: any;      // The object bound to `this`
-  index: number;  // At this application index
-}
-
-export type Stack = KFrame[];
-
-// The type of execution mode, whether normally computing or restoring state
-// from a captured `Stack`.
-export type Mode = boolean;
 
 // We throw this exception when a continuation value is applied. i.e.,
 // captureCC applies its argument to a function that throws this exception.
@@ -50,7 +27,7 @@ export class Capture {
   constructor(public f: (k: ((x: Result) => any)) => any, public stack: Stack) {}
 }
 
-export abstract class Runtime implements RuntimeInterface {
+export abstract class RuntimeImpl implements Runtime {
   kind: types.CaptureMethod;
   // Remaining number of stacks that this runtime can consume.
   remainingStack: number;
@@ -174,7 +151,7 @@ export abstract class Runtime implements RuntimeInterface {
 
   /**
    * Called when the stack needs to be captured.
-   * 
+   *
    * The result type cannot be any more precise than any.
    */
   abstract captureCC(f: (k: (x: Result) => any) => any): any;
@@ -185,7 +162,7 @@ export abstract class Runtime implements RuntimeInterface {
    * final frame that returns the supplied value. If err is provided, instead
    * of returning the supplied value, it throws an exception with the provided
    * error.
-   * 
+   *
    * The result type cannot be any more precise than any.
    */
   abstract makeCont(stack: Stack): (x: Result) => any;

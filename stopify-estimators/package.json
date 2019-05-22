@@ -6,7 +6,6 @@
   "typings": "dist/elapsedTimeEstimator",
   "devDependencies": {
     "@types/node": "*",
-    "node-gyp": "^3.7.0",
     "tslint": "^5.9.1",
     "typescript": "^3.4.4"
   },

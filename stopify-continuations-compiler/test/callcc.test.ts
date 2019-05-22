@@ -11,20 +11,25 @@ import { compile } from '../src/index';
 // be a global variable.
 (global as any).stopify = continuationRTS;
 
-function compileForTest(code: string): { globals: any, code: string } {
-    let globals = {
-        callCC: function(f: any) {
-            return continuationRTS.newRTS('lazy').captureCC(k =>
-                f((x: any) => k({ type: 'normal', value: x })));
-        },
-        assert: assert
+function compileForTest(code: string) {
+    let runner = compile(code).unwrap();
+    runner.g.callCC = function(f: any) {
+        return continuationRTS.newRTS('lazy').captureCC(k =>
+            f((x: any) => k({ type: 'normal', value: x })));
     };
-    let compiled = compile(code, t.identifier('globals'));
-    return { globals: globals, code: compiled };
+    runner.g.assert = assert;
+
+    // NOTE(arjun): For testing, we are relying on the fact that runner.run
+    // returns the result of eval, which will be the value of "x" below. In
+    // general, the program may not end on the same turn.
+    return {
+        globals: runner.g,
+        run: () => runner.run(x => x)
+    };
 }
 
 test('escape continuations', () => {
-    let { code, globals } = compileForTest(`
+    let { run, globals } = compileForTest(`
         function f() {
           return callCC(function(k) {
               return k(100);
@@ -34,12 +39,12 @@ test('escape continuations', () => {
         }
         result = f();
     `);
-    expect(eval(code)).toMatchObject({ type: 'normal' });
+    expect(run()).toMatchObject({ type: 'normal' });
     expect(globals).toMatchObject({ result: 100 });
 });
 
 test('resume continuation three times', () => {
-    let { code, globals } = compileForTest(`
+    let { run, globals } = compileForTest(`
         let saved = false;
         let i = 0;
         function myFun() {
@@ -63,12 +68,12 @@ test('resume continuation three times', () => {
         }
         result = myGun();
     `);
-    expect(eval(code)).toMatchObject({ type: 'normal' });
+    expect(run()).toMatchObject({ type: 'normal' });
     expect(globals).toMatchObject({ result: 'done', i: 3 });
 });
 
 test('nested function state', () => {
-    let { code, globals } = compileForTest(`
+    let { run, globals } = compileForTest(`
         function f() {
             function g() { return h() };
             function h() { throw 'original h called'; };
@@ -78,13 +83,13 @@ test('nested function state', () => {
         }
         result = f();
     `);
-    expect(eval(code)).toMatchObject({ type: 'normal' });
+    expect(run()).toMatchObject({ type: 'normal' });
     expect(globals).toMatchObject({ result: 100 });
 });
 
 test('nested bindings', () => {
     // TODO(arjun): I don't see the point of g being a function.
-    let { code, globals } = compileForTest(`
+    let { run, globals } = compileForTest(`
         function f() {
             function g() {}
             {
@@ -96,12 +101,12 @@ test('nested bindings', () => {
         }
         result = f();
     `);
-    expect(eval(code)).toMatchObject({ type: 'normal' });
+    expect(run()).toMatchObject({ type: 'normal' });
     expect(globals).toMatchObject({ result: 200 });
 });
 
 test('function object state should be preserved when continuation is resumed', () => {
-    let { code, globals } = compileForTest(`
+    let { run, globals } = compileForTest(`
         function f() {
             function g() { };
             g.x = 200;
@@ -110,16 +115,33 @@ test('function object state should be preserved when continuation is resumed', (
         }
         result = f();
     `);
-    expect(eval(code)).toMatchObject({ type: 'normal' });
+    expect(run()).toMatchObject({ type: 'normal' });
     expect(globals).toMatchObject({ result: 200 });
 });
 
+test('global state is not reset', () => {
+    let { run, globals } = compileForTest(`
+        let i = [];
+        function F() {
+            callCC(function(k) {
+                i.push(10);
+                k();
+            });
+        }
+        F();
+    `);
+
+    expect(run()).toMatchObject({ type: 'normal' });
+    expect(globals).toMatchObject({
+        i: [10],
+    });
+});
 
 
 test('fringe generator rest', () => {
     // This is a tree generator, built with continuations. It marks visited
     // nodes so that we don't visit more than necessary.
-    let { code, globals } = compileForTest(`
+    let { run, globals } = compileForTest(`
         function node(left, right) {
             return { left: left, right: right, type: "node", visited: false };
         }
@@ -166,7 +188,7 @@ test('fringe generator rest', () => {
         let r2 = gen2();
         let r3 =  gen1();
     `);
-    expect(eval(code)).toMatchObject({ type: 'normal' });
+    expect(run()).toMatchObject({ type: 'normal' });
     expect(globals).toMatchObject({
         r1: 1,
         r2: 10,
@@ -175,6 +197,7 @@ test('fringe generator rest', () => {
      });
 });
 
+test
 
 test.skip('resume with an exception', () => {
     // TODO(arjun): We do not have the right API to resume with an exception.

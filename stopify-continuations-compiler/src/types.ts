@@ -1,4 +1,5 @@
 import * as t from 'babel-types';
+import { Result } from 'stopify-continuations';
 
 export interface LineMapping {
   getLine: (line: number, column: number) => number | null
@@ -22,3 +23,10 @@ export interface CompilerOpts {
   eval2: boolean,
   compileMode: 'library' | 'normal'
 }
+
+export type Runner = {
+  run: (onDone: (result: Result) => void) => void,
+  processEvent: (body: () => any, receiver: (x: Result) => void) => void,
+  control: (f: (k: (v: any) => void) => void) => void,
+  g: { [key: string]: any}
+};

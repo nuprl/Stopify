@@ -5,7 +5,41 @@ import * as types from './types';
 import * as callcc from './callcc/callcc';
 import * as hygiene from '@stopify/hygiene';
 import * as h from '@stopify/util';
+import { Result } from 'stopify-continuations';
+import * as continuationsRTS from 'stopify-continuations';
+import { knowns } from './common/cannotCapture';
+import * as exposeImplicitApps from './exposeImplicitApps';
+import { restoreNextFrame } from './callcc/jumper';
 
+export { flatness } from './compiler/flatness';
+export { getSourceMap } from './compiler/sourceMaps';
+export { default as plugin } from './callcc/callcc';
+export * from './types';
+export * from './runtime/sentinels';
+export { knownBuiltIns } from './common/cannotCapture';
+
+export const reserved = [
+    ...knowns,
+    "name",
+    exposeImplicitApps.implicitsIdentifier.name,
+    "$opts",
+    "$result",
+    "target",
+    "newTarget",
+    "captureLocals",
+    restoreNextFrame.name,
+    "frame",
+    "RV_SENTINAL",
+    "EXN_SENTINAL",
+    "finally_rv",
+    "finally_exn",
+    "captureCC",
+    'materializedArguments',
+    'argsLen',
+    '$top',
+    '$S'
+  ];
+  
 const visitor: babel.Visitor = {
     Program(path, state) {
         const opts: types.CompilerOpts = {
@@ -18,7 +52,17 @@ const visitor: babel.Visitor = {
             jsArgs: 'simple',
             requireRuntime: false,
             sourceMap: { getLine: () => null },
-            onDone: t.functionExpression(t.identifier('done'), [t.identifier('x')], t.blockStatement([t.returnStatement(t.identifier('x'))])),
+            // function done(r) { return $rts.onDone(r); }
+            onDone: t.functionExpression(t.identifier('done'),
+                [t.identifier('r')],
+                t.blockStatement([
+                    t.returnStatement(
+                        t.callExpression(
+                            t.memberExpression(
+                                t.identifier('$rts'),
+                                t.identifier('onDone')),
+                            [t.identifier('r')]))
+                        ])),
             eval2: false,
             compileMode:  'normal'
         };
@@ -37,20 +81,31 @@ const visitor: babel.Visitor = {
  * @param src the program to compile, which may use callCC
  * @returns an ordinary JavaScript program
  */
-export function compileFromAst(src: babel.types.Program, global: t.Expression | undefined): string {
+export function compileFromAst(src: babel.types.Program): h.Result<string> {
+    try {
+        const babelOpts = {
+            plugins: [ [ () => ({ visitor }), {
+                reserved: [],
+                global: t.memberExpression(t.identifier('$rts'), t.identifier('g'))
+            } ] ],
+            babelrc: false,
+            ast: false,
+            code: true,
+            minified: false,
+            comments: false,
+        };
 
-
-    const babelOpts = {
-        plugins: [ [ () => ({ visitor }), { reserved: [], global: global } ] ],
-        babelrc: false,
-        ast: false,
-        code: true,
-        minified: false,
-        comments: false,
-    };
-
-    const { code } = babel.transformFromAst(src, undefined, babelOpts);
-    return code!;
+        const result = babel.transformFromAst(src, undefined, babelOpts);
+        if (typeof result.code === 'string') {
+            return h.ok(result.code);
+        }
+        else {
+            return h.error('compile failed: no code returned');
+        }
+    }
+    catch (exn) {
+        return h.error(exn.toString());
+    }
 }
 
 
@@ -60,6 +115,37 @@ export function compileFromAst(src: babel.types.Program, global: t.Expression | 
  * @param src the program to compile, which may use callCC
  * @returns an ordinary JavaScript program
  */
-export function compile(src: string, global: t.Expression | undefined): string {
-    return compileFromAst(babylon.parse(src).program, global);
+export function compile(src: string): h.Result<types.Runner> {
+    return h.asResult(() => babylon.parse(src).program)
+        .then(p => compileFromAst(p))
+        .map(code => new RunnerImpl(code));
 }
+
+class RunnerImpl implements types.Runner {
+
+    public g: { [key: string]: any };
+    private rts: continuationsRTS.RuntimeImpl;
+
+    constructor(private code: string) {
+        this.g = Object.create(null);
+    }
+
+    run(onDone: (x: Result) => void): void {
+        let stopify = continuationsRTS;
+        this.rts = stopify.newRTS('lazy');
+
+        let $rts = { g: this.g, onDone: onDone };
+        return eval(this.code);
+    }
+
+    control(f: (k: (v: any) => void) => void): void {
+        return this.rts.captureCC(k => {
+            return f((x: any) => k({ type: 'normal', value: x }));
+        });
+    }
+
+
+    processEvent(body: () => any, receiver: (x: Result) => void): void {
+        this.rts.runtime(body, receiver);
+    }
+  }

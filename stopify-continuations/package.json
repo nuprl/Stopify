@@ -2,8 +2,8 @@
   "name": "stopify-continuations",
   "version": "0.7.0",
   "description": "Continuation Runtime",
-  "main": "dist/types",
-  "typings": "dist/types",
+  "main": "dist/index",
+  "typings": "dist/index",
   "devDependencies": {
     "typescript": "^3.4.4"
   },

@@ -2,7 +2,7 @@
  * Entrypoint of the stopify-continuations bundle
  */
 
-import { Runtime } from './abstractRuntime';
+import { RuntimeImpl } from './abstractRuntime';
 import { LazyRuntime } from './lazyRuntime';
 import { EagerRuntime } from './eagerRuntime';
 import { RetvalRuntime } from './retvalRuntime';
@@ -10,8 +10,8 @@ import { FudgeRuntime } from './fudgeRuntime';
 
 export * from './abstractRuntime';
 
-let savedRTS: Runtime | undefined;
-export function newRTS(transform: string): Runtime {
+let savedRTS: RuntimeImpl | undefined;
+export function newRTS(transform: string): RuntimeImpl {
   if (!savedRTS || savedRTS.kind !== transform) {
     switch (transform) {
       // Default to shallow runtime.

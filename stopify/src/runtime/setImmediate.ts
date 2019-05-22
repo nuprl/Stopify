@@ -53,8 +53,11 @@ function makeSetImmediatePM(): (thunk: () => void) => void {
 }
 
 function makeSetImmediate(): (thunk: () => void) => void {
+  if (typeof (self as any).importScripts === 'function') {
+    return setImmediateT0;
+  }
   // browser can be null
-  if (!browser || <any>browser.name === 'node') {
+  else if (!browser || <any>browser.name === 'node') {
     return setImmediateT0;
   }
   else if (browser.name === 'safari') {

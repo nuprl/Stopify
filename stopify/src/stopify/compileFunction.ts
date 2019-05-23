@@ -10,12 +10,12 @@
 
 import * as babel from 'babel-core';
 import * as t from 'babel-types';
-import * as callcc from 'stopify-continuations-compiler';
+import * as callcc from '@stopify/continuations';
 import * as stopifyCallCC from './stopifyCallCC';
 import * as assert from 'assert';
 import { NodePath, Visitor } from 'babel-traverse';
 import * as util from '@stopify/util';
-export { RV_SENTINAL, EXN_SENTINAL, knownBuiltIns } from 'stopify-continuations-compiler';
+export { RV_SENTINAL, EXN_SENTINAL, knownBuiltIns } from '@stopify/continuations';
 
 const visitor: Visitor = {
   Program: {

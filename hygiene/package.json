@@ -1,11 +1,11 @@
 {
   "name": "@stopify/hygiene",
   "version": "0.7.0",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "dist/ts/index.js",
+  "typings": "dist/ts/index.d.ts",
   "license": "BSD-3-Clause",
   "scripts": {
-    "build": "./node_modules/.bin/tsc"
+    "build": "./node_modules/.bin/tsc -b"
   },
   "devDependencies": {
     "@types/babel-core": "^6.7.14",

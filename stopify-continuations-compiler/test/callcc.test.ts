@@ -4,7 +4,7 @@ import * as t from 'babel-types';
 import * as fs from 'fs';
 import * as tmp from 'tmp';
 import { spawnSync } from 'child_process';
-import * as continuationRTS from 'stopify-continuations/dist/runtime/runtime';
+import * as continuationRTS from '@stopify/continuations-runtime/dist/src/runtime/runtime';
 import { compile } from '../src/index';
 
 // The compiler produces code that expects Stopify and its runtime compiler to

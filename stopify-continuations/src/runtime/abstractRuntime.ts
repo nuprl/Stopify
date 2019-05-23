@@ -68,6 +68,7 @@ export abstract class RuntimeImpl implements Runtime {
     this.stackSize = stackSize;
     this.remainingStack = stackSize;
     this.mode = true;
+    this.kind = undefined as any; // the worst
   }
 
   topK(f: () => any): KFrameTop {
@@ -130,7 +131,7 @@ export abstract class RuntimeImpl implements Runtime {
           this.stack = result.stack;
           this.savedStack = result.savedStack;
           const frame = <KFrameRest>this.stack[this.stack.length - 1];
-          return this.stack[this.stack.length - 1].f.apply(frame.this || global, frame.params || []);
+          return this.stack[this.stack.length - 1].f.apply(frame.this || global, (frame.params || []) as any);
         };
       }
       else if (result.type === 'end-turn') {

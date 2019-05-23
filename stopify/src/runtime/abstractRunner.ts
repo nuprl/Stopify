@@ -1,5 +1,5 @@
 import { RuntimeOpts, AsyncRun } from '../types';
-import { Result, Runtime } from 'stopify-continuations';
+import { Result, Runtime } from '@stopify/continuations-runtime';
 import { RuntimeWithSuspend, badResume } from './suspend';
 import { makeEstimator } from './makeEstimator';
 import { setImmediate } from './setImmediate';
@@ -28,8 +28,8 @@ interface EventHandler {
 
 export abstract class AbstractRunner implements AsyncRun {
   public kind : 'ok' = 'ok';
-  public continuationsRTS: Runtime;
-  private suspendRTS: RuntimeWithSuspend;
+  public continuationsRTS!: Runtime;
+  private suspendRTS!: RuntimeWithSuspend;
   public onDone: (result: Result) => void = (result) => { };
   private onYield: () => void = function() { };
   private onBreakpoint: (line: number) => void = function() { };
@@ -95,7 +95,12 @@ export abstract class AbstractRunner implements AsyncRun {
           if (this.mayYieldRunning()) {
             this.onYieldFlag = {
               kind: 'paused',
-              onPaused: this.onBreakpoint
+              onPaused: (line) => {
+                if (line === undefined) {
+                  throw new Error(`Calling onBreakpoint with undefined as the line`);
+                }
+                this.onBreakpoint(line);
+              }
             };
             this.eventMode = EventProcessingMode.Paused;
             // Invoke the breakpoint handler on the next turn, after the stack

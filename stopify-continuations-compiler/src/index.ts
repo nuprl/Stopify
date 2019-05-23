@@ -5,8 +5,8 @@ import * as types from './types';
 import * as callcc from './callcc/callcc';
 import * as hygiene from '@stopify/hygiene';
 import * as h from '@stopify/util';
-import { Result } from 'stopify-continuations';
-import * as continuationsRTS from 'stopify-continuations';
+import { Result } from '@stopify/continuations-runtime';
+import * as continuationsRTS from '@stopify/continuations-runtime';
 import { knowns } from './common/cannotCapture';
 import * as exposeImplicitApps from './exposeImplicitApps';
 import { restoreNextFrame } from './callcc/jumper';
@@ -124,7 +124,7 @@ export function compile(src: string): h.Result<types.Runner> {
 class RunnerImpl implements types.Runner {
 
     public g: { [key: string]: any };
-    private rts: continuationsRTS.RuntimeImpl;
+    private rts!: continuationsRTS.RuntimeImpl;
 
     constructor(private code: string) {
         this.g = Object.create(null);

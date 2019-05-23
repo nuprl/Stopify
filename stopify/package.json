@@ -34,7 +34,7 @@
     "stopify-path": "bin/stopify-path.js"
   },
   "scripts": {
-    "build": "./bin/build",
+    "build": "./bin/build -b",
     "test": "./node_modules/.bin/jest",
     "test:integration": "./bin/test -int",
     "bench": "./bin/benchmark --wd=perf",

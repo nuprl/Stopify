@@ -2,13 +2,13 @@
   "name": "@stopify/continuations-runtime",
   "version": "0.7.0",
   "description": "Continuation Runtime",
-  "main": "dist/index",
-  "typings": "dist/index",
+  "main": "dist/src/index",
+  "typings": "dist/src/index",
   "devDependencies": {
     "typescript": "^3.4.4"
   },
   "scripts": {
-    "build": "./node_modules/.bin/tsc",
+    "build": "./node_modules/.bin/tsc -b",
     "tslint": "./node_modules/.bin/tslint -c ../tslint.json 'src/**/*.ts'",
     "tslint-fix": "./node_modules/.bin/tslint --fix -c ../tslint.json 'src/**/*.ts'"
   },

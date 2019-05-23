@@ -2,8 +2,8 @@
   "name": "@stopify/estimators",
   "version": "0.7.0",
   "description": "Elapsed-time estimators for JavaScript",
-  "main": "dist/elapsedTimeEstimator",
-  "typings": "dist/elapsedTimeEstimator",
+  "main": "dist/src/elapsedTimeEstimator",
+  "typings": "dist/src/elapsedTimeEstimator",
   "devDependencies": {
     "@types/node": "*",
     "tslint": "^5.9.1",

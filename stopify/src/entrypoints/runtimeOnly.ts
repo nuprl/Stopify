@@ -8,7 +8,7 @@ import { Runtime } from '@stopify/continuations-runtime';
 import { AbstractRunner } from '../runtime/abstractRunner';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
 // We need to provide these for stopify-continuations
-export * from '@stopify/continuations-runtime/dist/runtime/runtime';
+export * from '@stopify/continuations-runtime/dist/src/runtime/runtime';
 export * from '@stopify/continuations/dist/src/runtime/implicitApps';
 
 // For testing / benchmarking convenience.

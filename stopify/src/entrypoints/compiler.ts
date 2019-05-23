@@ -13,7 +13,7 @@ import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
 import { getSourceMap } from '@stopify/continuations';
 import * as t from 'babel-types';
 // We need to provide these for stopify-continuations
-export * from '@stopify/continuations-runtime/dist/runtime/runtime';
+export * from '@stopify/continuations-runtime/dist/src/runtime/runtime';
 export * from '@stopify/continuations/dist/src/runtime/implicitApps';
 export { knownBuiltIns } from '@stopify/continuations/dist/src/common/cannotCapture';
 export { Result } from '@stopify/continuations-runtime';

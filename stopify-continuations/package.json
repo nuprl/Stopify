@@ -1,5 +1,5 @@
 {
-  "name": "stopify-continuations",
+  "name": "@stopify/continuations-runtime",
   "version": "0.7.0",
   "description": "Continuation Runtime",
   "main": "dist/index",

@@ -1,5 +1,5 @@
 {
-  "name": "stopify-continuations-compiler",
+  "name": "@stopify/continuations",
   "version": "0.7.0",
   "description": "Continuations for JavaScript",
   "main": "dist/src/index",
@@ -18,7 +18,8 @@
     "tslint": "^5.9.1",
     "jest": "^24.7.1",
     "typescript": "^3.4.4",
-    "webpack": "^3.10.0"
+    "webpack": "^3.10.0",
+    "@stopify/continuations-runtime": "0.7.0"
   },
   "scripts": {
     "build": "./bin/build",

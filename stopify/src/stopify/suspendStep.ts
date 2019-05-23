@@ -1,6 +1,6 @@
 import { NodePath, Visitor } from 'babel-traverse';
 import * as t from 'babel-types';
-import { CompilerOpts } from 'stopify-continuations-compiler';
+import { CompilerOpts } from '@stopify/continuations';
 
 function insertSuspendHelper(body: t.Statement[], opts: CompilerOpts) {
   const newBody: t.Statement[] = [];

@@ -1,6 +1,6 @@
 import * as t from 'babel-types';
 import { NodePath, Visitor } from 'babel-traverse';
-import * as callcc from 'stopify-continuations-compiler';
+import * as callcc from '@stopify/continuations';
 import suspendStop from './suspendStop';
 import suspendStep from './suspendStep';
 import { timeSlow } from '../generic';

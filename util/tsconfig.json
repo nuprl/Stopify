@@ -1,16 +1,7 @@
 {
+    "extends": "../tsconfig.json",
     "compilerOptions": {
-        "strict": true,
-        "module": "commonjs",
-        "outDir": "./dist",
-        "allowUnreachableCode": true,
-        "lib": ["es2016", "dom"],
-        "target": "es6",
-        "pretty": true,
-        "noFallthroughCasesInSwitch": true,
-        "declaration": true,
-        "inlineSourceMap": true,
-        "noUnusedLocals": true
+        "outDir": "./dist"
     },
     "include": [
       "ts",

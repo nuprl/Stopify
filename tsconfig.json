@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "module": "commonjs",
+        "allowUnreachableCode": true,
+        "lib": ["es2016", "dom"],
+        "target": "es6",
+        "pretty": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noImplicitAny": true,
+        "declaration": true,
+        "inlineSourceMap": true,
+        "noUnusedLocals": false,
+        "composite": true
+    }
+}

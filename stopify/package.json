@@ -1,5 +1,5 @@
 {
-  "name": "stopify",
+  "name": "@stopify/stopify",
   "version": "0.7.0",
   "description": "Stopify makes JavaScript a better target language for high-level languages and web-based programming tools",
   "main": "dist/src/index.js",
@@ -71,9 +71,9 @@
     "source-map": "^0.6.0",
     "source-map-support": "^0.5.6",
     "sprintf": "^0.1.5",
-    "stopify-continuations": "0.7.0",
-    "stopify-continuations-compiler": "0.7.0",
-    "stopify-estimators": "0.7.0",
+    "@stopify/continuations-runtime": "0.7.0",
+    "@stopify/continuations": "0.7.0",
+    "@stopify/estimators": "0.7.0",
     "tmp": "0.0.31"
   },
   "jest": {

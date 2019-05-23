@@ -5,18 +5,18 @@
 import * as babylon from 'babylon';
 import { RawSourceMap } from 'source-map';
 import { CompilerOpts, RuntimeOpts, AsyncRun, AsyncEval, Error } from '../types';
-import { Runtime, Result } from 'stopify-continuations';
+import { Runtime, Result } from '@stopify/continuations-runtime';
 import { AbstractRunner, EventProcessingMode } from '../runtime/abstractRunner';
 import { compileFromAst } from '../compiler/compiler';
-import { checkAndFillCompilerOpts } from 'stopify-continuations-compiler/dist/src/compiler/check-compiler-opts';
+import { checkAndFillCompilerOpts } from '@stopify/continuations/dist/src/compiler/check-compiler-opts';
 import { checkAndFillRuntimeOpts } from '../runtime/check-runtime-opts';
-import { getSourceMap } from 'stopify-continuations-compiler';
+import { getSourceMap } from '@stopify/continuations';
 import * as t from 'babel-types';
 // We need to provide these for stopify-continuations
-export * from 'stopify-continuations/dist/runtime/runtime';
-export * from 'stopify-continuations-compiler/dist/src/runtime/implicitApps';
-export { knownBuiltIns } from 'stopify-continuations-compiler/dist/src/common/cannotCapture';
-export { Result } from 'stopify-continuations';
+export * from '@stopify/continuations-runtime/dist/runtime/runtime';
+export * from '@stopify/continuations/dist/src/runtime/implicitApps';
+export { knownBuiltIns } from '@stopify/continuations/dist/src/common/cannotCapture';
+export { Result } from '@stopify/continuations-runtime';
 export { AsyncRun, AsyncEval, Error, CompilerOpts, RuntimeOpts };
 
 import * as compiler from '../stopify/compileFunction';

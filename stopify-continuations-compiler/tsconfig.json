@@ -1,24 +1,18 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "outDir": "./dist",
-        "allowUnreachableCode": true,
-        "lib": ["es2016", "dom"],
-        "target": "es6",
-        "pretty": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "declaration": true,
-        "inlineSourceMap": true,
-        "noUnusedLocals": false
-    },
-    "include": [
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+      "outDir": "./dist"
+  },
+  "references": [
+      { "path": "../util" },
+      { "path": "../hygiene" },
+      { "path": "../stopify-continuations" }
+  ],
+  "include": [
       "src",
       "test"
-    ],
-    "exclude": [
+  ],
+  "exclude": [
       "dist"
-    ]
+  ]
 }

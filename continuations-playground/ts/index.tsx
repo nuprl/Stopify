@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import MonacoEditor from 'react-monaco-editor';
 import { Hook, Console, Decode } from 'console-feed';
-import { compile } from 'stopify-continuations-compiler';
+import { compile } from '@stopify/continuations';
 
 function appendLog(method: 'log' | 'error', msg: any) {
     return function(prevState: { logs: any[] }) {
@@ -18,7 +18,7 @@ function appendLog(method: 'log' | 'error', msg: any) {
 type CodeLoaderState =
   { kind: 'loading' } |
   { kind: 'ok', code: string } |
-  { kind: 'error', message: string }
+  { kind: 'error', message: string };
 
 class CodeLoader extends React.Component<{}, CodeLoaderState> {
 
@@ -97,8 +97,11 @@ class ContinuationsPlayground extends React.Component<{ initialCode: string }, {
             console: {
                 log: (msg: any) => this.setState(appendLog('log', msg))
             },
-            control: function(f: any) {
-                return runner.control(f);
+            shift: function(f: any) {
+                return runner.shift(f);
+            },
+            reset: function(f: any) {
+                return runner.reset(f);
             }
         };
         runner.g = globals;

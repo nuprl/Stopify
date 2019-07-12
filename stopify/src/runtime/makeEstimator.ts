@@ -6,7 +6,7 @@ import {
   CountdownTimeEstimator,
   SampleAverageTimeEstimator,
   VelocityEstimator,
-} from 'stopify-estimators';
+} from '@stopify/estimators';
 
 /**
  * Checks the current time whenever 'elapsedTime' is applied, instead of

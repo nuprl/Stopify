@@ -51,4 +51,9 @@ export function asResult<T>(f: () => T): Result<T> {
     }
 }
 
+/**
+ * A Result abstraction, similar to the Result type in Rust or or the Error
+ * monad in Haskell. Unlike those languages, where the type of the error is
+ * a type parameter, we require all errors to be strings.
+ */
 export type Result<T> = Ok<T> | Error<T>;

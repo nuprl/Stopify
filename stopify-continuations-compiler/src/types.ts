@@ -1,5 +1,5 @@
 import * as t from 'babel-types';
-import { Result } from 'stopify-continuations';
+import { Result } from '@stopify/continuations-runtime';
 
 export interface LineMapping {
   getLine: (line: number, column: number) => number | null

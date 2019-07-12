@@ -1,26 +1,22 @@
 {
+    "extends": "../tsconfig.json",
     "compilerOptions": {
-        "module": "commonjs",
-        "outDir": "dist",
-        "allowUnreachableCode": true,
-        "lib": ["es2016", "dom"],
-        "target": "es6",
-        "pretty": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "declaration": true,
-        "inlineSourceMap": true,
-        "noUnusedLocals": true
+        "outDir": "./dist"
     },
+    "references": [
+        { "path": "../util" },
+        { "path": "../hygiene" },
+        { "path": "../stopify-continuations" },
+        { "path": "../stopify-continuations-compiler" },
+        { "path": "../stopify-estimators" }
+    ],
     "include": [
-      "src",
-      "test"
+        "src",
+        "test"
     ],
     "exclude": [
-      "test/should-run",
-      "test/should-stop",
-      "dist"
+        "test/should-run",
+        "test/should-stop",
+        "dist"
     ]
 }

@@ -88,12 +88,12 @@ const visitor: Visitor = {
       }
     }
   },
-  MemberExpression(path: NodePath<FlatnessMark<t.MemberExpression>>) {
+  MemberExpression(path: NodePath<t.MemberExpression>) {
     const p = path.parent;
     const { object, property } = path.node;
 
     // Only useful for console.log and various function on Math.
-    if(path.node.mark === 'Flat') {
+    if((path as NodePath<FlatnessMark<t.MemberExpression>>).node.mark === 'Flat') {
       return;
     }
 

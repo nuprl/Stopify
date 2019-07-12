@@ -353,7 +353,7 @@ var stopifyArrayPrototype = {
   __proto__: Array.prototype,
   map: function(f: any) { return stopifyArray(map(this, f, this)); },
   filter: function(f: any) { return stopifyArray(filter(this, f)); },
-  reduceRight: function(f: any, init: any) {
+  reduceRight: function(this: any[], f: any, init: any): any {
     // NOTE(arjun): The MDN polyfill did not pass a simple test. I am quite sure
     // we never tested it before. This version works just fine.
     var arrLen = this.length;
@@ -365,7 +365,7 @@ var stopifyArrayPrototype = {
     }
     return acc;
   },
-  reduce: function(f: any, init: any) {
+  reduce: function(this: any[], f: any, init: any) {
     // NOTE(arjun): The MDN polyfill did not pass a simple test. I am quite sure
     // we never tested it before. This version works just fine.
     var arrLen = this.length;
@@ -379,7 +379,7 @@ var stopifyArrayPrototype = {
     return acc;
   },
   // NOTE(arjun): thisArg ignored
-  some: function(pred: any) {
+  some: function(this: any[], pred: any) {
     var i = 0;
     var l = this.length;
     while (i < l) {
@@ -390,7 +390,7 @@ var stopifyArrayPrototype = {
     }
     return false;
   },
-  every: function(pred: any) {
+  every: function(this: any[],pred: any) {
     var i = 0;
     var l = this.length;
     while (i < l) {
@@ -401,7 +401,7 @@ var stopifyArrayPrototype = {
     }
     return true;
   },
-  find: function(pred: any) {
+  find: function(this: any[],pred: any) {
     var i = 0;
     var l = this.length;
     while (i < l) {
@@ -411,7 +411,7 @@ var stopifyArrayPrototype = {
       i = i + 1;
     }
   },
-  findIndex: function(pred: any) {
+  findIndex: function(this: any[],pred: any) {
     var i = 0;
     var l = this.length;
     while (i < l) {
@@ -423,7 +423,7 @@ var stopifyArrayPrototype = {
     return -1;
   },
   // NOTE(arjun): Ignores thisArg
-  forEach(f: any) {
+  forEach(this: any[],f: any) {
     var i = 0;
     var l = this.length;
     while (i < l) {

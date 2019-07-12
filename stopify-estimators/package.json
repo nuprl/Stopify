@@ -1,16 +1,16 @@
 {
-  "name": "stopify-estimators",
+  "name": "@stopify/estimators",
   "version": "0.7.0",
   "description": "Elapsed-time estimators for JavaScript",
-  "main": "dist/elapsedTimeEstimator",
-  "typings": "dist/elapsedTimeEstimator",
+  "main": "dist/src/elapsedTimeEstimator",
+  "typings": "dist/src/elapsedTimeEstimator",
   "devDependencies": {
     "@types/node": "*",
     "tslint": "^5.9.1",
     "typescript": "^3.4.4"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b",
     "tslint": "./node_modules/.bin/tslint -c ../tslint.json 'src/**/*.ts'",
     "tslint-fix": "./node_modules/.bin/tslint --fix -c ../tslint.json 'src/**/*.ts'"
   },

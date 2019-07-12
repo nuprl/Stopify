@@ -3,7 +3,7 @@
  * own functions to do so.
  */
 import { NodePath } from 'babel-traverse';
-import { transformFromAst  } from '@stopify/util';
+import { transformFromAst } from '@stopify/util';
 import * as t from 'babel-types';
 import * as assert from 'assert';
 const trie = require('trie'); // NOTE(arjun): No @types on 08/28/2017

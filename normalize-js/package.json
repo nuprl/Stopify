@@ -21,8 +21,11 @@
     "typescript": "^3.4.4"
 
   },
+  "bin": {
+    "normalize-js": "./dist/ts/main.js"
+  },
   "scripts": {
-    "build": "./node_modules/.bin/tsc -b",
+    "build": "./node_modules/.bin/tsc -b && chmod a+x ./dist/ts/main.js",
     "test": "./node_modules/.bin/jest --env=node",
     "tslint": "./node_modules/.bin/tslint -c ../tslint.json 'src/**/*.ts'",
     "tslint-fix": "./node_modules/.bin/tslint --fix -c ../tslint.json 'src/**/*.ts'"

@@ -42,6 +42,7 @@ export abstract class AbstractRunner implements AsyncRun {
 
   private onYieldFlag: OnYieldState = { kind: 'resume' };
   private mayYieldFlag: MayYieldState =  { kind: 'resume' };
+  private hofModuleName: string | undefined = undefined;
 
   // The global object for Stopified code.
   public g = Object.create(null);
@@ -118,7 +119,10 @@ export abstract class AbstractRunner implements AsyncRun {
 
     // We use require because this module requires Stopify to be loaded before
     // it is loaded. A top-level import would not work.
-    this.higherOrderFunctions = require(`../stopified/higherOrderFunctions.${this.continuationsRTS.kind}`);
+    if (this.hofModuleName === undefined) {
+      this.hofModuleName = `@stopify/higher-order-functions/dist/ts/mozillaHofPolyfill.${this.continuationsRTS.kind}`;
+    }
+    this.higherOrderFunctions = require(this.hofModuleName);
     return this;
   }
 

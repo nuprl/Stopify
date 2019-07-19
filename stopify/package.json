@@ -74,6 +74,7 @@
     "@stopify/continuations-runtime": "0.7.0",
     "@stopify/continuations": "0.7.0",
     "@stopify/estimators": "0.7.0",
+    "@stopify/higher-order-functions": "0.7.0",
     "tmp": "0.0.31"
   },
   "jest": {

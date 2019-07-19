@@ -27,6 +27,7 @@
     "normalize-js",
     "hygiene",
     "util",
-    "continuations-playground"
+    "continuations-playground",
+    "stopify-higher-order-functions"
   ]
 }

@@ -81,7 +81,6 @@ The Stopify compiler accepts the following options:
     eval?: boolean,                                                     // --eval from the CLI
     eval2?: boolean,                                                     // --eval2 from the CLI
     es?: "sane" | "es5",                                                // --es from the CLI
-    hofs: "builtin" | "fill",                                           // --hofs from the CLI
     jsArgs?: "simple" | "faithful" | "full",                            // --js-args from the CLI
   }
 
@@ -193,21 +192,6 @@ two simple special cases that improve performance.
   using the ``arguments`` object.
 
 - Use ``"full"`` for full support of JavaScript's ``arguments`` object.
-
-.. _hofs-flag:
-
-Higher Order Functions (``.hofs``)
-----------------------------------
-
-Programs cannot use bulitin higher-order functions (e.g., ``.map``,
-``.filter``, etc.) with Stopify, since Stopify cannot instrument native code.
-The ``.hofs`` flag has two possible values:
-
-- Use ``"builtin"`` if the program does not use any native higher-order
-  functions.
-
-- Use ``"fill"`` to have Stopify rewrite programs that use native higher-order
-  functions to use polyfills written in JavaScript.
 
 .. _getters-flag:
 

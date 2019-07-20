@@ -48,7 +48,6 @@ const visitor: babel.Visitor = {
             captureMethod: 'lazy',
             newMethod: 'direct',
             es: 'sane',
-            hofs: 'builtin',
             jsArgs: 'simple',
             requireRuntime: false,
             sourceMap: { getLine: () => null },

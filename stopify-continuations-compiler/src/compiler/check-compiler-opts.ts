@@ -83,7 +83,6 @@ export function checkAndFillCompilerOpts(
     captureMethod: 'lazy',
     newMethod: 'wrapper',
     es: 'sane',
-    hofs: 'builtin',
     jsArgs: 'simple',
     requireRuntime: false,
     sourceMap: sourceMaps.generateLineMapping(sourceMap),
@@ -113,9 +112,6 @@ export function checkAndFillCompilerOpts(
   copyProp(opts, value, 'jsArgs',
     (x) => ['simple', 'faithful', 'full'].includes(x),
     `.jsArgs must be either 'simple', 'faithful', or 'full'`);
-  copyProp(opts, value, 'hofs',
-    (x) => ['builtin', 'fill'].includes(x),
-    `.hofs must be either 'builtin' or 'fill'`);
   copyProp(opts, value, 'requireRuntime',
     (x) => typeof x === 'boolean',
     `.requireRuntime must be a boolean`);

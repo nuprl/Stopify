@@ -32,7 +32,6 @@ function copyCompilerOpts(compileOpts: CompilerOpts): CompilerOpts {
     captureMethod: compileOpts.captureMethod,
     newMethod: compileOpts.newMethod,
     es: compileOpts.es,
-    hofs: compileOpts.hofs,
     jsArgs: compileOpts.jsArgs,
     requireRuntime: compileOpts.requireRuntime,
     sourceMap: compileOpts.sourceMap,

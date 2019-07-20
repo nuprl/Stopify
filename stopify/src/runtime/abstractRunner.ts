@@ -84,7 +84,8 @@ export abstract class AbstractRunner implements AsyncRun {
           this.onYieldFlag = { kind: 'pausedAndMayYield' };
           return false;
         case 'pausedAndMayYield':
-          throw new Error('Internal error: onYield called while paused');
+          throw new Error(`onYield called while paused. Do not call .resume()
+            in the callback passed to .pause(). Resume in another turn.`);
         case 'resume':
           if (this.mayYieldRunning()) {
             this.onYieldFlag = {

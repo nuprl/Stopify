@@ -14,7 +14,7 @@
     "@stopify/continuations": "0.7.0"
   },
   "scripts": {
-    "build": "./bin/build.sh",
+    "build": "./build.sh",
     "test": "./node_modules/.bin/jest --env=node"
   },
   "contributors": [

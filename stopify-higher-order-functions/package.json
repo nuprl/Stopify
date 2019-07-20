@@ -14,7 +14,7 @@
     "@stopify/continuations": "0.7.0"
   },
   "scripts": {
-    "build": "./node_modules/.bin/tsc -b",
+    "build": "./bin/build",
     "test": "./node_modules/.bin/jest --env=node"
   },
   "contributors": [

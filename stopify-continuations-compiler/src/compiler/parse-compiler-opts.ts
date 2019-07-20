@@ -22,10 +22,6 @@ commander.option(
   'Support eval');
 
 commander.option(
-  '--hofs <mode>',
-  'either builtin or fill (default: builtin)');
-
-commander.option(
   '--js-args <mode>',
   'either simple, faithful, or full (default: simple)');
 
@@ -58,7 +54,6 @@ export const compilerOpts: CompilerOpts = checkAndFillCompilerOpts({
   newMethod: args.new,
   es: args.es,
   compileMode: args.compileMode,
-  hofs: args.hofs,
   jsArgs: args.jsArgs,
   requireRuntime: args.requireRuntime
 });

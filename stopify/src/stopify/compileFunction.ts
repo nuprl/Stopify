@@ -55,7 +55,6 @@ const defaultOpts: callcc.CompilerOpts = {
     captureMethod: 'lazy',
     newMethod: 'wrapper',
     es: 'sane',
-    hofs: 'builtin',
     jsArgs: 'simple',
     requireRuntime: false,
     onDone: t.functionExpression(t.identifier('onDone'), [], t.blockStatement([])),

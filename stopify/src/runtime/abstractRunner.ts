@@ -38,8 +38,6 @@ export abstract class AbstractRunner implements AsyncRun {
   // The runtime system starts executing the main body of the program.
   protected eventMode = EventProcessingMode.Running;
   private eventQueue: EventHandler[] = [];
-  private higherOrderFunctions: any;
-
   private onYieldFlag: OnYieldState = { kind: 'resume' };
   private mayYieldFlag: MayYieldState =  { kind: 'resume' };
 
@@ -54,10 +52,6 @@ export abstract class AbstractRunner implements AsyncRun {
       return false;
     }
     return this.breakpoints.includes(n);
-  }
-
-  stopifyArray(arr: Array<any>) {
-    return this.higherOrderFunctions.stopifyArray(arr);
   }
 
   /**
@@ -116,9 +110,6 @@ export abstract class AbstractRunner implements AsyncRun {
       }
     });
 
-    // We use require because this module requires Stopify to be loaded before
-    // it is loaded. A top-level import would not work.
-    this.higherOrderFunctions = require(`../stopified/higherOrderFunctions.${this.continuationsRTS.kind}`);
     return this;
   }
 

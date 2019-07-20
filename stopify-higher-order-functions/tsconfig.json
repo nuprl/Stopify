@@ -1,0 +1,21 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "strict": false
+    },
+    "references": [
+        { "path": "../util" },
+        { "path": "../hygiene" },
+        { "path": "../stopify-continuations" },
+        { "path": "../stopify-continuations-compiler" },
+        { "path": "../stopify" }
+    ],
+    "include": [
+        "ts",
+        "test"
+    ],
+    "exclude": [
+        "dist"
+    ]
+}

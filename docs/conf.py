@@ -10,7 +10,7 @@ source_suffix = ['.rst', '.md']
 # Specify the root of the documentation tree
 master_doc = 'index'
 project = u'Stopify User\'s Manual'
-version = '0.6.0'
+version = '0.7.1'
 release = version
 
 # Activate the docs theme

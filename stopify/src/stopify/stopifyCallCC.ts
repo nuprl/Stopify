@@ -5,7 +5,6 @@ import suspendStop from './suspendStop';
 import suspendStep from './suspendStep';
 import { timeSlow } from '../generic';
 import * as hygiene from '@stopify/hygiene';
-import * as exposeHOFs from '../compiler/exposeHOFs';
 import * as util from '@stopify/util';
 
 export const visitor: Visitor = {
@@ -50,11 +49,6 @@ export const visitor: Visitor = {
     }
     timeSlow('insertSuspend', () =>
       util.transformFromAst(path, [[insertSuspend, opts]]));
-
-
-    if (opts.hofs === 'fill') {
-      util.transformFromAst(path, [exposeHOFs.plugin]);
-    }
 
     timeSlow('(control ...) elimination', () =>
       util.transformFromAst(path, [[callcc.plugin, opts]]));

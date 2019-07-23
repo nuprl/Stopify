@@ -103,16 +103,14 @@ const visitor: Visitor = {
           'var'));
     }
 
-    if (!doNotWrap) {
-      const req = opts.requireRuntime ?
-        t.callExpression(t.identifier('require'),
-          [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]) :
-        t.memberExpression(t.identifier('stopify'), t.identifier('compiler'));
+    const req = opts.requireRuntime ?
+      t.callExpression(t.identifier('require'),
+        [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]) :
+      t.memberExpression(t.identifier('stopify'), t.identifier('compiler'));
 
-      path.node.body.unshift(
-        bh.letExpression(
-          $__C, req, 'const'));
-    }
+    path.node.body.unshift(
+      bh.letExpression(
+        $__C, req, 'const'));
   }
 };
 

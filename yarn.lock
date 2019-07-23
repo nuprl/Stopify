@@ -357,6 +357,28 @@
     "@types/istanbul-lib-coverage" "^2.0.0"
     "@types/yargs" "^12.0.9"
 
+"@stopify/continuations-runtime@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@stopify/continuations-runtime/-/continuations-runtime-0.7.0.tgz#d7e5c67c7c105265261e6f67e96fe2da0d953712"
+  integrity sha512-S6ZZP68/jR+UvuiFJ6KsG6LbvqawcD4yael5mOf7B2k5uPpAfgzfJ6dqS49ulmGZmN7fmqbJV9qWhKQ84y9jMA==
+
+"@stopify/continuations@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@stopify/continuations/-/continuations-0.7.0.tgz#6417c90f175273ad8370f31f968c336b62e5c4e0"
+  integrity sha512-1ne1b0LstC5hIHtq9SltbNXJ41M0yBw6cCGgHPL8TAtvw2bOp3P6Qv+CI07LhE+cuUIo1FpSqwNSISABcsh4CQ==
+  dependencies:
+    "@stopify/normalize-js" "0.7.0"
+    "@stopify/util" "0.7.0"
+    babel-core "^6.26.3"
+    babel-plugin-transform-es2015-arrow-functions "^6.22.0"
+    babel-traverse "^6.26.0"
+    babel-types "^6.26.0"
+    commander "^2.11.0"
+    convert-source-map "^1.5.0"
+    immutable "^3.8.1"
+    source-map "^0.6.0"
+    source-map-support "^0.5.6"
+
 "@types/anymatch@*":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@types/anymatch/-/anymatch-1.3.1.tgz#336badc1beecb9dacc38bea2cf32adf627a8421a"
@@ -368,6 +390,13 @@
   dependencies:
     "@types/babel-template" "*"
     "@types/babel-traverse" "*"
+    "@types/babel-types" "*"
+
+"@types/babel-generator@^6.25.3":
+  version "6.25.3"
+  resolved "https://registry.yarnpkg.com/@types/babel-generator/-/babel-generator-6.25.3.tgz#8f06caa12d0595a0538560abe771966d77d29286"
+  integrity sha512-pGgnuxVddKcYIc+VJkRDop7gxLhqclNKBdlsm/5Vp8d+37pQkkDK7fef8d9YYImRzw9xcojEPc18pUYnbxmjqA==
+  dependencies:
     "@types/babel-types" "*"
 
 "@types/babel-template@*":
@@ -1132,7 +1161,7 @@ babel-core@^6.26.0, babel-core@^6.26.3:
     slash "^1.0.0"
     source-map "^0.5.7"
 
-babel-generator@^6.26.0:
+babel-generator@^6.26.0, babel-generator@^6.26.1:
   version "6.26.1"
   resolved "https://registry.yarnpkg.com/babel-generator/-/babel-generator-6.26.1.tgz#1844408d3b8f0d35a404ea7ac180f087a601bd90"
   dependencies:

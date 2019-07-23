@@ -2,7 +2,7 @@ import { CompilerOpts } from './types';
 import { NodePath } from 'babel-traverse';
 import * as t from 'babel-types';
 
-export const runtimePath = 'stopify-continuations/dist/runtime';
+export const runtimePath = 'continuations/dist/runtime';
 
 /**
  * Produces a string that represents the source location of `path`.

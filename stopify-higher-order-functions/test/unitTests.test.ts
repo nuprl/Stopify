@@ -1,18 +1,16 @@
-import * as stopify from '../src/entrypoints/compiler';
+import * as stopify from '@stopify/stopify';
+import * as babylon from 'babylon';
 import * as assert from 'assert';
-
+import { polyfillHofFromAst } from '../ts/index';
 // The compiler produces code that expects Stopify and its runtime compiler to
 // be a global variable.
 (global as any).stopify = stopify;
-
 const runtimeOpts: Partial<stopify.RuntimeOpts> = {
     yieldInterval: 1,
     estimator: 'countdown'
 };
 
-const compilerOpts: Partial<stopify.CompilerOpts> = {
-    hofs: 'fill'    
-};
+const compilerOpts: Partial<stopify.CompilerOpts> = { };
 
 function setupGlobals(runner: stopify.AsyncRun & stopify.AsyncEval) {
     var globals: any = {
@@ -24,13 +22,19 @@ function setupGlobals(runner: stopify.AsyncRun & stopify.AsyncEval) {
                     runner.continueImmediate(result);
                 });
             });
+        },
+        $stopifyArray: function(array: any) {
+            return require('../ts/mozillaHofPolyfill.lazy').stopifyArray(array);
         }
     };
     runner.g = globals;
 }
 
 function harness(code: string) {
-    const runner = stopify.stopifyLocally(code, compilerOpts, runtimeOpts);
+    const ast = babylon.parse(code);
+    const polyfilled = polyfillHofFromAst(ast.program);
+    const runner = stopify.stopifyLocallyFromAst(polyfilled,
+        undefined, compilerOpts, runtimeOpts);
     if (runner.kind === 'error') {
         throw runner.exception;
     }

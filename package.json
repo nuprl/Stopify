@@ -7,7 +7,7 @@
     "build:stopify-continuations": "cd stopify-continuations/ && yarn run build && cd -",
     "build:stopify-continuations-compiler": "cd stopify-continuations-compiler/ && yarn run build && cd -",
     "build:stopify-estimators": "cd stopify-estimators/ && yarn run build && cd -",
-    "build": "(cd util && yarn run build) && (cd hygiene && yarn run build) && yarn run build:normalize-js && yarn run build:stopify-continuations && yarn run build:stopify-continuations-compiler && yarn run build:stopify-estimators && yarn run build:stopify",
+    "build": "./build.sh",
     "tslint:stopify": "cd stopify && yarn run tslint && cd -",
     "tslint:stopify-continuations": "cd stopify-continuations && yarn run tslint && cd -",
     "tslint:stopify-continuations-compiler": "cd stopify-continuations-compiler && yarn run tslint && cd -",
@@ -27,6 +27,7 @@
     "normalize-js",
     "hygiene",
     "util",
-    "continuations-playground"
+    "continuations-playground",
+    "stopify-higher-order-functions"
   ]
 }

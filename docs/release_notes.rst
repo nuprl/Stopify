@@ -2,6 +2,27 @@
 Release Notes
 =============
 
+Stopify 0.7.1
+=============
+
+- **Breaking change:** Stopify is now published as ``@stopify/stopify``. The
+  other associated packages are also part of the ``@stopify`` namespace.
+
+- **Breaking change**: The ``--hof`` flag to Stopify has been removed. However,
+  the new package ``@stopify/higher-order-functions`` provides the same
+  feature. See that package for details.
+
+- **New package:** The package ``@stopify/normalize-js`` implements a
+  semantics-preserving transformation for JavaScript that is inspired by
+  A Normal Form. The code for this package was extracted from Stopify.
+
+- **New package:** The package ``@stopify/continuations`` implements
+  first-class continuations for JavaScript. The code for this package was
+  extracted from Stopify.
+
+- **Known issue:** The "deep stacks" feature of Stopify is broken (and has been
+  for some time).
+
 Stopify 0.6.0
 =============
 - **Breaking change:** Global variables must now be initialized onto the

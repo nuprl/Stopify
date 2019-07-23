@@ -3,11 +3,13 @@ import * as vm from 'vm';
 
 function normalizeEquiv(original: string) {
     let compiled = normalize(original);
+    expect(compiled.trim()).not.toEqual(original.trim());
     let originalResult = vm.runInNewContext(original);
     let normalizedResult = vm.runInNewContext(compiled);
     // Sanity check: a test that produces undefined is unlikely to be useful.
     expect(originalResult).not.toBe(undefined);
     expect(normalizedResult).toEqual(originalResult);
+    return compiled;
 }
 
 test('simple for loop', () => {
@@ -31,12 +33,14 @@ test('for loop without block body', () => {
 });
 
 test('ternary short-circuit', () => {
-    normalizeEquiv(`
+    let compiled = normalizeEquiv(`
         function foo() {
             throw 'This should not be called'
         }
         true ? 1 : foo()
         `);
+    // Sanity check: ? should not be in output.
+    expect(compiled.indexOf('?')).toBe(-1);
 });
 
 test('ternary left method call short-circuit', () => {

@@ -15,7 +15,6 @@ export interface CompilerOpts {
   captureMethod: CaptureMethod,
   newMethod: HandleNew,
   es: 'sane' | 'es5',
-  hofs: 'builtin' | 'fill',
   jsArgs: 'simple' | 'faithful' | 'full',
   requireRuntime: boolean,
   sourceMap: LineMapping,

@@ -1,0 +1,38 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+var program = `
+inspect.x = tester();
+`;
+
+var runner = stopify.stopifyLocally(program);
+
+function tester() {
+  const stopifiedCode = runner.compile("37");
+  runner.pauseK((resume) => {
+    runner.evalCompiled(stopifiedCode, (result) => {
+      resume(result);
+    });
+  });
+}
+
+runner.g.inspect = {};
+runner.g.tester = tester;
+
+runner.run((result) => {
+  if(runner.g.inspect.x != 37) {
+    window.document.title = "error";
+    console.error(result, runner.g.inspect);
+  }
+  else {
+    window.document.title = "ok";
+  }
+});
+
+</script>
+
+</body>
+</html>

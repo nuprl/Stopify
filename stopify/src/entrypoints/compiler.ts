@@ -60,10 +60,23 @@ class Runner extends AbstractRunner {
     eval.call(global, this.code);
   }
 
-  evalAsyncFromAst(ast: t.Program, onDone: (result: Result) => void): void {
-    const stopifiedCode = compileFromAst(ast, this.evalOpts);
+  compile(src: string): string {
+    const ast = babylon.parse(src).program;
+    return compileFromAst(ast, this.evalOpts);
+  }
+
+  compileFromAst(ast: t.Program): string {
+    return compileFromAst(ast, this.evalOpts);
+  }
+
+  evalCompiled(stopifiedCode: string, onDone: (result: Result) => void): void {
     this.eventMode = EventProcessingMode.Running;
     this.continuationsRTS.runtime(eval(stopifiedCode), onDone);
+  }
+
+  evalAsyncFromAst(ast: t.Program, onDone: (result: Result) => void): void {
+    const stopifiedCode = compileFromAst(ast, this.evalOpts);
+    this.evalCompiled(stopifiedCode, onDone);
   }
 
   evalAsync(src: string, onDone: (result: Result) => void): void {

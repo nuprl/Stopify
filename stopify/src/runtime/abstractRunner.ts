@@ -197,9 +197,21 @@ export abstract class AbstractRunner implements AsyncRun {
     this.suspendRTS.resumeFromCaptured();
   }
 
+  // NOTE: In both of the pause functions below, we don't switch the mode to
+  // paused! This is because we don't want the user to be able to hit "step" at
+  // this point.
+
+  pauseK(callback: (k: (r: Result) => void) => void): void {
+    return this.continuationsRTS.captureCC((k) => {
+      return this.continuationsRTS.endTurn(onDone => {
+        return callback((x : Result) => {
+          return this.continuationsRTS.runtime(() => k(x), onDone);
+        });
+      });
+    });
+  }
+
   pauseImmediate(callback: () => void): void {
-    // NOTE: We don't switch the mode to paused! This is because we don't want
-    // the user to be able to hit "step" at this point.
     return this.continuationsRTS.captureCC((k) => {
       return this.continuationsRTS.endTurn(onDone => {
         this.k = { k, onDone };

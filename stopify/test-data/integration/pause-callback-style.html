@@ -1,0 +1,54 @@
+<html>
+
+<body>
+  <p>This page runs Stopify in the browser.</p>
+<script src="../../dist/stopify-full.bundle.js"></script>
+<script>
+var program = `
+inspect.x = fiblarious(5);
+`;
+
+function fiblarious(n) {
+  if(n === 0) { return 1; }
+  if(n === 1) { return 1; }
+  runner.pauseK((restart) => {
+    window.setTimeout(() => {
+      runner.evalAsync(`fiblarious(${n - 1})`, (result1) => {
+        runner.evalAsync(`fiblarious(${n - 2})`, (result2) => {
+          console.log(result1, result2);
+          restart({type: 'normal', value: result1.value + result2.value});
+        });
+      });
+    }, 0);
+  });
+}
+
+
+var runner = stopify.stopifyLocally(program, { }, {
+  estimator: 'countdown',
+  yieldInterval: 1
+});
+
+runner.g.window = window;
+runner.g.console = console;
+runner.g.fiblarious = fiblarious;
+runner.g.inspect = {};
+
+runner.run((result) => {
+  if (result.type !== 'normal' || runner.g.inspect.x !== 8) {
+    console.error(`result: `, result, runner.g.inspect);
+    window.document.title = 'error';
+  }
+  else {
+    window.document.title = 'okay';
+    console.log("Success: after fibs:", result, runner.g.inspect);
+  }
+});
+
+window.onerror = function() {
+  window.document.title = "error";
+}
+</script>
+
+</body>
+</html>

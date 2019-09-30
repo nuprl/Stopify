@@ -63,7 +63,7 @@ This program will make any web browser crash.
       <script src="stopify.bundle.js"></script>
       <script>
       var runner = stopify.stopify("output.js");
-      runner.console = console;
+      runner.g = { console, document, Date }; 
       runner.run(() => console.log("done"));
       </script>
     </body>

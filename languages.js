@@ -5,7 +5,7 @@ function getCompilerBase() {
         case 'localhost':
             return 'http://localhost:8080';
         case 'www.stopify.org':
-            return 'https://us-central1-arjun-umass.cloudfunctions.net/stopify';
+            return 'https://us-central1-arjunguha-research.cloudfunctions.net/stopify';
         default:
             throw new Error(`missing case for current host`);
     }

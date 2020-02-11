@@ -1,6 +1,6 @@
 {
   "name": "@stopify/normalize-js",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "An ANF-inspired normalization of JavaScript",
   "main": "dist/ts/index",
   "typings": "dist/ts/index",

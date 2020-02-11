@@ -39,7 +39,7 @@ export const visitor: Visitor = {
     const r = fresh(op === "&&" ? "and" : "or");
 
     stmt.insertBefore(
-      t.variableDeclaration("let", [t.variableDeclarator(r)]));
+      t.variableDeclaration("let", [t.variableDeclarator(r, t.identifier("undefined"))]));
 
     const x = t.blockStatement([t.expressionStatement(
       t.assignmentExpression("=", r, path.node.right))]);

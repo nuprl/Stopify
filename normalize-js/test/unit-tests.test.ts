@@ -570,3 +570,15 @@ test('uninitialized variable', () => {
         t;
     `);
 });
+
+test('compound conditional', () => {
+    normalizeEquiv(`
+        function F(x) {
+            return x;
+        }
+        let i = 0;
+        if(F(true) && F(true) || F(false)) {
+            i++;
+        }
+    `);
+});

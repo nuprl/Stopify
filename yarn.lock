@@ -379,6 +379,24 @@
     source-map "^0.6.0"
     source-map-support "^0.5.6"
 
+"@stopify/normalize-js@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@stopify/normalize-js/-/normalize-js-0.7.0.tgz#9793707b8a6724416411c2a698d3938d04f10d63"
+  integrity sha512-WHjTu1XO8eSO1srVQPVcsXHfit3OCFRPxVfYwd8YFzAhv55ps7BJAgGKG9UZitfrbDhDs2TgZQj7K7IV1uzwYQ==
+  dependencies:
+    "@stopify/hygiene" "0.7.0"
+    "@stopify/util" "0.7.0"
+    babel-core "^6.26.3"
+    babel-plugin-transform-es2015-arrow-functions "^6.22.0"
+    babel-traverse "^6.26.0"
+    babel-types "^6.26.0"
+    commander "^2.11.0"
+    convert-source-map "^1.5.0"
+    immutable "^3.8.1"
+    source-map "^0.6.0"
+    source-map-support "^0.5.6"
+    trie "^0.2.1"
+
 "@types/anymatch@*":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@types/anymatch/-/anymatch-1.3.1.tgz#336badc1beecb9dacc38bea2cf32adf627a8421a"
@@ -4922,18 +4940,10 @@ lodash.sortby@^4.7.0:
   resolved "https://registry.yarnpkg.com/lodash.sortby/-/lodash.sortby-4.7.0.tgz#edd14c824e2cc9c1e0b0a1b42bb5210516a42438"
   integrity sha1-7dFMgk4sycHgsKG0K7UhBRakJDg=
 
-lodash@^4.0.0, lodash@^4.14.0, lodash@^4.2.0:
-  version "4.17.4"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
-
-lodash@^4.17.11:
-  version "4.17.11"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
-  integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
-
-lodash@^4.17.4:
-  version "4.17.10"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
+lodash@^4.0.0, lodash@^4.14.0, lodash@^4.17.11, lodash@^4.17.4, lodash@^4.2.0:
+  version "4.17.15"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
+  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
 
 long@4.0.0:
   version "4.0.0"

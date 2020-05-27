@@ -15,6 +15,26 @@ guarantees that:
 The transformation does introduce new *break* statements and labelled
 statements.
 
+## Using This Tool Independently
+
+1. In the root of the repo:
+
+    ```
+    $ yarn
+    ```
+
+2. Then in this directory:
+
+    ```
+    $ yarn run build
+    ```
+
+3. Then run!
+
+    ```
+    node ./dist/ts/main.js <filename>
+    ```
+
 
 [^1]: Cormac Flanagan, Amr Sabry, Bruce F. Duba, and Matthias Felleisen.
       The Essence of Compiling with Continuations. In Proceedings of

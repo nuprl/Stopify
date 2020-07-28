@@ -59,7 +59,7 @@ export const visitor: Visitor = {
       // Do nothing
     }
     else if (opts.requireRuntime) {
-      // var $S = require('stopify/dist/src/runtime/rts').init($__R);;
+      // var $S = require('@stopify/stopify/dist/src/runtime/rts').init($__R);;
 
       path.node.body.splice(3, 0,
       t.variableDeclaration('var',
@@ -68,7 +68,7 @@ export const visitor: Visitor = {
             t.callExpression(
               t.memberExpression(
                 t.callExpression(t.identifier('require'),
-                  [t.stringLiteral('stopify/dist/src/runtime/node')]),
+                  [t.stringLiteral('@stopify/stopify/dist/src/runtime/node')]),
                 t.identifier('init')),
                 [t.identifier('$__R')]))]));
     } else {

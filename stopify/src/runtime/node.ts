@@ -42,8 +42,5 @@ export function init(
   g.require = require;
   (suspendRTS as any).g = g;
 
-  let higherOrderFunctions = require(`../stopified/higherOrderFunctions.${continuationsRTS.kind}.node`);
-
-  (suspendRTS as any).stopifyArray = (arr: any[]) => higherOrderFunctions.stopifyArray(arr);
   return suspendRTS;
 }

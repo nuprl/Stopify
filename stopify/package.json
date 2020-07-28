@@ -20,7 +20,7 @@
     "@types/tmp": "0.0.33",
     "@types/webpack": "^3.0.5",
     "browserify": "^16.1.0",
-    "chromedriver": "79.0.0",
+    "chromedriver": "84.0.1",
     "geckodriver": "^1.16.0",
     "glob": "^7.1.1",
     "jest": "^24.7.1",

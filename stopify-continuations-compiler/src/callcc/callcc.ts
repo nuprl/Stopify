@@ -105,7 +105,7 @@ const visitor: Visitor = {
 
     const req = opts.requireRuntime ?
       t.callExpression(t.identifier('require'),
-        [t.stringLiteral('stopify/dist/src/stopify/compileFunction')]) :
+        [t.stringLiteral('@stopify/stopify/dist/src/stopify/compileFunction')]) :
       t.memberExpression(t.identifier('stopify'), t.identifier('compiler'));
 
     path.node.body.unshift(

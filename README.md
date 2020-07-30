@@ -1,4 +1,4 @@
-# Stopify [![Build Status](https://travis-ci.org/plasma-umass/Stopify.svg?branch=master)](https://travis-ci.org/plasma-umass/Stopify) [![Documentation Status](https://readthedocs.org/projects/stopify/badge/?version=latest)](http://stopify.readthedocs.io/en/latest/?badge=latest)
+# Stopify [![Build Status](https://travis-ci.org/plasma-umass/Stopify.svg?branch=master)](https://travis-ci.org/plasma-umass/Stopify)
 
 Stopify is a JavaScript-to-JavaScript compiler that makes JavaScript a better
 target language for high-level languages and web-based programming tools.
@@ -31,7 +31,7 @@ Scala. Some of these are available on the Stopify demo page
 ([www.stopify.org](http://www.stopify.org)) and the rest are coming soon.
 
 To learn how to use Stopify in your own project, see the 
-[Stopify Manual](https://stopify.readthedocs.io/en/latest).
+[Stopify Wiki](wiki).
 
 For a technical overview of Stopify, see our PLDI 2018 paper
 [Putting in All the Stops: Execution Control for JavaScript](https://arxiv.org/abs/1802.02974).

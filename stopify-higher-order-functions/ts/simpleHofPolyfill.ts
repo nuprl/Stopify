@@ -385,7 +385,34 @@ function array_sort(o: any, comparator?: any): any {
       }
   
       return stopifyArray(Array.prototype.concat.call(this, anotherArray));
-    }
+    },
+    flat: function(depth: any) {
+      const nArgs = arguments.length;
+      if (nArgs > 1) {
+        throw new Error('.flat requires 0 or 1 argument');
+      }
+      if (nArgs === 1 && (typeof depth !== 'number' || depth < 1)) {
+        throw new Error('the depth argumeth to .flat must be a positive integer');
+      }
+      if (nArgs === 0) {
+        depth = 1;
+      }
+      return stopifyArray(Array.prototype.flat.call(this, depth));
+    },
+    flatMap: function(f: any) { 
+      if (arguments.length !== 1) {
+        throw new Error(`.flatMap requires 1 argument`);
+      }
+  
+      let result = [ ];
+      for (let i = 0; i < this.length; ++i) {
+        let arr = f(this[i]);
+        for (let j = 0; j < arr.length; ++j) {
+          result.push(arr[j]);
+        }
+      }
+      return stopifyArray(result);
+    },
   };
   
   export function stopifyArray(arr: any) {

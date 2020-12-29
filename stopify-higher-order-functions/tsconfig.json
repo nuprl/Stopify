@@ -2,7 +2,8 @@
     "extends": "../tsconfig.json",
     "compilerOptions": {
         "outDir": "./dist",
-        "strict": false
+        "strict": false,
+        "lib": ["ES2019"]
     },
     "references": [
         { "path": "../util" },

@@ -30,6 +30,7 @@ function setupGlobals(runner: stopify.AsyncRun & stopify.AsyncEval) {
     runner.g = globals;
 }
 
+// Uses mozillaHofPolyfill
 function harness(code: string) {
     const ast = babylon.parse(code);
     const polyfilled = polyfillHofFromAst(ast.program);
@@ -39,6 +40,32 @@ function harness(code: string) {
         throw runner.exception;
     }
     setupGlobals(runner);
+    return runner;
+}
+
+// Uses simpleHofPolyfill
+function simpleHarness(code: string) {
+    const ast = babylon.parse(code);
+    const polyfilled = polyfillHofFromAst(ast.program);
+    const runner = stopify.stopifyLocallyFromAst(polyfilled,
+        undefined, compilerOpts, runtimeOpts);
+    if (runner.kind === 'error') {
+        throw runner.exception;
+    }
+    runner.g = {
+        assert: assert,
+        console: console,
+        eval: (code: string) => {
+            runner.pauseImmediate(() => {
+                runner.evalAsync(code, result => {
+                    runner.continueImmediate(result);
+                });
+            });
+        },
+        $stopifyArray: function(array: any) {
+            return require('../ts/simpleHofPolyfill.lazy').stopifyArray(array);
+        }
+    };
     return runner;
 }
 
@@ -200,4 +227,49 @@ test('map must produce stopified arrays', done => {
         expect(runner.g.alist).toMatchObject([3, 4]);
         done();
     });
+});
+
+test('flat must produce stopified arrays', done => {
+    const runner = simpleHarness(`
+        function F(x) {
+            while(false) { };
+            return x + 1;
+        }
+        alist = [[1],[2]].flat().map(F)`);
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        expect(runner.g.alist).toMatchObject([2, 3]);
+        done();
+    });
+    
+});
+
+test('the depth argument to flat works', done => {
+    const runner = simpleHarness(`
+        function F(x) {
+            while(false) { };
+            return x + 1;
+        }
+        alist = [[[1]],[[2]]].flat(2).map(F)`);
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        expect(runner.g.alist).toMatchObject([2, 3]);
+        done();
+    });
+    
+});
+
+test('.flatMap test', done => {
+    const runner = simpleHarness(`
+        function F(x) {
+            while(false) { };
+            return [x + 1];
+        }
+        alist = [1, 2].flatMap(F)`);
+    runner.run(result => {
+        expect(result).toMatchObject({ type: 'normal' });
+        expect(runner.g.alist).toMatchObject([2, 3]);
+        done();
+    });
+    
 });

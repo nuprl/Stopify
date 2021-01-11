@@ -13,7 +13,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
       - name: Build (TypeScript)
-        run: ./build
+        run: ./build.sh
       - name: Test JavaScript normalization
         working-directory: normalize-js
         run: yarn run test

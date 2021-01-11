@@ -28,7 +28,7 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "babel-types": "^6.26.0",
-    "console-feed": "2.8.3",
+    "console-feed": "2.8.10",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-monaco-editor": "^0.25.1",

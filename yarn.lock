@@ -2151,10 +2151,10 @@ console-control-strings@^1.0.0, console-control-strings@~1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/console-control-strings/-/console-control-strings-1.1.0.tgz#3d7cf4464db6446ea644bf4b39507f9851008e8e"
 
-console-feed@2.8.3:
-  version "2.8.3"
-  resolved "https://registry.yarnpkg.com/console-feed/-/console-feed-2.8.3.tgz#81c07b14c236033fe26d76d2b5b305c3345cae99"
-  integrity sha1-gcB7FMI2Az/ibXbStbMFwzRcrpk=
+console-feed@2.8.10:
+  version "2.8.10"
+  resolved "https://registry.yarnpkg.com/console-feed/-/console-feed-2.8.10.tgz#a4f215f7972d8855b379fa2e4f31248d5f5a578b"
+  integrity sha512-n1WeWsFUTcVptTR3c9/RYkrH9wVC+X4aEF9WpfKcmDdLorcdEk/N4gO+hdNkBYIzXyWQi2NoFBZTWsOFww4vaQ==
   dependencies:
     emotion "^9.1.1"
     emotion-theming "^9.0.0"

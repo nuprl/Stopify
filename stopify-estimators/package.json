@@ -1,6 +1,6 @@
 {
   "name": "@stopify/estimators",
-  "version": "0.7.0",
+  "version": "0.7.3",
   "description": "Elapsed-time estimators for JavaScript",
   "main": "dist/src/elapsedTimeEstimator",
   "typings": "dist/src/elapsedTimeEstimator",

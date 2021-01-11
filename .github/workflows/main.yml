@@ -1,0 +1,25 @@
+name: CI
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: yarn install
+      - name: Build (TypeScript)
+        run: ./build
+      - name: Test JavaScript normalization
+        working-directory: normalize-js
+        run: yarn run test
+      - name: Test continuations compiler
+        working-directory: stopify-continuations-compiler
+        run: yarn run test
+      - name: Test Stopify
+        working-directory: stopify
+        run: yarn run test

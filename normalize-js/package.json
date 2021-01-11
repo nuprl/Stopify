@@ -1,6 +1,6 @@
 {
   "name": "@stopify/normalize-js",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "An ANF-inspired normalization of JavaScript",
   "main": "dist/ts/index",
   "typings": "dist/ts/index",
@@ -53,8 +53,8 @@
     "source-map": "^0.6.0",
     "source-map-support": "^0.5.6",
     "trie": "^0.2.1",
-    "@stopify/util": "0.7.0",
-    "@stopify/hygiene": "0.7.0"
+    "@stopify/util": "0.7.3",
+    "@stopify/hygiene": "0.7.3"
   },
   "jest": {
     "roots": [

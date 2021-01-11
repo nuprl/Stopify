@@ -1,6 +1,6 @@
 {
   "name": "@stopify/hygiene",
-  "version": "0.7.0",
+  "version": "0.7.3",
   "main": "dist/ts/index.js",
   "typings": "dist/ts/index.d.ts",
   "license": "BSD-3-Clause",
@@ -14,7 +14,7 @@
     "typescript": "^3.4.4"
   },
   "dependencies": {
-    "@stopify/util": "0.7.0",
+    "@stopify/util": "0.7.3",
     "babel-core": "^6.26.3",
     "babel-traverse": "^6.26.0",
     "babel-types": "^6.26.0",

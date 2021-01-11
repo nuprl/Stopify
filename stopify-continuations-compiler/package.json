@@ -1,6 +1,6 @@
 {
   "name": "@stopify/continuations",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "Continuations for JavaScript",
   "main": "dist/src/index",
   "typings": "dist/src/index",
@@ -19,7 +19,7 @@
     "jest": "^24.7.1",
     "typescript": "^3.4.4",
     "webpack": "^3.10.0",
-    "@stopify/continuations-runtime": "0.7.1"
+    "@stopify/continuations-runtime": "0.7.3"
   },
   "scripts": {
     "build": "./bin/build",
@@ -40,8 +40,8 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@stopify/normalize-js": "0.7.0",
-    "@stopify/util": "0.7.0",
+    "@stopify/normalize-js": "0.7.3",
+    "@stopify/util": "0.7.3",
     "babel-core": "^6.26.3",
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
     "babel-traverse": "^6.26.0",

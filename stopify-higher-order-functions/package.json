@@ -1,6 +1,6 @@
 {
   "name": "@stopify/higher-order-functions",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "A polyfill for higher-order functions that are compatible with Stopify",
   "main": "dist/ts/index",
   "typings": "dist/ts/index",

@@ -1,6 +1,6 @@
 {
   "name": "@stopify/continuations-runtime",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "Continuation Runtime",
   "main": "dist/src/index",
   "typings": "dist/src/index",

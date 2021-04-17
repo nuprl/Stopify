@@ -400,6 +400,17 @@
     source-map "^0.6.0"
     source-map-support "^0.5.6"
 
+"@stopify/hygiene@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@stopify/hygiene/-/hygiene-0.7.0.tgz#2bb02ffbfbebe7d07b93dec0925b4c154adf1529"
+  integrity sha512-0IPRAWpCv5/GcJxOVGBBLTUhuvqRsJkSHOnXUjqViwdDvXyCjnL4MZR/p0sqrqvn+S+ibdQoiLL7RYwCCSB7Sg==
+  dependencies:
+    "@stopify/util" "0.7.0"
+    babel-core "^6.26.3"
+    babel-traverse "^6.26.0"
+    babel-types "^6.26.0"
+    trie "^0.2.1"
+
 "@stopify/normalize-js@0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@stopify/normalize-js/-/normalize-js-0.7.0.tgz#9793707b8a6724416411c2a698d3938d04f10d63"
@@ -417,6 +428,15 @@
     source-map "^0.6.0"
     source-map-support "^0.5.6"
     trie "^0.2.1"
+
+"@stopify/util@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@stopify/util/-/util-0.7.0.tgz#2c01ecf92311c8c12dd00b260fad1fc1446dc8bb"
+  integrity sha512-lEN5SdikFhfWKRqExsEQ+WZz35xGb+3QRj0dBNdB8TuCrK/tkReQHsoV8GS4ycb/kqaxdvlSSA3OjWywZ+tR5Q==
+  dependencies:
+    babel-core "^6.26.3"
+    babel-traverse "^6.26.0"
+    babel-types "^6.26.0"
 
 "@testim/chrome-version@^1.0.7":
   version "1.0.7"
@@ -8145,8 +8165,9 @@ xtend@^4.0.0, xtend@~4.0.1:
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.1.tgz#a5c6d532be656e23db820efb943a1f04998d63af"
 
 y18n@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.1.tgz#6d15fba884c08679c0d77e88e7759e811e07fa41"
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.2.tgz#85c901bd6470ce71fc4bb723ad209b70f7f28696"
+  integrity sha512-uGZHXkHnhF0XeeAPgnKfPv1bgKAYyVvmNL1xlKsPYZPaIHxGti2hHqvOCQv71XMsLxu1QjergkqogUnms5D3YQ==
 
 "y18n@^3.2.1 || ^4.0.0", y18n@^4.0.0:
   version "4.0.0"

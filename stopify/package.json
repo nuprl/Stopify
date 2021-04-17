@@ -78,7 +78,8 @@
   },
   "jest": {
     "roots": [
-      "<rootDir>/dist/test"
+      "<rootDir>/dist/test",
+      "<rootDir>/js"
     ]
   }
 }

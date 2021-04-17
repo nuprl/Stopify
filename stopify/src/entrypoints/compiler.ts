@@ -18,6 +18,7 @@ export * from '@stopify/continuations/dist/src/runtime/implicitApps';
 export { knownBuiltIns } from '@stopify/continuations/dist/src/common/cannotCapture';
 export { Result } from '@stopify/continuations-runtime';
 export { AsyncRun, AsyncEval, Error, CompilerOpts, RuntimeOpts };
+import * as util from '@stopify/util';
 
 import * as compiler from '../stopify/compileFunction';
 export { compiler };
@@ -59,7 +60,7 @@ class Runner extends AbstractRunner {
     this.runInit(onDone, onYield, onBreakpoint);
     eval.call(global, this.code);
   }
-
+  
   compile(src: string): string {
     const ast = babylon.parse(src).program;
     return compileFromAst(ast, this.evalOpts);
@@ -80,7 +81,11 @@ class Runner extends AbstractRunner {
   }
 
   evalAsync(src: string, onDone: (result: Result) => void): void {
-    this.evalAsyncFromAst(babylon.parse(src).program, onDone);
+    let ast = parseOrError(src);
+    if (ast.kind == 'error') {
+      return onDone({ type: 'exception', value: ast.exception, stack: [] });
+    }
+    this.evalAsyncFromAst(ast.value, onDone);
   }
 }
 
@@ -112,6 +117,15 @@ export function stopifyLocallyFromAst(
   }
 }
 
+function parseOrError(src: string): { kind: 'program', value: t.Program } | Error {
+  try {
+    return { kind: 'program', value: babylon.parse(src).program };
+  }
+  catch (exn) {
+    return { kind: 'error', exception: exn };
+  }
+}
+
 /**
  * Control the execution of a pre-compiled program.
  *
@@ -122,8 +136,12 @@ export function stopifyLocally(
   src: string,
   optionalCompileOpts?: Partial<CompilerOpts>,
   optionalRuntimeOpts?: Partial<RuntimeOpts>): (AsyncRun & AsyncEval) | Error {
+  let ast = parseOrError(src);
+  if (ast.kind === 'error') {
+    return ast;
+  }
   return stopifyLocallyFromAst(
-    babylon.parse(src).program,
+    ast.value,
     getSourceMap(src),
     optionalCompileOpts,
     optionalRuntimeOpts);

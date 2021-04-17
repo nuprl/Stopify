@@ -1,4 +1,4 @@
-require("../stopify/dist/stopify-full.bundle.js");
+require("../dist/stopify-full.bundle.js");
   
 test('strict mode parse error from stopifyLocally', () => {
     // The use strict makes the Babylon parser crash.

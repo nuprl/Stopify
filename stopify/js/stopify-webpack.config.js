@@ -3,7 +3,7 @@ const runtimeOnly = {
   output: {
     filename: 'dist/stopify.bundle.js',
     library: 'stopify',
-    libraryTarget: 'var'
+    libraryTarget: 'window'
   },
   devtool: 'source-map',
   node: {
@@ -18,7 +18,7 @@ const compilerAndRuntime = {
   output: {
     filename: 'dist/stopify-full.bundle.js',
     library: 'stopify',
-    libraryTarget: 'var'
+    libraryTarget: 'window'
   },
   devtool: 'source-map',
   node: {

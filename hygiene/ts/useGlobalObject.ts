@@ -34,6 +34,21 @@ function setGlobal(global: t.Expression, name: t.Identifier, expr: t.Expression)
       expr));
 }
 
+// The Stopify compilation strategy relies on an ES3-style notion of scoping:
+// every function has a set of local variable slots, and every top-level every
+// goes in the global object.
+function isES3TopLevel(path: NodePath<t.Node>, state: S) {
+  if (path.node.type === 'Program') {
+    return false;
+  }
+
+  if ((t.isLoop(path.node) || t.isBlock(path.node)) && 
+      state.boundIdStack.length === 0) {
+    return false;
+  }
+  return true;
+}
+
 function visitId(path: NodePath<t.Identifier>, state: S) {
   if (path.node.name === $S.name ||
       state.boundIds.has(path.node.name)) {
@@ -90,7 +105,7 @@ const visitor = {
   // Track the set of identifiers bound at all scopes, *except* for Program.
   Scope: {
     enter(path: NodePath<t.Scopable>, state: S) {
-      if (path.node.type === 'Program') {
+      if (isES3TopLevel(path, state) === false) {
         return;
       }
       state.boundIdStack.push(state.boundIds);
@@ -99,7 +114,7 @@ const visitor = {
       state.boundIds = new Set([...newIds, ...oldIds]);
     },
     exit(path: NodePath<t.Scopable>, state: S) {
-      if (path.node.type === 'Program') {
+      if (isES3TopLevel(path, state) === false) {
         return;
       }
       state.boundIds = state.boundIdStack.pop()!;

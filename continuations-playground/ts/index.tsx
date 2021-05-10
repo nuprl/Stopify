@@ -4,6 +4,21 @@ import MonacoEditor from 'react-monaco-editor';
 import { Hook, Console, Decode } from 'console-feed';
 import { compile } from 'stopify-continuations-compiler';
 
+// This code has a bug. Run the following variation with developer tools open:
+//
+// let x = {};
+// debugger;
+// console.log(x);
+// x.stuff = 1234;
+//
+// If you step through execution, you'll see that the calll to appendLog is
+// queued to run on the next turn, which is after the update to x.stuff occurs.
+//
+// The solution is to either:
+//
+// 1. Force the console.log to occur immediately (I don't know how to do that)
+//    or,
+// 2. Append to the log a deep copy of x, which is a pain to do.
 function appendLog(method: 'log' | 'error', msg: any) {
     return function(prevState: { logs: any[] }) {
         return {

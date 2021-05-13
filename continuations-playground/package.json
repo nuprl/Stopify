@@ -32,7 +32,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-monaco-editor": "^0.25.1",
-    "@stopify/continuations": "0.7.0",
-    "@stopify/continuations-runtime": "0.7.0"
+    "@stopify/continuations": "~0.7.0",
+    "@stopify/continuations-runtime": "~0.7.0"
   }
 }

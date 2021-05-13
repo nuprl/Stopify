@@ -1,6 +1,6 @@
 {
   "name": "@stopify/hygiene",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "main": "dist/ts/index.js",
   "typings": "dist/ts/index.d.ts",
   "license": "BSD-3-Clause",

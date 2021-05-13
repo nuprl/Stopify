@@ -378,57 +378,6 @@
     "@nodelib/fs.scandir" "2.1.3"
     fastq "^1.6.0"
 
-"@stopify/continuations-runtime@0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@stopify/continuations-runtime/-/continuations-runtime-0.7.0.tgz#d7e5c67c7c105265261e6f67e96fe2da0d953712"
-  integrity sha512-S6ZZP68/jR+UvuiFJ6KsG6LbvqawcD4yael5mOf7B2k5uPpAfgzfJ6dqS49ulmGZmN7fmqbJV9qWhKQ84y9jMA==
-
-"@stopify/continuations@0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@stopify/continuations/-/continuations-0.7.0.tgz#6417c90f175273ad8370f31f968c336b62e5c4e0"
-  integrity sha512-1ne1b0LstC5hIHtq9SltbNXJ41M0yBw6cCGgHPL8TAtvw2bOp3P6Qv+CI07LhE+cuUIo1FpSqwNSISABcsh4CQ==
-  dependencies:
-    "@stopify/normalize-js" "0.7.0"
-    "@stopify/util" "0.7.0"
-    babel-core "^6.26.3"
-    babel-plugin-transform-es2015-arrow-functions "^6.22.0"
-    babel-traverse "^6.26.0"
-    babel-types "^6.26.0"
-    commander "^2.11.0"
-    convert-source-map "^1.5.0"
-    immutable "^3.8.1"
-    source-map "^0.6.0"
-    source-map-support "^0.5.6"
-
-"@stopify/hygiene@0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@stopify/hygiene/-/hygiene-0.7.0.tgz#2bb02ffbfbebe7d07b93dec0925b4c154adf1529"
-  integrity sha512-0IPRAWpCv5/GcJxOVGBBLTUhuvqRsJkSHOnXUjqViwdDvXyCjnL4MZR/p0sqrqvn+S+ibdQoiLL7RYwCCSB7Sg==
-  dependencies:
-    "@stopify/util" "0.7.0"
-    babel-core "^6.26.3"
-    babel-traverse "^6.26.0"
-    babel-types "^6.26.0"
-    trie "^0.2.1"
-
-"@stopify/normalize-js@0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@stopify/normalize-js/-/normalize-js-0.7.0.tgz#9793707b8a6724416411c2a698d3938d04f10d63"
-  integrity sha512-WHjTu1XO8eSO1srVQPVcsXHfit3OCFRPxVfYwd8YFzAhv55ps7BJAgGKG9UZitfrbDhDs2TgZQj7K7IV1uzwYQ==
-  dependencies:
-    "@stopify/hygiene" "0.7.0"
-    "@stopify/util" "0.7.0"
-    babel-core "^6.26.3"
-    babel-plugin-transform-es2015-arrow-functions "^6.22.0"
-    babel-traverse "^6.26.0"
-    babel-types "^6.26.0"
-    commander "^2.11.0"
-    convert-source-map "^1.5.0"
-    immutable "^3.8.1"
-    source-map "^0.6.0"
-    source-map-support "^0.5.6"
-    trie "^0.2.1"
-
 "@stopify/util@0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@stopify/util/-/util-0.7.0.tgz#2c01ecf92311c8c12dd00b260fad1fc1446dc8bb"

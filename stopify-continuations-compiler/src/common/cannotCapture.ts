@@ -32,7 +32,8 @@ const knowns = ['Object',
   'WeakMap',
   'WeakSet',
   'ArrayBuffer',
-  'TextDecoder'
+  'TextDecoder',
+  'TextEncoder'
 ];
 
 function cannotCapture(node: t.CallExpression | t.NewExpression): boolean  {

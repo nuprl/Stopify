@@ -40,6 +40,7 @@ export function init(
     }
   let g: any = global;
   g.require = require;
+  g.exports = {};
   (suspendRTS as any).g = g;
 
   return suspendRTS;

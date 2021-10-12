@@ -42,7 +42,7 @@ function cannotCapture(node: t.CallExpression | t.NewExpression): boolean  {
   return knowns.includes(node.callee.name);
 }
 
-const unavailableOnNode = [ 'TextDecoder' ];
+const unavailableOnNode = [  ];
 const knownBuiltIns = knowns.filter(x => !unavailableOnNode.includes(x))
   .map(o => eval(o));
 

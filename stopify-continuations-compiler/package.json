@@ -1,6 +1,6 @@
 {
   "name": "@stopify/continuations",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Continuations for JavaScript",
   "main": "dist/src/index",
   "typings": "dist/src/index",

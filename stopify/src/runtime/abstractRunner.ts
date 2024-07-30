@@ -240,6 +240,10 @@ export abstract class AbstractRunner implements AsyncRun {
     this.continuationsRTS.runtime(body, callback);
   }
 
+  isRunning(): boolean {
+    return this.continuationsRTS.stackActive;
+  }
+
   processEvent(body: () => void, receiver: (x: Result) => void): void {
     this.eventQueue.push({ body, receiver } );
     this.processQueuedEvents();

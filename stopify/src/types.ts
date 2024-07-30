@@ -45,7 +45,6 @@ export interface AsyncRun {
     onBreakpoint?: (line: number) => void): void;
   pause(onPaused: (line?: number) => void): void;
   resume(): void;
-  isRunning(): boolean;
   setBreakpoints(line: number[]): void;
   step(onStep: (line: number) => void): void;
   pauseK(callback: (k: (r: Result) => void) => void): void;

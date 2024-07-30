@@ -282,38 +282,6 @@ describe('integration tests', function () {
     }
 });
 
-describe('Test cases that check running status',() => {
-    test('Running status should be paused (not running) in synchronous code after starting to run', onDone => {
-        const runner = harness(`
-            function sum(x) {
-                if (x % 20 === 0) { checkRunning(); }
-                if (x % 30 === 0) { pauseAndCheckRunning(); }
-                if (x <= 1) {
-                    return 1;
-                } else {
-                    return x + sum(x-1);
-                }
-            }
-            assert.equal(sum(100), 5050);
-            `, { captureMethod: 'lazy' });
-        runner.g.checkRunning = function() {
-            assert.equal(runner.isRunning(), true);
-        };
-        runner.g.pauseAndCheckRunning = function() {
-            runner.pauseK(k => {
-                assert.equal(runner.isRunning(), false);
-                k({ type: 'normal', value: 'restart' });
-            });
-        };
-        runner.run(result => {
-            expect(result).toEqual({ type: 'normal' });
-            onDone();
-        expect(runner.isRunning()).toBe(false);
-        });
-    }, 10000);
-
-});
-
 describe('Test cases that require deep stacks',() => {
     const runtimeOpts: Partial<types.RuntimeOpts> = {
         stackSize: 100,

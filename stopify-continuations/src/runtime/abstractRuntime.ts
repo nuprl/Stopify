@@ -42,11 +42,6 @@ export abstract class RuntimeImpl implements Runtime {
   // represents 'restore' mode.
   mode: Mode;
 
-  // Represents whether the stack is currently active – that is, if you
-  // call a function if it can expect to do its capture/restore logic
-  // with the right things available on the stack.
-  stackActive: boolean;
-
   /**
    *  A saved stack trace. This field is only used when a user-mode exception
    * is thrown.
@@ -73,7 +68,6 @@ export abstract class RuntimeImpl implements Runtime {
     this.stackSize = stackSize;
     this.remainingStack = stackSize;
     this.mode = true;
-    this.stackActive = false;
     this.kind = undefined as any; // the worst
   }
 
@@ -83,7 +77,6 @@ export abstract class RuntimeImpl implements Runtime {
       f: () => {
         this.stack = [];
         this.mode = true;
-        this.stackActive = true;
         return f();
       },
       this: this,
@@ -93,7 +86,6 @@ export abstract class RuntimeImpl implements Runtime {
   runtime<T>(body: () => any, onDone: (x: Result) => T): T {
 
     while(true) {
-      this.stackActive = true;
       const result = this.abstractRun(body);
 
       if (result.type === 'normal' || result.type === 'exception') {
@@ -118,23 +110,19 @@ export abstract class RuntimeImpl implements Runtime {
         }
         else if(result.type === 'normal') {
           assert(this.mode, 'execution completed in restore mode');
-          this.stackActive = false;
           return onDone(result);
         }
         else if(result.type === 'exception') {
           assert(this.mode, `execution completed in restore mode, error was: ${result.value}`);
           const stack = this.stackTrace;
           this.stackTrace = [];
-          this.stackActive = false;
           return onDone({ type: 'exception', value: result.value, stack });
         }
       }
       else if (result.type === 'capture') {
-        this.stackActive = false;
         body = () => result.f.call(global, this.makeCont(result.stack));
       }
       else if (result.type === 'restore') {
-        this.stackActive = false;
         body = () => {
           if (result.stack.length === 0) {
             throw new Error(`Can't restore from empty stack`);
@@ -147,7 +135,6 @@ export abstract class RuntimeImpl implements Runtime {
         };
       }
       else if (result.type === 'end-turn') {
-        this.stackActive = false;
         return result.callback(onDone);
       }
     }

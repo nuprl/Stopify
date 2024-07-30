@@ -47,7 +47,6 @@ export interface Runtime {
 
   mode: Mode;
   stack: Stack;
-  stackActive: boolean;
 
   endTurn(callback: (onDone: (x: Result) => any) => any): never;
 

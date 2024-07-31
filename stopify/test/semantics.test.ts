@@ -322,7 +322,7 @@ describe('Test cases that require deep stacks',() => {
         yieldInterval: 25
     };
 
-    test.skip('non-tail recursive function (deep, lazy)', onDone => {
+    test('non-tail recursive function (deep, lazy)', onDone => {
         const runner = harness(`
             function sum(x) {
                 if (x <= 1) {
@@ -331,7 +331,7 @@ describe('Test cases that require deep stacks',() => {
                     return x + sum(x-1);
                 }
             }
-            assert.equal(sum(200), 1250025000);
+            assert.equal(sum(100000), 5000050000);
             `, { captureMethod: 'lazy' }, runtimeOpts);
         runner.run(result => {
             expect(result).toEqual({ type: 'normal' });
@@ -348,7 +348,7 @@ describe('Test cases that require deep stacks',() => {
                     return x + sum(x-1);
                 }
             }
-            assert.equal(sum(200), 1250025000);
+            assert.equal(sum(100000), 5000050000);
             `, { captureMethod: 'eager' }, runtimeOpts);
         runner.run(result => {
             expect(result).toEqual({ type: 'normal' });

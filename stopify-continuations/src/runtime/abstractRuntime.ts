@@ -193,4 +193,6 @@ export abstract class RuntimeImpl implements Runtime {
   abstract abstractRun(body: () => any): RunResult;
 
   abstract endTurn(callback: (onDone: (x: Result) => any) => any): never;
+
+  abstract reset(f: () => any): any;
 }
